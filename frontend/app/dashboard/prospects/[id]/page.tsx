@@ -332,36 +332,70 @@ export default function ProspectHubPage() {
   const currentStepIndex = journeySteps.findIndex(s => !s.done)
   const nextStep = journeySteps[currentStepIndex] || null
   
-  // Extract key insights from research - parse markdown bold/italic
-  const getKeyInsights = (): { label?: string; value: string }[] => {
+  // Extract key insights from research - look for actual data, not headers
+  const getKeyInsights = (): { label: string; value: string }[] => {
     if (!research?.brief_content) return []
     
     const content = research.brief_content
     const lines = content.split('\n')
-    const insights: { label?: string; value: string }[] = []
+    const insights: { label: string; value: string }[] = []
     
-    // Look for bullet points
+    // Headers to skip (these are section labels, not data)
+    const skipHeaders = [
+      'what this means commercially',
+      'commercial insight', 
+      'what these signals suggest',
+      'their value proposition',
+      'what they do',
+      'revenue model'
+    ]
+    
+    // Look specifically for "**Label**: Value" patterns (the actual data)
     for (const line of lines) {
       const trimmed = line.trim()
-      if ((trimmed.startsWith('•') || trimmed.startsWith('-') || trimmed.startsWith('*')) && trimmed.length > 10) {
-        let cleaned = trimmed.replace(/^[•\-\*]\s*/, '').trim()
+      
+      // Skip empty lines and markdown headers
+      if (!trimmed || trimmed.startsWith('#')) continue
+      
+      // Remove bullet point prefix if present
+      const withoutBullet = trimmed.replace(/^[•\-\*]\s*/, '').trim()
+      
+      // Match "**Label**: Value" pattern (this is actual data)
+      const labelValueMatch = withoutBullet.match(/^\*\*(.+?)\*\*[:\s]+(.+)$/)
+      if (labelValueMatch) {
+        const label = labelValueMatch[1].trim()
+        const value = labelValueMatch[2].trim()
         
-        // Parse "**Label**: Value" or "*Label*: Value" patterns
-        const labelMatch = cleaned.match(/^\*\*(.+?)\*\*[:\s]+(.+)$/) || cleaned.match(/^\*(.+?)\*[:\s]+(.+)$/)
-        if (labelMatch) {
-          insights.push({ label: labelMatch[1], value: labelMatch[2] })
-        } else {
-          // Strip any remaining markdown
-          cleaned = cleaned.replace(/\*\*/g, '').replace(/\*/g, '')
-          if (cleaned.length > 15 && cleaned.length < 200) {
-            insights.push({ value: cleaned })
+        // Skip if it's a known header or has no real value
+        if (skipHeaders.some(h => label.toLowerCase().includes(h))) continue
+        if (value.length < 3 || value === '[...]' || value.startsWith('[')) continue
+        
+        // Good insight found!
+        insights.push({ label, value })
+        if (insights.length >= 4) break
+      }
+    }
+    
+    // If we didn't find enough label:value pairs, look for key sections
+    if (insights.length < 2) {
+      // Look for founded year, headquarters, etc in table format
+      const tableMatch = content.match(/\|\s*\*\*(.+?)\*\*\s*\|\s*(.+?)\s*\|/g)
+      if (tableMatch) {
+        for (const row of tableMatch) {
+          const match = row.match(/\|\s*\*\*(.+?)\*\*\s*\|\s*(.+?)\s*\|/)
+          if (match && match[2] && !match[2].startsWith('[')) {
+            const label = match[1].trim()
+            const value = match[2].trim()
+            if (value.length > 2 && !insights.some(i => i.label === label)) {
+              insights.push({ label, value })
+              if (insights.length >= 4) break
+            }
           }
         }
       }
-      if (insights.length >= 5) break
     }
     
-    return insights
+    return insights.slice(0, 4)
   }
   
   const keyInsights = getKeyInsights()
@@ -533,30 +567,20 @@ export default function ProspectHubPage() {
                   </div>
                   
                   {/* Insights Grid */}
-                  <div className="grid gap-3">
+                  <div className="grid gap-2.5">
                     {keyInsights.map((insight, i) => (
                       <div 
                         key={i} 
-                        className="flex items-start gap-3 p-3 rounded-lg bg-white/60 dark:bg-slate-900/40 backdrop-blur-sm border border-amber-100/50 dark:border-amber-800/30"
+                        className="flex items-start gap-3 p-3 rounded-lg bg-white/70 dark:bg-slate-900/50 backdrop-blur-sm border border-amber-100/60 dark:border-amber-800/40 hover:border-amber-200 dark:hover:border-amber-700/60 transition-colors"
                       >
-                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center flex-shrink-0 text-white text-xs font-bold shadow-sm">
-                          {i + 1}
-                        </div>
+                        <div className="w-2 h-2 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 mt-2 flex-shrink-0 shadow-sm" />
                         <div className="flex-1 min-w-0">
-                          {insight.label ? (
-                            <>
-                              <span className="font-semibold text-slate-900 dark:text-white text-sm">
-                                {insight.label}
-                              </span>
-                              <span className="text-slate-600 dark:text-slate-300 text-sm ml-1">
-                                {insight.value}
-                              </span>
-                            </>
-                          ) : (
-                            <span className="text-slate-700 dark:text-slate-300 text-sm">
-                              {insight.value}
-                            </span>
-                          )}
+                          <span className="font-semibold text-amber-900 dark:text-amber-200 text-sm">
+                            {insight.label}:
+                          </span>
+                          <span className="text-slate-700 dark:text-slate-300 text-sm ml-1.5">
+                            {insight.value}
+                          </span>
                         </div>
                       </div>
                     ))}
