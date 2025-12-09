@@ -840,7 +840,7 @@ export default function FollowupDetailPage() {
                   <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/50 dark:to-teal-950/50 p-5 shadow-sm">
                     <div className="flex items-start gap-3">
                       <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 flex-shrink-0">
-                        <Icons.messageSquare className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                        <Icons.message className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="text-sm font-semibold text-emerald-800 dark:text-emerald-200 mb-1">
