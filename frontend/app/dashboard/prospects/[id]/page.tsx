@@ -332,24 +332,33 @@ export default function ProspectHubPage() {
   const currentStepIndex = journeySteps.findIndex(s => !s.done)
   const nextStep = journeySteps[currentStepIndex] || null
   
-  // Extract key insights from research
-  const getKeyInsights = (): string[] => {
+  // Extract key insights from research - parse markdown bold/italic
+  const getKeyInsights = (): { label?: string; value: string }[] => {
     if (!research?.brief_content) return []
     
     const content = research.brief_content
     const lines = content.split('\n')
-    const insights: string[] = []
+    const insights: { label?: string; value: string }[] = []
     
     // Look for bullet points
     for (const line of lines) {
       const trimmed = line.trim()
       if ((trimmed.startsWith('•') || trimmed.startsWith('-') || trimmed.startsWith('*')) && trimmed.length > 10) {
-        const cleaned = trimmed.replace(/^[•\-\*]\s*/, '').trim()
-        if (cleaned.length > 15 && cleaned.length < 200) {
-          insights.push(cleaned)
+        let cleaned = trimmed.replace(/^[•\-\*]\s*/, '').trim()
+        
+        // Parse "**Label**: Value" or "*Label*: Value" patterns
+        const labelMatch = cleaned.match(/^\*\*(.+?)\*\*[:\s]+(.+)$/) || cleaned.match(/^\*(.+?)\*[:\s]+(.+)$/)
+        if (labelMatch) {
+          insights.push({ label: labelMatch[1], value: labelMatch[2] })
+        } else {
+          // Strip any remaining markdown
+          cleaned = cleaned.replace(/\*\*/g, '').replace(/\*/g, '')
+          if (cleaned.length > 15 && cleaned.length < 200) {
+            insights.push({ value: cleaned })
+          }
         }
       }
-      if (insights.length >= 4) break
+      if (insights.length >= 5) break
     }
     
     return insights
@@ -505,37 +514,70 @@ export default function ProspectHubPage() {
           {/* LEFT: Main Content (8 cols) */}
           <div className="lg:col-span-8 space-y-6">
             
-            {/* KEY INSIGHTS */}
+            {/* KEY INSIGHTS - Attractive gradient card */}
             {keyInsights.length > 0 && (
-              <Card className="border-purple-100 dark:border-purple-900/50">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Lightbulb className="w-5 h-5 text-amber-500" />
-                    {t('sections.keyInsights')}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <ul className="space-y-2">
+              <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 dark:from-amber-950/40 dark:via-orange-950/30 dark:to-yellow-950/20 border border-amber-200/60 dark:border-amber-800/40 shadow-sm">
+                {/* Decorative elements */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-200/30 to-orange-200/20 dark:from-amber-800/20 dark:to-orange-800/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-yellow-200/30 to-amber-200/20 dark:from-yellow-800/20 dark:to-amber-800/10 rounded-full blur-xl translate-y-1/2 -translate-x-1/2" />
+                
+                <div className="relative p-5">
+                  {/* Header */}
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/50">
+                      <Lightbulb className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    <h3 className="font-semibold text-slate-900 dark:text-white">
+                      {t('sections.keyInsights')}
+                    </h3>
+                  </div>
+                  
+                  {/* Insights Grid */}
+                  <div className="grid gap-3">
                     {keyInsights.map((insight, i) => (
-                      <li key={i} className="flex items-start gap-3 text-sm text-slate-700 dark:text-slate-300">
-                        <span className="w-1.5 h-1.5 rounded-full bg-purple-400 mt-2 flex-shrink-0" />
-                        <span>{insight}</span>
-                      </li>
+                      <div 
+                        key={i} 
+                        className="flex items-start gap-3 p-3 rounded-lg bg-white/60 dark:bg-slate-900/40 backdrop-blur-sm border border-amber-100/50 dark:border-amber-800/30"
+                      >
+                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center flex-shrink-0 text-white text-xs font-bold shadow-sm">
+                          {i + 1}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          {insight.label ? (
+                            <>
+                              <span className="font-semibold text-slate-900 dark:text-white text-sm">
+                                {insight.label}
+                              </span>
+                              <span className="text-slate-600 dark:text-slate-300 text-sm ml-1">
+                                {insight.value}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-slate-700 dark:text-slate-300 text-sm">
+                              {insight.value}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
+                  
+                  {/* Footer link */}
                   {research && (
-                    <Button 
-                      variant="link" 
-                      size="sm" 
-                      className="mt-3 p-0 h-auto text-purple-600"
-                      onClick={() => router.push(`/dashboard/research/${research.id}`)}
-                    >
-                      {t('actions.viewFullResearch')}
-                      <ExternalLink className="w-3 h-3 ml-1" />
-                    </Button>
+                    <div className="mt-4 pt-3 border-t border-amber-200/50 dark:border-amber-800/30">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 text-amber-700 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 hover:bg-amber-100/50 dark:hover:bg-amber-900/30"
+                        onClick={() => router.push(`/dashboard/research/${research.id}`)}
+                      >
+                        {t('actions.viewFullResearch')}
+                        <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
+                      </Button>
+                    </div>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
             
             {/* DOCUMENTS - Now with inline Sheet actions (SPEC-041) */}
