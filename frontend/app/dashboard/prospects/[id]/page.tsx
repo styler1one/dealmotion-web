@@ -961,9 +961,10 @@ export default function ProspectHubPage() {
               <ResearchForm
                 initialCompanyName={prospect.company_name}
                 initialCountry={prospect.country || ''}
-                onSuccess={() => {
+                onSuccess={(_result) => {
                   setResearchSheetOpen(false)
                   toast({ title: t('toast.researchStarted') })
+                  // Already on prospect hub, just refetch to show "In Progress"
                   refetchHubData()
                 }}
                 onCancel={() => setResearchSheetOpen(false)}

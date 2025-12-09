@@ -107,10 +107,9 @@ export default function ResearchPage() {
   }, [briefs, fetchBriefs])
 
   // Callback when research is started successfully
-  const handleResearchSuccess = () => {
-    fetchBriefs()
-    // Auto-refresh after 3 seconds to catch status updates
-    setTimeout(() => fetchBriefs(), 3000)
+  const handleResearchSuccess = (result: { id: string; prospect_id: string; company_name: string; status: string }) => {
+    // Navigate directly to the new prospect's hub
+    router.push(`/dashboard/prospects/${result.prospect_id}`)
   }
 
   if (loading) {

@@ -510,10 +510,16 @@ async def get_prospect_hub(
     
     prospect = prospect_result.data
     
-    # Get latest research
-    research_result = supabase.table("research_briefs").select("*").eq("prospect_id", str(prospect_id)).eq("status", "completed").order("completed_at", desc=True).limit(1).execute()
+    # Get latest research (any status - to show "in progress")
+    # First try completed research
+    completed_result = supabase.table("research_briefs").select("*").eq("prospect_id", str(prospect_id)).eq("status", "completed").order("completed_at", desc=True).limit(1).execute()
     
-    research = research_result.data[0] if research_result.data else None
+    if completed_result.data:
+        research = completed_result.data[0]
+    else:
+        # No completed, check for in-progress
+        in_progress_result = supabase.table("research_briefs").select("*").eq("prospect_id", str(prospect_id)).in_("status", ["pending", "researching"]).order("created_at", desc=True).limit(1).execute()
+        research = in_progress_result.data[0] if in_progress_result.data else None
     
     # Get contacts
     contacts_result = supabase.table("prospect_contacts").select("*").eq("prospect_id", str(prospect_id)).order("is_primary", desc=True).execute()
