@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
 import { api } from '@/lib/api'
+import { logger } from '@/lib/logger'
 
 interface UsageMetric {
   used: number
@@ -101,7 +102,7 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
       }
 
     } catch (err) {
-      console.error('Error fetching billing data:', err)
+      logger.error('Error fetching billing data', err, { source: 'BillingContext' })
       setError('Failed to load billing data')
     } finally {
       setLoading(false)
@@ -129,7 +130,7 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
 
       return { allowed: false, current: 0, limit: 0, upgrade_required: true }
     } catch (err) {
-      console.error('Error checking limit:', err)
+      logger.error('Error checking limit', err, { source: 'BillingContext' })
       return { allowed: false, current: 0, limit: 0, upgrade_required: true }
     }
   }
@@ -147,17 +148,17 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
       )
 
       if (error) {
-        console.error('Checkout API error:', error)
+        logger.error('Checkout API error', error, { source: 'BillingContext' })
         throw new Error(error.message || 'Checkout failed')
       }
 
       if (!data?.checkout_url) {
-        console.error('No checkout_url in response:', data)
+        logger.error('No checkout_url in response', data, { source: 'BillingContext' })
         throw new Error('No checkout URL returned from server')
       }
       return data.checkout_url
     } catch (err) {
-      console.error('Error creating checkout:', err)
+      logger.error('Error creating checkout', err, { source: 'BillingContext' })
       throw err
     }
   }
@@ -176,7 +177,7 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
 
       return data.portal_url
     } catch (err) {
-      console.error('Error opening portal:', err)
+      logger.error('Error opening portal', err, { source: 'BillingContext' })
       throw err
     }
   }

@@ -18,6 +18,7 @@ import {
 import { MarkdownEditor } from '@/components/markdown-editor'
 import { useTranslations } from 'next-intl'
 import { api } from '@/lib/api'
+import { logger } from '@/lib/logger'
 
 // Note: We use multiple translation namespaces for reusable strings
 import { exportAsMarkdown, exportAsPdf, exportAsDocx } from '@/lib/export-utils'
@@ -163,7 +164,7 @@ export default function FollowupDetailPage() {
         router.push('/dashboard/followup')
       }
     } catch (error) {
-      console.error('Error fetching followup:', error)
+      logger.error('Error fetching followup', error, { source: 'FollowupDetailPage' })
     } finally {
       setLoading(false)
     }
@@ -191,7 +192,7 @@ export default function FollowupDetailPage() {
         if (prep) setMeetingPrep(prep)
       }
     } catch (error) {
-      console.error('Error fetching related data:', error)
+      logger.error('Error fetching related data', error, { source: 'FollowupDetailPage' })
     }
   }
 
@@ -205,7 +206,7 @@ export default function FollowupDetailPage() {
         setLinkedContacts(data.contacts || [])
       }
     } catch (error) {
-      console.error('Failed to fetch linked contacts:', error)
+      logger.error('Failed to fetch linked contacts', error, { source: 'FollowupDetailPage' })
     }
   }
 
@@ -221,7 +222,7 @@ export default function FollowupDetailPage() {
         setLinkedDeal(data)
       }
     } catch (error) {
-      console.error('Failed to fetch linked deal:', error)
+      logger.error('Failed to fetch linked deal', error, { source: 'FollowupDetailPage' })
     }
   }
 
@@ -238,7 +239,7 @@ export default function FollowupDetailPage() {
       }
       return null
     } catch (error) {
-      console.error('Failed to fetch actions:', error)
+      logger.error('Failed to fetch actions', error, { source: 'FollowupDetailPage' })
       return null
     }
   }, [followupId])
@@ -337,7 +338,7 @@ export default function FollowupDetailPage() {
       // This prevents blocking the UI while waiting for refresh
       
     } catch (error) {
-      console.error('Failed to generate action:', error)
+      logger.error('Failed to generate action', error, { source: 'FollowupDetailPage' })
       
       // Check if it's an "already exists" error - refresh to show existing action
       const errorMessage = error instanceof Error ? error.message : ''
@@ -466,11 +467,11 @@ export default function FollowupDetailPage() {
       })
     }).then(response => {
       if (!response.ok) {
-        console.error('Regeneration failed:', response.status)
+        logger.error('Regeneration failed', { status: response.status }, { source: 'FollowupDetailPage' })
       }
       // Don't update React state - let polling handle it
     }).catch(error => {
-      console.error('Regeneration error:', error)
+      logger.error('Regeneration error', error, { source: 'FollowupDetailPage' })
     })
   }
 
@@ -614,7 +615,7 @@ export default function FollowupDetailPage() {
         description: t('detail.savedDesc')
       })
     } catch (err) {
-      console.error('Error saving summary:', err)
+      logger.error('Error saving summary', err, { source: 'FollowupDetailPage' })
       toast({
         title: t('detail.saveFailed'),
         description: t('detail.saveFailedDesc'),
@@ -692,7 +693,7 @@ export default function FollowupDetailPage() {
         description: tCommon('export.pdfDownloaded'),
       })
     } catch (error) {
-      console.error('PDF export failed:', error)
+      logger.error('PDF export failed', error, { source: 'FollowupDetailPage' })
       toast({
         variant: 'destructive',
         title: t('toast.failed'),
@@ -714,7 +715,7 @@ export default function FollowupDetailPage() {
         description: tCommon('export.wordDownloaded'),
       })
     } catch (error) {
-      console.error('DOCX export failed:', error)
+      logger.error('DOCX export failed', error, { source: 'FollowupDetailPage' })
       toast({
         variant: 'destructive',
         title: t('toast.failed'),

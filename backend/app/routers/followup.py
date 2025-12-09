@@ -16,6 +16,7 @@ from slowapi.util import get_remote_address
 
 from app.deps import get_current_user
 from app.database import get_supabase_service
+from app.utils.errors import handle_exception
 
 # Rate limiter
 limiter = Limiter(key_func=get_remote_address)
@@ -495,8 +496,7 @@ async def upload_audio(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error uploading audio: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise handle_exception(e, "followup_upload", user_id=user_id)
 
 
 # Background task for transcript processing (sync wrapper for BackgroundTasks)
@@ -830,8 +830,7 @@ async def upload_transcript(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error uploading transcript: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise handle_exception(e, "transcript_upload", user_id=user_id)
 
 
 @router.get("/list", response_model=List[Dict[str, Any]])
@@ -869,8 +868,7 @@ async def list_followups(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error listing followups: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise handle_exception(e, "list_followups", user_id=user_id)
 
 
 @router.get("/{followup_id}", response_model=Dict[str, Any])
@@ -907,8 +905,7 @@ async def get_followup(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error getting followup: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise handle_exception(e, "get_followup", user_id=user_id, resource_id=followup_id)
 
 
 @router.patch("/{followup_id}", response_model=Dict[str, Any])
@@ -964,8 +961,7 @@ async def update_followup(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error updating followup: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise handle_exception(e, "update_followup", user_id=user_id, resource_id=followup_id)
 
 
 @router.delete("/{followup_id}")
@@ -1017,8 +1013,7 @@ async def delete_followup(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error deleting followup: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise handle_exception(e, "delete_followup", user_id=user_id, resource_id=followup_id)
 
 
 @router.post("/{followup_id}/regenerate-email", response_model=Dict[str, Any])
@@ -1104,6 +1099,5 @@ async def regenerate_email(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error regenerating email: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise handle_exception(e, "regenerate_email", user_id=user_id, resource_id=followup_id)
 

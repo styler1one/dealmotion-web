@@ -28,6 +28,7 @@ import {
 import { useTranslations } from 'next-intl'
 import { useToast } from '@/components/ui/use-toast'
 import { api } from '@/lib/api'
+import { logger } from '@/lib/logger'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -170,7 +171,7 @@ export default function MeetingsPage() {
       
       setMeetings(data?.meetings || [])
     } catch (err) {
-      console.error('Failed to load meetings:', err)
+      logger.error('Failed to load meetings', err, { source: 'MeetingsPage' })
       setError(err instanceof Error ? err.message : 'Failed to load meetings')
     } finally {
       setLoading(false)
@@ -205,7 +206,7 @@ export default function MeetingsPage() {
       // Reload meetings
       loadMeetings()
     } catch (err) {
-      console.error('Sync failed:', err)
+      logger.error('Sync failed', err, { source: 'MeetingsPage' })
       toast({
         title: 'Sync failed',
         description: err instanceof Error ? err.message : 'Unknown error',
@@ -230,7 +231,7 @@ export default function MeetingsPage() {
         setSuggestedMatches(prev => ({ ...prev, [meetingId]: data.matches }))
       }
     } catch (err) {
-      console.error('Failed to load matches:', err)
+      logger.error('Failed to load matches', err, { source: 'MeetingsPage' })
     } finally {
       setLoadingMatches(prev => ({ ...prev, [meetingId]: false }))
     }
@@ -256,7 +257,7 @@ export default function MeetingsPage() {
       // Reload meetings to reflect the change
       loadMeetings()
     } catch (err) {
-      console.error('Link failed:', err)
+      logger.error('Link failed', err, { source: 'MeetingsPage' })
       toast({
         title: 'Failed to link',
         description: err instanceof Error ? err.message : 'Unknown error',
@@ -286,7 +287,7 @@ export default function MeetingsPage() {
       // Reload meetings
       loadMeetings()
     } catch (err) {
-      console.error('Unlink failed:', err)
+      logger.error('Unlink failed', err, { source: 'MeetingsPage' })
       toast({
         title: 'Failed to unlink',
         description: err instanceof Error ? err.message : 'Unknown error',

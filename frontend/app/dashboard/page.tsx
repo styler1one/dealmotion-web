@@ -9,6 +9,7 @@ import { DashboardLayout } from '@/components/layout'
 import { useTranslations, useLocale } from 'next-intl'
 import { api } from '@/lib/api'
 import { useBilling } from '@/lib/billing-context'
+import { logger } from '@/lib/logger'
 import type { User } from '@supabase/supabase-js'
 import type { SalesProfile, CompanyProfile, KBFile, ResearchBrief, MeetingPrep, Followup } from '@/types'
 
@@ -113,7 +114,7 @@ export default function DashboardPage() {
                     if (!followupsRes.error && followupsRes.data) setFollowups(followupsRes.data || [])
                     if (!activityRes.error && activityRes.data) setActivities(activityRes.data.activities || [])
                 } catch (error) {
-                    console.error('Failed to load data:', error)
+                    logger.error('Failed to load data', error, { source: 'DashboardPage' })
                 }
             }
 

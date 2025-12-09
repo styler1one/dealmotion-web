@@ -12,6 +12,7 @@ from typing import Optional, List, Dict, Any
 
 from app.deps import get_current_user
 from app.database import get_supabase_service
+from app.utils.errors import handle_exception
 from app.services.subscription_service import get_subscription_service
 from app.services.usage_service import get_usage_service
 from app.services.flow_pack_service import get_flow_pack_service
@@ -160,8 +161,7 @@ async def get_subscription(current_user: dict = Depends(get_current_user)):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error getting subscription: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise handle_exception(e, "get_subscription", user_id=user_id, organization_id=organization_id)
 
 
 @router.get("/plans", response_model=List[PlanResponse])
@@ -181,8 +181,7 @@ async def get_plans(
         return plans
         
     except Exception as e:
-        logger.error(f"Error getting plans: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise handle_exception(e, "get_plans")
 
 
 # ==========================================
@@ -230,8 +229,7 @@ async def create_checkout(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Error creating checkout: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise handle_exception(e, "create_checkout", user_id=user_id)
 
 
 @router.post("/portal", response_model=PortalResponse)

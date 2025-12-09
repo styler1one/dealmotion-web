@@ -13,6 +13,7 @@ from slowapi.util import get_remote_address
 logger = logging.getLogger(__name__)
 
 from app.deps import get_current_user, get_auth_token
+from app.utils.errors import handle_exception
 
 # Get limiter from app state
 limiter = Limiter(key_func=get_remote_address)
@@ -364,7 +365,7 @@ async def start_research(
         )
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to start research: {str(e)}")
+        raise handle_exception(e, "start_research", user_id=user_id)
 
 
 @router.get("/briefs")
@@ -473,7 +474,7 @@ async def delete_research(
         return Response(status_code=204)
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Delete failed: {str(e)}")
+        raise handle_exception(e, "delete_research", user_id=user_id, resource_id=research_id)
 
 
 @router.get("/{research_id}/brief")
@@ -557,7 +558,7 @@ async def update_research_brief(
         }
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Update failed: {str(e)}")
+        raise handle_exception(e, "update_research", user_id=user_id, resource_id=research_id)
 
 
 @router.post("/lookup", response_model=LookupResponse)

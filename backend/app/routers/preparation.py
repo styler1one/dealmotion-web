@@ -13,6 +13,7 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from app.deps import get_current_user
 from app.database import get_supabase_service
+from app.utils.errors import handle_exception
 
 # Rate limiter
 limiter = Limiter(key_func=get_remote_address)
@@ -313,8 +314,7 @@ async def start_prep(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error starting prep: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise handle_exception(e, "start_prep", user_id=user_id)
 
 
 @router.get("/briefs", response_model=PrepListResponse)
@@ -369,8 +369,7 @@ async def list_preps(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error listing preps: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise handle_exception(e, "list_preps", user_id=user_id)
 
 
 @router.get("/{prep_id}", response_model=dict)
@@ -407,8 +406,7 @@ async def get_prep(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error getting prep: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise handle_exception(e, "get_prep", user_id=user_id, resource_id=prep_id)
 
 
 class UpdatePrepRequest(BaseModel):
@@ -460,8 +458,7 @@ async def update_prep(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error updating prep: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise handle_exception(e, "update_prep", user_id=user_id, resource_id=prep_id)
 
 
 @router.delete("/{prep_id}", status_code=204)
@@ -503,5 +500,4 @@ async def delete_prep(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error deleting prep: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise handle_exception(e, "delete_prep", user_id=user_id, resource_id=prep_id)

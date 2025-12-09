@@ -46,6 +46,7 @@ import { Switch } from '@/components/ui/switch'
 import { useBilling } from '@/lib/billing-context'
 import { UsageMeter } from '@/components/usage-meter'
 import { api } from '@/lib/api'
+import { logger } from '@/lib/logger'
 import { useConfirmDialog } from '@/components/confirm-dialog'
 import type { User } from '@supabase/supabase-js'
 
@@ -144,7 +145,7 @@ export default function SettingsPage() {
           setCoachEnabled(data.is_enabled)
         }
       } catch (err) {
-        console.error('Failed to fetch coach settings:', err)
+        logger.error('Failed to fetch coach settings', err, { source: 'SettingsPage' })
       } finally {
         setCoachSettingsLoading(false)
       }
@@ -162,7 +163,7 @@ export default function SettingsPage() {
           setOriginalStyleGuide(data)
         }
       } catch (err) {
-        console.error('Failed to fetch style guide:', err)
+        logger.error('Failed to fetch style guide', err, { source: 'SettingsPage' })
       } finally {
         setStyleGuideLoading(false)
       }
@@ -182,7 +183,7 @@ export default function SettingsPage() {
         setCalendarStatus(data)
       }
     } catch (err) {
-      console.error('Failed to fetch calendar status:', err)
+      logger.error('Failed to fetch calendar status', err, { source: 'SettingsPage' })
       setCalendarError('Failed to load calendar status')
     } finally {
       setCalendarLoading(false)
@@ -202,7 +203,7 @@ export default function SettingsPage() {
         setIntegrationsStatus(data)
       }
     } catch (err) {
-      console.error('Failed to fetch integrations status:', err)
+      logger.error('Failed to fetch integrations status', err, { source: 'SettingsPage' })
     } finally {
       setIntegrationsLoading(false)
     }
@@ -244,7 +245,7 @@ export default function SettingsPage() {
       fetchIntegrationsStatus()
       
     } catch (err) {
-      console.error('Fireflies connect failed:', err)
+      logger.error('Fireflies connect failed', err, { source: 'SettingsPage' })
       toast({
         title: tErrors('generic'),
         description: err instanceof Error ? err.message : 'Failed to connect Fireflies',
@@ -281,7 +282,7 @@ export default function SettingsPage() {
       fetchIntegrationsStatus()
       
     } catch (err) {
-      console.error('Fireflies disconnect failed:', err)
+      logger.error('Fireflies disconnect failed', err, { source: 'SettingsPage' })
       toast({
         title: tErrors('generic'),
         description: err instanceof Error ? err.message : 'Failed to disconnect',
@@ -329,7 +330,7 @@ export default function SettingsPage() {
       }, 500)
       
     } catch (err) {
-      console.error('Failed to start Google OAuth:', err)
+      logger.error('Failed to start Google OAuth', err, { source: 'SettingsPage' })
       toast({
         title: tErrors('generic'),
         description: tIntegrations('status.error'),
@@ -407,7 +408,7 @@ export default function SettingsPage() {
       )
       
     } catch (err) {
-      console.error('Failed to start Microsoft OAuth:', err)
+      logger.error('Failed to start Microsoft OAuth', err, { source: 'SettingsPage' })
       toast({
         title: tErrors('generic'),
         description: tIntegrations('status.error'),
@@ -441,7 +442,7 @@ export default function SettingsPage() {
       fetchCalendarStatus()
       
     } catch (err) {
-      console.error('Calendar sync failed:', err)
+      logger.error('Calendar sync failed', err, { source: 'SettingsPage' })
       toast({
         title: tErrors('generic'),
         description: err instanceof Error ? err.message : 'Sync failed',
@@ -482,7 +483,7 @@ export default function SettingsPage() {
       fetchCalendarStatus()
       
     } catch (err) {
-      console.error('Calendar disconnect failed:', err)
+      logger.error('Calendar disconnect failed', err, { source: 'SettingsPage' })
       toast({
         title: tIntegrations('calendar.disconnectFailed'),
         description: err instanceof Error ? err.message : 'Disconnect failed',
@@ -551,7 +552,7 @@ export default function SettingsPage() {
         }, 500)
       }
     } catch (error) {
-      console.error('Failed to save settings:', error)
+      logger.error('Failed to save settings', error, { source: 'SettingsPage' })
       toast({
         title: t('error'),
         description: t('errorDesc'),
@@ -578,7 +579,7 @@ export default function SettingsPage() {
         throw new Error('No checkout URL returned')
       }
     } catch (error) {
-      console.error('Failed to start checkout:', error)
+      logger.error('Failed to start checkout', error, { source: 'SettingsPage' })
       toast({
         title: tErrors('generic'),
         description: error instanceof Error ? error.message : tBilling('checkoutError'),
@@ -595,7 +596,7 @@ export default function SettingsPage() {
       const portalUrl = await openBillingPortal()
       window.location.href = portalUrl
     } catch (error) {
-      console.error('Failed to open portal:', error)
+      logger.error('Failed to open portal', error, { source: 'SettingsPage' })
       toast({
         title: tErrors('generic'),
         description: tBilling('portalError'),
@@ -631,7 +632,7 @@ export default function SettingsPage() {
       // Reload page to ensure coach widget updates
       window.location.reload()
     } catch (error) {
-      console.error('Failed to toggle coach:', error)
+      logger.error('Failed to toggle coach', error, { source: 'SettingsPage' })
       toast({
         title: tErrors('generic'),
         variant: 'destructive',
@@ -657,7 +658,7 @@ export default function SettingsPage() {
       // Refresh the page to reset all coach state
       window.location.reload()
     } catch (error) {
-      console.error('Failed to reset coach:', error)
+      logger.error('Failed to reset coach', error, { source: 'SettingsPage' })
       toast({
         title: tErrors('generic'),
         variant: 'destructive',
@@ -688,7 +689,7 @@ export default function SettingsPage() {
         description: t('style.savedDesc'),
       })
     } catch (error) {
-      console.error('Failed to save style guide:', error)
+      logger.error('Failed to save style guide', error, { source: 'SettingsPage' })
       toast({
         title: tErrors('generic'),
         variant: 'destructive',

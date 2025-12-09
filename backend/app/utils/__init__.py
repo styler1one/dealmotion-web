@@ -13,7 +13,17 @@ from .timeout import (
     DEFAULT_AI_TIMEOUT,
 )
 
+from .errors import (
+    handle_exception,
+    raise_not_found,
+    raise_forbidden,
+    raise_validation_error,
+    AppError,
+    ErrorCodes,
+)
+
 __all__ = [
+    # Timeout utilities
     "with_timeout",
     "timeout_decorator",
     "claude_with_timeout",
@@ -22,5 +32,12 @@ __all__ = [
     "transcription_with_timeout",
     "AITimeoutError",
     "DEFAULT_AI_TIMEOUT",
+    # Error handling utilities
+    "handle_exception",
+    "raise_not_found",
+    "raise_forbidden",
+    "raise_validation_error",
+    "AppError",
+    "ErrorCodes",
 ]
 

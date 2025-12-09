@@ -10,6 +10,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
 import { api } from '@/lib/api'
+import { logger } from '@/lib/logger'
 import type {
   CoachContextValue,
   CoachSettings,
@@ -75,7 +76,7 @@ export function CoachProvider({ children }: CoachProviderProps) {
         setWidgetStateInternal(data.widget_state || 'minimized')
       }
     } catch (err) {
-      console.error('Failed to fetch coach settings:', err)
+      logger.error('Failed to fetch coach settings', err, { source: 'CoachProvider' })
     }
   }, [])
   
@@ -97,7 +98,7 @@ export function CoachProvider({ children }: CoachProviderProps) {
         setSuggestions(activeSuggestions)
       }
     } catch (err) {
-      console.error('Failed to fetch suggestions:', err)
+      logger.error('Failed to fetch suggestions', err, { source: 'CoachProvider' })
     }
   }, [])
   
@@ -108,7 +109,7 @@ export function CoachProvider({ children }: CoachProviderProps) {
         setStats(data)
       }
     } catch (err) {
-      console.error('Failed to fetch coach stats:', err)
+      logger.error('Failed to fetch coach stats', err, { source: 'CoachProvider' })
     }
   }, [])
   
@@ -125,7 +126,7 @@ export function CoachProvider({ children }: CoachProviderProps) {
       await api.post(`/api/v1/coach/suggestions/${id}/action`, { action: 'dismissed' })
       setSuggestions(prev => prev.filter(s => s.id !== id))
     } catch (err) {
-      console.error('Failed to dismiss suggestion:', err)
+      logger.error('Failed to dismiss suggestion', err, { source: 'CoachProvider' })
     }
   }, [])
   
@@ -140,7 +141,7 @@ export function CoachProvider({ children }: CoachProviderProps) {
       })
       setSuggestions(prev => prev.filter(s => s.id !== id))
     } catch (err) {
-      console.error('Failed to snooze suggestion:', err)
+      logger.error('Failed to snooze suggestion', err, { source: 'CoachProvider' })
     }
   }, [])
   
@@ -149,7 +150,7 @@ export function CoachProvider({ children }: CoachProviderProps) {
       await api.post(`/api/v1/coach/suggestions/${id}/action`, { action: 'clicked' })
       // Don't remove from list - user might want to see it again
     } catch (err) {
-      console.error('Failed to record suggestion click:', err)
+      logger.error('Failed to record suggestion click', err, { source: 'CoachProvider' })
     }
   }, [])
   
@@ -181,7 +182,7 @@ export function CoachProvider({ children }: CoachProviderProps) {
         }
       }
     } catch (err) {
-      console.error('Failed to update coach settings:', err)
+      logger.error('Failed to update coach settings', err, { source: 'CoachProvider' })
     }
   }, [])
   
