@@ -1377,6 +1377,9 @@
       "placeholder": "Add a quick note...",
       "empty": "No notes yet"
     },
+    "status": {
+      "inProgress": "In Progress"
+    },
     "actions": {
       "backToProspects": "Back to Prospects",
       "viewFullResearch": "View full research",

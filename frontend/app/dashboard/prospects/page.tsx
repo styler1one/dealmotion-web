@@ -450,14 +450,11 @@ export default function ProspectsPage() {
             </SheetHeader>
             <div className="mt-6">
               <ResearchForm
-                onSuccess={() => {
+                onSuccess={(result) => {
                   setResearchSheetOpen(false)
                   toast({ title: t('toast.researchStarted') })
-                  // Refresh prospects list after a delay (research creates prospect)
-                  setTimeout(() => {
-                    fetchProspects()
-                    fetchStats()
-                  }, 2000)
+                  // Navigate directly to the new prospect's hub
+                  router.push(`/dashboard/prospects/${result.prospect_id}`)
                 }}
                 onCancel={() => setResearchSheetOpen(false)}
                 isSheet={true}

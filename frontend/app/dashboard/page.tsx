@@ -856,14 +856,14 @@ export default function DashboardPage() {
                         </SheetHeader>
                         <div className="mt-6">
                             <ResearchForm
-                                onSuccess={() => {
+                                onSuccess={(result) => {
                                     setResearchSheetOpen(false)
                                     toast({ 
                                         title: t('toast.researchStarted'),
                                         description: t('toast.researchStartedDesc')
                                     })
-                                    // Navigate to prospects after research starts
-                                    setTimeout(() => router.push('/dashboard/prospects'), 1500)
+                                    // Navigate directly to the new prospect's hub
+                                    router.push(`/dashboard/prospects/${result.prospect_id}`)
                                 }}
                                 onCancel={() => setResearchSheetOpen(false)}
                                 isSheet={true}

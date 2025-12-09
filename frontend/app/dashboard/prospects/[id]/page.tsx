@@ -644,9 +644,14 @@ export default function ProspectHubPage() {
                   <DocumentRow
                     icon={<Search className="w-4 h-4" />}
                     label={t('documents.research')}
-                    status={research ? 'completed' : 'empty'}
+                    status={
+                      research?.status === 'completed' ? 'completed' :
+                      research?.status === 'pending' || research?.status === 'researching' ? 'in_progress' :
+                      'empty'
+                    }
+                    statusLabel={research?.status === 'pending' || research?.status === 'researching' ? t('status.inProgress') : undefined}
                     date={research?.completed_at}
-                    onClick={research ? () => router.push(`/dashboard/research/${research.id}`) : undefined}
+                    onClick={research?.status === 'completed' ? () => router.push(`/dashboard/research/${research.id}`) : undefined}
                     actionLabel={!research ? t('actions.create') : undefined}
                     onAction={!research ? () => setResearchSheetOpen(true) : undefined}
                   />
@@ -1053,7 +1058,8 @@ export default function ProspectHubPage() {
 interface DocumentRowProps {
   icon: React.ReactNode
   label: string
-  status: 'completed' | 'empty'
+  status: 'completed' | 'in_progress' | 'empty'
+  statusLabel?: string  // Label for in_progress status
   date?: string
   count?: number
   onClick?: () => void
@@ -1061,21 +1067,25 @@ interface DocumentRowProps {
   onAction?: () => void
 }
 
-function DocumentRow({ icon, label, status, date, count, onClick, actionLabel, onAction }: DocumentRowProps) {
+function DocumentRow({ icon, label, status, statusLabel, date, count, onClick, actionLabel, onAction }: DocumentRowProps) {
   return (
     <div 
       className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
         status === 'completed' 
           ? 'bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 cursor-pointer' 
-          : 'bg-slate-50 dark:bg-slate-800/50'
+          : status === 'in_progress'
+            ? 'bg-blue-50 dark:bg-blue-900/20'
+            : 'bg-slate-50 dark:bg-slate-800/50'
       }`}
-      onClick={onClick}
+      onClick={status === 'completed' ? onClick : undefined}
     >
       <div className="flex items-center gap-3">
         <div className={`p-2 rounded-lg ${
           status === 'completed' 
             ? 'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400' 
-            : 'bg-slate-200 dark:bg-slate-700 text-slate-400'
+            : status === 'in_progress'
+              ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400'
+              : 'bg-slate-200 dark:bg-slate-700 text-slate-400'
         }`}>
           {icon}
         </div>
@@ -1083,7 +1093,9 @@ function DocumentRow({ icon, label, status, date, count, onClick, actionLabel, o
           <p className={`text-sm font-medium ${
             status === 'completed' 
               ? 'text-slate-900 dark:text-white' 
-              : 'text-slate-500 dark:text-slate-400'
+              : status === 'in_progress'
+                ? 'text-blue-700 dark:text-blue-300'
+                : 'text-slate-500 dark:text-slate-400'
           }`}>
             {label}
             {count !== undefined && count > 0 && (
@@ -1103,7 +1115,13 @@ function DocumentRow({ icon, label, status, date, count, onClick, actionLabel, o
             <ChevronRight className="w-4 h-4 text-slate-400" />
           </>
         )}
-        {actionLabel && onAction && (
+        {status === 'in_progress' && (
+          <span className="flex items-center gap-1.5 text-xs font-medium text-blue-600 dark:text-blue-400">
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            {statusLabel || 'In Progress'}
+          </span>
+        )}
+        {status === 'empty' && actionLabel && onAction && (
           <Button 
             variant="outline" 
             size="sm"
@@ -1116,7 +1134,7 @@ function DocumentRow({ icon, label, status, date, count, onClick, actionLabel, o
             {actionLabel}
           </Button>
         )}
-        {status !== 'completed' && !onAction && (
+        {status === 'empty' && !onAction && (
           <Circle className="w-4 h-4 text-slate-300 dark:text-slate-600" />
         )}
       </div>

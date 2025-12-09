@@ -16,13 +16,20 @@ import { logger } from '@/lib/logger'
 import { getErrorMessage } from '@/lib/error-utils'
 import type { CompanyOption } from '@/types'
 
+interface ResearchStartResult {
+  id: string
+  prospect_id: string
+  company_name: string
+  status: string
+}
+
 interface ResearchFormProps {
   // Pre-filled values (optional, for Hub context)
   initialCompanyName?: string
   initialCountry?: string
   
   // Callbacks
-  onSuccess?: () => void
+  onSuccess?: (result: ResearchStartResult) => void
   onCancel?: () => void
   
   // Mode
@@ -194,7 +201,7 @@ export function ResearchForm({
         throw new Error('Not authenticated')
       }
 
-      const { error } = await api.post('/api/v1/research/start', {
+      const { data, error } = await api.post<ResearchStartResult>('/api/v1/research/start', {
         company_name: companyName,
         company_linkedin_url: linkedinUrl || null,
         company_website_url: websiteUrl || null,
@@ -203,8 +210,8 @@ export function ResearchForm({
         language: outputLanguage
       })
 
-      if (error) {
-        throw new Error(error.message || 'Research failed')
+      if (error || !data) {
+        throw new Error(error?.message || 'Research failed')
       }
 
       // Clear form
@@ -222,8 +229,8 @@ export function ResearchForm({
         description: t('toast.startedDesc'),
       })
       
-      // Call success callback
-      onSuccess?.()
+      // Call success callback with result data
+      onSuccess?.(data)
     } catch (error) {
       logger.error('Research failed', error)
       toast({
