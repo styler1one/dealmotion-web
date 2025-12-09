@@ -205,7 +205,8 @@
       "city": "City",
       "cityPlaceholder": "e.g. Amsterdam",
       "startResearch": "Start Research",
-      "researching": "Analyzing..."
+      "researching": "Analyzing...",
+      "cancel": "Cancel"
     },
     "validation": {
       "companyNameTooShort": "Company name too short",
@@ -426,8 +427,10 @@
       "customNotes": "Extra Context",
       "customNotesPlaceholder": "Optional: extra info for this meeting...",
       "startPrep": "Generate Preparation",
-      "generating": "Generating..."
+      "generating": "Generating...",
+      "cancel": "Cancel"
     },
+    "loading": "Loading...",
     "history": {
       "title": "My Preparations",
       "empty": "No preparations yet",
@@ -606,7 +609,8 @@
       "processing": "Processing...",
       "subject": "Subject",
       "subjectPlaceholder": "E.g. Demo call",
-      "date": "Date"
+      "date": "Date",
+      "cancel": "Cancel"
     },
     "history": {
       "title": "Analyzed Meetings",
