@@ -749,7 +749,8 @@ export default function ProspectHubPage() {
                               if (meeting.prep_status?.has_prep && meeting.prep_status.prep_id) {
                                 router.push(`/dashboard/preparation/${meeting.prep_status.prep_id}`)
                               } else {
-                                router.push(`/dashboard/preparation?prospect_id=${prospectId}&meeting_date=${meeting.start_time}`)
+                                // Open prep sheet instead of navigating
+                                setPrepSheetOpen(true)
                               }
                             }}
                           >
