@@ -1,16 +1,21 @@
 -- ============================================================
 -- DealMotion Complete Database Schema
--- Version: 3.7
--- Last Updated: 7 December 2025
+-- Version: 3.8
+-- Last Updated: 9 December 2025
 -- 
 -- This file consolidates ALL migrations into a single schema.
 -- Use this as reference documentation - DO NOT run on existing DB!
 -- 
 -- COUNTS:
--- - Tables: 44 (+4 calendar/recording tables)
+-- - Tables: 45 (+1 mobile_recordings)
 -- - Functions: 42 (+8 admin functions)
--- - Triggers: 36 (+4 calendar/recording triggers)
--- - Indexes: 193 (+18 calendar/recording indexes)
+-- - Triggers: 37 (+1 mobile_recordings trigger)
+-- - Indexes: 196 (+3 mobile_recordings indexes)
+-- 
+-- Changes in 3.8:
+-- - Added mobile_recordings table (for PWA/mobile app recordings)
+-- - Added recordings storage bucket
+-- - Added RLS policies for mobile_recordings
 -- 
 -- Changes in 3.7:
 -- - Added calendar_connections table (OAuth tokens for Google/Microsoft)
@@ -2712,18 +2717,114 @@ CREATE TRIGGER update_external_recordings_updated_at
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================================
+-- 49. MOBILE RECORDINGS (Recordings from mobile/PWA app)
+-- ============================================================
+-- Stores recordings made via the DealMotion mobile app or PWA.
+-- These are uploaded and processed into followups for AI analysis.
+
+CREATE TABLE IF NOT EXISTS mobile_recordings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    
+    -- Prospect link (optional)
+    prospect_id UUID REFERENCES prospects(id) ON DELETE SET NULL,
+    
+    -- File info
+    storage_path TEXT NOT NULL,
+    original_filename TEXT,
+    file_size_bytes INTEGER NOT NULL DEFAULT 0,
+    duration_seconds INTEGER NOT NULL DEFAULT 0,
+    
+    -- Mobile sync
+    local_recording_id TEXT NOT NULL,  -- ID from mobile app for deduplication
+    source TEXT NOT NULL DEFAULT 'mobile_app',  -- 'mobile_app', 'pwa', 'browser'
+    
+    -- Processing status
+    status TEXT NOT NULL DEFAULT 'pending' 
+        CHECK (status IN ('pending', 'processing', 'completed', 'failed')),
+    error TEXT,
+    
+    -- Link to followup when imported/processed
+    followup_id UUID REFERENCES followups(id) ON DELETE SET NULL,
+    
+    -- Timestamps
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    processed_at TIMESTAMPTZ,
+    
+    -- Unique constraint: one local_recording_id per organization
+    UNIQUE(organization_id, local_recording_id)
+);
+
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_mobile_recordings_org ON mobile_recordings(organization_id);
+CREATE INDEX IF NOT EXISTS idx_mobile_recordings_user ON mobile_recordings(user_id);
+CREATE INDEX IF NOT EXISTS idx_mobile_recordings_status ON mobile_recordings(status);
+
+-- RLS
+ALTER TABLE mobile_recordings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own org recordings" ON mobile_recordings
+    FOR SELECT USING (organization_id IN (
+        SELECT organization_id FROM organization_members WHERE user_id = (SELECT auth.uid())
+    ));
+
+CREATE POLICY "Users can insert recordings" ON mobile_recordings
+    FOR INSERT WITH CHECK (user_id = (SELECT auth.uid()));
+
+CREATE POLICY "Users can update own recordings" ON mobile_recordings
+    FOR UPDATE USING (user_id = (SELECT auth.uid()));
+
+CREATE POLICY "Users can delete own recordings" ON mobile_recordings
+    FOR DELETE USING (user_id = (SELECT auth.uid()));
+
+-- Trigger for updated_at
+DROP TRIGGER IF EXISTS update_mobile_recordings_updated_at ON mobile_recordings;
+CREATE TRIGGER update_mobile_recordings_updated_at
+    BEFORE UPDATE ON mobile_recordings
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================================
+-- STORAGE BUCKET: recordings (for mobile app uploads)
+-- ============================================================
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('recordings', 'recordings', false)
+ON CONFLICT (id) DO NOTHING;
+
+CREATE POLICY "Users can upload recordings"
+    ON storage.objects FOR INSERT
+    TO authenticated
+    WITH CHECK (bucket_id = 'recordings');
+
+CREATE POLICY "Users can read recordings"
+    ON storage.objects FOR SELECT
+    TO authenticated
+    USING (bucket_id = 'recordings');
+
+CREATE POLICY "Users can delete recordings"
+    ON storage.objects FOR DELETE
+    TO authenticated
+    USING (bucket_id = 'recordings');
+
+-- ============================================================
 -- END OF SCHEMA
 -- ============================================================
--- Version: 3.7
--- Last Updated: 7 December 2025
+-- Version: 3.8
+-- Last Updated: 9 December 2025
+-- 
+-- Changes in 3.8:
+-- - Added mobile_recordings table (for PWA/mobile app recordings)
+-- - Added recordings storage bucket
+-- - Added RLS policies for mobile_recordings
 -- 
 -- Summary:
--- - Tables: 44 (36 + 4 admin + 4 calendar/recording)
+-- - Tables: 45 (36 + 4 admin + 4 calendar/recording + 1 mobile)
 -- - Views: 2
 -- - Functions: 42 (34 + 8 admin)
--- - Triggers: 36 (31 + 1 admin + 4 calendar/recording)
--- - Storage Buckets: 3 (with policies)
--- - Indexes: 193 (169 + 6 admin + 18 calendar/recording)
+-- - Triggers: 37 (31 + 1 admin + 4 calendar/recording + 1 mobile)
+-- - Storage Buckets: 4 (with policies)
+-- - Indexes: 196 (169 + 6 admin + 18 calendar/recording + 3 mobile)
 -- 
 -- This file is for REFERENCE ONLY. Do not run on existing database!
 -- Use individual migration files for updates.
