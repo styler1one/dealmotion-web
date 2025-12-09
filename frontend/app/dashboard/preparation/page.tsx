@@ -1,26 +1,21 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Icons } from '@/components/icons'
 import { useToast } from '@/components/ui/use-toast'
 import { Toaster } from '@/components/ui/toaster'
 import { DashboardLayout } from '@/components/layout'
-import { ProspectAutocomplete } from '@/components/prospect-autocomplete'
-import { LanguageSelect } from '@/components/language-select'
 import { useTranslations } from 'next-intl'
 import { useSettings } from '@/lib/settings-context'
 import { api } from '@/lib/api'
 import { formatDate } from '@/lib/date-utils'
 import { useConfirmDialog } from '@/components/confirm-dialog'
+import { logger } from '@/lib/logger'
+import { PreparationForm } from '@/components/forms'
 import type { User } from '@supabase/supabase-js'
-import type { ProspectContact, Deal } from '@/types'
 
 interface MeetingPrep {
   id: string
@@ -44,39 +39,14 @@ export default function PreparationPage() {
   const { toast } = useToast()
   const { confirm } = useConfirmDialog()
   const t = useTranslations('preparation')
-  const tLang = useTranslations('language')
-  const { settings, loaded: settingsLoaded } = useSettings()
+  const { settings } = useSettings()
 
   const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(false)
   const [preps, setPreps] = useState<MeetingPrep[]>([])
   const [initialLoading, setInitialLoading] = useState(true)
-
-  // Form state
-  const [companyName, setCompanyName] = useState('')
-  const [meetingType, setMeetingType] = useState('discovery')
-  const [customNotes, setCustomNotes] = useState('')
-  const [outputLanguage, setOutputLanguage] = useState('en')
-  const [showAdvanced, setShowAdvanced] = useState(false)
   
-  // Set language from settings on load
-  useEffect(() => {
-    if (settingsLoaded) {
-      setOutputLanguage(settings.output_language)
-    }
-  }, [settingsLoaded, settings.output_language])
-  
-  // Contact persons state
-  const [availableContacts, setAvailableContacts] = useState<ProspectContact[]>([])
-  const [selectedContactIds, setSelectedContactIds] = useState<string[]>([])
-  const [contactsLoading, setContactsLoading] = useState(false)
-  
-  // Deal linking state
-  const [availableDeals, setAvailableDeals] = useState<Deal[]>([])
-  const [selectedDealId, setSelectedDealId] = useState<string>('')
-  const [dealsLoading, setDealsLoading] = useState(false)
-  
-  // Calendar meeting linking state (SPEC-038)
+  // Pre-filled values from navigation
+  const [initialCompanyName, setInitialCompanyName] = useState('')
   const [calendarMeetingId, setCalendarMeetingId] = useState<string | null>(null)
 
   // Get user for display (non-blocking) and load preps in parallel
@@ -90,7 +60,7 @@ export default function PreparationPage() {
     // Check for pre-selected company from Research or Meetings page
     const prepareFor = sessionStorage.getItem('prepareForCompany')
     if (prepareFor) {
-      setCompanyName(prepareFor)
+      setInitialCompanyName(prepareFor)
       sessionStorage.removeItem('prepareForCompany')
     }
     
@@ -119,136 +89,24 @@ export default function PreparationPage() {
 
   const loadPreps = async () => {
     try {
-      // Note: api client handles authentication automatically
       const { data, error } = await api.get<{ preps: MeetingPrep[] }>('/api/v1/prep/briefs')
 
       if (!error && data) {
         setPreps(data.preps || [])
       }
     } catch (error) {
-      console.error('Failed to load preps:', error)
+      logger.error('Failed to load preps:', error)
     } finally {
       setInitialLoading(false)
     }
   }
 
-  // Load contacts AND deals together when company name changes (single prospect search)
-  const loadContactsAndDealsForProspect = async (prospectName: string) => {
-    if (!prospectName || prospectName.length < 2) {
-      setAvailableContacts([])
-      setSelectedContactIds([])
-      setAvailableDeals([])
-      setSelectedDealId('')
-      return
-    }
-
-    setContactsLoading(true)
-    setDealsLoading(true)
-    
-    try {
-      // Single prospect search for both contacts and deals
-      const { data: prospects, error: prospectError } = await api.get<Array<{ id: string; company_name: string }>>(
-        `/api/v1/prospects/search?q=${encodeURIComponent(prospectName)}`
-      )
-
-      if (prospectError || !prospects) {
-        setAvailableContacts([])
-        setAvailableDeals([])
-        return
-      }
-
-      const exactMatch = prospects.find(
-        (p) => p.company_name.toLowerCase() === prospectName.toLowerCase()
-      )
-
-      if (exactMatch) {
-        // Fetch contacts and deals in PARALLEL
-        const [contactsResult, dealsResult] = await Promise.all([
-          api.get<{ contacts: ProspectContact[] }>(`/api/v1/prospects/${exactMatch.id}/contacts`),
-          supabase
-            .from('deals')
-            .select('*')
-            .eq('prospect_id', exactMatch.id)
-            .eq('is_active', true)
-            .order('created_at', { ascending: false })
-        ])
-
-        // Set contacts
-        if (!contactsResult.error && contactsResult.data) {
-          setAvailableContacts(contactsResult.data.contacts || [])
-        } else {
-          setAvailableContacts([])
-        }
-
-        // Set deals
-        if (!dealsResult.error && dealsResult.data) {
-          setAvailableDeals(dealsResult.data || [])
-        } else {
-          setAvailableDeals([])
-        }
-      } else {
-        setAvailableContacts([])
-        setAvailableDeals([])
-      }
-    } catch (error) {
-      console.error('Failed to load contacts/deals:', error)
-      setAvailableContacts([])
-      setAvailableDeals([])
-    } finally {
-      setContactsLoading(false)
-      setDealsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      loadContactsAndDealsForProspect(companyName)
-    }, 500)
-
-    return () => clearTimeout(timeoutId)
-  }, [companyName])
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        toast({ title: t('toast.failed'), description: t('toast.failedDesc'), variant: 'destructive' })
-        return
-      }
-
-      const { error } = await api.post('/api/v1/prep/start', {
-        prospect_company_name: companyName,
-        meeting_type: meetingType,
-        custom_notes: customNotes || null,
-        contact_ids: selectedContactIds.length > 0 ? selectedContactIds : null,
-        deal_id: selectedDealId || null,
-        calendar_meeting_id: calendarMeetingId || null,
-        language: outputLanguage
-      })
-
-      if (!error) {
-        toast({ title: t('toast.started'), description: t('toast.startedDesc') })
-        setCompanyName('')
-        setCustomNotes('')
-        setOutputLanguage(settings.output_language) // Reset to settings default
-        setSelectedContactIds([])
-        setAvailableContacts([])
-        setSelectedDealId('')
-        setAvailableDeals([])
-        setCalendarMeetingId(null)
-        setShowAdvanced(false)
-        loadPreps()
-      } else {
-        toast({ title: t('toast.failed'), description: error.message || t('toast.failedDesc'), variant: 'destructive' })
-      }
-    } catch (error) {
-      toast({ title: t('toast.failed'), description: t('toast.failedDesc'), variant: 'destructive' })
-    } finally {
-      setLoading(false)
-    }
+  const handlePrepSuccess = () => {
+    // Clear initial values after success
+    setInitialCompanyName('')
+    setCalendarMeetingId(null)
+    // Reload preps
+    loadPreps()
   }
 
   const viewPrep = (prepId: string) => {
@@ -269,7 +127,6 @@ export default function PreparationPage() {
     if (!confirmed) return
 
     try {
-      // Note: api client handles authentication automatically
       const { error } = await api.delete(`/api/v1/prep/${prepId}`)
 
       if (!error) {
@@ -440,163 +297,19 @@ export default function PreparationPage() {
                 </div>
               </div>
 
-              {/* New Preparation Form */}
+              {/* New Preparation Form - Using Extracted Component */}
               <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
                 <h3 className="font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
                   <Icons.fileText className="h-4 w-4 text-green-600 dark:text-green-400" />
                   {t('form.title')}
                 </h3>
                 
-                <form onSubmit={handleSubmit} className="space-y-3">
-                  <div>
-                    <Label htmlFor="company" className="text-xs text-slate-700 dark:text-slate-300">{t('form.selectProspect')} *</Label>
-                    <ProspectAutocomplete
-                      value={companyName}
-                      onChange={setCompanyName}
-                      placeholder={t('form.selectProspectPlaceholder')}
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-xs text-slate-700 dark:text-slate-300">Meeting Type *</Label>
-                    <Select value={meetingType} onValueChange={setMeetingType}>
-                      <SelectTrigger className="h-9 text-sm">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="discovery">🔍 Discovery</SelectItem>
-                        <SelectItem value="demo">🖥️ Demo</SelectItem>
-                        <SelectItem value="closing">🤝 Closing</SelectItem>
-                        <SelectItem value="follow_up">📞 Follow-up</SelectItem>
-                        <SelectItem value="other">📋 Anders</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Contact Persons */}
-                  {availableContacts.length > 0 && (
-                    <div>
-                      <Label className="text-xs text-slate-700 dark:text-slate-300 flex items-center gap-1">
-                        👥 {t('form.selectContacts')}
-                      </Label>
-                      <div className="mt-1 space-y-1 max-h-32 overflow-y-auto p-2 border border-slate-200 dark:border-slate-700 rounded-md bg-slate-50 dark:bg-slate-800">
-                        {availableContacts.map((contact) => {
-                          const isSelected = selectedContactIds.includes(contact.id)
-                          return (
-                            <label
-                              key={contact.id}
-                              className={`flex items-center gap-2 p-1.5 rounded cursor-pointer text-xs ${
-                                isSelected ? 'bg-green-100 dark:bg-green-900/50' : 'hover:bg-slate-100 dark:hover:bg-slate-700'
-                              }`}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={isSelected}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    setSelectedContactIds(prev => [...prev, contact.id])
-                                  } else {
-                                    setSelectedContactIds(prev => prev.filter(id => id !== contact.id))
-                                  }
-                                }}
-                                className="rounded border-gray-300 dark:border-gray-600"
-                              />
-                              <span className="truncate text-slate-900 dark:text-white">{contact.name}</span>
-                              {contact.decision_authority === 'decision_maker' && (
-                                <span className="text-xs bg-green-200 dark:bg-green-800 text-green-700 dark:text-green-300 px-1 rounded">DM</span>
-                              )}
-                            </label>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Deal Selector */}
-                  {availableDeals.length > 0 && (
-                    <div>
-                      <Label className="text-xs text-slate-700 dark:text-slate-300 flex items-center gap-1">
-                        🎯 {t('form.selectDeal')}
-                      </Label>
-                      <Select 
-                        value={selectedDealId || 'none'} 
-                        onValueChange={(val) => setSelectedDealId(val === 'none' ? '' : val)}
-                      >
-                        <SelectTrigger className="h-9 text-sm mt-1">
-                          <SelectValue placeholder={t('form.selectDealPlaceholder')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">— {t('form.noDeal')} —</SelectItem>
-                          {availableDeals.map((deal) => (
-                            <SelectItem key={deal.id} value={deal.id}>
-                              🎯 {deal.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-
-                  {(contactsLoading || dealsLoading) && (
-                    <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                      <Icons.spinner className="h-3 w-3 animate-spin" />
-                      {t('loading')}
-                    </div>
-                  )}
-
-                  {/* Advanced toggle */}
-                  <button
-                    type="button"
-                    onClick={() => setShowAdvanced(!showAdvanced)}
-                    className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 flex items-center gap-1"
-                  >
-                    {showAdvanced ? <Icons.chevronDown className="h-3 w-3" /> : <Icons.chevronRight className="h-3 w-3" />}
-                    {t('form.customNotes')}
-                  </button>
-
-                  {showAdvanced && (
-                    <div className="space-y-3">
-                      <div>
-                        <Label htmlFor="notes" className="text-xs text-slate-700 dark:text-slate-300">{t('form.customNotes')}</Label>
-                        <Textarea
-                          id="notes"
-                          value={customNotes}
-                          onChange={(e) => setCustomNotes(e.target.value)}
-                          placeholder={t('form.customNotesPlaceholder')}
-                          rows={2}
-                          className="text-sm"
-                        />
-                      </div>
-                      
-                      {/* Output Language Selector */}
-                      <LanguageSelect
-                        value={outputLanguage}
-                        onChange={setOutputLanguage}
-                        label={tLang('outputLanguage')}
-                        description={tLang('outputLanguageDesc')}
-                        disabled={loading}
-                      />
-                    </div>
-                  )}
-
-                  <Button 
-                    type="submit" 
-                    disabled={loading || !companyName}
-                    className="w-full bg-green-600 hover:bg-green-700"
-                  >
-                    {loading ? (
-                      <>
-                        <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                        {t('form.generating')}
-                      </>
-                    ) : (
-                      <>
-                        <Icons.zap className="mr-2 h-4 w-4" />
-                        {t('form.startPrep')}
-                      </>
-                    )}
-                  </Button>
-                </form>
+                <PreparationForm 
+                  initialCompanyName={initialCompanyName}
+                  calendarMeetingId={calendarMeetingId}
+                  onSuccess={handlePrepSuccess}
+                  isSheet={false}
+                />
               </div>
 
               {/* How it works Panel */}
