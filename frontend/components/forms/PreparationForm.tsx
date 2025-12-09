@@ -202,7 +202,7 @@ export function PreparationForm({
         // Call success callback with result data for redirect
         onSuccess?.({ id: data.id, prospect_id: data.prospect_id })
       } else {
-        toast({ title: t('toast.failed'), description: error.message || t('toast.failedDesc'), variant: 'destructive' })
+        toast({ title: t('toast.failed'), description: error?.message || t('toast.failedDesc'), variant: 'destructive' })
       }
     } catch (error) {
       logger.error('Preparation submit failed:', error)
