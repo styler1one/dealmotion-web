@@ -591,10 +591,10 @@ export default function ProspectHubPage() {
                 ) : (
                   <div className="grid sm:grid-cols-2 gap-3">
                     {contacts.slice(0, 4).map(contact => {
-                      // Use same logic as research page for compatibility with older contacts
-                      const isAnalyzing = contact.analysis_status === 'pending' || contact.analysis_status === 'analyzing' || 
-                        (!contact.analyzed_at && contact.profile_brief === "Analyse wordt uitgevoerd...")
-                      const hasAnalysis = contact.analyzed_at && contact.profile_brief
+                      // Use same logic as research page: check analyzed_at and profile_brief
+                      // analysis_status does not exist in database, so we infer from these fields
+                      const isAnalyzing = !contact.analyzed_at && contact.profile_brief === "Analyse wordt uitgevoerd..."
+                      const hasAnalysis = !!contact.analyzed_at && !!contact.profile_brief
                       
                       return (
                         <div 

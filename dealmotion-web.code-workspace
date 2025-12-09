@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../dealmotion-docs"
+		},
+		{
+			"path": "../dealmotion-mobile"
+		},
+		{
+			"path": "../dealmotion-pwa"
+		}
+	],
+	"settings": {}
+}

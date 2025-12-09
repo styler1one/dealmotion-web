@@ -424,7 +424,7 @@ async def get_prospect_hub(
         # Get contacts for this prospect (include analysis fields for status display)
         contacts_response = supabase.table("prospect_contacts").select(
             "id, name, role, email, linkedin_url, communication_style, decision_authority, is_primary, "
-            "profile_brief, opening_suggestions, questions_to_ask, topics_to_avoid, analysis_status, analyzed_at"
+            "profile_brief, opening_suggestions, questions_to_ask, topics_to_avoid, analyzed_at"
         ).eq(
             "prospect_id", prospect_id
         ).order(
