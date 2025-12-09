@@ -69,6 +69,10 @@
       "prep_generated": "Prep generated: {company}",
       "followup_created": "Meeting analyzed: {company}",
       "contact_added": "Contact added: {company}"
+    },
+    "toast": {
+      "researchStarted": "Research started!",
+      "researchStartedDesc": "Your prospect will be created automatically"
     }
   },
   "common": {

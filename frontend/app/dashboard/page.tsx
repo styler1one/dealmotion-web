@@ -4,12 +4,15 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
+import { useToast } from '@/components/ui/use-toast'
 import { Icons } from '@/components/icons'
 import { DashboardLayout } from '@/components/layout'
 import { useTranslations, useLocale } from 'next-intl'
 import { api } from '@/lib/api'
 import { useBilling } from '@/lib/billing-context'
 import { logger } from '@/lib/logger'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
+import { ResearchForm } from '@/components/forms'
 import type { User } from '@supabase/supabase-js'
 import type { SalesProfile, CompanyProfile, KBFile, ResearchBrief, MeetingPrep, Followup } from '@/types'
 
@@ -75,6 +78,7 @@ interface ProspectWithStatus {
 export default function DashboardPage() {
     const router = useRouter()
     const supabase = createClientComponentClient()
+    const { toast } = useToast()
     const [user, setUser] = useState<User | null>(null)
     const [loading, setLoading] = useState(true)
     const [profile, setProfile] = useState<SalesProfile | null>(null)
@@ -84,6 +88,9 @@ export default function DashboardPage() {
     const [meetingPreps, setMeetingPreps] = useState<MeetingPrep[]>([])
     const [followups, setFollowups] = useState<Followup[]>([])
     const [activities, setActivities] = useState<Activity[]>([])
+    
+    // Research Sheet state - for adding new prospects
+    const [researchSheetOpen, setResearchSheetOpen] = useState(false)
     
     // Billing context for flow usage
     const { subscription, usage, loading: billingLoading } = useBilling()
@@ -426,7 +433,7 @@ export default function DashboardPage() {
                                     {t('prospects.title')}
                                     <span className="text-sm font-normal text-slate-400">({prospects.length})</span>
                                 </h2>
-                                <Button size="sm" onClick={() => router.push('/dashboard/research')}>
+                                <Button size="sm" onClick={() => setResearchSheetOpen(true)}>
                                     <Icons.plus className="h-4 w-4 mr-1" />
                                     {t('actions.newProspect')}
                                 </Button>
@@ -439,7 +446,7 @@ export default function DashboardPage() {
                                     <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">
                                         {t('prospects.emptyDescription')}
                                     </p>
-                                    <Button onClick={() => router.push('/dashboard/research')}>
+                                    <Button onClick={() => setResearchSheetOpen(true)}>
                                         <Icons.search className="h-4 w-4 mr-2" />
                                         {t('actions.startResearch')}
                                     </Button>
@@ -729,11 +736,11 @@ export default function DashboardPage() {
                                 </h3>
                                 <div className="grid grid-cols-2 gap-2">
                                     <button
-                                        onClick={() => router.push('/dashboard/research')}
+                                        onClick={() => setResearchSheetOpen(true)}
                                         className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/50 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors text-center"
                                     >
                                         <Icons.search className="h-5 w-5 text-blue-600 dark:text-blue-400 mx-auto mb-1" />
-                                        <span className="text-xs font-medium text-blue-700 dark:text-blue-300">{tNavigation('research')}</span>
+                                        <span className="text-xs font-medium text-blue-700 dark:text-blue-300">{t('quickActions.newResearch')}</span>
                                     </button>
                                     <button
                                         onClick={() => router.push('/dashboard/preparation')}
@@ -834,6 +841,36 @@ export default function DashboardPage() {
                         </div>
                     </div>
                 </div>
+                
+                {/* Research Sheet - Opens when clicking "New Prospect" */}
+                <Sheet open={researchSheetOpen} onOpenChange={setResearchSheetOpen}>
+                    <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
+                        <SheetHeader>
+                            <SheetTitle className="flex items-center gap-2">
+                                <Icons.search className="w-5 h-5 text-blue-600" />
+                                {t('quickActions.newResearch')}
+                            </SheetTitle>
+                            <SheetDescription>
+                                {t('prospects.emptyDescription')}
+                            </SheetDescription>
+                        </SheetHeader>
+                        <div className="mt-6">
+                            <ResearchForm
+                                onSuccess={() => {
+                                    setResearchSheetOpen(false)
+                                    toast({ 
+                                        title: t('toast.researchStarted'),
+                                        description: t('toast.researchStartedDesc')
+                                    })
+                                    // Navigate to prospects after research starts
+                                    setTimeout(() => router.push('/dashboard/prospects'), 1500)
+                                }}
+                                onCancel={() => setResearchSheetOpen(false)}
+                                isSheet={true}
+                            />
+                        </div>
+                    </SheetContent>
+                </Sheet>
             </div>
         </DashboardLayout>
     )

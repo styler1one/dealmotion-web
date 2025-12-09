@@ -53,6 +53,10 @@
       "complete": "Compleet",
       "incomplete": "Incompleet",
       "documentsCount": "{count} documenten"
+    },
+    "toast": {
+      "researchStarted": "Research gestart!",
+      "researchStartedDesc": "Je prospect wordt automatisch aangemaakt"
     }
   },
   "common": {
