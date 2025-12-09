@@ -1,0 +1,28 @@
+<svg width="200" height="48" viewBox="0 0 200 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6"/>
+      <stop offset="100%" style="stop-color:#8B5CF6"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Icon: Abstract "D" with motion lines -->
+  <g>
+    <!-- Main D shape with forward momentum -->
+    <path d="M8 8h12c8.837 0 16 7.163 16 16s-7.163 16-16 16H8V8z" fill="url(#logoGradient)"/>
+    
+    <!-- Motion lines (speed streaks) -->
+    <rect x="2" y="14" width="8" height="3" rx="1.5" fill="url(#logoGradient)" opacity="0.6"/>
+    <rect x="0" y="22" width="10" height="3" rx="1.5" fill="url(#logoGradient)" opacity="0.4"/>
+    <rect x="2" y="30" width="8" height="3" rx="1.5" fill="url(#logoGradient)" opacity="0.6"/>
+    
+    <!-- Inner cut for D -->
+    <path d="M16 16h4c4.418 0 8 3.582 8 8s-3.582 8-8 8h-4V16z" fill="white"/>
+  </g>
+  
+  <!-- Wordmark: DealMotion -->
+  <text x="48" y="32" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif" font-size="22" font-weight="700" fill="#0F172A">
+    Deal<tspan fill="url(#logoGradient)">Motion</tspan>
+  </text>
+</svg>
+

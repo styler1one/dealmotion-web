@@ -1,0 +1,8 @@
+export { HowItWorks } from './how-it-works'
+export { IntegrationsRow } from './integrations-row'
+export { AIContextSection } from './ai-context-section'
+export { MeetingAnalysisShowcase } from './meeting-analysis-showcase'
+export { MobileAppTeaser } from './mobile-app-teaser'
+export { PainPointsSection } from './pain-points-section'
+export { DayInTheLife } from './day-in-the-life'
+

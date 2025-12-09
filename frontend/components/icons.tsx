@@ -1,0 +1,196 @@
+import { 
+    Loader2, 
+    FileText, 
+    Calendar, 
+    CheckCircle, 
+    Search, 
+    Mic,
+    Upload,
+    AlertCircle,
+    AlertTriangle,
+    Trash2,
+    RefreshCw,
+    Clock,
+    ArrowLeft,
+    ArrowRight,
+    ArrowUp,
+    ArrowDown,
+    ArrowUpDown,
+    Download,
+    Copy,
+    Book,
+    User,
+    UserPlus,
+    UserMinus,
+    UserX,
+    Pin,
+    Mail,
+    Building2,
+    Home,
+    Zap,
+    PanelLeftClose,
+    PanelLeftOpen,
+    ChevronDown,
+    ChevronUp,
+    ChevronRight,
+    ChevronLeft,
+    LogOut,
+    Settings,
+    Bell,
+    Menu,
+    X,
+    Plus,
+    Target,
+    TrendingUp,
+    TrendingDown,
+    Users,
+    Briefcase,
+    BarChart3,
+    MessageSquare,
+    Sparkles,
+    Shield,
+    Globe,
+    Play,
+    Check,
+    Eye,
+    Edit,
+    Circle,
+    Info,
+    Sun,
+    Moon,
+    HelpCircle,
+    Inbox,
+    FolderOpen,
+    Maximize2,
+    Minimize2,
+    Link2,
+    Lightbulb,
+    Activity,
+    CreditCard,
+    Heart,
+    History,
+    ExternalLink,
+    DollarSign,
+    FileWarning,
+    Server,
+    Database,
+    XCircle,
+    MoreHorizontal,
+    Package,
+} from 'lucide-react'
+
+// Custom Google Icon (official colors)
+const GoogleIcon = ({ className }: { className?: string }) => (
+    <svg viewBox="0 0 24 24" className={className}>
+        <path
+            fill="#4285F4"
+            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+        />
+        <path
+            fill="#34A853"
+            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+        />
+        <path
+            fill="#FBBC05"
+            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+        />
+        <path
+            fill="#EA4335"
+            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+        />
+    </svg>
+)
+
+// Custom Microsoft Icon (official colors)
+const MicrosoftIcon = ({ className }: { className?: string }) => (
+    <svg viewBox="0 0 21 21" className={className}>
+        <rect x="1" y="1" width="9" height="9" fill="#f25022" />
+        <rect x="11" y="1" width="9" height="9" fill="#7fba00" />
+        <rect x="1" y="11" width="9" height="9" fill="#00a4ef" />
+        <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
+    </svg>
+)
+
+export const Icons = {
+    spinner: Loader2,
+    fileText: FileText,
+    calendar: Calendar,
+    checkCircle: CheckCircle,
+    search: Search,
+    mic: Mic,
+    upload: Upload,
+    alertCircle: AlertCircle,
+    trash: Trash2,
+    refresh: RefreshCw,
+    clock: Clock,
+    arrowLeft: ArrowLeft,
+    arrowRight: ArrowRight,
+    arrowUp: ArrowUp,
+    arrowDown: ArrowDown,
+    arrowUpDown: ArrowUpDown,
+    download: Download,
+    copy: Copy,
+    book: Book,
+    user: User,
+    userPlus: UserPlus,
+    userMinus: UserMinus,
+    userX: UserX,
+    pin: Pin,
+    mail: Mail,
+    building: Building2,
+    home: Home,
+    zap: Zap,
+    panelLeftClose: PanelLeftClose,
+    panelLeftOpen: PanelLeftOpen,
+    chevronDown: ChevronDown,
+    chevronUp: ChevronUp,
+    chevronRight: ChevronRight,
+    logOut: LogOut,
+    settings: Settings,
+    bell: Bell,
+    menu: Menu,
+    x: X,
+    plus: Plus,
+    target: Target,
+    trendingUp: TrendingUp,
+    trendingDown: TrendingDown,
+    users: Users,
+    briefcase: Briefcase,
+    barChart: BarChart3,
+    message: MessageSquare,
+    sparkles: Sparkles,
+    shield: Shield,
+    globe: Globe,
+    play: Play,
+    check: Check,
+    eye: Eye,
+    edit: Edit,
+    circle: Circle,
+    info: Info,
+    sun: Sun,
+    moon: Moon,
+    helpCircle: HelpCircle,
+    alertTriangle: AlertTriangle,
+    inbox: Inbox,
+    folderOpen: FolderOpen,
+    maximize: Maximize2,
+    minimize: Minimize2,
+    link: Link2,
+    lightbulb: Lightbulb,
+    google: GoogleIcon,
+    microsoft: MicrosoftIcon,
+    // Admin panel icons
+    activity: Activity,
+    creditCard: CreditCard,
+    heart: Heart,
+    history: History,
+    externalLink: ExternalLink,
+    chevronLeft: ChevronLeft,
+    dollarSign: DollarSign,
+    fileWarning: FileWarning,
+    server: Server,
+    database: Database,
+    xCircle: XCircle,
+    moreHorizontal: MoreHorizontal,
+    package: Package,
+}

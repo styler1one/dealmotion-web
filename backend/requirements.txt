@@ -1,0 +1,50 @@
+fastapi==0.115.0  # Updated for anyio 4.x compatibility
+uvicorn[standard]==0.32.0  # Updated to match FastAPI
+python-dotenv==1.0.0
+supabase>=2.12.0  # Latest version with httpx 0.28+ support
+pydantic==2.5.0
+pydantic-settings==2.1.0
+sqlalchemy==2.0.23
+alembic==1.12.1
+psycopg2-binary==2.9.9
+pyjwt==2.8.0
+
+# Knowledge Base dependencies
+pypdf2==3.0.1
+python-docx==1.1.0
+markdown==3.5.1
+voyageai==0.2.3
+anthropic>=0.40.0  # Updated for httpx 0.28+ compatibility
+pinecone>=3.1.0  # Renamed from pinecone-client, Python 3.13 compatible
+tiktoken==0.5.2
+python-multipart==0.0.6
+
+# Research Agent dependencies
+google-genai>=1.0.0  # New unified Google GenAI SDK
+httpx>=0.28.1  # Updated for google-genai compatibility
+reportlab==4.0.7
+
+# Google Calendar API dependencies
+google-auth>=2.25.0
+google-auth-oauthlib>=1.2.0
+google-api-python-client>=2.111.0
+
+# Microsoft Graph API dependencies
+msal>=1.25.0  # Microsoft Authentication Library
+
+# Website Scraper dependencies
+aiohttp>=3.9.0
+beautifulsoup4>=4.12.0
+
+# Billing dependencies
+stripe>=7.0.0
+
+# Security dependencies
+slowapi>=0.1.9  # Rate limiting
+cryptography>=41.0.0  # Encryption for API keys
+
+# Workflow orchestration
+inngest>=0.4.0  # Event-driven workflow orchestration
+
+# Error tracking & monitoring
+sentry-sdk[fastapi]>=2.19.0  # Error tracking with FastAPI integration

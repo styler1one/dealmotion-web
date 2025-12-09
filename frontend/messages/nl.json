@@ -1,0 +1,1524 @@
+{
+  "dashboard": {
+    "loading": "Dashboard laden...",
+    "title": "Hier is je sales voorbereiding overzicht.",
+    "greeting": {
+      "morning": "Goedemorgen",
+      "afternoon": "Goedemiddag",
+      "evening": "Goedenavond",
+      "night": "Goedenacht"
+    },
+    "suggestions": {
+      "createProfile": "Start met het aanmaken van je sales profiel voor gepersonaliseerde AI outputs",
+      "addCompany": "Voeg je bedrijfsprofiel toe zodat de AI je producten en diensten kent",
+      "startResearch": "Research je eerste prospect om te beginnen met je sales voorbereiding",
+      "addContact": "Research voor {company} is klaar - voeg nu een contactpersoon toe",
+      "uploadMeeting": "Na je meeting: upload de opname voor transcriptie en follow-up acties",
+      "needsFollowup": "Meeting met {company} gehad? Upload de opname voor follow-up",
+      "allDone": "Goed bezig! Je sales voorbereiding loopt op schema 🎉"
+    },
+    "actions": {
+      "createProfile": "Profiel Maken",
+      "addCompany": "Bedrijf Toevoegen",
+      "startResearch": "Start Research",
+      "addContact": "Voeg Contact Toe",
+      "uploadMeeting": "Upload Meeting",
+      "followup": "Follow-up",
+      "newProspect": "Nieuwe Prospect",
+      "prepare": "Voorbereiden",
+      "complete": "Compleet",
+      "researchInProgress": "Research bezig..."
+    },
+    "prospects": {
+      "title": "Mijn Prospects",
+      "empty": "Nog geen prospects",
+      "emptyDescription": "Start met je eerste prospect research",
+      "viewAll": "Bekijk alle {count} prospects"
+    },
+    "stats": {
+      "thisWeek": "Deze Week",
+      "research": "Research",
+      "preparations": "Voorbereidingen",
+      "followups": "Follow-ups"
+    },
+    "quickActions": {
+      "title": "Snelle Acties",
+      "newResearch": "Nieuwe Research",
+      "newPreparation": "Nieuwe Voorbereiding",
+      "newFollowup": "Nieuwe Follow-up"
+    },
+    "profile": {
+      "salesProfile": "Sales Profiel",
+      "companyProfile": "Bedrijfsprofiel",
+      "complete": "Compleet",
+      "incomplete": "Incompleet",
+      "documentsCount": "{count} documenten"
+    }
+  },
+  "common": {
+    "loading": "Laden...",
+    "save": "Opslaan",
+    "cancel": "Annuleren",
+    "delete": "Verwijderen",
+    "edit": "Bewerken",
+    "view": "Bekijk",
+    "back": "Terug",
+    "next": "Volgende",
+    "search": "Zoeken",
+    "select": "Selecteer:",
+    "close": "Sluiten",
+    "copy": "Kopieer",
+    "copied": "Gekopieerd!",
+    "refresh": "Vernieuwen",
+    "add": "Toevoegen",
+    "remove": "Verwijderen",
+    "yes": "Ja",
+    "no": "Nee",
+    "or": "of",
+    "and": "en",
+    "upload": "Upload Documenten",
+    "download": "Downloaden",
+    "extraOptions": "Extra opties",
+    "confirm": "Bevestigen",
+    "processing": "Verwerken...",
+    "export": {
+      "markdownDownloaded": "Markdown bestand gedownload",
+      "pdfDownloaded": "PDF bestand gedownload",
+      "wordDownloaded": "Word bestand gedownload",
+      "pdfFailed": "Kon PDF niet exporteren",
+      "wordFailed": "Kon Word document niet exporteren"
+    }
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "prospects": "Prospects",
+    "research": "Research",
+    "preparation": "Voorbereiding",
+    "followup": "Follow-up",
+    "profile": "Profiel",
+    "companyProfile": "Bedrijfsprofiel",
+    "knowledgeBase": "Kennisbank",
+    "settings": "Instellingen",
+    "logout": "Uitloggen",
+    "main": "Hoofdmenu",
+    "profiles": "Profielen"
+  },
+  "auth": {
+    "login": "Inloggen",
+    "signup": "Aanmelden",
+    "email": "E-mailadres",
+    "password": "Wachtwoord",
+    "forgotPassword": "Wachtwoord vergeten?",
+    "noAccount": "Nog geen account?",
+    "hasAccount": "Al een account?",
+    "continueWithGoogle": "Doorgaan met Google",
+    "continueWithMicrosoft": "Doorgaan met Microsoft"
+  },
+  "status": {
+    "completed": "Voltooid",
+    "inProgress": "Bezig",
+    "failed": "Mislukt",
+    "pending": "Wachtend",
+    "new": "Nieuw"
+  },
+  "time": {
+    "justNow": "Zojuist",
+    "minutesAgo": "{count} min geleden",
+    "hoursAgo": "{count} uur geleden",
+    "yesterday": "Gisteren",
+    "daysAgo": "{count} dagen geleden"
+  },
+  "errors": {
+    "generic": "Er is iets misgegaan",
+    "network": "Netwerkfout, probeer opnieuw",
+    "unauthorized": "Niet geautoriseerd",
+    "notFound": "Niet gevonden",
+    "validation": "Controleer de ingevoerde gegevens",
+    "timeout": "Verzoek time-out, probeer opnieuw",
+    "serverError": "Serverfout, probeer later opnieuw",
+    "forbidden": "Je hebt geen toestemming voor deze actie",
+    "fileTooLarge": "Bestand is te groot (max {maxSize})",
+    "invalidFileType": "Ongeldig bestandstype",
+    "uploadFailed": "Upload mislukt, probeer opnieuw",
+    "deleteFailed": "Verwijderen mislukt, probeer opnieuw",
+    "saveFailed": "Wijzigingen konden niet worden opgeslagen",
+    "loadFailed": "Data kon niet worden geladen",
+    "sessionExpired": "Je sessie is verlopen, log opnieuw in",
+    "rateLimited": "Te veel verzoeken, even wachten",
+    "usageLimitReached": "Gebruikslimiet bereikt. Upgrade je abonnement om door te gaan.",
+    "tryAgain": "Probeer opnieuw",
+    "goBack": "Ga terug",
+    "contactSupport": "Neem contact op met support als dit probleem aanhoudt",
+    "globalError": {
+      "title": "Er is iets misgegaan",
+      "description": "Er is een onverwachte fout opgetreden. Ons team is op de hoogte gesteld en werkt aan een oplossing.",
+      "tryAgain": "Probeer opnieuw",
+      "goToDashboard": "Ga naar Dashboard",
+      "devDetails": "Foutdetails (alleen ontwikkeling)"
+    }
+  },
+  "research": {
+    "title": "Research Agent",
+    "subtitle": "AI-powered prospect research voor je verkoopgesprekken",
+    "loading": "Laden...",
+    "form": {
+      "title": "Nieuwe Research",
+      "companyName": "Bedrijfsnaam",
+      "companyNamePlaceholder": "bijv. Shell, Philips...",
+      "country": "Land",
+      "countryPlaceholder": "bijv. Nederland",
+      "searchCompany": "Zoek Bedrijf",
+      "searching": "Zoeken...",
+      "extraOptions": "Extra opties",
+      "website": "Website (optioneel)",
+      "websitePlaceholder": "https://...",
+      "linkedin": "LinkedIn (optioneel)",
+      "linkedinPlaceholder": "https://linkedin.com/company/...",
+      "city": "Stad",
+      "cityPlaceholder": "bijv. Amsterdam",
+      "startResearch": "Start Research",
+      "researching": "Analyseren..."
+    },
+    "validation": {
+      "companyNameTooShort": "Bedrijfsnaam te kort",
+      "companyNameTooShortDesc": "Vul minimaal 3 tekens in",
+      "countryRequired": "Land verplicht",
+      "countryRequiredDesc": "Vul een land in om het juiste bedrijf te vinden",
+      "companyNameRequired": "Bedrijfsnaam verplicht",
+      "companyNameRequiredDesc": "Vul een bedrijfsnaam in"
+    },
+    "search": {
+      "noResults": "Geen bedrijven gevonden",
+      "noResultsDesc": "Geen match voor \"{company}\" in {country}. Vul handmatig de website in.",
+      "failed": "Zoeken mislukt",
+      "failedDesc": "Er ging iets mis. Probeer het opnieuw.",
+      "selected": "Bedrijf geselecteerd",
+      "selectedDesc": "{company} - gegevens automatisch ingevuld"
+    },
+    "toast": {
+      "started": "Research gestart",
+      "startedDesc": "Je research wordt gegenereerd. Dit duurt 2-3 minuten.",
+      "failed": "Research mislukt",
+      "failedDesc": "Kon research niet starten",
+      "deleted": "Verwijderd",
+      "deletedDesc": "Research brief is verwijderd",
+      "deleteFailed": "Verwijderen mislukt",
+      "deleteFailedDesc": "Kon de research niet verwijderen. Probeer opnieuw.",
+      "loadFailed": "Kon brief niet laden",
+      "loadFailedDesc": "Er is een fout opgetreden bij het laden van de research brief"
+    },
+    "history": {
+      "title": "Mijn Prospects",
+      "empty": "Nog geen research",
+      "emptyDesc": "Start je eerste prospect research hiernaast →",
+      "viewAll": "Bekijk alle {count} briefs"
+    },
+    "stats": {
+      "title": "Overzicht",
+      "completed": "Voltooid",
+      "researching": "Bezig",
+      "failed": "Mislukt"
+    },
+    "howItWorks": {
+      "title": "Hoe werkt het?",
+      "step1": "Research",
+      "step1Desc": "AI verzamelt bedrijfsinfo",
+      "step2": "Contacten",
+      "step2Desc": "Voeg contactpersonen toe",
+      "step3": "Preparation",
+      "step3Desc": "Genereer meeting brief"
+    },
+    "brief": {
+      "generatedAt": "Gegenereerd op",
+      "view": "Bekijk",
+      "copy": "Kopieer",
+      "copied": "Gekopieerd!",
+      "download": "Download PDF",
+      "delete": "Verwijderen",
+      "edit": "Bewerken",
+      "save": "Opslaan",
+      "saving": "Opslaan...",
+      "cancel": "Annuleren",
+      "saved": "Wijzigingen opgeslagen",
+      "savedDesc": "Je aanpassingen zijn succesvol opgeslagen",
+      "saveFailed": "Kon niet opslaan",
+      "saveFailedDesc": "Er is een fout opgetreden bij het opslaan van je wijzigingen"
+    },
+    "detail": {
+      "discoveryQuestions": "Discovery Vragen",
+      "aiContext": "AI Context",
+      "knowledgeBaseActive": "Kennisbank Actief",
+      "documentsUsed": "{count} documenten gebruikt",
+      "contactsPanel": {
+        "noContacts": "Nog geen contacten",
+        "addForPreparation": "Voeg toe voor een gepersonaliseerde voorbereiding"
+      }
+    },
+    "contacts": {
+      "title": "Contactpersonen",
+      "name": "Naam",
+      "found": "Gevonden",
+      "notFound": "Niet gevonden",
+      "add": "Contact Toevoegen",
+      "addShort": "Toevoegen",
+      "name": "Naam",
+      "namePlaceholder": "bijv. Jan de Vries",
+      "role": "Rol/Functie",
+      "rolePlaceholder": "bijv. Sales Director",
+      "linkedinUrl": "LinkedIn URL",
+      "linkedinPlaceholder": "https://linkedin.com/in/...",
+      "searchOnline": "Zoek online",
+      "searching": "Zoeken...",
+      "cancel": "Annuleren",
+      "empty": "Nog geen contactpersonen",
+      "emptyDesc": "Voeg contactpersonen toe voor gepersonaliseerde voorbereiding",
+      "analyzing": "Analyseren...",
+      "analyzed": "Geanalyseerd",
+      "primary": "Primair",
+      "viewAnalysis": "Bekijk analyse",
+      "found": "Persoon gevonden",
+      "foundDesc": "{role} op LinkedIn",
+      "foundProfile": "LinkedIn profiel gevonden",
+      "notFound": "Niet gevonden",
+      "notFoundDesc": "Kon geen LinkedIn profiel vinden. Vul handmatig in.",
+      "searchFailed": "Zoeken mislukt",
+      "searchFailedDesc": "Er is een fout opgetreden bij het zoeken",
+      "added": "Contactpersoon toegevoegd",
+      "addedDesc": "AI-analyse gestart...",
+      "analysisComplete": "Analyse voltooid",
+      "analysisCompleteDesc": "{name} is geanalyseerd",
+      "addFailed": "Kon contact niet toevoegen",
+      "search": {
+        "errorTitle": "Fout",
+        "errorAddFailed": "Kon contact niet toevoegen"
+      }
+    },
+    "context": {
+      "title": "AI Context",
+      "salesProfile": "Jouw Sales Profiel",
+      "companyProfile": "Bedrijfsprofiel",
+      "researchBrief": "Research Brief",
+      "contacts": "Contactpersonen"
+    },
+    "nextStep": {
+      "addContact": {
+        "title": "Voeg Contactpersoon Toe",
+        "description": "Voeg minimaal één contactpersoon toe voor een gepersonaliseerde voorbereiding.",
+        "button": "Contactpersoon Toevoegen",
+        "hint": "Daarna kun je de voorbereiding starten"
+      },
+      "ready": {
+        "title": "Volgende Stap",
+        "description": "Genereer een gepersonaliseerde gespreksvoorbereiding met alle verzamelde context.",
+        "button": "Start Preparation",
+        "withContacts": "Met {count} contactpersoon"
+      }
+    }
+  },
+  "preparation": {
+    "title": "Meeting Voorbereiding",
+    "subtitle": "AI-gegenereerde briefings voor je verkoopgesprekken",
+    "loading": "Laden...",
+    "context": {
+      "title": "AI Context",
+      "description": "Deze data is gecombineerd voor deze voorbereiding:",
+      "salesProfile": "Jouw Sales Profiel",
+      "companyProfile": "Jouw Bedrijfsprofiel"
+    },
+    "form": {
+      "title": "Nieuwe Voorbereiding",
+      "selectProspect": "Selecteer Prospect",
+      "selectProspectPlaceholder": "Kies een bedrijf...",
+      "selectContacts": "Selecteer Contactpersonen",
+      "selectDeal": "Koppelen aan Deal (optioneel)",
+      "selectDealPlaceholder": "Kies een deal...",
+      "noDeal": "Geen deal",
+      "noContacts": "Geen contactpersonen beschikbaar",
+      "addContactsFirst": "Voeg eerst contactpersonen toe in Research",
+      "customNotes": "Extra Context",
+      "customNotesPlaceholder": "Optioneel: extra info voor deze meeting...",
+      "startPrep": "Genereer Voorbereiding",
+      "generating": "Genereren..."
+    },
+    "history": {
+      "title": "Mijn Voorbereidingen",
+      "empty": "Nog geen voorbereidingen",
+      "emptyDesc": "Start je eerste meeting voorbereiding hiernaast →",
+      "toFollowup": "→ Follow-up"
+    },
+    "stats": {
+      "title": "Overzicht",
+      "completed": "Voltooid",
+      "generating": "Bezig"
+    },
+    "whatYouGet": {
+      "title": "Wat krijg je?",
+      "item1": "Gepersonaliseerde opening",
+      "item1Desc": "Afgestemd op de prospect",
+      "item2": "Gespreksonderwerpen",
+      "item2Desc": "Relevante talking points",
+      "item3": "DMU Overzicht",
+      "item3Desc": "Besluitvormers in kaart"
+    },
+    "brief": {
+      "view": "Bekijk",
+      "copy": "Kopieer",
+      "copied": "Gekopieerd!",
+      "download": "Download PDF",
+      "generatedFor": "Voorbereiding voor",
+      "copyAll": "Kopieer Alles",
+      "viewResearch": "Bekijk Research",
+      "edit": "Bewerken",
+      "save": "Opslaan",
+      "saving": "Opslaan...",
+      "cancel": "Annuleren",
+      "saved": "Wijzigingen opgeslagen",
+      "savedDesc": "Je aanpassingen zijn succesvol opgeslagen",
+      "saveFailed": "Kon niet opslaan",
+      "saveFailedDesc": "Er is een fout opgetreden bij het opslaan van je wijzigingen"
+    },
+    "toast": {
+      "started": "Voorbereiding gestart",
+      "startedDesc": "Je meeting brief wordt gegenereerd. Dit duurt 1-2 minuten.",
+      "failed": "Voorbereiding mislukt",
+      "failedDesc": "Kon de voorbereiding niet starten",
+      "selectProspect": "Selecteer een prospect",
+      "selectContacts": "Selecteer contactpersonen",
+      "deleted": "Verwijderd",
+      "deletedDesc": "Voorbereiding is verwijderd",
+      "deleteFailed": "Verwijderen mislukt",
+      "deleteFailedDesc": "Kon voorbereiding niet verwijderen",
+      "notLoggedIn": "Niet ingelogd",
+      "error": "Fout",
+      "loadFailed": "Kon niet laden",
+      "loadFailedDesc": "Er is een fout opgetreden"
+    },
+    "confirm": {
+      "delete": "Weet je zeker dat je deze voorbereiding wilt verwijderen?"
+    },
+    "detail": {
+      "meetingContext": "Meeting Context",
+      "quickActions": "Snelle Acties",
+      "researchBrief": "Research Brief",
+      "linkedResearch": "Gekoppelde Research",
+      "linkedContact": "Gekoppeld Contact",
+      "linkedDeal": "Gekoppelde Deal",
+      "yourNotes": "Jouw Notities"
+    },
+    "nextStep": {
+      "title": "Na je Meeting",
+      "description": "Upload je meeting opname voor automatische transcriptie en follow-up",
+      "button": "Naar Follow-up"
+    }
+  },
+  "followup": {
+    "title": "Follow-up Agent",
+    "subtitle": "AI-transcriptie en samenvatting van je verkoopgesprekken",
+    "loading": "Laden...",
+    "form": {
+      "title": "Nieuwe Follow-up",
+      "selectProspect": "Selecteer Prospect",
+      "selectProspectPlaceholder": "Kies een bedrijf...",
+      "selectContact": "Selecteer Contactpersoon",
+      "selectDeal": "Koppelen aan Deal (optioneel)",
+      "selectDealPlaceholder": "Kies een deal...",
+      "noDeal": "Geen deal",
+      "uploadAudio": "Audio Bestand",
+      "uploadTranscript": "Transcript Bestand",
+      "dragDrop": "Sleep bestand hierheen of klik om te uploaden",
+      "supportedFormats": "Ondersteunde formaten: MP3, WAV, M4A, WebM",
+      "includeCoaching": "Ontvang coaching feedback",
+      "startFollowup": "Start Follow-up",
+      "processing": "Verwerken...",
+      "subject": "Onderwerp",
+      "subjectPlaceholder": "Bijv. Demo gesprek",
+      "date": "Datum"
+    },
+    "history": {
+      "title": "Recente Follow-ups",
+      "empty": "Nog geen follow-ups",
+      "emptyDesc": "Upload je eerste meeting opname hiernaast →"
+    },
+    "stats": {
+      "title": "Overzicht",
+      "completed": "Voltooid",
+      "processing": "Bezig"
+    },
+    "whatYouGet": {
+      "title": "Wat krijg je?",
+      "item1": "Transcriptie",
+      "item1Desc": "Automatische spraak-naar-tekst",
+      "item2": "Samenvatting",
+      "item2Desc": "Key points en acties",
+      "item3": "Follow-up Email",
+      "item3Desc": "Kant-en-klare email"
+    },
+    "detail": {
+      "summary": "Samenvatting",
+      "keyPoints": "Belangrijkste Punten",
+      "concerns": "Zorgen",
+      "nextSteps": "Vervolgstappen",
+      "crossSellUpsell": "Cross/Upsell",
+      "risks": "Risico's",
+      "doubts": "Twijfel",
+      "unspokenNeeds": "Onuitgesproken",
+      "tips": "Tips",
+      "commercialSignals": "Commerciële Signalen",
+      "observations": "Observaties & Signalen",
+      "coachingFeedback": "Coaching Feedback",
+      "actionItems": "Actiepunten",
+      "emailDraft": "Email Concept",
+      "transcription": "Transcriptie",
+      "copyTranscription": "Kopieer Transcriptie",
+      "meetingInfo": "Meeting Info",
+      "date": "Datum",
+      "duration": "Duur",
+      "linkedResearch": "Gekoppelde Research",
+      "linkedPreparation": "Gekoppelde Voorbereiding",
+      "linkedDeal": "Gekoppelde Deal",
+      "linkedContact": "Gekoppeld Contact",
+      "audioPlayer": "Audio",
+      "nextProspect": "Volgende Prospect?",
+      "nextProspectDesc": "Start een nieuwe research voor je volgende prospect.",
+      "startNewResearch": "Nieuwe Research",
+      "speakers": "Sprekers",
+      "edit": "Bewerken",
+      "save": "Opslaan",
+      "saving": "Opslaan...",
+      "cancel": "Annuleren",
+      "saved": "Wijzigingen opgeslagen",
+      "savedDesc": "Je aanpassingen zijn succesvol opgeslagen",
+      "saveFailed": "Kon niet opslaan",
+      "saveFailedDesc": "Er is een fout opgetreden bij het opslaan van je wijzigingen"
+    },
+    "toast": {
+      "started": "Follow-up gestart",
+      "startedDesc": "Je opname wordt verwerkt. Dit duurt 2-5 minuten.",
+      "failed": "Follow-up mislukt",
+      "failedDesc": "Kon de follow-up niet starten",
+      "copied": "Gekopieerd!",
+      "selectProspect": "Selecteer een prospect",
+      "selectFile": "Selecteer een bestand",
+      "invalidFileType": "Ongeldig bestandstype",
+      "invalidFileTypeDescAudio": "Upload een mp3, m4a, wav of webm bestand",
+      "invalidFileTypeDescTranscript": "Upload een txt, md, docx of srt bestand",
+      "fileTooLarge": "Bestand te groot",
+      "fileTooLargeDescAudio": "Maximum bestandsgrootte is 50MB",
+      "fileTooLargeDescTranscript": "Maximum bestandsgrootte is 10MB",
+      "noFileSelected": "Geen bestand geselecteerd",
+      "noFileSelectedDesc": "Selecteer eerst een bestand",
+      "notFound": "Follow-up niet gevonden",
+      "deleted": "Verwijderd",
+      "deletedDesc": "Follow-up is verwijderd",
+      "deleteFailed": "Verwijderen mislukt",
+      "deleteFailedDesc": "Kon follow-up niet verwijderen",
+      "uploadStarted": "Upload gestart",
+      "uploadStartedDesc": "Je bestand wordt verwerkt"
+    },
+    "confirm": {
+      "delete": "Weet je zeker dat je deze follow-up wilt verwijderen?"
+    },
+    "actions": {
+      "title": "Follow-up Acties",
+      "subtitle": "Genereer gerichte outputs van je meeting",
+      "generating": "Genereren...",
+      "generatingDesc": "{actionType} wordt gegenereerd...",
+      "generated": "Gegenereerd",
+      "generatedDesc": "{actionType} is klaar om te bekijken",
+      "readyToView": "is klaar om te bekijken",
+      "clickToGenerate": "Klik om te genereren",
+      "error": "Fout",
+      "regenerate": "Opnieuw genereren",
+      "regenerating": "Opnieuw genereren...",
+      "regeneratingDesc": "Je kunt verder werken terwijl dit op de achtergrond wordt gegenereerd.",
+      "delete": "Verwijderen",
+      "confirmDelete": "Weet je zeker dat je deze actie wilt verwijderen?",
+      "noContent": "Nog geen inhoud",
+      "generationFailed": "Genereren mislukt",
+      "alreadyExists": "Actie al gegenereerd",
+      "alreadyExistsDesc": "Deze actie is al gegenereerd. Klik om te bekijken.",
+      "generationFailedDesc": "Er is een fout opgetreden. Probeer opnieuw te genereren.",
+      "tryAgain": "Probeer opnieuw",
+      "summaryReadOnly": "Samenvatting is alleen-lezen",
+      "summaryCannotEdit": "De samenvatting kan hier niet worden bewerkt. Bewerk de hoofdsamenvatting hierboven.",
+      "summaryCannotDelete": "De samenvatting kan niet worden verwijderd",
+      "summaryCannotRegenerate": "De samenvatting kan hier niet opnieuw worden gegenereerd",
+      "contextUsed": "Context gebruikt",
+      "wordsGenerated": "woorden",
+      "generatingContent": "Content genereren...",
+      "generatingTime": "Dit kan 10-30 seconden duren",
+      "export": "Exporteren",
+      "exportPdf": "Download PDF",
+      "exportDocx": "Download Word",
+      "exportMd": "Download Markdown",
+      "copied": "Gekopieerd naar klembord",
+      "changesSaved": "Wijzigingen opgeslagen",
+      "saveFailed": "Opslaan mislukt",
+      "deleteFailed": "Verwijderen mislukt",
+      "actionDeleted": "Actie verwijderd",
+      "exportFailed": "Exporteren mislukt",
+      "pdfDownloaded": "PDF gedownload",
+      "docxDownloaded": "Word document gedownload",
+      "mdDownloaded": "Markdown gedownload",
+      "time": {
+        "justNow": "zojuist",
+        "minAgo": "{count} min geleden",
+        "hourAgo": "{count} uur geleden",
+        "hoursAgo": "{count} uur geleden",
+        "dayAgo": "{count} dag geleden",
+        "daysAgo": "{count} dagen geleden"
+      },
+      "types": {
+        "summary": {
+          "label": "Samenvatting",
+          "description": "Meeting samenvatting met key points en vervolgstappen"
+        },
+        "customer_report": {
+          "label": "Klantrapport",
+          "description": "Professioneel rapport om te delen met de klant"
+        },
+        "share_email": {
+          "label": "Deel E-mail",
+          "description": "Kant-en-klare e-mail om het rapport te delen"
+        },
+        "commercial_analysis": {
+          "label": "Commerciële Analyse",
+          "description": "Koopsignalen, risico's en deal assessment"
+        },
+        "sales_coaching": {
+          "label": "Sales Coaching",
+          "description": "Feedback op je verkoopprestaties"
+        },
+        "action_items": {
+          "label": "Actiepunten",
+          "description": "Gestructureerde taken met eigenaren en deadlines"
+        },
+        "internal_report": {
+          "label": "Intern Rapport",
+          "description": "Korte samenvatting voor CRM of team"
+        }
+      }
+    },
+    "sections": {
+      "keyPoints": "Belangrijkste Punten",
+      "discoveryQuestions": "Discovery Vragen"
+    }
+  },
+  "profile": {
+    "title": "Sales Profiel",
+    "subtitle": "Je persoonlijke verkoopprofiel voor gepersonaliseerde AI outputs",
+    "loading": "Profiel laden...",
+    "completeness": "Profiel volledigheid",
+    "edit": "Bewerken",
+    "save": "Opslaan",
+    "saving": "Opslaan...",
+    "noProfile": "Geen profiel gevonden",
+    "startOnboarding": "Start de onboarding om je profiel aan te maken",
+    "startOnboardingBtn": "Start Onboarding",
+    "myStory": "Mijn Verhaal",
+    "myStoryDesc": "Dit verhaal wordt gebruikt door de AI om gepersonaliseerde outputs te genereren",
+    "summary": "Samenvatting",
+    "strengthsTitle": "Sterktes & Ontwikkeling",
+    "strengths": "Sterktes",
+    "weaknesses": "Ontwikkelpunten",
+    "approach": "Aanpak",
+    "notSet": "Niet ingesteld",
+    "years": "jaar",
+    "sections": {
+      "personal": "Persoonlijke Gegevens",
+      "experience": "Ervaring & Expertise",
+      "style": "Verkoopstijl",
+      "goals": "Doelen & Targets",
+      "targetMarket": "Doelmarkt",
+      "goalsPrefs": "Doelen & Voorkeuren"
+    },
+    "fields": {
+      "fullName": "Volledige Naam",
+      "email": "E-mail",
+      "phone": "Telefoon",
+      "jobTitle": "Functietitel",
+      "yearsExperience": "Jaren Ervaring",
+      "industries": "Industrieën",
+      "specializations": "Specialisaties",
+      "sellingStyle": "Verkoopstijl",
+      "communicationPreference": "Communicatie Voorkeur",
+      "targetMarket": "Doelmarkt",
+      "quotaTarget": "Quota Target",
+      "regions": "Regio's",
+      "companySizes": "Bedrijfsgroottes",
+      "quarterlyGoals": "Kwartaaldoelen",
+      "meetingTypes": "Meeting Types"
+    },
+    "howUsed": {
+      "title": "Hoe wordt dit gebruikt?",
+      "prep": "Meeting Prep",
+      "prepDesc": "AI genereert briefs afgestemd op jouw stijl en sterktes",
+      "followup": "Follow-up Emails",
+      "followupDesc": "Emails worden geschreven in jouw tone of voice",
+      "research": "Research",
+      "researchDesc": "Focus op informatie relevant voor jouw doelmarkt"
+    },
+    "toast": {
+      "saved": "Profiel opgeslagen",
+      "savedDesc": "Je wijzigingen zijn opgeslagen",
+      "failed": "Opslaan mislukt",
+      "failedDesc": "Kon profiel niet opslaan"
+    }
+  },
+  "companyProfile": {
+    "title": "Bedrijfsprofiel",
+    "subtitle": "Je bedrijfsinformatie voor contextuele AI outputs",
+    "loading": "Profiel laden...",
+    "completeness": "Profiel volledigheid",
+    "edit": "Bewerken",
+    "save": "Opslaan",
+    "saving": "Opslaan...",
+    "noProfile": "Geen bedrijfsprofiel gevonden",
+    "noProfileDesc": "Maak een bedrijfsprofiel aan om gepersonaliseerde AI-output te krijgen",
+    "createProfile": "Bedrijfsprofiel Aanmaken",
+    "ourStory": "Ons Verhaal",
+    "ourStoryDesc": "Dit verhaal wordt gebruikt door de AI om gepersonaliseerde sales content te genereren",
+    "summary": "Samenvatting",
+    "notSet": "Nog niet ingesteld",
+    "noProducts": "Nog geen producten toegevoegd",
+    "noPersonas": "Nog geen personas toegevoegd",
+    "noCaseStudies": "Nog geen case studies toegevoegd",
+    "sections": {
+      "basic": "Basisinformatie",
+      "products": "Producten & Diensten",
+      "market": "Markt & Concurrentie",
+      "values": "Waarden & USPs",
+      "valueProps": "Value Propositions",
+      "differentiators": "Differentiators",
+      "icp": "Ideale Klant Profiel",
+      "personas": "Buyer Personas",
+      "caseStudies": "Case Studies",
+      "salesInfo": "Sales Informatie"
+    },
+    "fields": {
+      "industries": "Industrieën",
+      "companySizes": "Bedrijfsgrootte",
+      "painPoints": "Pain Points",
+      "salesCycle": "Sales Cycle",
+      "avgDeal": "Gemiddelde Deal",
+      "competitors": "Concurrenten",
+      "competitiveAdvantage": "Competitief Voordeel"
+    },
+    "howUsed": {
+      "title": "Hoe wordt dit gebruikt?",
+      "prep": "Meeting Prep",
+      "prepDesc": "AI gebruikt jullie value props en case studies in briefs",
+      "followup": "Follow-up Emails",
+      "followupDesc": "Relevant productinformatie wordt automatisch toegevoegd",
+      "research": "Research",
+      "researchDesc": "ICP wordt gebruikt om relevante prospect info te filteren"
+    },
+    "fields": {
+      "companyName": "Bedrijfsnaam",
+      "website": "Website",
+      "industry": "Industrie",
+      "companySize": "Bedrijfsgrootte",
+      "products": "Producten/Diensten",
+      "targetAudience": "Doelgroep",
+      "competitors": "Concurrenten",
+      "uniqueSellingPoints": "Unique Selling Points",
+      "companyValues": "Bedrijfswaarden"
+    },
+    "toast": {
+      "saved": "Profiel opgeslagen",
+      "savedDesc": "Je wijzigingen zijn opgeslagen",
+      "failed": "Opslaan mislukt",
+      "failedDesc": "Kon profiel niet opslaan"
+    }
+  },
+  "knowledgeBase": {
+    "title": "Knowledge Base",
+    "subtitle": "Upload documenten om de AI te trainen met je bedrijfskennis",
+    "loading": "Documenten laden...",
+    "upload": {
+      "title": "Documenten Uploaden",
+      "dragDrop": "Sleep bestanden hierheen of klik om te uploaden",
+      "supportedFormats": "Ondersteunde formaten: PDF, DOCX, TXT, MD",
+      "uploading": "Uploaden...",
+      "maxSize": "Max 10MB per bestand"
+    },
+    "files": {
+      "title": "Geüploade Documenten",
+      "empty": "Nog geen documenten",
+      "emptyDesc": "Upload je eerste document hierboven",
+      "processing": "Verwerken...",
+      "processed": "Verwerkt",
+      "failed": "Mislukt",
+      "delete": "Verwijderen"
+    },
+    "stats": {
+      "completed": "Verwerkt",
+      "processing": "Bezig",
+      "failed": "Mislukt"
+    },
+    "toast": {
+      "uploaded": "Document geüpload",
+      "uploadedDesc": "Het document wordt verwerkt",
+      "deleted": "Document verwijderd",
+      "deletedDesc": "Het document is verwijderd uit de knowledge base",
+      "failed": "Upload mislukt",
+      "failedDesc": "Kon document niet uploaden",
+      "deleteFailed": "Verwijderen mislukt",
+      "deleteFailedDesc": "Kon het document niet verwijderen"
+    }
+  },
+  "auth": {
+    "continueWithGoogle": "Doorgaan met Google",
+    "continueWithMicrosoft": "Doorgaan met Microsoft",
+    "login": {
+      "title": "Welkom terug",
+      "subtitle": "Log in om verder te gaan",
+      "email": "E-mailadres",
+      "password": "Wachtwoord",
+      "forgotPassword": "Wachtwoord vergeten?",
+      "submit": "Inloggen",
+      "noAccount": "Nog geen account?",
+      "signUp": "Registreer"
+    },
+    "signup": {
+      "title": "Account aanmaken",
+      "subtitle": "Start je gratis proefperiode",
+      "fullName": "Volledige naam",
+      "email": "E-mailadres",
+      "password": "Wachtwoord",
+      "confirmPassword": "Bevestig wachtwoord",
+      "submit": "Registreren",
+      "hasAccount": "Al een account?",
+      "logIn": "Log in"
+    },
+    "errors": {
+      "invalidCredentials": "Ongeldige inloggegevens",
+      "emailInUse": "E-mailadres is al in gebruik",
+      "weakPassword": "Wachtwoord is te zwak",
+      "passwordMismatch": "Wachtwoorden komen niet overeen"
+    }
+  },
+  "onboarding": {
+    "title": "Welkom bij DealMotion",
+    "subtitle": "Laten we je account instellen",
+    "welcome": "Welkom bij DealMotion",
+    "welcomeDesc": "Laten we je beter leren kennen om je ervaring te personaliseren",
+    "starting": "Je onboarding interview starten...",
+    "question": "Vraag {current} van {total}",
+    "takeYourTime": "Neem je tijd voor een doordacht antwoord",
+    "answerPlaceholder": "Typ hier je antwoord...",
+    "goToDashboard": "Ga naar Dashboard",
+    "updateProfile": "Update Profiel",
+    "existingProfile": {
+      "title": "Profiel bestaat al",
+      "description": "Je hebt al een sales profiel. Wil je het updaten met een nieuw interview?"
+    },
+    "steps": {
+      "profile": "Sales Profiel",
+      "company": "Bedrijfsprofiel",
+      "complete": "Klaar!"
+    },
+    "profile": {
+      "title": "Vertel ons over jezelf",
+      "description": "Deze informatie helpt de AI om gepersonaliseerde outputs te genereren"
+    },
+    "company": {
+      "title": "Vertel ons over je bedrijf",
+      "description": "Dit helpt de AI om je producten en diensten te begrijpen",
+      "pageTitle": "Bedrijfsprofiel Onboarding",
+      "pageDesc": "Help de AI je bedrijf te begrijpen",
+      "questionOf": "Vraag {current} van {total}",
+      "generating": "Bedrijfsprofiel Genereren...",
+      "generatingDesc": "AI analyseert je antwoorden en maakt een gestructureerd bedrijfsprofiel",
+      "generatingWait": "Dit kan even duren...",
+      "couldNotLoad": "Kon interview niet laden",
+      "startInterview": "Interview starten...",
+      "yourAnswer": "Jouw antwoord",
+      "answerPlaceholder": "Typ hier je antwoord...",
+      "previous": "Vorige",
+      "requiredQuestion": "Verplichte vraag - beantwoord zo volledig mogelijk",
+      "optionalQuestion": "Optionele vraag - je kunt deze overslaan"
+    },
+    "complete": {
+      "title": "Interview Voltooid!",
+      "description": "Je kunt nu beginnen met je eerste prospect research",
+      "creating": "Je gepersonaliseerde profiel wordt aangemaakt...",
+      "button": "Ga naar Dashboard"
+    },
+    "skip": "Overslaan",
+    "next": "Volgende",
+    "back": "Terug",
+    "finish": "Afronden",
+    "toast": {
+      "startError": "Fout bij starten",
+      "startErrorDesc": "Kon interview niet starten. Probeer het opnieuw.",
+      "saveError": "Fout",
+      "saveErrorDesc": "Kon antwoord niet opslaan",
+      "profileCreated": "Bedrijfsprofiel aangemaakt! 🎉",
+      "profileCreatedDesc": "Je bedrijfsprofiel is succesvol opgeslagen.",
+      "createError": "Fout",
+      "createErrorDesc": "Kon profiel niet aanmaken. Probeer het opnieuw."
+    }
+  },
+  "language": {
+    "outputLanguage": "Output Taal",
+    "outputLanguageDesc": "Taal voor de AI-gegenereerde content",
+    "emailLanguage": "Email Taal",
+    "emailLanguageDesc": "Taal voor de follow-up email",
+    "suggestedFrom": "Voorgesteld op basis van land",
+    "languages": {
+      "nl": "Nederlands",
+      "en": "English",
+      "de": "Deutsch",
+      "fr": "Français",
+      "es": "Español",
+      "hi": "हिन्दी",
+      "ar": "العربية"
+    }
+  },
+  "settings": {
+    "title": "Instellingen",
+    "description": "Beheer je voorkeuren en instellingen",
+    "language": {
+      "title": "Taalinstellingen",
+      "description": "Configureer je taalvoorkeuren voor de applicatie",
+      "appLanguage": "App Taal",
+      "appLanguageDesc": "De taal van de applicatie interface",
+      "outputLanguage": "Standaard Output Taal",
+      "outputLanguageDesc": "De taal voor AI-gegenereerde content (research briefs, voorbereidingen)",
+      "outputLanguageHint": "Je kunt dit per actie overschrijven",
+      "emailLanguage": "Standaard E-mail Taal",
+      "emailLanguageDesc": "De taal voor gegenereerde e-mails naar klanten",
+      "emailLanguageHint": "Je kunt dit per follow-up overschrijven"
+    },
+    "save": "Opslaan",
+    "saving": "Opslaan...",
+    "saved": "Instellingen opgeslagen",
+    "savedDesc": "Je voorkeuren zijn bijgewerkt",
+    "error": "Opslaan mislukt",
+    "errorDesc": "Kon je instellingen niet opslaan. Probeer opnieuw.",
+    "unsavedChanges": "Niet-opgeslagen wijzigingen",
+    "sections": {
+      "language": "Taal",
+      "account": "Account",
+      "subscription": "Abonnement",
+      "integrations": "Integraties",
+      "notifications": "Meldingen"
+    },
+    "coach": {
+      "title": "AI Coach (Luna)",
+      "description": "Configureer je AI sales coach assistent",
+      "enableLabel": "AI Coach Inschakelen",
+      "enableDesc": "Toon de zwevende coach widget op dashboard pagina's",
+      "resetLabel": "Gesnooze Suggesties Herstellen",
+      "resetHint": "Breng suggesties terug die je hebt gesnoozed",
+      "resetButton": "Herstellen",
+      "enabled": "Coach Ingeschakeld",
+      "enabledDesc": "De AI Coach is nu actief en geeft suggesties",
+      "disabled": "Coach Uitgeschakeld",
+      "disabledDesc": "De AI Coach widget is nu verborgen",
+      "reset": "Suggesties Hersteld",
+      "resetDesc": "Alle gesnooze suggesties zijn nu weer zichtbaar"
+    },
+    "style": {
+      "title": "Communicatiestijl",
+      "description": "Pas aan hoe AI je e-mails en rapporten genereert",
+      "saved": "Stijl Opgeslagen",
+      "savedDesc": "Je communicatiestijl voorkeuren zijn bijgewerkt",
+      "tone": "Toon",
+      "toneDesc": "De algehele toon van je communicatie",
+      "toneDirect": "Direct - Meteen ter zake",
+      "toneWarm": "Warm - Vriendelijk en persoonlijk",
+      "toneFormal": "Formeel - Professioneel en gestructureerd",
+      "toneCasual": "Informeel - Ontspannen en conversatief",
+      "toneProfessional": "Professioneel - Gebalanceerde warmte en professionaliteit",
+      "formality": "Formaliteitsniveau",
+      "formalityDesc": "Hoe formeel moet je communicatie zijn",
+      "formalityFormal": "Formeel - Volledige zinnen, geen afkortingen",
+      "formalityProfessional": "Professioneel - Helder en zakelijk",
+      "formalityCasual": "Informeel - Ontspannen grammatica, vriendelijk",
+      "emoji": "Gebruik Emoji",
+      "emojiDesc": "Emoji's gebruiken in professionele communicatie",
+      "length": "Schrijflengte",
+      "lengthDesc": "Hoe gedetailleerd moet je communicatie zijn",
+      "lengthConcise": "Beknopt - Kort en bondig",
+      "lengthDetailed": "Gedetailleerd - Grondige uitleg",
+      "signoff": "E-mail Afsluiting",
+      "signoffDesc": "Hoe je je e-mails graag afsluit"
+    },
+    "subscription": {
+      "description": "Beheer je abonnement, bekijk gebruik en facturen"
+    },
+    "integrations": {
+      "description": "Koppel je CRM, kalender en andere tools"
+    },
+    "notifications": {
+      "description": "Stel je e-mail en push notificaties in"
+    },
+    "comingSoon": "Binnenkort"
+  },
+  "deals": {
+    "new": {
+      "title": "Nieuwe Deal Aanmaken",
+      "for": "voor",
+      "create": "Deal Aanmaken",
+      "info": "Deals helpen je om meerdere meetings en activiteiten voor dezelfde kans te organiseren. Je kunt voorbereidingen en follow-ups linken aan deze deal."
+    },
+    "form": {
+      "name": "Deal Naam",
+      "namePlaceholder": "bijv. Enterprise Licentie 2025",
+      "nameHelp": "Geef je deal een duidelijke, beschrijvende naam",
+      "description": "Beschrijving (optioneel)",
+      "descriptionPlaceholder": "Context, notities of andere nuttige info voor deze kans...",
+      "descriptionHelp": "Voeg context toe die je helpt deze kans te volgen"
+    },
+    "status": {
+      "active": "Actief",
+      "archived": "Gearchiveerd"
+    },
+    "stats": {
+      "meetings": "Meetings",
+      "preps": "Voorbereidingen",
+      "followups": "Follow-ups"
+    },
+    "sections": {
+      "meetings": "Meetings",
+      "meetingsDesc": "Alle meetings gekoppeld aan deze deal"
+    },
+    "actions": {
+      "archive": "Deal Archiveren",
+      "activate": "Deal Activeren",
+      "delete": "Deal Verwijderen",
+      "addMeeting": "Meeting Toevoegen",
+      "scheduleFirst": "Eerste Meeting Plannen"
+    },
+    "links": {
+      "viewPrep": "Bekijk Prep",
+      "createPrep": "Maak Prep",
+      "viewFollowup": "Bekijk Follow-up",
+      "createFollowup": "Maak Follow-up"
+    },
+    "empty": {
+      "noMeetings": "Nog Geen Meetings",
+      "noMeetingsDesc": "Begin met het plannen van je eerste meeting voor deze deal"
+    },
+    "confirm": {
+      "delete": "Weet je zeker dat je deze deal wilt verwijderen? Alle gekoppelde meetings worden ontkoppeld.",
+      "deleteTitle": "Deal verwijderen?",
+      "deleteDescription": "Deze actie kan niet ongedaan worden gemaakt. Alle meetings die aan deze deal zijn gekoppeld worden ontkoppeld."
+    },
+    "meetingStatus": {
+      "scheduled": "Gepland",
+      "completed": "Afgerond",
+      "cancelled": "Geannuleerd",
+      "noShow": "No-show"
+    },
+    "meetingTypes": {
+      "discovery": "Kennismaking",
+      "demo": "Demo",
+      "negotiation": "Onderhandeling",
+      "closing": "Afsluiting",
+      "review": "Review",
+      "other": "Anders"
+    },
+    "success": {
+      "created": "Deal succesvol aangemaakt",
+      "archived": "Deal gearchiveerd",
+      "activated": "Deal geactiveerd",
+      "deleted": "Deal verwijderd"
+    },
+    "errors": {
+      "nameRequired": "Deal naam is verplicht",
+      "createFailed": "Deal aanmaken mislukt",
+      "updateFailed": "Deal bijwerken mislukt",
+      "deleteFailed": "Deal verwijderen mislukt",
+      "loadFailed": "Deal laden mislukt",
+      "notFound": "Deal niet gevonden"
+    },
+    "backToProspect": "Terug naar Prospect"
+  },
+  "prospects": {
+    "title": "Mijn Prospects",
+    "subtitle": "Beheer al je prospects en hun salestraject",
+    "search": {
+      "placeholder": "Zoek prospects..."
+    },
+    "actions": {
+      "newProspect": "Nieuwe Prospect",
+      "startResearch": "Start Research"
+    },
+    "status": {
+      "new": "Nieuw",
+      "researching": "Wordt onderzocht",
+      "qualified": "Gekwalificeerd",
+      "meeting_scheduled": "Meeting Gepland",
+      "proposal_sent": "Voorstel Verstuurd",
+      "won": "Gewonnen",
+      "lost": "Verloren",
+      "on_hold": "On Hold"
+    },
+    "empty": {
+      "title": "Nog Geen Prospects",
+      "description": "Begin met het onderzoeken van je eerste prospect"
+    },
+    "errors": {
+      "loadFailed": "Kon prospects niet laden"
+    }
+  },
+  "prospectHub": {
+    "tabs": {
+      "overview": "Overzicht",
+      "research": "Research",
+      "contacts": "Contacten",
+      "deals": "Deals",
+      "timeline": "Tijdlijn"
+    },
+    "stats": {
+      "research": "Research",
+      "contacts": "Contacten",
+      "activeDeals": "Actieve Deals",
+      "meetings": "Meetings"
+    },
+    "sections": {
+      "activeDeals": "Actieve Deals",
+      "activeDealsDesc": "Lopende kansen bij deze prospect",
+      "latestResearch": "Laatste Research",
+      "keyContacts": "Belangrijke Contacten",
+      "recentActivity": "Recente Activiteit",
+      "researchBrief": "Research Brief",
+      "allContacts": "Alle Contacten",
+      "archivedDeals": "Gearchiveerde Deals",
+      "activityTimeline": "Activiteiten Tijdlijn"
+    },
+    "status": {
+      "active": "Actief",
+      "archived": "Gearchiveerd",
+      "completed": "Voltooid"
+    },
+    "actions": {
+      "newDeal": "Nieuwe Deal",
+      "createFirstDeal": "Eerste Deal Aanmaken",
+      "viewAll": "Bekijk Alles",
+      "viewResearch": "Bekijk Research",
+      "startResearch": "Start Research",
+      "openFull": "Open Volledig",
+      "addContact": "Contact Toevoegen"
+    },
+    "empty": {
+      "noDeals": "Nog geen actieve deals",
+      "noContacts": "Geen contacten toegevoegd",
+      "noActivity": "Geen recente activiteit",
+      "noResearchTitle": "Nog Geen Research",
+      "noResearchDesc": "Start met het onderzoeken van deze prospect voor AI-gestuurde inzichten",
+      "noContactsTitle": "Nog Geen Contacten",
+      "noContactsDesc": "Voeg contacten toe om je sales aanpak te personaliseren",
+      "noActiveDeals": "Geen actieve deals",
+      "noTimelineTitle": "Nog Geen Activiteit",
+      "noTimelineDesc": "Activiteiten verschijnen hier terwijl je met deze prospect werkt"
+    },
+    "errors": {
+      "loadFailed": "Kon prospect data niet laden",
+      "notFound": "Prospect niet gevonden"
+    }
+  },
+  "billing": {
+    "currentPlan": "Huidig plan",
+    "trialEnds": "Trial eindigt",
+    "soon": "binnenkort",
+    "usageThisMonth": "Gebruik deze maand",
+    "upgradeToSolo": "Upgrade naar Solo",
+    "manageSubscription": "Beheer abonnement",
+    "viewAllPlans": "Bekijk alle plannen",
+    "cancelWarning": "Je abonnement wordt geannuleerd op {date}",
+    "perMonth": "/maand",
+    "perYear": "/jaar",
+    "checkoutError": "Kon checkout niet starten. Probeer opnieuw.",
+    "portalError": "Kon beheerportaal niet openen. Probeer opnieuw.",
+    "pricing": {
+      "title": "Kies het plan dat bij je past",
+      "titleV2": "Simpele prijzen voor elke sales pro",
+      "subtitle": "Start gratis en upgrade wanneer je klaar bent. 14 dagen gratis proberen, geen creditcard nodig.",
+      "subtitleV2": "Start gratis met 2 flows. Upgrade wanneer je meer nodig hebt.",
+      "flowExplanation": "1 Flow = 1 Research + 1 Prep + 1 Follow-up",
+      "monthly": "Maandelijks",
+      "yearly": "Jaarlijks",
+      "save": "Bespaar {percent}%",
+      "backToDashboard": "Terug naar dashboard",
+      "popular": "Populair",
+      "earlyAdopter": "Early Adopter",
+      "currentPlan": "Huidig plan",
+      "select": "Selecteer",
+      "startFree": "Start Gratis",
+      "startTrial": "Start 14 dagen trial",
+      "getStarted": "Aan de slag",
+      "upgrade": "Upgraden",
+      "goUnlimited": "Ga Unlimited",
+      "contactUs": "Neem contact op",
+      "contactSales": "Contact Sales",
+      "alreadyFree": "Je hebt al het gratis plan.",
+      "donate": "Steun ons ❤️",
+      "perYear": "per jaar",
+      "contactForPricing": "Neem contact op voor pricing",
+      "custom": "Op maat",
+      "compareFeatures": "Vergelijk features",
+      "feature": "Feature",
+      "trustBadges": "🔒 Veilig betalen via Stripe • 💳 iDEAL, creditcard, Bancontact • ❌ Opzeggen wanneer je wilt",
+      "whatIsFlow": "Wat is een Flow?",
+      "flowStep1": "Research",
+      "flowStep2": "Voorbereiding",
+      "flowStep3": "Follow-up",
+      "flowDescription": "Een complete sales cyclus van prospect research tot meeting follow-up."
+    },
+    "plans": {
+      "free": {
+        "name": "Free",
+        "description": "Perfect om te starten"
+      },
+      "solo": {
+        "name": "Solo",
+        "description": "Voor de individuele sales professional"
+      },
+      "teams": {
+        "name": "Teams",
+        "description": "Voor sales teams"
+      },
+      "v2": {
+        "free": {
+          "description": "Start gratis met 2 flows"
+        },
+        "lightSolo": {
+          "name": "Light Solo",
+          "description": "Voor de startende sales pro"
+        },
+        "unlimitedSolo": {
+          "name": "Unlimited Solo",
+          "description": "Onbeperkt voor early adopters"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "description": "Voor teams met CRM behoeften"
+        }
+      }
+    },
+    "features": {
+      "researchBriefs": "research briefs",
+      "meetingPreps": "meeting preps",
+      "followups": "follow-ups",
+      "transcription": "Transcriptie",
+      "knowledgeBase": "Knowledge base",
+      "users": "Gebruikers",
+      "crmIntegration": "CRM integratie",
+      "perMonth": "/maand",
+      "unlimited": "Onbeperkt",
+      "hours": "uur",
+      "docs": "docs",
+      "v2": {
+        "flows": "{count} flows per maand",
+        "flowsUnlimited": "Onbeperkt flows",
+        "kb": "Knowledge Base inbegrepen",
+        "transcription": "Transcriptie inbegrepen",
+        "contacts": "Volledige contact analyse",
+        "pdf": "Clean PDF exports",
+        "user": "{count} gebruiker",
+        "usersUnlimited": "Onbeperkt gebruikers",
+        "support": "Email support",
+        "prioritySupport": "Priority support",
+        "dedicatedSupport": "Dedicated support",
+        "crm": "CRM integratie",
+        "crmDynamics": "Microsoft Dynamics",
+        "crmSalesforce": "Salesforce",
+        "crmHubspot": "HubSpot",
+        "crmPipedrive": "Pipedrive",
+        "crmZoho": "Zoho CRM",
+        "sso": "SSO/SAML"
+      },
+      "free": {
+        "research": "3 research briefs per maand",
+        "prep": "3 meeting preps per maand",
+        "followup": "1 follow-up transcriptie",
+        "support": "Community support",
+        "users": "1 gebruiker",
+        "kb": "Knowledge base",
+        "contacts": "Volledige contact analyse",
+        "pdf": "Clean PDF exports"
+      },
+      "solo": {
+        "research": "Onbeperkt research briefs",
+        "prep": "Onbeperkt meeting preps",
+        "followup": "Onbeperkt follow-ups",
+        "transcription": "10 uur transcriptie/maand",
+        "kb": "Knowledge base (50 docs)",
+        "contacts": "Volledige contact analyse",
+        "pdf": "Clean PDF exports",
+        "support": "Email support (48u)",
+        "users": "1 gebruiker"
+      },
+      "teams": {
+        "everything": "Alles in Solo",
+        "users": "Onbeperkt gebruikers",
+        "transcription": "Onbeperkt transcriptie",
+        "kb": "Onbeperkt knowledge base",
+        "crm": "CRM integratie",
+        "sharing": "Team sharing & samenwerking",
+        "analytics": "Team analytics",
+        "sso": "SSO/SAML",
+        "support": "Dedicated support",
+        "onboarding": "Onboarding call"
+      }
+    },
+    "success": {
+      "title": "Betaling gelukt!",
+      "description": "Bedankt voor je aankoop. Je account wordt nu geactiveerd.",
+      "redirecting": "Je wordt doorgestuurd naar het dashboard...",
+      "goToDashboard": "Ga naar Dashboard"
+    },
+    "cancel": {
+      "title": "Betaling geannuleerd",
+      "description": "Je betaling is geannuleerd. Je kunt het opnieuw proberen wanneer je wilt.",
+      "backToPricing": "Terug naar Prijzen"
+    }
+  },
+  "homepage": {
+    "nav": {
+      "login": "Inloggen",
+      "getStarted": "Aan de slag"
+    },
+    "hero": {
+      "badge": "AI-Powered Sales Enablement",
+      "title": "Bereid meetings voor",
+      "titleHighlight": "in seconden",
+      "description": "Research prospects, genereer gepersonaliseerde briefs en volg op met AI-gestuurde samenvattingen. Alles wat je nodig hebt om meer deals te sluiten, sneller.",
+      "startTrial": "Start Gratis Proefperiode",
+      "startFree": "Start Gratis",
+      "viewPricing": "Bekijk Prijzen",
+      "watchDemo": "Bekijk Demo"
+    },
+    "preview": {
+      "research": "Research",
+      "brief": "Brief",
+      "aiMeetingBrief": "AI Meeting Brief",
+      "generatedIn": "Gegenereerd in 30 seconden"
+    },
+    "features": {
+      "title": "Alles wat je nodig hebt om meer deals te winnen",
+      "description": "Van research tot follow-up, DealMotion helpt je bij elke stap van je salesproces.",
+      "research": {
+        "title": "Prospect Research",
+        "description": "AI-gestuurde research over elk bedrijf. Krijg inzichten in hun business, uitdagingen en kansen."
+      },
+      "preparation": {
+        "title": "Meeting Voorbereiding",
+        "description": "Genereer gepersonaliseerde meeting briefs met gesprekspunten, vragen en strategie-aanbevelingen."
+      },
+      "followup": {
+        "title": "Meeting Follow-up",
+        "description": "Upload opnames, krijg AI-samenvattingen, actiepunten en concept follow-up emails automatisch."
+      },
+      "aiCoach": {
+        "title": "AI Sales Coach",
+        "description": "Je persoonlijke sales coach die je patronen analyseert en praktische tips geeft om te verbeteren."
+      },
+      "knowledgeBase": {
+        "title": "Knowledge Base",
+        "description": "Upload je bedrijfsdocumenten. De AI gebruikt jouw context om relevante, on-brand content te genereren."
+      },
+      "contactAnalysis": {
+        "title": "Contact Analyse",
+        "description": "Krijg gedetailleerde profielen van beslissers met communicatievoorkeuren en engagement tips."
+      }
+    },
+    "socialProof": {
+      "trustedBy": "VERTROUWD DOOR SALES TEAMS BIJ"
+    },
+    "cta": {
+      "title": "Klaar om je salesproces te transformeren?",
+      "description": "Sluit je aan bij duizenden sales professionals die meer deals sluiten met DealMotion.",
+      "button": "Start Gratis"
+    },
+    "footer": {
+      "rights": "Alle rechten voorbehouden."
+    }
+  },
+  "authForm": {
+    "orContinueWith": "Of ga verder met email",
+    "email": "Email",
+    "emailPlaceholder": "naam@voorbeeld.nl",
+    "password": "Wachtwoord",
+    "signInEmail": "Inloggen met Email",
+    "signUpEmail": "Registreren met Email",
+    "termsPrefix": "Door je aan te melden, ga je akkoord met onze",
+    "termsOfService": "Servicevoorwaarden",
+    "and": "en",
+    "privacyPolicy": "Privacybeleid",
+    "errors": {
+      "oauthError": "Authenticatie mislukt. Probeer het opnieuw.",
+      "accessDenied": "Aanmelden is geannuleerd.",
+      "serverError": "De authenticatieprovider is tijdelijk niet beschikbaar. Probeer het later opnieuw.",
+      "genericSignIn": "Er is een fout opgetreden tijdens het inloggen.",
+      "genericSignUp": "Er is een fout opgetreden tijdens het registreren."
+    }
+  },
+  "coach": {
+    "name": "Luna",
+    "tagline": "Jouw AI Sales Coach",
+    
+    "widget": {
+      "expand": "Uitklappen",
+      "collapse": "Inklappen",
+      "close": "Sluiten",
+      "settings": "Instellingen",
+      "hideForToday": "Verberg voor vandaag",
+      "allCaughtUp": "Alles bijgewerkt!",
+      "greatWork": "Goed bezig! Kom later terug voor nieuwe suggesties."
+    },
+    
+    "completion": {
+      "researchComplete": {
+        "title": "Research Voltooid!",
+        "description": "Goed bezig! Je research over {company} is klaar. Wat wil je nu doen?",
+        "addContacts": "Contacten Toevoegen",
+        "addContactsDesc": "Voeg belangrijke personen toe",
+        "createPrep": "Voorbereiding Maken",
+        "createPrepDesc": "Start nu met meeting prep"
+      },
+      "contactsAdded": {
+        "title": "Contacten Toegevoegd!",
+        "description": "Je hebt {count} toegevoegd aan {company}. Luna kan nu gepersonaliseerde gespreksstarters genereren.",
+        "createPrep": "Voorbereiding Maken",
+        "createPrepDesc": "Krijg gepersonaliseerde gespreksonderwerpen",
+        "addMore": "Meer Contacten Toevoegen",
+        "addMoreDesc": "Vind meer mensen om mee te verbinden"
+      },
+      "prepReady": {
+        "title": "Voorbereiding Klaar!",
+        "description": "Je meeting voorbereiding voor {company} is compleet. Succes met je meeting!",
+        "viewPrep": "Bekijk Voorbereiding",
+        "viewPrepDesc": "Bekijk je voorbereiding",
+        "addFollowup": "Follow-up Later Toevoegen",
+        "addFollowupDesc": "Maak later een follow-up"
+      },
+      "followupComplete": {
+        "title": "Follow-up Aangemaakt!",
+        "description": "Je meeting follow-up is klaar. Genereer acties om het meeste uit je meeting te halen.",
+        "generateReport": "Rapport Genereren",
+        "generateReportDesc": "Maak een deelbare samenvatting",
+        "viewActions": "Bekijk Alle Acties",
+        "viewActionsDesc": "Bekijk alle follow-up opties"
+      },
+      "actionGenerated": {
+        "title": "Actie Gegenereerd!",
+        "description": "Je {actionType} is klaar.",
+        "export": "Exporteren",
+        "exportDesc": "Download of deel de actie",
+        "moreActions": "Meer Acties",
+        "moreActionsDesc": "Maak extra acties"
+      },
+      "generic": {
+        "title": "Goed Bezig!",
+        "description": "Je hebt een taak succesvol voltooid.",
+        "continue": "Doorgaan",
+        "continueDesc": "Ga verder"
+      }
+    },
+    
+    "inlineTips": {
+      "researchForm": {
+        "title": "Pro tip: Wees specifiek",
+        "description": "Voeg de bedrijfswebsite of LinkedIn URL toe voor betere research resultaten."
+      },
+      "contactsEmpty": {
+        "title": "Voeg eerst contacten toe",
+        "description": "Het toevoegen van contactpersonen voordat je een voorbereiding maakt verbetert je meeting resultaten met 40%.",
+        "action": "Contacten toevoegen"
+      },
+      "contactsFew": {
+        "title": "Voeg meer contacten toe",
+        "description": "Met 2-3 contacten heeft Luna meer context voor gepersonaliseerde gespreksstarters."
+      },
+      "prepForm": {
+        "title": "Beste timing",
+        "description": "Maak je voorbereiding 1-2 dagen voor de meeting voor optimale resultaten."
+      },
+      "prepNoContacts": {
+        "title": "Contacten ontbreken",
+        "description": "Je voorbereiding wordt algemener zonder contactpersonen. Voeg eerst contacten toe voor gepersonaliseerde gespreksonderwerpen.",
+        "action": "Voeg eerst contacten toe"
+      },
+      "followupForm": {
+        "title": "Upload je opname",
+        "description": "Upload je meeting opname of transcript om uitgebreide follow-up acties te genereren."
+      },
+      "dealForm": {
+        "title": "Volg je deal",
+        "description": "Het koppelen van deals aan prospects helpt Luna betere pipeline inzichten te geven."
+      },
+      "exportAvailable": {
+        "title": "Export beschikbaar",
+        "description": "Je kunt deze brief exporteren als PDF, Word of Markdown via het dropdown menu."
+      }
+    },
+    
+    "sections": {
+      "priority": "Prioriteit",
+      "suggestions": "Suggesties",
+      "progress": "Voortgang Vandaag",
+      "tip": "Tip van de Dag",
+      "score": "Succes Score",
+      "predictions": "Voorspellingen",
+      "recommendations": "Aanbevelingen"
+    },
+    
+    "actions": {
+      "doIt": "Doen",
+      "later": "Later",
+      "skip": "Overslaan",
+      "snooze1hour": "Snooze 1 uur",
+      "snoozeTonight": "Herinner vanavond",
+      "snoozeTomorrow": "Herinner morgen"
+    },
+    
+    "suggestions": {
+      "addContacts": "Voeg contacten toe aan {company}",
+      "createPrep": "Maak meeting voorbereiding",
+      "uploadFollowup": "Upload meeting opname",
+      "generateReport": "Genereer klantrapport",
+      "reviewCoaching": "Bekijk sales coaching feedback"
+    },
+    
+    "reasons": {
+      "meetingTomorrow": "Meeting morgen om {time}",
+      "meetingIn": "Meeting over {hours} uur",
+      "noContacts": "Nog geen contacten toegevoegd",
+      "prepReady": "Voorbereiding is klaar",
+      "overdue": "{days} dagen sinds laatste activiteit"
+    },
+    
+    "tips": {
+      "contactsImprove": "Contacten toevoegen voor prep verbetert meeting resultaten met 40%",
+      "customerReports": "Klantrapporten verhogen follow-up response rates met 60%",
+      "prepTiming": "De beste preps worden 1-2 dagen voor de meeting gemaakt"
+    },
+    
+    "stats": {
+      "research": "Research",
+      "preps": "Preps",
+      "followups": "Follow-ups",
+      "completed": "vandaag voltooid"
+    },
+    
+    "settings": {
+      "title": "Coach Instellingen",
+      "enabled": "AI Coach Inschakelen",
+      "inlineTips": "Toon inline tips",
+      "completionModals": "Toon voltooiingssuggesties",
+      "quietHours": "Stille uren",
+      "frequency": "Notificatie frequentie",
+      "frequencyOptions": {
+        "minimal": "Minimaal",
+        "normal": "Normaal",
+        "frequent": "Frequent"
+      }
+    }
+  }
+}
+

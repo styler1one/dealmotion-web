@@ -1,0 +1,1434 @@
+{
+  "dashboard": {
+    "loading": "Cargando panel...",
+    "title": "Aquí está tu resumen de preparación de ventas.",
+    "greeting": {
+      "morning": "Buenos días",
+      "afternoon": "Buenas tardes",
+      "evening": "Buenas tardes",
+      "night": "Buenas noches"
+    },
+    "suggestions": {
+      "createProfile": "Comienza creando tu perfil de ventas para obtener resultados personalizados de IA",
+      "addCompany": "Agrega tu perfil de empresa para que la IA conozca tus productos y servicios",
+      "startResearch": "Investiga tu primer prospecto para comenzar tu preparación de ventas",
+      "addContact": "La investigación de {company} está lista - ahora agrega una persona de contacto",
+      "uploadMeeting": "Después de tu reunión: sube la grabación para transcripción y acciones de seguimiento",
+      "needsFollowup": "¿Tuviste una reunión con {company}? Sube la grabación para seguimiento",
+      "allDone": "¡Excelente trabajo! Tu preparación de ventas va por buen camino 🎉"
+    },
+    "actions": {
+      "createProfile": "Crear perfil",
+      "addCompany": "Agregar empresa",
+      "startResearch": "Iniciar investigación",
+      "addContact": "Agregar contacto",
+      "uploadMeeting": "Subir reunión",
+      "followup": "Seguimiento",
+      "newProspect": "Nuevo prospecto",
+      "prepare": "Preparar",
+      "complete": "Completado",
+      "researchInProgress": "Investigación en progreso..."
+    },
+    "prospects": {
+      "title": "Mis prospectos",
+      "empty": "Aún no hay prospectos",
+      "emptyDescription": "Comienza con tu primera investigación de prospectos",
+      "viewAll": "Ver los {count} prospectos"
+    },
+    "stats": {
+      "thisWeek": "Esta semana",
+      "research": "Investigación",
+      "preparations": "Preparaciones",
+      "followups": "Seguimientos"
+    },
+    "quickActions": {
+      "title": "Acciones rápidas",
+      "newResearch": "Nueva investigación",
+      "newPreparation": "Nueva preparación",
+      "newFollowup": "Nuevo seguimiento"
+    },
+    "profile": {
+      "salesProfile": "Perfil de ventas",
+      "companyProfile": "Perfil de empresa",
+      "complete": "Completo",
+      "incomplete": "Incompleto",
+      "documentsCount": "{count} documentos"
+    }
+  },
+  "common": {
+    "loading": "Cargando...",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "view": "Ver",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "search": "Buscar",
+    "select": "Seleccionar:",
+    "close": "Cerrar",
+    "copy": "Copiar",
+    "copied": "¡Copiado!",
+    "refresh": "Actualizar",
+    "add": "Añadir",
+    "remove": "Eliminar",
+    "yes": "Sí",
+    "no": "No",
+    "or": "o",
+    "and": "y",
+    "upload": "Subir documentos",
+    "download": "Descargar",
+    "extraOptions": "Opciones adicionales",
+    "confirm": "Confirmar",
+    "processing": "Procesando...",
+    "export": {
+      "markdownDownloaded": "Archivo Markdown descargado",
+      "pdfDownloaded": "Archivo PDF descargado",
+      "wordDownloaded": "Archivo Word descargado",
+      "pdfFailed": "Error al exportar PDF",
+      "wordFailed": "Error al exportar Word"
+    }
+  },
+  "navigation": {
+    "dashboard": "Panel",
+    "prospects": "Prospectos",
+    "research": "Investigación",
+    "preparation": "Preparación",
+    "followup": "Seguimiento",
+    "profile": "Perfil",
+    "companyProfile": "Perfil de empresa",
+    "knowledgeBase": "Base de conocimientos",
+    "settings": "Configuración",
+    "logout": "Cerrar sesión",
+    "main": "Principal",
+    "profiles": "Perfiles"
+  },
+  "auth": {
+    "login": "Iniciar sesión",
+    "signup": "Registrarse",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "noAccount": "¿No tienes cuenta?",
+    "hasAccount": "¿Ya tienes cuenta?",
+    "continueWithGoogle": "Continuar con Google",
+    "continueWithMicrosoft": "Continuar con Microsoft"
+  },
+  "status": {
+    "completed": "Completado",
+    "inProgress": "En progreso",
+    "failed": "Fallido",
+    "pending": "Pendiente",
+    "new": "Nuevo"
+  },
+  "time": {
+    "justNow": "Ahora mismo",
+    "minutesAgo": "hace {count} min",
+    "hoursAgo": "hace {count} h",
+    "yesterday": "Ayer",
+    "daysAgo": "hace {count} días"
+  },
+  "errors": {
+    "generic": "Algo salió mal",
+    "network": "Error de red, inténtalo de nuevo",
+    "unauthorized": "No autorizado",
+    "notFound": "No encontrado",
+    "validation": "Por favor verifica tus datos",
+    "timeout": "Tiempo de espera agotado, inténtalo de nuevo",
+    "serverError": "Error del servidor, inténtalo más tarde",
+    "forbidden": "No tienes permiso para realizar esta acción",
+    "fileTooLarge": "El archivo es demasiado grande (máx {maxSize})",
+    "invalidFileType": "Tipo de archivo inválido",
+    "uploadFailed": "Error al subir, inténtalo de nuevo",
+    "deleteFailed": "Error al eliminar, inténtalo de nuevo",
+    "saveFailed": "No se pudieron guardar los cambios",
+    "loadFailed": "No se pudieron cargar los datos",
+    "sessionExpired": "Tu sesión ha expirado, inicia sesión de nuevo",
+    "rateLimited": "Demasiadas solicitudes, espera un momento",
+    "usageLimitReached": "Límite de uso alcanzado. Actualiza tu plan para continuar.",
+    "tryAgain": "Intentar de nuevo",
+    "goBack": "Volver",
+    "contactSupport": "Contacta al soporte si este problema persiste",
+    "globalError": {
+      "title": "Algo salió mal",
+      "description": "Ocurrió un error inesperado. Nuestro equipo ha sido notificado y está trabajando en una solución.",
+      "tryAgain": "Intentar de nuevo",
+      "goToDashboard": "Ir al Panel",
+      "devDetails": "Detalles del error (solo desarrollo)"
+    }
+  },
+  "research": {
+    "title": "Agente de Investigación",
+    "subtitle": "Investigación de prospectos impulsada por IA para tus conversaciones de ventas",
+    "loading": "Cargando...",
+    "form": {
+      "title": "Nueva Investigación",
+      "companyName": "Nombre de Empresa",
+      "companyNamePlaceholder": "ej. Telefónica, BBVA...",
+      "country": "País",
+      "countryPlaceholder": "ej. España",
+      "searchCompany": "Buscar Empresa",
+      "searching": "Buscando...",
+      "extraOptions": "Opciones adicionales",
+      "website": "Sitio web (opcional)",
+      "websitePlaceholder": "https://...",
+      "linkedin": "LinkedIn (opcional)",
+      "linkedinPlaceholder": "https://linkedin.com/company/...",
+      "city": "Ciudad",
+      "cityPlaceholder": "ej. Madrid",
+      "startResearch": "Iniciar Investigación",
+      "researching": "Analizando..."
+    },
+    "validation": {
+      "companyNameTooShort": "Nombre muy corto",
+      "companyNameTooShortDesc": "Ingrese al menos 3 caracteres",
+      "countryRequired": "País requerido",
+      "countryRequiredDesc": "Ingrese un país para encontrar la empresa correcta",
+      "companyNameRequired": "Nombre requerido",
+      "companyNameRequiredDesc": "Ingrese un nombre de empresa"
+    },
+    "search": {
+      "noResults": "No se encontraron empresas",
+      "noResultsDesc": "Sin resultados para \"{company}\" en {country}. Ingrese el sitio web manualmente.",
+      "failed": "Búsqueda fallida",
+      "failedDesc": "Algo salió mal. Por favor intente de nuevo.",
+      "selected": "Empresa seleccionada",
+      "selectedDesc": "{company} - datos completados automáticamente"
+    },
+    "toast": {
+      "started": "Investigación iniciada",
+      "startedDesc": "Su investigación se está generando. Esto toma 2-3 minutos.",
+      "failed": "Investigación fallida",
+      "failedDesc": "No se pudo iniciar la investigación",
+      "deleted": "Eliminado",
+      "deletedDesc": "El brief de investigación ha sido eliminado",
+      "deleteFailed": "Error al eliminar",
+      "deleteFailedDesc": "No se pudo eliminar. Por favor intente de nuevo.",
+      "loadFailed": "No se pudo cargar",
+      "loadFailedDesc": "Ocurrió un error al cargar el brief"
+    },
+    "history": {
+      "title": "Mis Prospectos",
+      "empty": "Aún no hay investigación",
+      "emptyDesc": "Inicie su primera investigación de prospecto a la derecha →",
+      "viewAll": "Ver los {count} briefs"
+    },
+    "stats": {
+      "title": "Resumen",
+      "completed": "Completado",
+      "researching": "En Progreso",
+      "failed": "Fallido"
+    },
+    "howItWorks": {
+      "title": "¿Cómo funciona?",
+      "step1": "Investigación",
+      "step1Desc": "La IA recopila info",
+      "step2": "Contactos",
+      "step2Desc": "Agregue contactos",
+      "step3": "Preparación",
+      "step3Desc": "Genere el brief"
+    },
+    "brief": {
+      "generatedAt": "Generado el",
+      "view": "Ver",
+      "copy": "Copiar",
+      "copied": "¡Copiado!",
+      "download": "Descargar PDF",
+      "delete": "Eliminar",
+      "edit": "Editar",
+      "save": "Guardar",
+      "saving": "Guardando...",
+      "cancel": "Cancelar",
+      "saved": "Cambios guardados",
+      "savedDesc": "Tus cambios se han guardado correctamente",
+      "saveFailed": "Error al guardar",
+      "saveFailedDesc": "Se produjo un error al guardar tus cambios"
+    },
+    "detail": {
+      "discoveryQuestions": "Preguntas de Descubrimiento",
+      "aiContext": "Contexto IA",
+      "knowledgeBaseActive": "Base de Conocimiento Activa",
+      "documentsUsed": "{count} documentos utilizados",
+      "contactsPanel": {
+        "noContacts": "Sin contactos aún",
+        "addForPreparation": "Agregar para preparación personalizada"
+      }
+    },
+    "contacts": {
+      "title": "Contactos",
+      "add": "Agregar Contacto",
+      "addShort": "Agregar",
+      "name": "Nombre",
+      "namePlaceholder": "ej. Juan García",
+      "role": "Rol/Cargo",
+      "rolePlaceholder": "ej. Director de Ventas",
+      "linkedinUrl": "URL de LinkedIn",
+      "linkedinPlaceholder": "https://linkedin.com/in/...",
+      "searchOnline": "Buscar en línea",
+      "searching": "Buscando...",
+      "cancel": "Cancelar",
+      "empty": "Sin contactos aún",
+      "emptyDesc": "Agregue contactos para preparación personalizada",
+      "analyzing": "Analizando...",
+      "analyzed": "Analizado",
+      "primary": "Principal",
+      "viewAnalysis": "Ver análisis",
+      "found": "Persona encontrada",
+      "foundDesc": "{role} en LinkedIn",
+      "foundProfile": "Perfil de LinkedIn encontrado",
+      "notFound": "No encontrado",
+      "notFoundDesc": "No se pudo encontrar perfil. Ingrese manualmente.",
+      "searchFailed": "Búsqueda fallida",
+      "searchFailedDesc": "Ocurrió un error al buscar",
+      "added": "Contacto agregado",
+      "addedDesc": "Análisis IA iniciado...",
+      "analysisComplete": "Análisis completo",
+      "analysisCompleteDesc": "{name} ha sido analizado",
+      "addFailed": "No se pudo agregar",
+      "search": {
+        "errorTitle": "Error",
+        "errorAddFailed": "No se pudo agregar el contacto"
+      }
+    },
+    "context": {
+      "title": "Contexto IA",
+      "salesProfile": "Tu Perfil de Ventas",
+      "companyProfile": "Perfil de Empresa",
+      "researchBrief": "Brief de Investigación",
+      "contacts": "Contactos"
+    },
+    "nextStep": {
+      "addContact": {
+        "title": "Agregar Contacto",
+        "description": "Agrega al menos un contacto para una preparación personalizada.",
+        "button": "Agregar Contacto",
+        "hint": "Después puedes iniciar la preparación"
+      },
+      "ready": {
+        "title": "Siguiente Paso",
+        "description": "Crea una preparación de conversación personalizada con todo el contexto recopilado.",
+        "button": "Iniciar Preparación",
+        "withContacts": "Con {count} contacto(s)"
+      }
+    }
+  },
+  "preparation": {
+    "title": "Preparación de Reunión",
+    "subtitle": "Briefings generados por IA para tus conversaciones de ventas",
+    "loading": "Cargando...",
+    "context": {
+      "title": "Contexto IA",
+      "description": "Estos datos se combinaron para esta preparación:",
+      "salesProfile": "Tu Perfil de Ventas",
+      "companyProfile": "Tu Perfil de Empresa"
+    },
+    "form": {
+      "title": "Nueva Preparación",
+      "selectProspect": "Seleccionar Prospecto",
+      "selectProspectPlaceholder": "Elige una empresa...",
+      "selectContacts": "Seleccionar Contactos",
+      "selectDeal": "Vincular a Deal (opcional)",
+      "selectDealPlaceholder": "Elige un deal...",
+      "noDeal": "Sin deal",
+      "noContacts": "No hay contactos disponibles",
+      "addContactsFirst": "Primero agrega contactos en Investigación",
+      "customNotes": "Contexto Adicional",
+      "customNotesPlaceholder": "Opcional: info extra para esta reunión...",
+      "startPrep": "Generar Preparación",
+      "generating": "Generando..."
+    },
+    "history": {
+      "title": "Mis Preparaciones",
+      "empty": "Aún no hay preparaciones",
+      "emptyDesc": "Inicia tu primera preparación a la derecha →",
+      "toFollowup": "→ Seguimiento"
+    },
+    "stats": {
+      "title": "Resumen",
+      "completed": "Completado",
+      "generating": "En Progreso"
+    },
+    "whatYouGet": {
+      "title": "¿Qué obtienes?",
+      "item1": "Apertura personalizada",
+      "item1Desc": "Adaptada al prospecto",
+      "item2": "Temas de conversación",
+      "item2Desc": "Puntos de discusión relevantes",
+      "item3": "Resumen DMU",
+      "item3Desc": "Tomadores de decisiones mapeados"
+    },
+    "detail": {
+      "meetingContext": "Contexto de Reunión",
+      "quickActions": "Acciones Rápidas",
+      "researchBrief": "Brief de Investigación",
+      "linkedResearch": "Investigación Vinculada",
+      "linkedContact": "Contacto Vinculado",
+      "linkedDeal": "Deal Vinculado",
+      "yourNotes": "Tus Notas"
+    },
+    "brief": {
+      "view": "Ver",
+      "copy": "Copiar",
+      "copied": "¡Copiado!",
+      "download": "Descargar PDF",
+      "generatedFor": "Preparación para",
+      "copyAll": "Copiar Todo",
+      "viewResearch": "Ver Investigación",
+      "edit": "Editar",
+      "save": "Guardar",
+      "saving": "Guardando...",
+      "cancel": "Cancelar",
+      "saved": "Cambios guardados",
+      "savedDesc": "Tus cambios se han guardado correctamente",
+      "saveFailed": "Error al guardar",
+      "saveFailedDesc": "Se produjo un error al guardar tus cambios"
+    },
+    "toast": {
+      "started": "Preparación iniciada",
+      "startedDesc": "Tu brief de reunión se está generando. Toma 1-2 minutos.",
+      "failed": "Preparación fallida",
+      "failedDesc": "No se pudo iniciar la preparación",
+      "selectProspect": "Selecciona un prospecto",
+      "selectContacts": "Selecciona contactos",
+      "deleted": "Eliminado",
+      "deletedDesc": "La preparación ha sido eliminada",
+      "deleteFailed": "Error al eliminar",
+      "deleteFailedDesc": "No se pudo eliminar la preparación",
+      "notLoggedIn": "No conectado",
+      "error": "Error",
+      "loadFailed": "No se pudo cargar",
+      "loadFailedDesc": "Se produjo un error"
+    },
+    "confirm": {
+      "delete": "¿Estás seguro de que quieres eliminar esta preparación?"
+    },
+    "nextStep": {
+      "title": "Después de tu Reunión",
+      "description": "Sube tu grabación para transcripción automática y seguimiento",
+      "button": "Ir a Seguimiento"
+    }
+  },
+  "followup": {
+    "title": "Agente de Seguimiento",
+    "subtitle": "Transcripción IA y resumen de tus conversaciones de ventas",
+    "loading": "Cargando...",
+    "form": {
+      "title": "Nuevo Seguimiento",
+      "selectProspect": "Seleccionar Prospecto",
+      "selectProspectPlaceholder": "Elige una empresa...",
+      "selectContact": "Seleccionar Contacto",
+      "selectDeal": "Vincular a Deal (opcional)",
+      "selectDealPlaceholder": "Elige un deal...",
+      "noDeal": "Sin deal",
+      "uploadAudio": "Archivo de Audio",
+      "uploadTranscript": "Archivo de Transcripción",
+      "dragDrop": "Arrastra el archivo aquí o haz clic para subir",
+      "supportedFormats": "Formatos soportados: MP3, WAV, M4A, WebM",
+      "includeCoaching": "Incluir feedback de coaching",
+      "startFollowup": "Iniciar Seguimiento",
+      "processing": "Procesando...",
+      "subject": "Asunto",
+      "subjectPlaceholder": "Ej. Llamada demo",
+      "date": "Fecha"
+    },
+    "history": {
+      "title": "Seguimientos Recientes",
+      "empty": "Sin seguimientos aún",
+      "emptyDesc": "Sube tu primera grabación a la derecha →"
+    },
+    "stats": {
+      "title": "Resumen",
+      "completed": "Completado",
+      "processing": "En Progreso"
+    },
+    "whatYouGet": {
+      "title": "¿Qué obtienes?",
+      "item1": "Transcripción",
+      "item1Desc": "Reconocimiento de voz automático",
+      "item2": "Resumen",
+      "item2Desc": "Puntos clave y acciones",
+      "item3": "Email de Seguimiento",
+      "item3Desc": "Email listo para enviar"
+    },
+    "detail": {
+      "summary": "Resumen",
+      "keyPoints": "Puntos Clave",
+      "concerns": "Preocupaciones",
+      "nextSteps": "Próximos Pasos",
+      "crossSellUpsell": "Cross/Upsell",
+      "risks": "Riesgos",
+      "doubts": "Dudas",
+      "unspokenNeeds": "Necesidades No Expresadas",
+      "tips": "Consejos",
+      "commercialSignals": "Señales Comerciales",
+      "observations": "Observaciones y Señales",
+      "coachingFeedback": "Feedback de Coaching",
+      "actionItems": "Puntos de Acción",
+      "emailDraft": "Borrador de Email",
+      "transcription": "Transcripción",
+      "copyTranscription": "Copiar Transcripción",
+      "meetingInfo": "Info de Reunión",
+      "date": "Fecha",
+      "duration": "Duración",
+      "speakers": "Participantes",
+      "linkedResearch": "Investigación Vinculada",
+      "linkedPreparation": "Preparación Vinculada",
+      "linkedDeal": "Deal Vinculado",
+      "linkedContact": "Contacto Vinculado",
+      "audioPlayer": "Reproductor de Audio",
+      "nextProspect": "¿Siguiente Prospecto?",
+      "nextProspectDesc": "Inicia una nueva investigación para tu próximo prospecto.",
+      "startNewResearch": "Iniciar nueva investigación",
+      "edit": "Editar",
+      "save": "Guardar",
+      "saving": "Guardando...",
+      "cancel": "Cancelar",
+      "saved": "Cambios guardados",
+      "savedDesc": "Tus cambios se han guardado correctamente",
+      "saveFailed": "Error al guardar",
+      "saveFailedDesc": "Se produjo un error al guardar tus cambios"
+    },
+    "toast": {
+      "started": "Seguimiento iniciado",
+      "startedDesc": "Tu grabación está siendo procesada. Toma 2-5 minutos.",
+      "failed": "Seguimiento fallido",
+      "failedDesc": "No se pudo iniciar el seguimiento",
+      "copied": "¡Copiado!",
+      "selectProspect": "Selecciona un prospecto",
+      "selectFile": "Selecciona un archivo",
+      "invalidFileType": "Tipo de archivo inválido",
+      "invalidFileTypeDescAudio": "Sube un archivo mp3, m4a, wav o webm",
+      "invalidFileTypeDescTranscript": "Sube un archivo txt, md, docx o srt",
+      "fileTooLarge": "Archivo demasiado grande",
+      "fileTooLargeDescAudio": "El tamaño máximo es 50MB",
+      "fileTooLargeDescTranscript": "El tamaño máximo es 10MB",
+      "noFileSelected": "Ningún archivo seleccionado",
+      "noFileSelectedDesc": "Selecciona primero un archivo",
+      "notFound": "Seguimiento no encontrado",
+      "deleted": "Eliminado",
+      "deletedDesc": "El seguimiento ha sido eliminado",
+      "deleteFailed": "Error al eliminar",
+      "deleteFailedDesc": "No se pudo eliminar el seguimiento",
+      "uploadStarted": "Subida iniciada",
+      "uploadStartedDesc": "Tu archivo está siendo procesado"
+    },
+    "confirm": {
+      "delete": "¿Estás seguro de que quieres eliminar este seguimiento?"
+    },
+    "actions": {
+      "title": "Acciones de Seguimiento",
+      "subtitle": "Genera resultados específicos de tu reunión",
+      "generating": "Generando...",
+      "generatingDesc": "{actionType} se está generando...",
+      "generated": "Generado",
+      "generatedDesc": "{actionType} está listo para ver",
+      "readyToView": "está listo para ver",
+      "clickToGenerate": "Clic para generar",
+      "error": "Error",
+      "regenerate": "Regenerar",
+      "regenerating": "Regenerando...",
+      "regeneratingDesc": "Puedes seguir trabajando mientras esto se genera en segundo plano.",
+      "delete": "Eliminar",
+      "confirmDelete": "¿Estás seguro de que quieres eliminar esta acción?",
+      "noContent": "Aún sin contenido",
+      "generationFailed": "Error en la generación",
+      "alreadyExists": "Acción ya generada",
+      "alreadyExistsDesc": "Esta acción ya fue generada. Haz clic para ver.",
+      "generationFailedDesc": "Ocurrió un error. Por favor, intenta regenerar.",
+      "tryAgain": "Intentar de nuevo",
+      "summaryReadOnly": "El resumen es de solo lectura",
+      "summaryCannotEdit": "El resumen no se puede editar aquí. Edita el resumen principal arriba.",
+      "summaryCannotDelete": "El resumen no se puede eliminar",
+      "summaryCannotRegenerate": "El resumen no se puede regenerar aquí",
+      "contextUsed": "Contexto utilizado",
+      "wordsGenerated": "palabras",
+      "generatingContent": "Generando contenido...",
+      "generatingTime": "Esto puede tomar 10-30 segundos",
+      "export": "Exportar",
+      "exportPdf": "Descargar PDF",
+      "exportDocx": "Descargar Word",
+      "exportMd": "Descargar Markdown",
+      "copied": "Copiado al portapapeles",
+      "changesSaved": "Cambios guardados",
+      "saveFailed": "Error al guardar",
+      "deleteFailed": "Error al eliminar",
+      "actionDeleted": "Acción eliminada",
+      "exportFailed": "Error en la exportación",
+      "pdfDownloaded": "PDF descargado",
+      "docxDownloaded": "Documento Word descargado",
+      "mdDownloaded": "Markdown descargado",
+      "time": {
+        "justNow": "ahora mismo",
+        "minAgo": "hace {count} min",
+        "hourAgo": "hace {count} hora",
+        "hoursAgo": "hace {count} horas",
+        "dayAgo": "hace {count} día",
+        "daysAgo": "hace {count} días"
+      },
+      "types": {
+        "summary": {
+          "label": "Resumen",
+          "description": "Resumen de la reunión con puntos clave y próximos pasos"
+        },
+        "customer_report": {
+          "label": "Informe de Cliente",
+          "description": "Informe profesional para compartir con el cliente"
+        },
+        "share_email": {
+          "label": "Email para Compartir",
+          "description": "Email listo para enviar con el informe"
+        },
+        "commercial_analysis": {
+          "label": "Análisis Comercial",
+          "description": "Señales de compra, riesgos y evaluación del negocio"
+        },
+        "sales_coaching": {
+          "label": "Coaching de Ventas",
+          "description": "Retroalimentación sobre tu desempeño de ventas"
+        },
+        "action_items": {
+          "label": "Puntos de Acción",
+          "description": "Tareas estructuradas con responsables y fechas límite"
+        },
+        "internal_report": {
+          "label": "Informe Interno",
+          "description": "Resumen corto para CRM o equipo"
+        }
+      }
+    },
+    "sections": {
+      "keyPoints": "Puntos Clave",
+      "discoveryQuestions": "Preguntas de Descubrimiento"
+    }
+  },
+  "profile": {
+    "title": "Perfil de Ventas",
+    "subtitle": "Tu perfil de ventas personal para salidas de IA personalizadas",
+    "loading": "Cargando perfil...",
+    "completeness": "Completitud del perfil",
+    "edit": "Editar",
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "noProfile": "No se encontró perfil",
+    "startOnboarding": "Inicia el onboarding para crear tu perfil",
+    "startOnboardingBtn": "Iniciar Onboarding",
+    "myStory": "Mi Historia",
+    "myStoryDesc": "Esta historia es usada por la IA para generar salidas personalizadas",
+    "summary": "Resumen",
+    "strengthsTitle": "Fortalezas y Desarrollo",
+    "strengths": "Fortalezas",
+    "weaknesses": "Áreas de mejora",
+    "approach": "Enfoque",
+    "notSet": "No establecido",
+    "years": "años",
+    "sections": {
+      "personal": "Datos Personales",
+      "experience": "Experiencia y Especialización",
+      "style": "Estilo de Ventas",
+      "goals": "Metas y Objetivos",
+      "targetMarket": "Mercado Objetivo",
+      "goalsPrefs": "Metas y Preferencias"
+    },
+    "fields": {
+      "fullName": "Nombre Completo",
+      "email": "Email",
+      "phone": "Teléfono",
+      "jobTitle": "Cargo",
+      "yearsExperience": "Años de Experiencia",
+      "industries": "Industrias",
+      "specializations": "Especializaciones",
+      "sellingStyle": "Estilo de Ventas",
+      "communicationPreference": "Preferencia de Comunicación",
+      "targetMarket": "Mercado Objetivo",
+      "quotaTarget": "Objetivo de Cuota",
+      "regions": "Regiones",
+      "companySizes": "Tamaños de empresa",
+      "quarterlyGoals": "Objetivos trimestrales",
+      "meetingTypes": "Tipos de reunión"
+    },
+    "howUsed": {
+      "title": "¿Cómo se usa esto?",
+      "prep": "Prep de Reunión",
+      "prepDesc": "La IA genera briefs adaptados a tu estilo",
+      "followup": "Emails de Seguimiento",
+      "followupDesc": "Emails escritos en tu tono",
+      "research": "Investigación",
+      "researchDesc": "Enfoque en info relevante para tu mercado"
+    },
+    "toast": {
+      "saved": "Perfil guardado",
+      "savedDesc": "Tus cambios han sido guardados",
+      "failed": "Error al guardar",
+      "failedDesc": "No se pudo guardar el perfil"
+    }
+  },
+  "companyProfile": {
+    "title": "Perfil de Empresa",
+    "subtitle": "Información de tu empresa para salidas de IA contextuales",
+    "loading": "Cargando perfil...",
+    "completeness": "Completitud del perfil",
+    "edit": "Editar",
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "noProfile": "No se encontró perfil de empresa",
+    "noProfileDesc": "Crea un perfil de empresa para obtener salidas de IA personalizadas",
+    "createProfile": "Crear Perfil de Empresa",
+    "ourStory": "Nuestra Historia",
+    "ourStoryDesc": "Esta historia es usada por la IA para generar contenido de ventas personalizado",
+    "summary": "Resumen",
+    "notSet": "No configurado",
+    "noProducts": "Sin productos añadidos",
+    "noPersonas": "Sin personas añadidas",
+    "noCaseStudies": "Sin casos de estudio añadidos",
+    "sections": {
+      "basic": "Información Básica",
+      "products": "Productos y Servicios",
+      "market": "Mercado y Competencia",
+      "values": "Valores y USPs",
+      "valueProps": "Propuestas de Valor",
+      "differentiators": "Diferenciadores",
+      "icp": "Perfil de Cliente Ideal",
+      "personas": "Buyer Personas",
+      "caseStudies": "Casos de Estudio",
+      "salesInfo": "Información de Ventas"
+    },
+    "howUsed": {
+      "title": "¿Cómo se usa?",
+      "prep": "Preparación Meeting",
+      "prepDesc": "La IA usa tus propuestas de valor y casos de estudio",
+      "followup": "Emails de Seguimiento",
+      "followupDesc": "La info de producto se añade automáticamente",
+      "research": "Investigación",
+      "researchDesc": "El ICP filtra info de prospectos relevante"
+    },
+    "fields": {
+      "companyName": "Nombre de Empresa",
+      "website": "Sitio Web",
+      "industry": "Industria",
+      "companySize": "Tamaño de Empresa",
+      "products": "Productos/Servicios",
+      "targetAudience": "Audiencia Objetivo",
+      "competitors": "Competidores",
+      "uniqueSellingPoints": "Puntos de Venta Únicos",
+      "companyValues": "Valores de Empresa"
+    },
+    "toast": {
+      "saved": "Perfil guardado",
+      "savedDesc": "Tus cambios han sido guardados",
+      "failed": "Error al guardar",
+      "failedDesc": "No se pudo guardar el perfil"
+    }
+  },
+  "knowledgeBase": {
+    "title": "Base de Conocimiento",
+    "subtitle": "Sube documentos para entrenar la IA con tu conocimiento empresarial",
+    "loading": "Cargando documentos...",
+    "upload": {
+      "title": "Subir Documentos",
+      "dragDrop": "Arrastra archivos aquí o haz clic para subir",
+      "supportedFormats": "Formatos soportados: PDF, DOCX, TXT, MD",
+      "uploading": "Subiendo...",
+      "maxSize": "Máx 10MB por archivo"
+    },
+    "files": {
+      "title": "Documentos Subidos",
+      "empty": "Sin documentos aún",
+      "emptyDesc": "Sube tu primer documento arriba",
+      "processing": "Procesando...",
+      "processed": "Procesado",
+      "failed": "Fallido",
+      "delete": "Eliminar"
+    },
+    "stats": {
+      "completed": "Procesado",
+      "processing": "En proceso",
+      "failed": "Fallido"
+    },
+    "toast": {
+      "uploaded": "Documento subido",
+      "uploadedDesc": "El documento está siendo procesado",
+      "deleted": "Documento eliminado",
+      "deletedDesc": "El documento ha sido eliminado de la base de conocimiento",
+      "failed": "Subida fallida",
+      "failedDesc": "No se pudo subir el documento",
+      "deleteFailed": "Fallo al eliminar",
+      "deleteFailedDesc": "No se pudo eliminar el documento"
+    }
+  },
+  "auth": {
+    "continueWithGoogle": "Continuar con Google",
+    "continueWithMicrosoft": "Continuar con Microsoft",
+    "login": {
+      "title": "Bienvenido de vuelta",
+      "subtitle": "Inicia sesión para continuar",
+      "email": "Correo electrónico",
+      "password": "Contraseña",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "submit": "Iniciar sesión",
+      "noAccount": "¿No tienes cuenta?",
+      "signUp": "Regístrate"
+    },
+    "signup": {
+      "title": "Crear cuenta",
+      "subtitle": "Comienza tu prueba gratuita",
+      "fullName": "Nombre completo",
+      "email": "Correo electrónico",
+      "password": "Contraseña",
+      "confirmPassword": "Confirmar contraseña",
+      "submit": "Registrarse",
+      "hasAccount": "¿Ya tienes cuenta?",
+      "logIn": "Iniciar sesión"
+    },
+    "errors": {
+      "invalidCredentials": "Credenciales inválidas",
+      "emailInUse": "Email ya está en uso",
+      "weakPassword": "Contraseña muy débil",
+      "passwordMismatch": "Las contraseñas no coinciden"
+    }
+  },
+  "onboarding": {
+    "title": "Bienvenido a DealMotion",
+    "subtitle": "Configuremos tu cuenta",
+    "welcome": "Bienvenido a DealMotion",
+    "welcomeDesc": "Conozcámonos mejor para personalizar tu experiencia",
+    "starting": "Iniciando tu entrevista de incorporación...",
+    "question": "Pregunta {current} de {total}",
+    "takeYourTime": "Tómate tu tiempo para una respuesta reflexiva",
+    "answerPlaceholder": "Escribe tu respuesta aquí...",
+    "goToDashboard": "Ir al Panel",
+    "updateProfile": "Actualizar Perfil",
+    "existingProfile": {
+      "title": "El perfil ya existe",
+      "description": "Ya tienes un perfil de ventas. ¿Quieres actualizarlo con una nueva entrevista?"
+    },
+    "steps": {
+      "profile": "Perfil de Ventas",
+      "company": "Perfil de Empresa",
+      "complete": "¡Listo!"
+    },
+    "profile": {
+      "title": "Cuéntanos sobre ti",
+      "description": "Esta información ayuda a la IA a generar salidas personalizadas"
+    },
+    "company": {
+      "title": "Cuéntanos sobre tu empresa",
+      "description": "Esto ayuda a la IA a entender tus productos y servicios",
+      "pageTitle": "Onboarding Perfil de Empresa",
+      "pageDesc": "Ayuda a la IA a entender tu empresa",
+      "questionOf": "Pregunta {current} de {total}",
+      "generating": "Generando Perfil de Empresa...",
+      "generatingDesc": "La IA está analizando tus respuestas y creando un perfil de empresa estructurado",
+      "generatingWait": "Esto puede tardar un momento...",
+      "couldNotLoad": "No se pudo cargar la entrevista",
+      "startInterview": "Iniciando entrevista...",
+      "yourAnswer": "Tu respuesta",
+      "answerPlaceholder": "Escribe tu respuesta aquí...",
+      "previous": "Anterior",
+      "requiredQuestion": "Pregunta obligatoria - responde lo más completamente posible",
+      "optionalQuestion": "Pregunta opcional - puedes omitirla"
+    },
+    "complete": {
+      "title": "¡Todo listo!",
+      "description": "Ahora puedes comenzar tu primera investigación de prospectos",
+      "button": "Ir al Panel",
+      "creating": "Creando tu perfil..."
+    },
+    "skip": "Saltar",
+    "next": "Siguiente",
+    "back": "Atrás",
+    "finish": "Finalizar",
+    "toast": {
+      "startError": "Error al iniciar",
+      "startErrorDesc": "No se pudo iniciar la entrevista. Por favor, inténtalo de nuevo.",
+      "saveError": "Error",
+      "saveErrorDesc": "No se pudo guardar la respuesta",
+      "profileCreated": "¡Perfil de empresa creado! 🎉",
+      "profileCreatedDesc": "Tu perfil de empresa se ha guardado correctamente.",
+      "createError": "Error",
+      "createErrorDesc": "No se pudo crear el perfil. Por favor, inténtalo de nuevo."
+    }
+  },
+  "language": {
+    "outputLanguage": "Idioma de salida",
+    "outputLanguageDesc": "Idioma para el contenido generado por IA",
+    "emailLanguage": "Idioma del correo",
+    "emailLanguageDesc": "Idioma para el correo de seguimiento",
+    "suggestedFrom": "Sugerido según el país",
+    "languages": {
+      "nl": "Nederlands",
+      "en": "English",
+      "de": "Deutsch",
+      "fr": "Français",
+      "es": "Español",
+      "hi": "हिन्दी",
+      "ar": "العربية"
+    }
+  },
+  "settings": {
+    "title": "Configuración",
+    "description": "Gestiona tus preferencias y configuración",
+    "language": {
+      "title": "Configuración de idioma",
+      "description": "Configura tus preferencias de idioma para la aplicación",
+      "appLanguage": "Idioma de la aplicación",
+      "appLanguageDesc": "El idioma de la interfaz de usuario",
+      "outputLanguage": "Idioma de salida predeterminado",
+      "outputLanguageDesc": "El idioma para el contenido generado por IA (briefs de investigación, preparaciones)",
+      "outputLanguageHint": "Puedes cambiar esto por acción",
+      "emailLanguage": "Idioma de correo predeterminado",
+      "emailLanguageDesc": "El idioma para los correos generados a clientes",
+      "emailLanguageHint": "Puedes cambiar esto por seguimiento"
+    },
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "saved": "Configuración guardada",
+    "savedDesc": "Tus preferencias han sido actualizadas",
+    "error": "Error al guardar",
+    "errorDesc": "No se pudo guardar tu configuración. Por favor, inténtalo de nuevo.",
+    "unsavedChanges": "Cambios sin guardar",
+    "sections": {
+      "language": "Idioma",
+      "account": "Cuenta",
+      "subscription": "Suscripción",
+      "integrations": "Integraciones",
+      "notifications": "Notificaciones"
+    },
+    "subscription": {
+      "description": "Gestiona tu suscripción, uso y facturas"
+    },
+    "integrations": {
+      "description": "Conecta tu CRM, calendario y otras herramientas"
+    },
+    "notifications": {
+      "description": "Configura tus notificaciones de correo y push"
+    },
+    "comingSoon": "Próximamente"
+  },
+  "deals": {
+    "new": {
+      "title": "Crear nuevo deal",
+      "for": "para",
+      "create": "Crear deal",
+      "info": "Los deals te ayudan a organizar múltiples reuniones y actividades para la misma oportunidad."
+    },
+    "form": {
+      "name": "Nombre del deal",
+      "namePlaceholder": "ej: Licencia Enterprise 2025",
+      "nameHelp": "Dale a tu deal un nombre claro y descriptivo",
+      "description": "Descripción (opcional)",
+      "descriptionPlaceholder": "Contexto, notas o información útil...",
+      "descriptionHelp": "Agrega contexto"
+    },
+    "status": {
+      "active": "Activo",
+      "archived": "Archivado"
+    },
+    "stats": {
+      "meetings": "Reuniones",
+      "preps": "Preparaciones",
+      "followups": "Follow-ups"
+    },
+    "sections": {
+      "meetings": "Reuniones",
+      "meetingsDesc": "Todas las reuniones vinculadas a este deal"
+    },
+    "actions": {
+      "archive": "Archivar deal",
+      "activate": "Activar deal",
+      "delete": "Eliminar deal",
+      "addMeeting": "Agregar reunión",
+      "scheduleFirst": "Programar primera reunión"
+    },
+    "links": {
+      "viewPrep": "Ver prep",
+      "createPrep": "Crear prep",
+      "viewFollowup": "Ver follow-up",
+      "createFollowup": "Crear follow-up"
+    },
+    "empty": {
+      "noMeetings": "Sin reuniones aún",
+      "noMeetingsDesc": "Programa tu primera reunión para este deal"
+    },
+    "confirm": {
+      "delete": "¿Estás seguro de que quieres eliminar este deal?",
+      "deleteTitle": "¿Eliminar deal?",
+      "deleteDescription": "Esta acción no se puede deshacer. Todas las reuniones vinculadas a este deal serán desvinculadas."
+    },
+    "meetingStatus": {
+      "scheduled": "Programado",
+      "completed": "Completado",
+      "cancelled": "Cancelado",
+      "noShow": "No asistió"
+    },
+    "meetingTypes": {
+      "discovery": "Descubrimiento",
+      "demo": "Demo",
+      "negotiation": "Negociación",
+      "closing": "Cierre",
+      "review": "Revisión",
+      "other": "Otro"
+    },
+    "success": {
+      "created": "Deal creado exitosamente",
+      "archived": "Deal archivado",
+      "activated": "Deal activado",
+      "deleted": "Deal eliminado"
+    },
+    "errors": {
+      "nameRequired": "El nombre del deal es requerido",
+      "createFailed": "Error al crear el deal",
+      "updateFailed": "Error al actualizar el deal",
+      "deleteFailed": "Error al eliminar el deal",
+      "loadFailed": "Error al cargar el deal",
+      "notFound": "Deal no encontrado"
+    },
+    "backToProspect": "Volver al prospecto"
+  },
+  "prospects": {
+    "title": "Mis Prospectos",
+    "subtitle": "Gestiona todos tus prospectos y su recorrido de ventas",
+    "search": {
+      "placeholder": "Buscar prospectos..."
+    },
+    "actions": {
+      "newProspect": "Nuevo Prospecto",
+      "startResearch": "Iniciar Investigación"
+    },
+    "status": {
+      "new": "Nuevo",
+      "researching": "Investigando",
+      "qualified": "Calificado",
+      "meeting_scheduled": "Reunión Programada",
+      "proposal_sent": "Propuesta Enviada",
+      "won": "Ganado",
+      "lost": "Perdido",
+      "on_hold": "En Espera"
+    },
+    "empty": {
+      "title": "Sin Prospectos Aún",
+      "description": "Comienza investigando tu primer prospecto"
+    },
+    "errors": {
+      "loadFailed": "Error al cargar prospectos"
+    }
+  },
+  "prospectHub": {
+    "tabs": {
+      "overview": "Resumen",
+      "research": "Investigación",
+      "contacts": "Contactos",
+      "deals": "Deals",
+      "timeline": "Cronología"
+    },
+    "stats": {
+      "research": "Investigación",
+      "contacts": "Contactos",
+      "activeDeals": "Deals Activos",
+      "meetings": "Reuniones"
+    },
+    "sections": {
+      "activeDeals": "Deals Activos",
+      "activeDealsDesc": "Oportunidades actuales con este prospecto",
+      "latestResearch": "Última Investigación",
+      "keyContacts": "Contactos Clave",
+      "recentActivity": "Actividad Reciente",
+      "researchBrief": "Brief de Investigación",
+      "allContacts": "Todos los Contactos",
+      "archivedDeals": "Deals Archivados",
+      "activityTimeline": "Cronología de Actividades"
+    },
+    "status": {
+      "active": "Activo",
+      "archived": "Archivado",
+      "completed": "Completado"
+    },
+    "actions": {
+      "newDeal": "Nuevo Deal",
+      "createFirstDeal": "Crear Primer Deal",
+      "viewAll": "Ver Todo",
+      "viewResearch": "Ver Investigación",
+      "startResearch": "Iniciar Investigación",
+      "openFull": "Abrir Completo",
+      "addContact": "Agregar Contacto"
+    },
+    "empty": {
+      "noDeals": "Aún no hay deals activos",
+      "noContacts": "Sin contactos agregados",
+      "noActivity": "Sin actividad reciente",
+      "noResearchTitle": "Sin Investigación Aún",
+      "noResearchDesc": "Comienza a investigar este prospecto para obtener insights de IA",
+      "noContactsTitle": "Sin Contactos Aún",
+      "noContactsDesc": "Agrega contactos para personalizar tu enfoque de ventas",
+      "noActiveDeals": "Sin deals activos",
+      "noTimelineTitle": "Sin Actividad Aún",
+      "noTimelineDesc": "Las actividades aparecerán aquí mientras trabajas con este prospecto"
+    },
+    "errors": {
+      "loadFailed": "Error al cargar datos del prospecto",
+      "notFound": "Prospecto no encontrado"
+    }
+  },
+  "billing": {
+    "currentPlan": "Plan actual",
+    "trialEnds": "La prueba termina",
+    "soon": "pronto",
+    "usageThisMonth": "Uso este mes",
+    "upgradeToSolo": "Actualizar a Solo",
+    "manageSubscription": "Gestionar suscripción",
+    "viewAllPlans": "Ver todos los planes",
+    "cancelWarning": "Tu suscripción se cancelará el {date}",
+    "perMonth": "/mes",
+    "perYear": "/año",
+    "checkoutError": "No se pudo iniciar el pago. Por favor, inténtalo de nuevo.",
+    "portalError": "No se pudo abrir el portal. Por favor, inténtalo de nuevo.",
+    "pricing": {
+      "title": "Elige el plan que te convenga",
+      "titleV2": "Precios simples para cada profesional de ventas",
+      "subtitle": "Empieza gratis y actualiza cuando estés listo. 14 días de prueba gratis, sin tarjeta de crédito.",
+      "subtitleV2": "Empieza gratis con 2 flows. Actualiza cuando necesites más.",
+      "flowExplanation": "1 Flow = 1 Investigación + 1 Preparación + 1 Seguimiento",
+      "monthly": "Mensual",
+      "yearly": "Anual",
+      "save": "Ahorra {percent}%",
+      "backToDashboard": "Volver al panel",
+      "popular": "Popular",
+      "earlyAdopter": "Early Adopter",
+      "currentPlan": "Plan actual",
+      "select": "Seleccionar",
+      "startFree": "Empezar gratis",
+      "startTrial": "Prueba gratis 14 días",
+      "getStarted": "Comenzar",
+      "upgrade": "Actualizar",
+      "goUnlimited": "Ir a ilimitado",
+      "contactUs": "Contáctanos",
+      "contactSales": "Contactar ventas",
+      "alreadyFree": "Ya tienes el plan gratuito.",
+      "donate": "Apóyanos ❤️",
+      "perYear": "por año",
+      "contactForPricing": "Contáctanos para precios",
+      "custom": "Personalizado",
+      "compareFeatures": "Comparar características",
+      "feature": "Característica",
+      "trustBadges": "🔒 Pago seguro via Stripe • 💳 Todas las tarjetas aceptadas • ❌ Cancela cuando quieras",
+      "whatIsFlow": "¿Qué es un Flow?",
+      "flowStep1": "Investigación",
+      "flowStep2": "Preparación",
+      "flowStep3": "Seguimiento",
+      "flowDescription": "Un ciclo de ventas completo desde la investigación de prospectos hasta el seguimiento de reuniones."
+    },
+    "plans": {
+      "free": {
+        "name": "Free",
+        "description": "Perfecto para empezar"
+      },
+      "solo": {
+        "name": "Solo",
+        "description": "Para el profesional de ventas individual"
+      },
+      "teams": {
+        "name": "Teams",
+        "description": "Para equipos de ventas"
+      }
+    },
+    "features": {
+      "researchBriefs": "briefs de investigación",
+      "meetingPreps": "preparaciones de reunión",
+      "followups": "seguimientos",
+      "transcription": "Transcripción",
+      "knowledgeBase": "Base de conocimientos",
+      "users": "Usuarios",
+      "crmIntegration": "Integración CRM",
+      "perMonth": "/mes",
+      "unlimited": "Ilimitado",
+      "hours": "horas",
+      "docs": "documentos",
+      "free": {
+        "research": "3 briefs de investigación al mes",
+        "prep": "3 preparaciones de reunión al mes",
+        "followup": "1 transcripción de seguimiento",
+        "support": "Soporte comunitario",
+        "users": "1 usuario",
+        "kb": "Base de conocimientos",
+        "contacts": "Análisis completo de contactos",
+        "pdf": "Exportaciones PDF limpias"
+      },
+      "solo": {
+        "research": "Briefs de investigación ilimitados",
+        "prep": "Preparaciones de reunión ilimitadas",
+        "followup": "Seguimientos ilimitados",
+        "transcription": "10 horas de transcripción/mes",
+        "kb": "Base de conocimientos (50 docs)",
+        "contacts": "Análisis completo de contactos",
+        "pdf": "Exportaciones PDF limpias",
+        "support": "Soporte por email (48h)",
+        "users": "1 usuario"
+      },
+      "teams": {
+        "everything": "Todo de Solo",
+        "users": "Usuarios ilimitados",
+        "transcription": "Transcripción ilimitada",
+        "kb": "Base de conocimientos ilimitada",
+        "crm": "Integración CRM",
+        "sharing": "Compartir en equipo y colaboración",
+        "analytics": "Análisis de equipo",
+        "sso": "SSO/SAML",
+        "support": "Soporte dedicado",
+        "onboarding": "Llamada de incorporación"
+      }
+    },
+    "success": {
+      "title": "¡Pago exitoso!",
+      "description": "Gracias por tu compra. Tu cuenta se está activando.",
+      "redirecting": "Redirigiendo al panel...",
+      "goToDashboard": "Ir al Panel"
+    },
+    "cancel": {
+      "title": "Pago cancelado",
+      "description": "Tu pago fue cancelado. Puedes intentarlo de nuevo cuando quieras.",
+      "backToPricing": "Volver a Precios"
+    }
+  },
+  "homepage": {
+    "nav": {
+      "login": "Iniciar sesión",
+      "getStarted": "Comenzar"
+    },
+    "hero": {
+      "badge": "Habilitación de ventas con IA",
+      "title": "Prepara reuniones",
+      "titleHighlight": "en segundos",
+      "description": "Investiga prospectos, genera informes personalizados y haz seguimiento con resúmenes generados por IA. Todo lo que necesitas para cerrar más ventas, más rápido.",
+      "startTrial": "Prueba gratis",
+      "startFree": "Empezar gratis",
+      "viewPricing": "Ver precios",
+      "watchDemo": "Ver demo"
+    },
+    "preview": {
+      "research": "Investigación",
+      "brief": "Informe",
+      "aiMeetingBrief": "Informe IA",
+      "generatedIn": "Generado en 30 segundos"
+    },
+    "features": {
+      "title": "Todo lo que necesitas para ganar más ventas",
+      "description": "Desde la investigación hasta el seguimiento, DealMotion te ayuda en cada paso de tu proceso de ventas.",
+      "research": {
+        "title": "Investigación de prospectos",
+        "description": "Investigación impulsada por IA sobre cualquier empresa. Obtén información sobre su negocio, desafíos y oportunidades."
+      },
+      "preparation": {
+        "title": "Preparación de reuniones",
+        "description": "Genera informes de reuniones personalizados con puntos de conversación, preguntas y recomendaciones estratégicas."
+      },
+      "followup": {
+        "title": "Seguimiento de reuniones",
+        "description": "Sube grabaciones, obtén resúmenes de IA, elementos de acción y borradores de correos de seguimiento automáticamente."
+      },
+      "aiCoach": {
+        "title": "Coach de Ventas IA",
+        "description": "Tu coach de ventas personal que analiza tus patrones y te da consejos prácticos para mejorar."
+      },
+      "knowledgeBase": {
+        "title": "Base de conocimientos",
+        "description": "Sube tus documentos de empresa. La IA usa tu contexto para generar contenido relevante y acorde a tu marca."
+      },
+      "contactAnalysis": {
+        "title": "Análisis de contactos",
+        "description": "Obtén perfiles detallados de tomadores de decisiones con preferencias de comunicación y consejos de engagement."
+      }
+    },
+    "socialProof": {
+      "trustedBy": "CONFIADO POR EQUIPOS DE VENTAS EN"
+    },
+    "cta": {
+      "title": "¿Listo para transformar tu proceso de ventas?",
+      "description": "Únete a miles de profesionales de ventas que cierran más tratos con DealMotion.",
+      "button": "Comenzar gratis"
+    },
+    "footer": {
+      "rights": "Todos los derechos reservados."
+    }
+  },
+  "authForm": {
+    "orContinueWith": "O continuar con correo",
+    "email": "Correo",
+    "emailPlaceholder": "nombre@ejemplo.com",
+    "password": "Contraseña",
+    "signInEmail": "Iniciar sesión con correo",
+    "signUpEmail": "Registrarse con correo",
+    "termsPrefix": "Al registrarte, aceptas nuestros",
+    "termsOfService": "Términos de servicio",
+    "and": "y",
+    "privacyPolicy": "Política de privacidad",
+    "errors": {
+      "oauthError": "La autenticación falló. Inténtalo de nuevo.",
+      "accessDenied": "El inicio de sesión fue cancelado.",
+      "serverError": "El proveedor de autenticación no está disponible temporalmente. Inténtalo más tarde.",
+      "genericSignIn": "Ocurrió un error durante el inicio de sesión.",
+      "genericSignUp": "Ocurrió un error durante el registro."
+    }
+  },
+  "coach": {
+    "name": "Luna",
+    "tagline": "Tu Coach de Ventas IA",
+    
+    "widget": {
+      "expand": "Expandir",
+      "collapse": "Colapsar",
+      "close": "Cerrar",
+      "settings": "Configuración",
+      "hideForToday": "Ocultar por hoy",
+      "allCaughtUp": "¡Todo al día!",
+      "greatWork": "¡Excelente trabajo! Vuelve más tarde para nuevas sugerencias."
+    },
+    
+    "completion": {
+      "researchComplete": {
+        "title": "¡Investigación Completa!",
+        "description": "¡Excelente! Tu investigación sobre {company} está lista. ¿Qué te gustaría hacer ahora?",
+        "addContacts": "Agregar Contactos",
+        "addContactsDesc": "Agregar personas clave",
+        "createPrep": "Crear Preparación",
+        "createPrepDesc": "Comenzar la preparación ahora"
+      },
+      "contactsAdded": {
+        "title": "¡Contactos Agregados!",
+        "description": "Has agregado {count} a {company}. Luna ahora puede generar iniciadores de conversación personalizados.",
+        "createPrep": "Crear Preparación",
+        "createPrepDesc": "Obtener puntos de conversación personalizados",
+        "addMore": "Agregar Más Contactos",
+        "addMoreDesc": "Encontrar más personas para conectar"
+      },
+      "prepReady": {
+        "title": "¡Preparación Lista!",
+        "description": "Tu preparación para {company} está completa. ¡Buena suerte con tu reunión!",
+        "viewPrep": "Ver Preparación",
+        "viewPrepDesc": "Revisar tu preparación",
+        "addFollowup": "Agregar Seguimiento Después",
+        "addFollowupDesc": "Crear seguimiento después"
+      },
+      "followupComplete": {
+        "title": "¡Seguimiento Creado!",
+        "description": "Tu seguimiento de reunión está listo. Genera acciones para aprovechar al máximo tu reunión.",
+        "generateReport": "Generar Informe",
+        "generateReportDesc": "Crear un resumen para compartir",
+        "viewActions": "Ver Todas las Acciones",
+        "viewActionsDesc": "Ver todas las opciones de seguimiento"
+      },
+      "actionGenerated": {
+        "title": "¡Acción Generada!",
+        "description": "Tu {actionType} está listo.",
+        "export": "Exportar",
+        "exportDesc": "Descargar o compartir la acción",
+        "moreActions": "Más Acciones",
+        "moreActionsDesc": "Crear acciones adicionales"
+      },
+      "generic": {
+        "title": "¡Excelente Trabajo!",
+        "description": "Has completado una tarea exitosamente.",
+        "continue": "Continuar",
+        "continueDesc": "Seguir adelante"
+      }
+    },
+    
+    "inlineTips": {
+      "researchForm": {
+        "title": "Consejo pro: Sé específico",
+        "description": "Incluye el sitio web de la empresa o la URL de LinkedIn para mejores resultados."
+      },
+      "contactsEmpty": {
+        "title": "Agrega contactos primero",
+        "description": "Agregar contactos antes de crear una preparación mejora los resultados de tus reuniones en un 40%.",
+        "action": "Agregar contactos"
+      },
+      "contactsFew": {
+        "title": "Agrega más contactos",
+        "description": "Tener 2-3 contactos le da a Luna más contexto para iniciadores de conversación personalizados."
+      },
+      "prepForm": {
+        "title": "Mejor momento",
+        "description": "Crea tu preparación 1-2 días antes de la reunión para resultados óptimos."
+      },
+      "prepNoContacts": {
+        "title": "Faltan contactos",
+        "description": "Tu preparación será más genérica sin contactos. Agrega contactos primero para puntos de conversación personalizados.",
+        "action": "Agregar contactos primero"
+      },
+      "followupForm": {
+        "title": "Sube tu grabación",
+        "description": "Sube tu grabación o transcripción para generar acciones de seguimiento completas."
+      },
+      "dealForm": {
+        "title": "Rastrea tu negocio",
+        "description": "Vincular negocios a prospectos ayuda a Luna a proporcionar mejores insights de pipeline."
+      },
+      "exportAvailable": {
+        "title": "Exportación disponible",
+        "description": "Puedes exportar este brief como PDF, Word o Markdown usando el menú desplegable."
+      }
+    },
+    
+    "sections": {
+      "priority": "Prioridad",
+      "suggestions": "Sugerencias",
+      "progress": "Progreso de Hoy",
+      "tip": "Consejo del Día",
+      "score": "Puntuación de Éxito",
+      "predictions": "Predicciones",
+      "recommendations": "Recomendaciones"
+    },
+    
+    "actions": {
+      "doIt": "Hacerlo",
+      "later": "Después",
+      "skip": "Omitir",
+      "snooze1hour": "Posponer 1 hora",
+      "snoozeTonight": "Recordar esta noche",
+      "snoozeTomorrow": "Recordar mañana"
+    },
+    
+    "suggestions": {
+      "addContacts": "Agregar contactos a {company}",
+      "createPrep": "Crear preparación de reunión",
+      "uploadFollowup": "Subir grabación de reunión",
+      "generateReport": "Generar informe de cliente",
+      "reviewCoaching": "Revisar feedback de coaching"
+    },
+    
+    "reasons": {
+      "meetingTomorrow": "Reunión mañana a las {time}",
+      "meetingIn": "Reunión en {hours} horas",
+      "noContacts": "Sin contactos agregados aún",
+      "prepReady": "La preparación está lista",
+      "overdue": "{days} días desde la última actividad"
+    },
+    
+    "tips": {
+      "contactsImprove": "Agregar contactos antes de la preparación mejora los resultados en un 40%",
+      "customerReports": "Los informes de cliente aumentan las tasas de respuesta en un 60%",
+      "prepTiming": "Las mejores preparaciones se crean 1-2 días antes de la reunión"
+    },
+    
+    "stats": {
+      "research": "Investigación",
+      "preps": "Preparaciones",
+      "followups": "Seguimientos",
+      "completed": "completados hoy"
+    },
+    
+    "settings": {
+      "title": "Configuración del Coach",
+      "enabled": "Activar Coach IA",
+      "inlineTips": "Mostrar consejos inline",
+      "completionModals": "Mostrar sugerencias de completado",
+      "quietHours": "Horas tranquilas",
+      "frequency": "Frecuencia de notificaciones",
+      "frequencyOptions": {
+        "minimal": "Mínimo",
+        "normal": "Normal",
+        "frequent": "Frecuente"
+      }
+    }
+  }
+}
+

@@ -1,0 +1,23 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="appleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#3B82F6"/>
+      <stop offset="100%" stopColor="#8B5CF6"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="180" height="180" rx="40" fill="url(#appleGradient)"/>
+  
+  <!-- D shape (white) -->
+  <path d="M56 45h34c24.853 0 45 20.147 45 45s-20.147 45-45 45H56V45z" fill="white"/>
+  
+  <!-- Inner cut for D -->
+  <path d="M78 67h12c12.426 0 22.5 10.074 22.5 22.5S102.426 112 90 112H78V67z" fill="url(#appleGradient)"/>
+  
+  <!-- Motion lines -->
+  <rect x="34" y="67" width="22" height="8" rx="4" fill="white" opacity="0.7"/>
+  <rect x="28" y="86" width="28" height="8" rx="4" fill="white" opacity="0.5"/>
+  <rect x="34" y="105" width="22" height="8" rx="4" fill="white" opacity="0.7"/>
+</svg>
+
