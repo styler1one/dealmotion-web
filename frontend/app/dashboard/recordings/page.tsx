@@ -22,6 +22,14 @@ import {
 } from '@/components/ui/select'
 import type { User } from '@supabase/supabase-js'
 import { ImportRecordingModal } from '@/components/import-recording-modal'
+import { FollowupUploadForm } from '@/components/forms'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from '@/components/ui/sheet'
 
 // Interface for ImportRecordingModal compatibility
 interface ExternalRecordingForModal {
@@ -104,6 +112,9 @@ export default function RecordingsPage() {
   // Import modal state
   const [selectedRecordingForImport, setSelectedRecordingForImport] = useState<ExternalRecordingForModal | null>(null)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
+  
+  // Upload sheet state
+  const [uploadSheetOpen, setUploadSheetOpen] = useState(false)
   
   const fetchRecordings = useCallback(async () => {
     try {
@@ -210,6 +221,18 @@ export default function RecordingsPage() {
     router.push(`/dashboard/followup/${followupId}`)
   }
 
+  // Handle successful upload from sheet
+  const handleUploadSuccess = (result?: { id: string; prospect_id?: string }) => {
+    setUploadSheetOpen(false)
+    // Refresh data
+    fetchRecordings()
+    fetchStats()
+    // Navigate to the new followup if we have the id
+    if (result?.id) {
+      router.push(`/dashboard/followup/${result.id}`)
+    }
+  }
+
   const handleRecordingClick = (recording: UnifiedRecording) => {
     // If completed and has followup, go to followup detail
     if (recording.followup_id) {
@@ -297,7 +320,7 @@ export default function RecordingsPage() {
                 <div className="flex justify-center gap-2">
                   <Button
                     variant="outline"
-                    onClick={() => router.push('/dashboard/followup')}
+                    onClick={() => setUploadSheetOpen(true)}
                   >
                     <Icons.upload className="h-4 w-4 mr-2" />
                     {t('empty.uploadWeb')}
@@ -498,7 +521,7 @@ export default function RecordingsPage() {
                     variant="outline"
                     size="sm"
                     className="w-full justify-start"
-                    onClick={() => router.push('/dashboard/followup')}
+                    onClick={() => setUploadSheetOpen(true)}
                   >
                     <Icons.upload className="h-4 w-4 mr-2" />
                     {t('quickActions.uploadRecording')}
@@ -531,6 +554,27 @@ export default function RecordingsPage() {
           recording={selectedRecordingForImport}
           onImported={handleImported}
         />
+
+        {/* Upload Recording Sheet */}
+        <Sheet open={uploadSheetOpen} onOpenChange={setUploadSheetOpen}>
+          <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle className="flex items-center gap-2">
+                <Icons.upload className="w-5 h-5 text-orange-600" />
+                {t('quickActions.uploadRecording')}
+              </SheetTitle>
+              <SheetDescription>
+                {t('subtitle')}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="mt-6">
+              <FollowupUploadForm
+                onSuccess={handleUploadSuccess}
+                isSheet={true}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     </DashboardLayout>
   )
