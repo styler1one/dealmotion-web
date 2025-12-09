@@ -8,11 +8,12 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Textarea } from '@/components/ui/textarea'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from '@/components/ui/sheet'
 import { Icons } from '@/components/icons'
 import { ContactMatchCard, ContactMatch } from './contact-match-card'
 import { useToast } from '@/components/ui/use-toast'
@@ -228,10 +229,10 @@ export function ContactSearchModal({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-[500px] max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+    <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle className="flex items-center gap-2">
             {step !== 'search' && step !== 'loading' && (
               <Button variant="ghost" size="icon" className="h-6 w-6 -ml-1" onClick={handleBack}>
                 <Icons.arrowLeft className="h-4 w-4" />
@@ -242,16 +243,15 @@ export function ContactSearchModal({
             {step === 'results' && t('contacts.search.resultsTitle')}
             {step === 'enrich' && t('contacts.search.enrichTitle')}
             {step === 'confirm' && t('contacts.search.confirmTitle')}
-          </DialogTitle>
-        </DialogHeader>
+          </SheetTitle>
+          <SheetDescription>
+            {step === 'search' && t('contacts.search.subtitle', { company: companyName })}
+          </SheetDescription>
+        </SheetHeader>
 
         {/* Step 1: Search */}
         {step === 'search' && (
-          <div className="space-y-4">
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              {t('contacts.search.subtitle', { company: companyName })}
-            </p>
-
+          <div className="space-y-4 mt-4">
             <div className="space-y-3">
               <div>
                 <Label htmlFor="search-name">{t('contacts.search.nameLabel')} *</Label>
@@ -315,7 +315,7 @@ export function ContactSearchModal({
 
         {/* Step 1.5: Loading */}
         {step === 'loading' && (
-          <div className="flex flex-col items-center justify-center py-12 space-y-4">
+          <div className="flex flex-col items-center justify-center py-12 space-y-4 mt-4">
             <Icons.spinner className="h-8 w-8 animate-spin text-blue-500" />
             <p className="text-sm text-slate-600 dark:text-slate-400">
               Searching for "{searchName}" at {companyName}...
@@ -325,7 +325,7 @@ export function ContactSearchModal({
 
         {/* Step 2: Results */}
         {step === 'results' && (
-          <div className="space-y-4">
+          <div className="space-y-4 mt-4">
             <p className="text-sm text-slate-600 dark:text-slate-400">
               {t('contacts.search.resultsSubtitle', { name: searchName, company: companyName })}
             </p>
@@ -363,7 +363,7 @@ export function ContactSearchModal({
 
         {/* Step 2.5: Enrich with LinkedIn Info */}
         {step === 'enrich' && selectedMatch && (
-          <div className="space-y-4">
+          <div className="space-y-4 mt-4">
             {/* Selected profile summary */}
             <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
               <div className="flex items-center gap-2 text-blue-900 dark:text-blue-100 font-medium text-sm">
@@ -465,7 +465,7 @@ export function ContactSearchModal({
 
         {/* Step 3: Confirm */}
         {step === 'confirm' && (
-          <div className="space-y-4">
+          <div className="space-y-4 mt-4">
             {selectedMatch ? (
               <>
                 <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
@@ -559,7 +559,7 @@ export function ContactSearchModal({
             </Button>
           </div>
         )}
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   )
 }
