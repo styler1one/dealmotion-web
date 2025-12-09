@@ -37,7 +37,7 @@ import { useToast } from '@/components/ui/use-toast'
 import { useConfirmDialog } from '@/components/confirm-dialog'
 import { Input } from '@/components/ui/input'
 import { api } from '@/lib/api'
-import { ProspectHub, ProspectContact, CalendarMeeting, Deal } from '@/types'
+import { ProspectHub, ProspectContact, ProspectHubPreparation, ProspectHubFollowup, CalendarMeeting, Deal } from '@/types'
 import { smartDate } from '@/lib/date-utils'
 import { Badge } from '@/components/ui/badge'
 import { Video, Clock } from 'lucide-react'
@@ -310,7 +310,7 @@ export default function ProspectHubPage() {
     )
   }
   
-  const { prospect, research, contacts, stats, recent_activities } = hubData
+  const { prospect, research, contacts, preparations, followups, stats, recent_activities } = hubData
   
   // Determine journey progress
   // Check if any meeting has passed (is_now or end_time < now)
@@ -698,26 +698,30 @@ export default function ProspectHubPage() {
                     onAction={!research ? () => setResearchSheetOpen(true) : undefined}
                   />
                   
-                  {/* Preparations */}
-                  <DocumentRow
+                  {/* Preparations - expandable with inline items */}
+                  <DocumentSection
                     icon={<FileText className="w-4 h-4" />}
                     label={t('documents.preparation')}
-                    status={stats.prep_count > 0 ? 'completed' : 'empty'}
-                    count={stats.prep_count}
-                    onClick={stats.prep_count > 0 ? () => router.push('/dashboard/preparation') : undefined}
-                    actionLabel={t('actions.create')}
-                    onAction={() => setPrepSheetOpen(true)}
+                    items={preparations}
+                    createLabel={preparations.length > 0 ? t('actions.createNew') : t('actions.create')}
+                    onCreate={() => setPrepSheetOpen(true)}
+                    onItemClick={(id) => router.push(`/dashboard/preparation/${id}`)}
+                    getItemTitle={(item) => (item as ProspectHubPreparation).meeting_type || 'Meeting Prep'}
+                    getItemStatus={(item) => (item as ProspectHubPreparation).status}
+                    getItemDate={(item) => item.completed_at || item.created_at}
                   />
                   
-                  {/* Follow-ups */}
-                  <DocumentRow
+                  {/* Follow-ups - expandable with inline items */}
+                  <DocumentSection
                     icon={<Mic className="w-4 h-4" />}
                     label={t('documents.followup')}
-                    status={stats.followup_count > 0 ? 'completed' : 'empty'}
-                    count={stats.followup_count}
-                    onClick={stats.followup_count > 0 ? () => router.push('/dashboard/followup') : undefined}
-                    actionLabel={t('actions.create')}
-                    onAction={() => setFollowupSheetOpen(true)}
+                    items={followups}
+                    createLabel={followups.length > 0 ? t('actions.createNew') : t('actions.create')}
+                    onCreate={() => setFollowupSheetOpen(true)}
+                    onItemClick={(id) => router.push(`/dashboard/followup/${id}`)}
+                    getItemTitle={(item) => (item as ProspectHubFollowup).meeting_subject || 'Meeting Analysis'}
+                    getItemStatus={(item) => (item as ProspectHubFollowup).status}
+                    getItemDate={(item) => item.completed_at || item.created_at}
                   />
                 </div>
               </CardContent>
@@ -1301,6 +1305,133 @@ function DocumentRow({ icon, label, status, statusLabel, date, count, onClick, a
           <Circle className="w-4 h-4 text-slate-300 dark:text-slate-600" />
         )}
       </div>
+    </div>
+  )
+}
+
+// Document Section with expandable inline items
+interface DocumentSectionProps {
+  icon: React.ReactNode
+  label: string
+  items: Array<{ id: string; created_at: string; completed_at?: string }>
+  createLabel: string
+  onCreate: () => void
+  onItemClick: (id: string) => void
+  getItemTitle: (item: { id: string; created_at: string; completed_at?: string }) => string
+  getItemStatus: (item: { id: string; created_at: string; completed_at?: string }) => string
+  getItemDate: (item: { id: string; created_at: string; completed_at?: string }) => string
+}
+
+function DocumentSection({ 
+  icon, 
+  label, 
+  items, 
+  createLabel, 
+  onCreate, 
+  onItemClick, 
+  getItemTitle, 
+  getItemStatus,
+  getItemDate 
+}: DocumentSectionProps) {
+  const hasItems = items.length > 0
+  const completedItems = items.filter(i => getItemStatus(i) === 'completed')
+  const inProgressItems = items.filter(i => getItemStatus(i) !== 'completed' && getItemStatus(i) !== 'failed')
+  
+  return (
+    <div className={`rounded-lg overflow-hidden ${
+      hasItems 
+        ? 'bg-green-50 dark:bg-green-900/20' 
+        : 'bg-slate-50 dark:bg-slate-800/50'
+    }`}>
+      {/* Header row */}
+      <div className="flex items-center justify-between p-3">
+        <div className="flex items-center gap-3">
+          <div className={`p-2 rounded-lg ${
+            hasItems 
+              ? 'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400' 
+              : 'bg-slate-200 dark:bg-slate-700 text-slate-400'
+          }`}>
+            {icon}
+          </div>
+          <div>
+            <p className={`text-sm font-medium ${
+              hasItems 
+                ? 'text-slate-900 dark:text-white' 
+                : 'text-slate-500 dark:text-slate-400'
+            }`}>
+              {label}
+              {hasItems && (
+                <span className="ml-1.5 text-slate-400 font-normal">({items.length})</span>
+              )}
+            </p>
+          </div>
+        </div>
+        
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation()
+            onCreate()
+          }}
+          className={hasItems ? 'bg-white dark:bg-slate-800' : ''}
+        >
+          <Plus className="w-3 h-3 mr-1" />
+          {createLabel}
+        </Button>
+      </div>
+      
+      {/* Inline items list */}
+      {hasItems && (
+        <div className="px-3 pb-3 space-y-1.5">
+          {items.slice(0, 5).map((item) => {
+            const status = getItemStatus(item)
+            const isCompleted = status === 'completed'
+            const isInProgress = status !== 'completed' && status !== 'failed'
+            const isFailed = status === 'failed'
+            
+            return (
+              <div
+                key={item.id}
+                onClick={() => isCompleted && onItemClick(item.id)}
+                className={`flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors ${
+                  isCompleted 
+                    ? 'bg-white dark:bg-slate-800 hover:bg-green-100 dark:hover:bg-green-900/40 cursor-pointer' 
+                    : isInProgress
+                      ? 'bg-blue-100/50 dark:bg-blue-900/30'
+                      : 'bg-red-100/50 dark:bg-red-900/30'
+                }`}
+              >
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  {isCompleted && <CheckCircle2 className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />}
+                  {isInProgress && <Loader2 className="w-3.5 h-3.5 text-blue-500 animate-spin flex-shrink-0" />}
+                  {isFailed && <Circle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />}
+                  <span className={`truncate ${
+                    isCompleted 
+                      ? 'text-slate-700 dark:text-slate-200' 
+                      : isInProgress 
+                        ? 'text-blue-700 dark:text-blue-300'
+                        : 'text-red-600 dark:text-red-400'
+                  }`}>
+                    {getItemTitle(item)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+                  <span className="text-xs text-slate-400">
+                    {smartDate(getItemDate(item))}
+                  </span>
+                  {isCompleted && <ChevronRight className="w-3.5 h-3.5 text-slate-400" />}
+                </div>
+              </div>
+            )
+          })}
+          {items.length > 5 && (
+            <p className="text-xs text-slate-400 text-center py-1">
+              +{items.length - 5} more
+            </p>
+          )}
+        </div>
+      )}
     </div>
   )
 }

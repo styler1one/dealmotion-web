@@ -1390,9 +1390,19 @@
       "manage": "Manage",
       "addContact": "Add Contact",
       "create": "Create",
+      "createNew": "Create New",
       "viewAll": "View All",
       "viewPrep": "View Prep",
+      "viewFollowup": "View Analysis",
       "prepareNow": "Prepare Now"
+    },
+    "documentStatus": {
+      "pending": "Pending",
+      "generating": "Generating...",
+      "transcribing": "Transcribing...",
+      "summarizing": "Analyzing...",
+      "completed": "Completed",
+      "failed": "Failed"
     },
     "empty": {
       "noContacts": "No contacts added yet",

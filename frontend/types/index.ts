@@ -496,11 +496,32 @@ export interface ProspectHubSummary {
   last_activity_at?: string
 }
 
+// Inline document items for Prospect Hub
+export interface ProspectHubPreparation {
+  id: string
+  prospect_company_name: string
+  meeting_type?: string
+  status: 'pending' | 'generating' | 'completed' | 'failed'
+  created_at: string
+  completed_at?: string
+}
+
+export interface ProspectHubFollowup {
+  id: string
+  prospect_company_name: string
+  meeting_subject?: string
+  status: 'pending' | 'transcribing' | 'summarizing' | 'completed' | 'failed'
+  created_at: string
+  completed_at?: string
+}
+
 export interface ProspectHub {
   prospect: Prospect
   research?: ResearchBrief
   contacts: ProspectContact[]
   deals: DealWithStats[]
+  preparations: ProspectHubPreparation[]
+  followups: ProspectHubFollowup[]
   recent_activities: Activity[]
   stats: ProspectHubSummary
 }

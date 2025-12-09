@@ -446,22 +446,29 @@ async def get_prospect_hub(
         
         deals = deals_response.data or []
         
-        # Count preps and followups linked to this prospect
+        # Get preps and followups linked to this prospect (with basic info for inline display)
         preps_response = supabase.table("meeting_preps").select(
-            "id", count="exact"
+            "id, prospect_company_name, meeting_type, status, created_at, completed_at"
         ).eq(
             "prospect_id", prospect_id
-        ).eq(
-            "status", "completed"
+        ).order(
+            "created_at", desc=True
         ).execute()
         
         followups_response = supabase.table("followups").select(
-            "id", count="exact"
+            "id, prospect_company_name, meeting_subject, status, created_at, completed_at"
         ).eq(
             "prospect_id", prospect_id
-        ).eq(
-            "status", "completed"
+        ).order(
+            "created_at", desc=True
         ).execute()
+        
+        preparations = preps_response.data or []
+        followups = followups_response.data or []
+        
+        # Filter for completed counts in stats
+        completed_preps = [p for p in preparations if p.get("status") == "completed"]
+        completed_followups = [f for f in followups if f.get("status") == "completed"]
         
         # Get recent activities
         activities_response = supabase.table("prospect_activities").select(
@@ -483,8 +490,8 @@ async def get_prospect_hub(
             "contact_count": len(contacts),
             "active_deal_count": len(deals),
             "meeting_count": 0,  # Not tracking meetings separately for now
-            "prep_count": preps_response.count or 0,
-            "followup_count": followups_response.count or 0,
+            "prep_count": len(completed_preps),
+            "followup_count": len(completed_followups),
             "created_at": prospect.get("created_at"),
             "last_activity_at": prospect.get("last_activity_at")
         }
@@ -494,6 +501,8 @@ async def get_prospect_hub(
             "research": research,
             "contacts": contacts,
             "deals": deals,
+            "preparations": preparations,
+            "followups": followups,
             "recent_activities": recent_activities,
             "stats": stats
         }
