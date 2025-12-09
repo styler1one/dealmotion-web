@@ -142,6 +142,7 @@ export interface ProspectContact {
   questions_to_ask?: string[]
   topics_to_avoid?: string[]
   analysis_status?: 'pending' | 'analyzing' | 'completed' | 'failed'
+  analyzed_at?: string
   created_at: string
   updated_at?: string
 }
