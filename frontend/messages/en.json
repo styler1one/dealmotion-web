@@ -1390,6 +1390,20 @@
       "loadFailed": "Failed to load prospect data",
       "notFound": "Prospect not found",
       "noteSaveFailed": "Failed to save note"
+    },
+    "sheets": {
+      "startResearch": "Start Company Research",
+      "startResearchDesc": "Search and verify this company to start AI research.",
+      "createPrep": "Create Meeting Preparation",
+      "createPrepDesc": "Prepare for your meeting with {company}.",
+      "uploadFollowup": "Upload Meeting Recording",
+      "uploadFollowupDesc": "Upload audio or transcript from your meeting with {company}."
+    },
+    "toast": {
+      "researchStarted": "Research started successfully",
+      "prepStarted": "Preparation generation started",
+      "followupStarted": "Follow-up processing started",
+      "contactAdded": "Contact added successfully"
     }
   },
   "billing": {

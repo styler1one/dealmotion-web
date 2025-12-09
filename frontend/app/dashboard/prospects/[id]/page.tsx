@@ -36,10 +36,14 @@ import { useToast } from '@/components/ui/use-toast'
 import { useConfirmDialog } from '@/components/confirm-dialog'
 import { Input } from '@/components/ui/input'
 import { api } from '@/lib/api'
-import { ProspectHub, ProspectContact, CalendarMeeting } from '@/types'
+import { ProspectHub, ProspectContact, CalendarMeeting, Deal } from '@/types'
 import { smartDate } from '@/lib/date-utils'
 import { Badge } from '@/components/ui/badge'
 import { Video, Clock } from 'lucide-react'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
+import { ResearchForm, PreparationForm, FollowupUploadForm } from '@/components/forms'
+import { ContactSearchModal } from '@/components/contacts'
+import { logger } from '@/lib/logger'
 
 // ============================================================
 // Types
@@ -90,6 +94,57 @@ export default function ProspectHubPage() {
   const [upcomingMeetings, setUpcomingMeetings] = useState<CalendarMeeting[]>([])
   const [loadingMeetings, setLoadingMeetings] = useState(false)
   
+  // Deals state (for forms)
+  const [deals, setDeals] = useState<Deal[]>([])
+  
+  // Sheet state - inline actions (SPEC-041)
+  const [researchSheetOpen, setResearchSheetOpen] = useState(false)
+  const [prepSheetOpen, setPrepSheetOpen] = useState(false)
+  const [followupSheetOpen, setFollowupSheetOpen] = useState(false)
+  const [contactModalOpen, setContactModalOpen] = useState(false)
+  
+  // Refetch hub data function - used after sheet actions
+  const refetchHubData = useCallback(async () => {
+    if (!organizationId) return
+    
+    try {
+      const now = new Date()
+      const fromDate = now.toISOString()
+      const toDate = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString()
+      
+      const [hubResponse, notesResponse, meetingsResponse, dealsResponse] = await Promise.all([
+        api.get<ProspectHub>(
+          `/api/v1/prospects/${prospectId}/hub?organization_id=${organizationId}`
+        ),
+        api.get<ProspectNote[]>(`/api/v1/prospects/${prospectId}/notes`),
+        api.get<{ meetings: CalendarMeeting[] }>(
+          `/api/v1/calendar-meetings?prospect_id=${prospectId}&from_date=${fromDate}&to_date=${toDate}`
+        ),
+        supabase
+          .from('deals')
+          .select('*')
+          .eq('prospect_id', prospectId)
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+      ])
+      
+      if (!hubResponse.error && hubResponse.data) {
+        setHubData(hubResponse.data)
+      }
+      if (!notesResponse.error && notesResponse.data) {
+        setNotes(notesResponse.data)
+      }
+      if (!meetingsResponse.error && meetingsResponse.data) {
+        setUpcomingMeetings(meetingsResponse.data.meetings || [])
+      }
+      if (!dealsResponse.error && dealsResponse.data) {
+        setDeals(dealsResponse.data || [])
+      }
+    } catch (error) {
+      logger.error('Error refetching hub data:', error)
+    }
+  }, [organizationId, prospectId, supabase])
+
   // Initial load
   useEffect(() => {
     async function loadData() {
@@ -112,15 +167,21 @@ export default function ProspectHubPage() {
             const fromDate = now.toISOString()
             const toDate = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString()
             
-            // Fetch hub data, notes, and meetings in parallel
-            const [hubResponse, notesResponse, meetingsResponse] = await Promise.all([
+            // Fetch hub data, notes, meetings, and deals in parallel
+            const [hubResponse, notesResponse, meetingsResponse, dealsResponse] = await Promise.all([
               api.get<ProspectHub>(
                 `/api/v1/prospects/${prospectId}/hub?organization_id=${orgMember.organization_id}`
               ),
               api.get<ProspectNote[]>(`/api/v1/prospects/${prospectId}/notes`),
               api.get<{ meetings: CalendarMeeting[] }>(
                 `/api/v1/calendar-meetings?prospect_id=${prospectId}&from_date=${fromDate}&to_date=${toDate}`
-              )
+              ),
+              supabase
+                .from('deals')
+                .select('*')
+                .eq('prospect_id', prospectId)
+                .eq('is_active', true)
+                .order('created_at', { ascending: false })
             ])
             
             if (!hubResponse.error && hubResponse.data) {
@@ -134,10 +195,14 @@ export default function ProspectHubPage() {
             if (!meetingsResponse.error && meetingsResponse.data) {
               setUpcomingMeetings(meetingsResponse.data.meetings || [])
             }
+            
+            if (!dealsResponse.error && dealsResponse.data) {
+              setDeals(dealsResponse.data || [])
+            }
           }
         }
       } catch (error) {
-        console.error('Error loading data:', error)
+        logger.error('Error loading data:', error)
       } finally {
         setLoading(false)
       }
@@ -285,13 +350,13 @@ export default function ProspectHubPage() {
   
   const keyInsights = getKeyInsights()
   
-  // Get next action config
+  // Get next action config - now opens sheets instead of navigating (SPEC-041)
   const getNextActionConfig = () => {
     if (!research) {
       return {
         title: t('nextAction.startResearch'),
         description: t('nextAction.startResearchDesc'),
-        action: () => router.push('/dashboard/research'),
+        action: () => setResearchSheetOpen(true),
         buttonLabel: t('nextAction.startResearchBtn')
       }
     }
@@ -299,7 +364,7 @@ export default function ProspectHubPage() {
       return {
         title: t('nextAction.addContacts'),
         description: t('nextAction.addContactsDesc'),
-        action: () => router.push(`/dashboard/research/${research.id}`),
+        action: () => setContactModalOpen(true),
         buttonLabel: t('nextAction.addContactsBtn')
       }
     }
@@ -307,7 +372,7 @@ export default function ProspectHubPage() {
       return {
         title: t('nextAction.createPrep'),
         description: t('nextAction.createPrepDesc'),
-        action: () => router.push('/dashboard/preparation'),
+        action: () => setPrepSheetOpen(true),
         buttonLabel: t('nextAction.createPrepBtn')
       }
     }
@@ -315,14 +380,14 @@ export default function ProspectHubPage() {
       return {
         title: t('nextAction.addFollowup'),
         description: t('nextAction.addFollowupDesc'),
-        action: () => router.push('/dashboard/followup'),
+        action: () => setFollowupSheetOpen(true),
         buttonLabel: t('nextAction.addFollowupBtn')
       }
     }
     return {
       title: t('nextAction.allDone'),
       description: t('nextAction.allDoneDesc'),
-      action: () => router.push('/dashboard/followup'),
+      action: () => setFollowupSheetOpen(true),
       buttonLabel: t('nextAction.viewFollowups')
     }
   }
@@ -466,7 +531,7 @@ export default function ProspectHubPage() {
               </Card>
             )}
             
-            {/* PEOPLE */}
+            {/* PEOPLE - Now with inline Add Contact modal (SPEC-041) */}
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
@@ -475,17 +540,30 @@ export default function ProspectHubPage() {
                     {t('sections.people')}
                     <span className="text-slate-400 font-normal">({contacts.length})</span>
                   </CardTitle>
-                  {research && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => router.push(`/dashboard/research/${research.id}`)}
-                      className="text-purple-600"
-                    >
-                      {t('actions.manage')}
-                      <ChevronRight className="w-4 h-4 ml-1" />
-                    </Button>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {research && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setContactModalOpen(true)}
+                        className="text-purple-600"
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        {t('actions.addContact')}
+                      </Button>
+                    )}
+                    {research && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => router.push(`/dashboard/research/${research.id}`)}
+                        className="text-purple-600"
+                      >
+                        {t('actions.manage')}
+                        <ChevronRight className="w-4 h-4 ml-1" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
@@ -498,7 +576,7 @@ export default function ProspectHubPage() {
                         variant="outline" 
                         size="sm" 
                         className="mt-3"
-                        onClick={() => router.push(`/dashboard/research/${research.id}`)}
+                        onClick={() => setContactModalOpen(true)}
                       >
                         <Plus className="w-4 h-4 mr-1" />
                         {t('actions.addContact')}
@@ -552,7 +630,7 @@ export default function ProspectHubPage() {
               </CardContent>
             </Card>
             
-            {/* DOCUMENTS */}
+            {/* DOCUMENTS - Now with inline Sheet actions (SPEC-041) */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
@@ -570,7 +648,7 @@ export default function ProspectHubPage() {
                     date={research?.completed_at}
                     onClick={research ? () => router.push(`/dashboard/research/${research.id}`) : undefined}
                     actionLabel={!research ? t('actions.create') : undefined}
-                    onAction={!research ? () => router.push('/dashboard/research') : undefined}
+                    onAction={!research ? () => setResearchSheetOpen(true) : undefined}
                   />
                   
                   {/* Preparations */}
@@ -580,8 +658,8 @@ export default function ProspectHubPage() {
                     status={stats.prep_count > 0 ? 'completed' : 'empty'}
                     count={stats.prep_count}
                     onClick={stats.prep_count > 0 ? () => router.push('/dashboard/preparation') : undefined}
-                    actionLabel={stats.prep_count === 0 ? t('actions.create') : undefined}
-                    onAction={stats.prep_count === 0 ? () => router.push('/dashboard/preparation') : undefined}
+                    actionLabel={t('actions.create')}
+                    onAction={() => setPrepSheetOpen(true)}
                   />
                   
                   {/* Follow-ups */}
@@ -591,8 +669,8 @@ export default function ProspectHubPage() {
                     status={stats.followup_count > 0 ? 'completed' : 'empty'}
                     count={stats.followup_count}
                     onClick={stats.followup_count > 0 ? () => router.push('/dashboard/followup') : undefined}
-                    actionLabel={stats.followup_count === 0 ? t('actions.create') : undefined}
-                    onAction={stats.followup_count === 0 ? () => router.push('/dashboard/followup') : undefined}
+                    actionLabel={t('actions.create')}
+                    onAction={() => setFollowupSheetOpen(true)}
                   />
                 </div>
               </CardContent>
@@ -857,6 +935,112 @@ export default function ProspectHubPage() {
             </CardContent>
           </Card>
         )}
+        
+        {/* ============================================================ */}
+        {/* INLINE ACTION SHEETS (SPEC-041) */}
+        {/* ============================================================ */}
+        
+        {/* Research Sheet */}
+        <Sheet open={researchSheetOpen} onOpenChange={setResearchSheetOpen}>
+          <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle className="flex items-center gap-2">
+                <Search className="w-5 h-5 text-blue-600" />
+                {t('sheets.startResearch')}
+              </SheetTitle>
+              <SheetDescription>
+                {t('sheets.startResearchDesc')}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="mt-6">
+              <ResearchForm
+                initialCompanyName={prospect.company_name}
+                initialCountry={prospect.country || ''}
+                onSuccess={() => {
+                  setResearchSheetOpen(false)
+                  toast({ title: t('toast.researchStarted') })
+                  refetchHubData()
+                }}
+                onCancel={() => setResearchSheetOpen(false)}
+                isSheet={true}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
+        
+        {/* Preparation Sheet */}
+        <Sheet open={prepSheetOpen} onOpenChange={setPrepSheetOpen}>
+          <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-green-600" />
+                {t('sheets.createPrep')}
+              </SheetTitle>
+              <SheetDescription>
+                {t('sheets.createPrepDesc', { company: prospect.company_name })}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="mt-6">
+              <PreparationForm
+                initialCompanyName={prospect.company_name}
+                initialContacts={contacts}
+                initialDeals={deals}
+                onSuccess={() => {
+                  setPrepSheetOpen(false)
+                  toast({ title: t('toast.prepStarted') })
+                  refetchHubData()
+                }}
+                onCancel={() => setPrepSheetOpen(false)}
+                isSheet={true}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
+        
+        {/* Follow-up Upload Sheet */}
+        <Sheet open={followupSheetOpen} onOpenChange={setFollowupSheetOpen}>
+          <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle className="flex items-center gap-2">
+                <Mic className="w-5 h-5 text-orange-600" />
+                {t('sheets.uploadFollowup')}
+              </SheetTitle>
+              <SheetDescription>
+                {t('sheets.uploadFollowupDesc', { company: prospect.company_name })}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="mt-6">
+              <FollowupUploadForm
+                initialProspectCompany={prospect.company_name}
+                initialContacts={contacts}
+                initialDeals={deals}
+                onSuccess={() => {
+                  setFollowupSheetOpen(false)
+                  toast({ title: t('toast.followupStarted') })
+                  refetchHubData()
+                }}
+                onCancel={() => setFollowupSheetOpen(false)}
+                isSheet={true}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
+        
+        {/* Contact Search Modal - Reuses existing component (SPEC-041 FR-6) */}
+        {research && (
+          <ContactSearchModal
+            isOpen={contactModalOpen}
+            onClose={() => setContactModalOpen(false)}
+            companyName={prospect.company_name}
+            companyLinkedInUrl={prospect.linkedin_url || undefined}
+            researchId={research.id}
+            onContactAdded={() => {
+              setContactModalOpen(false)
+              toast({ title: t('toast.contactAdded') })
+              refetchHubData()
+            }}
+          />
+        )}
       </div>
     </DashboardLayout>
   )
@@ -912,26 +1096,30 @@ function DocumentRow({ icon, label, status, date, count, onClick, actionLabel, o
         </div>
       </div>
       
-      {status === 'completed' ? (
-        <div className="flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-green-500" />
-          <ChevronRight className="w-4 h-4 text-slate-400" />
-        </div>
-      ) : actionLabel && onAction ? (
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation()
-            onAction()
-          }}
-        >
-          <Plus className="w-3 h-3 mr-1" />
-          {actionLabel}
-        </Button>
-      ) : (
-        <Circle className="w-4 h-4 text-slate-300 dark:text-slate-600" />
-      )}
+      <div className="flex items-center gap-2">
+        {status === 'completed' && (
+          <>
+            <CheckCircle2 className="w-4 h-4 text-green-500" />
+            <ChevronRight className="w-4 h-4 text-slate-400" />
+          </>
+        )}
+        {actionLabel && onAction && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation()
+              onAction()
+            }}
+          >
+            <Plus className="w-3 h-3 mr-1" />
+            {actionLabel}
+          </Button>
+        )}
+        {status !== 'completed' && !onAction && (
+          <Circle className="w-4 h-4 text-slate-300 dark:text-slate-600" />
+        )}
+      </div>
     </div>
   )
 }

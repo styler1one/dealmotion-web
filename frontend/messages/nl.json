@@ -1119,6 +1119,20 @@
     "errors": {
       "loadFailed": "Kon prospect data niet laden",
       "notFound": "Prospect niet gevonden"
+    },
+    "sheets": {
+      "startResearch": "Start Bedrijfsonderzoek",
+      "startResearchDesc": "Zoek en verifieer dit bedrijf om AI research te starten.",
+      "createPrep": "Maak Meeting Voorbereiding",
+      "createPrepDesc": "Bereid je meeting met {company} voor.",
+      "uploadFollowup": "Upload Meeting Opname",
+      "uploadFollowupDesc": "Upload audio of transcript van je meeting met {company}."
+    },
+    "toast": {
+      "researchStarted": "Research succesvol gestart",
+      "prepStarted": "Voorbereiding generatie gestart",
+      "followupStarted": "Follow-up verwerking gestart",
+      "contactAdded": "Contact succesvol toegevoegd"
     }
   },
   "billing": {
