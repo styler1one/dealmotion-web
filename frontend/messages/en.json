@@ -1426,6 +1426,12 @@
       "prepStarted": "Preparation generation started",
       "followupStarted": "Follow-up processing started",
       "contactAdded": "Contact added successfully"
+    },
+    "contactDetail": {
+      "profileBrief": "Profile Analysis",
+      "openingSuggestions": "Opening Suggestions",
+      "questionsToAsk": "Questions to Ask",
+      "topicsToAvoid": "Topics to Avoid"
     }
   },
   "billing": {

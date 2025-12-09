@@ -27,7 +27,8 @@ import {
   Trash2,
   Lightbulb,
   Calendar,
-  ArrowRight
+  ArrowRight,
+  Mail
 } from 'lucide-react'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { Button } from '@/components/ui/button'
@@ -102,6 +103,10 @@ export default function ProspectHubPage() {
   const [prepSheetOpen, setPrepSheetOpen] = useState(false)
   const [followupSheetOpen, setFollowupSheetOpen] = useState(false)
   const [contactModalOpen, setContactModalOpen] = useState(false)
+  
+  // Contact detail view state
+  const [selectedContact, setSelectedContact] = useState<ProspectContact | null>(null)
+  const [contactDetailOpen, setContactDetailOpen] = useState(false)
   
   // Refetch hub data function - used after sheet actions
   const refetchHubData = useCallback(async () => {
@@ -585,35 +590,70 @@ export default function ProspectHubPage() {
                   </div>
                 ) : (
                   <div className="grid sm:grid-cols-2 gap-3">
-                    {contacts.slice(0, 3).map(contact => (
-                      <div 
-                        key={contact.id} 
-                        className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                      >
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-medium text-sm flex-shrink-0">
-                          {contact.name.charAt(0).toUpperCase()}
+                    {contacts.slice(0, 4).map(contact => {
+                      const isAnalyzing = contact.analysis_status === 'pending' || contact.analysis_status === 'analyzing'
+                      const hasAnalysis = contact.analysis_status === 'completed' && contact.profile_brief
+                      
+                      return (
+                        <div 
+                          key={contact.id} 
+                          className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
+                            isAnalyzing 
+                              ? 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800' 
+                              : hasAnalysis
+                                ? 'bg-slate-50 dark:bg-slate-800/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer border border-transparent hover:border-blue-200 dark:hover:border-blue-800'
+                                : 'bg-slate-50 dark:bg-slate-800/50'
+                          }`}
+                          onClick={() => {
+                            if (hasAnalysis) {
+                              setSelectedContact(contact)
+                              setContactDetailOpen(true)
+                            }
+                          }}
+                        >
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-medium text-sm flex-shrink-0 ${
+                            isAnalyzing 
+                              ? 'bg-amber-400' 
+                              : 'bg-gradient-to-br from-purple-400 to-purple-600'
+                          }`}>
+                            {isAnalyzing ? (
+                              <Loader2 className="w-5 h-5 animate-spin text-white" />
+                            ) : (
+                              contact.name.charAt(0).toUpperCase()
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-slate-900 dark:text-white truncate">
+                              {contact.name}
+                            </p>
+                            <p className="text-xs text-slate-500 truncate">
+                              {isAnalyzing ? (
+                                <span className="text-amber-600 dark:text-amber-400">{t('status.inProgress')}</span>
+                              ) : (
+                                contact.role || contact.decision_authority || '—'
+                              )}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {hasAnalysis && (
+                              <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">{tCommon('view')}</span>
+                            )}
+                            {contact.linkedin_url && (
+                              <a 
+                                href={contact.linkedin_url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-slate-400 hover:text-blue-600"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Linkedin className="w-4 h-4" />
+                              </a>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-slate-900 dark:text-white truncate">
-                            {contact.name}
-                          </p>
-                          <p className="text-xs text-slate-500 truncate">
-                            {contact.role || contact.decision_authority || '—'}
-                          </p>
-                        </div>
-                        {contact.linkedin_url && (
-                          <a 
-                            href={contact.linkedin_url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-slate-400 hover:text-blue-600"
-                          >
-                            <Linkedin className="w-4 h-4" />
-                          </a>
-                        )}
-                      </div>
-                    ))}
-                    {contacts.length > 3 && (
+                      )
+                    })}
+                    {contacts.length > 4 && (
                       <div className="flex items-center justify-center p-3 rounded-lg border-2 border-dashed border-slate-200 dark:border-slate-700">
                         <Button 
                           variant="ghost" 
@@ -621,7 +661,7 @@ export default function ProspectHubPage() {
                           onClick={() => research && router.push(`/dashboard/research/${research.id}`)}
                           className="text-slate-500"
                         >
-                          +{contacts.length - 3} {t('more')}
+                          +{contacts.length - 4} {t('more')}
                         </Button>
                       </div>
                     )}
@@ -1047,6 +1087,126 @@ export default function ProspectHubPage() {
             }}
           />
         )}
+        
+        {/* Contact Detail Sheet - View contact analysis */}
+        <Sheet open={contactDetailOpen} onOpenChange={setContactDetailOpen}>
+          <SheetContent side="right" className="sm:max-w-lg overflow-y-auto">
+            {selectedContact && (
+              <>
+                <SheetHeader>
+                  <SheetTitle className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-medium">
+                      {selectedContact.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <div className="text-lg">{selectedContact.name}</div>
+                      {selectedContact.role && (
+                        <div className="text-sm font-normal text-slate-500">{selectedContact.role}</div>
+                      )}
+                    </div>
+                  </SheetTitle>
+                </SheetHeader>
+                
+                <div className="mt-6 space-y-6">
+                  {/* Contact Info */}
+                  <div className="flex flex-wrap gap-3">
+                    {selectedContact.email && (
+                      <a href={`mailto:${selectedContact.email}`} className="flex items-center gap-1.5 text-sm text-blue-600 hover:underline">
+                        <Mail className="w-4 h-4" />
+                        {selectedContact.email}
+                      </a>
+                    )}
+                    {selectedContact.linkedin_url && (
+                      <a href={selectedContact.linkedin_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-blue-600 hover:underline">
+                        <Linkedin className="w-4 h-4" />
+                        LinkedIn
+                      </a>
+                    )}
+                  </div>
+                  
+                  {/* Communication Style & Authority */}
+                  {(selectedContact.communication_style || selectedContact.decision_authority) && (
+                    <div className="flex flex-wrap gap-2">
+                      {selectedContact.communication_style && (
+                        <Badge variant="secondary" className="bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300">
+                          {selectedContact.communication_style}
+                        </Badge>
+                      )}
+                      {selectedContact.decision_authority && (
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
+                          {selectedContact.decision_authority.replace('_', ' ')}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Profile Brief */}
+                  {selectedContact.profile_brief && (
+                    <div>
+                      <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">
+                        {t('contactDetail.profileBrief')}
+                      </h4>
+                      <div className="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-wrap bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4">
+                        {selectedContact.profile_brief}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Opening Suggestions */}
+                  {selectedContact.opening_suggestions && selectedContact.opening_suggestions.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">
+                        {t('contactDetail.openingSuggestions')}
+                      </h4>
+                      <ul className="space-y-2">
+                        {selectedContact.opening_suggestions.map((suggestion, i) => (
+                          <li key={i} className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-400">
+                            <Lightbulb className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                            {suggestion}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {/* Questions to Ask */}
+                  {selectedContact.questions_to_ask && selectedContact.questions_to_ask.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">
+                        {t('contactDetail.questionsToAsk')}
+                      </h4>
+                      <ul className="space-y-2">
+                        {selectedContact.questions_to_ask.map((question, i) => (
+                          <li key={i} className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-400">
+                            <span className="text-blue-500">?</span>
+                            {question}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {/* Topics to Avoid */}
+                  {selectedContact.topics_to_avoid && selectedContact.topics_to_avoid.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-2 text-red-600 dark:text-red-400">
+                        {t('contactDetail.topicsToAvoid')}
+                      </h4>
+                      <ul className="space-y-2">
+                        {selectedContact.topics_to_avoid.map((topic, i) => (
+                          <li key={i} className="flex items-start gap-2 text-sm text-red-600 dark:text-red-400">
+                            <span>⚠️</span>
+                            {topic}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </SheetContent>
+        </Sheet>
       </div>
     </DashboardLayout>
   )
