@@ -21,6 +21,20 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import type { User } from '@supabase/supabase-js'
+import { ImportRecordingModal } from '@/components/import-recording-modal'
+
+// Interface for ImportRecordingModal compatibility
+interface ExternalRecordingForModal {
+  id: string
+  provider: string
+  external_id: string
+  title: string | null
+  recording_date: string
+  duration_seconds: number | null
+  participants: string[]
+  matched_meeting_id: string | null
+  matched_prospect_id: string | null
+}
 
 interface UnifiedRecording {
   id: string
@@ -86,6 +100,10 @@ export default function RecordingsPage() {
   // Filters
   const [sourceFilter, setSourceFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  
+  // Import modal state
+  const [selectedRecordingForImport, setSelectedRecordingForImport] = useState<ExternalRecordingForModal | null>(null)
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   
   const fetchRecordings = useCallback(async () => {
     try {
@@ -161,6 +179,35 @@ export default function RecordingsPage() {
     if (bytes < 1024) return `${bytes} B`
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  }
+
+  // Handle analyze button click - opens import modal for external recordings
+  const handleAnalyze = (recording: UnifiedRecording) => {
+    // Convert to format expected by ImportRecordingModal
+    const modalRecording: ExternalRecordingForModal = {
+      id: recording.id,
+      provider: recording.source,
+      external_id: recording.id,
+      title: recording.title,
+      recording_date: recording.recorded_at || recording.created_at,
+      duration_seconds: recording.duration_seconds,
+      participants: [], // We don't have this in unified format
+      matched_meeting_id: null,
+      matched_prospect_id: recording.prospect_id,
+    }
+    setSelectedRecordingForImport(modalRecording)
+    setIsImportModalOpen(true)
+  }
+
+  // Handle successful import from modal
+  const handleImported = (followupId: string) => {
+    setIsImportModalOpen(false)
+    setSelectedRecordingForImport(null)
+    // Refresh data
+    fetchRecordings()
+    fetchStats()
+    // Navigate to the new followup
+    router.push(`/dashboard/followup/${followupId}`)
   }
 
   const handleRecordingClick = (recording: UnifiedRecording) => {
@@ -330,6 +377,22 @@ export default function RecordingsPage() {
                         </div>
                         
                         <div className="flex items-center gap-1 ml-4">
+                          {/* Analyze button for external recordings not yet imported */}
+                          {!recording.followup_id && recording.source_table === 'external_recordings' && (
+                            <Button
+                              variant="default"
+                              size="sm"
+                              className="h-8 text-xs bg-orange-600 hover:bg-orange-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleAnalyze(recording)
+                              }}
+                            >
+                              <Icons.sparkles className="h-3 w-3 mr-1" />
+                              {t('analyze')}
+                            </Button>
+                          )}
+                          {/* View Analysis button for already analyzed recordings */}
                           {recording.followup_id && (
                             <Button
                               variant="default"
@@ -344,7 +407,7 @@ export default function RecordingsPage() {
                               {t('viewAnalysis')}
                             </Button>
                           )}
-                          {!recording.followup_id && recording.prospect_id && (
+                          {!recording.followup_id && recording.prospect_id && recording.source_table !== 'external_recordings' && (
                             <Button
                               variant="outline"
                               size="sm"
@@ -457,6 +520,17 @@ export default function RecordingsPage() {
         </div>
 
         <Toaster />
+
+        {/* Import Recording Modal */}
+        <ImportRecordingModal
+          isOpen={isImportModalOpen}
+          onClose={() => {
+            setIsImportModalOpen(false)
+            setSelectedRecordingForImport(null)
+          }}
+          recording={selectedRecordingForImport}
+          onImported={handleImported}
+        />
       </div>
     </DashboardLayout>
   )

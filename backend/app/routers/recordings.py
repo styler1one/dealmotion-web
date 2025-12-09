@@ -294,8 +294,11 @@ async def list_recordings(
                 all_recordings.append(rec)
                 sources_count["web_upload"] += 1
         
-        # Sort all by created_at descending
-        all_recordings.sort(key=lambda r: r.created_at, reverse=True)
+        # Sort all by recorded_at (or created_at as fallback) descending - newest first
+        all_recordings.sort(
+            key=lambda r: r.recorded_at or r.created_at, 
+            reverse=True
+        )
         
         # Apply pagination
         total = len(all_recordings)

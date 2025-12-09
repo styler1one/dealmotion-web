@@ -2333,6 +2333,7 @@
     "loading": "Loading recordings...",
     "untitled": "Untitled Recording",
     "viewAnalysis": "View Analysis",
+    "analyze": "Analyze",
     "filters": {
       "allSources": "All Sources",
       "allStatus": "All Status"
