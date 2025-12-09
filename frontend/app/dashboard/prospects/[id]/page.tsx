@@ -45,6 +45,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '
 import { ResearchForm, PreparationForm, FollowupUploadForm } from '@/components/forms'
 import { ContactSearchModal } from '@/components/contacts'
 import { logger } from '@/lib/logger'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 // ============================================================
 // Types
@@ -1146,14 +1148,39 @@ export default function ProspectHubPage() {
                     </div>
                   )}
                   
-                  {/* Profile Brief */}
+                  {/* Profile Brief - Rendered as Markdown */}
                   {selectedContact.profile_brief && (
                     <div>
                       <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">
                         {t('contactDetail.profileBrief')}
                       </h4>
-                      <div className="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-wrap bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4">
-                        {selectedContact.profile_brief}
+                      <div className="prose prose-sm prose-slate dark:prose-invert max-w-none bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            h1: ({ node, ...props }) => <h1 className="text-lg font-bold mb-2 text-slate-900 dark:text-white" {...props} />,
+                            h2: ({ node, ...props }) => <h2 className="text-base font-bold mt-4 mb-2 text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-700 pb-1" {...props} />,
+                            h3: ({ node, ...props }) => <h3 className="text-sm font-semibold mt-3 mb-1.5 text-slate-900 dark:text-white" {...props} />,
+                            p: ({ node, ...props }) => <p className="mb-2 text-sm text-slate-700 dark:text-slate-300 leading-relaxed" {...props} />,
+                            ul: ({ node, ...props }) => <ul className="list-disc list-inside mb-2 space-y-1 text-sm" {...props} />,
+                            ol: ({ node, ...props }) => <ol className="list-decimal list-inside mb-2 space-y-1 text-sm" {...props} />,
+                            li: ({ node, ...props }) => <li className="ml-2 text-slate-700 dark:text-slate-300" {...props} />,
+                            strong: ({ node, ...props }) => <strong className="font-semibold text-slate-900 dark:text-white" {...props} />,
+                            hr: ({ node, ...props }) => <hr className="my-3 border-slate-200 dark:border-slate-700" {...props} />,
+                            table: ({ node, ...props }) => (
+                              <div className="overflow-x-auto my-3 rounded-lg border border-slate-200 dark:border-slate-700">
+                                <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm" {...props} />
+                              </div>
+                            ),
+                            thead: ({ node, ...props }) => <thead className="bg-slate-100 dark:bg-slate-700/50" {...props} />,
+                            tbody: ({ node, ...props }) => <tbody className="divide-y divide-slate-200 dark:divide-slate-700 bg-white dark:bg-slate-800" {...props} />,
+                            tr: ({ node, ...props }) => <tr {...props} />,
+                            th: ({ node, ...props }) => <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider" {...props} />,
+                            td: ({ node, ...props }) => <td className="px-3 py-2 text-slate-700 dark:text-slate-300 whitespace-normal" {...props} />,
+                          }}
+                        >
+                          {selectedContact.profile_brief}
+                        </ReactMarkdown>
                       </div>
                     </div>
                   )}
