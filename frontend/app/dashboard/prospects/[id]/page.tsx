@@ -538,142 +538,6 @@ export default function ProspectHubPage() {
               </Card>
             )}
             
-            {/* PEOPLE - Now with inline Add Contact modal (SPEC-041) */}
-            <Card>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Users className="w-5 h-5 text-purple-500" />
-                    {t('sections.people')}
-                    <span className="text-slate-400 font-normal">({contacts.length})</span>
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
-                    {research && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setContactModalOpen(true)}
-                        className="text-purple-600"
-                      >
-                        <Plus className="w-4 h-4 mr-1" />
-                        {t('actions.addContact')}
-                      </Button>
-                    )}
-                    {research && (
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => router.push(`/dashboard/research/${research.id}`)}
-                        className="text-purple-600"
-                      >
-                        {t('actions.manage')}
-                        <ChevronRight className="w-4 h-4 ml-1" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                {contacts.length === 0 ? (
-                  <div className="text-center py-6 text-slate-500">
-                    <Users className="w-10 h-10 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
-                    <p className="text-sm">{t('empty.noContacts')}</p>
-                    {research && (
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="mt-3"
-                        onClick={() => setContactModalOpen(true)}
-                      >
-                        <Plus className="w-4 h-4 mr-1" />
-                        {t('actions.addContact')}
-                      </Button>
-                    )}
-                  </div>
-                ) : (
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    {contacts.slice(0, 4).map(contact => {
-                      // Use same logic as research page: check analyzed_at and profile_brief
-                      // analysis_status does not exist in database, so we infer from these fields
-                      const isAnalyzing = !contact.analyzed_at && contact.profile_brief === "Analyse wordt uitgevoerd..."
-                      const hasAnalysis = !!contact.analyzed_at && !!contact.profile_brief
-                      
-                      return (
-                        <div 
-                          key={contact.id} 
-                          className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                            isAnalyzing 
-                              ? 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800' 
-                              : hasAnalysis
-                                ? 'bg-slate-50 dark:bg-slate-800/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer border border-transparent hover:border-blue-200 dark:hover:border-blue-800'
-                                : 'bg-slate-50 dark:bg-slate-800/50'
-                          }`}
-                          onClick={() => {
-                            if (hasAnalysis) {
-                              setSelectedContact(contact)
-                              setContactDetailOpen(true)
-                            }
-                          }}
-                        >
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-medium text-sm flex-shrink-0 ${
-                            isAnalyzing 
-                              ? 'bg-amber-400' 
-                              : 'bg-gradient-to-br from-purple-400 to-purple-600'
-                          }`}>
-                            {isAnalyzing ? (
-                              <Loader2 className="w-5 h-5 animate-spin text-white" />
-                            ) : (
-                              contact.name.charAt(0).toUpperCase()
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-slate-900 dark:text-white truncate">
-                              {contact.name}
-                            </p>
-                            <p className="text-xs text-slate-500 truncate">
-                              {isAnalyzing ? (
-                                <span className="text-amber-600 dark:text-amber-400">{t('status.inProgress')}</span>
-                              ) : (
-                                contact.role || contact.decision_authority || '—'
-                              )}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            {hasAnalysis && (
-                              <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">{tCommon('view')}</span>
-                            )}
-                            {contact.linkedin_url && (
-                              <a 
-                                href={contact.linkedin_url} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-slate-400 hover:text-blue-600"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <Linkedin className="w-4 h-4" />
-                              </a>
-                            )}
-                          </div>
-                        </div>
-                      )
-                    })}
-                    {contacts.length > 4 && (
-                      <div className="flex items-center justify-center p-3 rounded-lg border-2 border-dashed border-slate-200 dark:border-slate-700">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => research && router.push(`/dashboard/research/${research.id}`)}
-                          className="text-slate-500"
-                        >
-                          +{contacts.length - 4} {t('more')}
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-            
             {/* DOCUMENTS - Now with inline Sheet actions (SPEC-041) */}
             <Card>
               <CardHeader className="pb-3">
@@ -684,7 +548,7 @@ export default function ProspectHubPage() {
               </CardHeader>
               <CardContent className="pt-0">
                 <div className="space-y-2">
-                  {/* Research */}
+                  {/* Research - with explicit View Research button when completed */}
                   <DocumentRow
                     icon={<Search className="w-4 h-4" />}
                     label={t('documents.research')}
@@ -696,8 +560,8 @@ export default function ProspectHubPage() {
                     statusLabel={research?.status === 'pending' || research?.status === 'researching' ? t('status.inProgress') : undefined}
                     date={research?.completed_at}
                     onClick={research?.status === 'completed' ? () => router.push(`/dashboard/research/${research.id}`) : undefined}
-                    actionLabel={!research ? t('actions.create') : undefined}
-                    onAction={!research ? () => setResearchSheetOpen(true) : undefined}
+                    actionLabel={!research ? t('actions.create') : research?.status === 'completed' ? t('actions.viewResearch') : undefined}
+                    onAction={!research ? () => setResearchSheetOpen(true) : research?.status === 'completed' ? () => router.push(`/dashboard/research/${research.id}`) : undefined}
                   />
                   
                   {/* Preparations - expandable with inline items */}
@@ -708,7 +572,12 @@ export default function ProspectHubPage() {
                     createLabel={preparations.length > 0 ? t('actions.createNew') : t('actions.create')}
                     onCreate={() => setPrepSheetOpen(true)}
                     onItemClick={(id) => router.push(`/dashboard/preparation/${id}`)}
-                    getItemTitle={(item) => (item as ProspectHubPreparation).meeting_type || 'Meeting Prep'}
+                    getItemTitle={(item) => {
+                      const prep = item as ProspectHubPreparation
+                      const meetingType = prep.meeting_type ? prep.meeting_type.charAt(0).toUpperCase() + prep.meeting_type.slice(1).replace('_', ' ') : 'Meeting'
+                      const contactName = prep.contact_names?.[0]
+                      return contactName ? `${meetingType} with ${contactName}` : meetingType
+                    }}
                     getItemStatus={(item) => (item as ProspectHubPreparation).status}
                     getItemDate={(item) => item.completed_at || item.created_at}
                   />
@@ -721,7 +590,12 @@ export default function ProspectHubPage() {
                     createLabel={followups.length > 0 ? t('actions.createNew') : t('actions.create')}
                     onCreate={() => setFollowupSheetOpen(true)}
                     onItemClick={(id) => router.push(`/dashboard/followup/${id}`)}
-                    getItemTitle={(item) => (item as ProspectHubFollowup).meeting_subject || 'Meeting Analysis'}
+                    getItemTitle={(item) => {
+                      const fu = item as ProspectHubFollowup
+                      const subject = fu.meeting_subject || 'Meeting Analysis'
+                      const contactName = fu.contact_names?.[0]
+                      return contactName ? `${subject} with ${contactName}` : subject
+                    }}
                     getItemStatus={(item) => (item as ProspectHubFollowup).status}
                     getItemDate={(item) => item.completed_at || item.created_at}
                   />
@@ -877,6 +751,100 @@ export default function ProspectHubPage() {
                     <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
                 </div>
+              </CardContent>
+            </Card>
+            
+            {/* PEOPLE - Compact sidebar version */}
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Users className="w-4 h-4 text-purple-500" />
+                    {t('sections.people')}
+                    <span className="text-slate-400 font-normal text-sm">({contacts.length})</span>
+                  </CardTitle>
+                  {research && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => setContactModalOpen(true)}
+                      className="h-7 text-xs text-purple-600"
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      Add
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                {contacts.length === 0 ? (
+                  <p className="text-sm text-slate-400 text-center py-3">
+                    {t('empty.noContacts')}
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {contacts.slice(0, 3).map(contact => {
+                      const isAnalyzing = !contact.analyzed_at && contact.profile_brief === "Analyse wordt uitgevoerd..."
+                      const hasAnalysis = !!contact.analyzed_at && !!contact.profile_brief
+                      
+                      return (
+                        <div 
+                          key={contact.id} 
+                          className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${
+                            isAnalyzing 
+                              ? 'bg-amber-50 dark:bg-amber-900/20' 
+                              : hasAnalysis
+                                ? 'hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer'
+                                : 'bg-slate-50/50 dark:bg-slate-800/30'
+                          }`}
+                          onClick={() => {
+                            if (hasAnalysis) {
+                              setSelectedContact(contact)
+                              setContactDetailOpen(true)
+                            }
+                          }}
+                        >
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-medium text-xs flex-shrink-0 ${
+                            isAnalyzing 
+                              ? 'bg-amber-400' 
+                              : 'bg-gradient-to-br from-purple-400 to-purple-600'
+                          }`}>
+                            {isAnalyzing ? (
+                              <Loader2 className="w-4 h-4 animate-spin text-white" />
+                            ) : (
+                              contact.name.charAt(0).toUpperCase()
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                              {contact.name}
+                            </p>
+                            <p className="text-xs text-slate-500 truncate">
+                              {isAnalyzing ? (
+                                <span className="text-amber-600 dark:text-amber-400">Analyzing...</span>
+                              ) : (
+                                contact.role || '—'
+                              )}
+                            </p>
+                          </div>
+                          {hasAnalysis && (
+                            <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                          )}
+                        </div>
+                      )
+                    })}
+                    {contacts.length > 3 && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => research && router.push(`/dashboard/research/${research.id}`)}
+                        className="w-full h-7 text-xs text-slate-500"
+                      >
+                        +{contacts.length - 3} {t('more')}
+                      </Button>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
             
@@ -1306,7 +1274,22 @@ function DocumentRow({ icon, label, status, statusLabel, date, count, onClick, a
         {status === 'completed' && (
           <>
             <CheckCircle2 className="w-4 h-4 text-green-500" />
-            <ChevronRight className="w-4 h-4 text-slate-400" />
+            {actionLabel && onAction ? (
+              <Button 
+                variant="ghost" 
+                size="sm"
+                className="h-7 text-xs text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/40"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onAction()
+                }}
+              >
+                {actionLabel}
+                <ChevronRight className="w-3 h-3 ml-1" />
+              </Button>
+            ) : (
+              <ChevronRight className="w-4 h-4 text-slate-400" />
+            )}
           </>
         )}
         {status === 'in_progress' && (

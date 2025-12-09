@@ -1364,7 +1364,7 @@
     "documents": {
       "research": "Company Research",
       "preparation": "Meeting Preparations",
-      "followup": "Meeting Recordings",
+      "followup": "Meeting Analysis & Follow-ups",
       "recordings": "Meeting Recordings"
     },
     "nextAction": {
@@ -1395,6 +1395,7 @@
     "actions": {
       "backToProspects": "Back to Prospects",
       "viewFullResearch": "View full research",
+      "viewResearch": "View Research",
       "manage": "Manage",
       "addContact": "Add Contact",
       "create": "Create",

@@ -446,9 +446,9 @@ async def get_prospect_hub(
         
         deals = deals_response.data or []
         
-        # Get preps and followups linked to this prospect (with basic info for inline display)
+        # Get preps and followups linked to this prospect (with contact_ids for display)
         preps_response = supabase.table("meeting_preps").select(
-            "id, prospect_company_name, meeting_type, status, created_at, completed_at"
+            "id, prospect_company_name, meeting_type, status, created_at, completed_at, contact_ids"
         ).eq(
             "prospect_id", prospect_id
         ).order(
@@ -456,15 +456,31 @@ async def get_prospect_hub(
         ).execute()
         
         followups_response = supabase.table("followups").select(
-            "id, prospect_company_name, meeting_subject, status, created_at, completed_at"
+            "id, prospect_company_name, meeting_subject, status, created_at, completed_at, contact_ids"
         ).eq(
             "prospect_id", prospect_id
         ).order(
             "created_at", desc=True
         ).execute()
         
-        preparations = preps_response.data or []
-        followups = followups_response.data or []
+        # Build contact name lookup from already fetched contacts
+        contact_name_map = {c["id"]: c["name"] for c in contacts}
+        
+        # Enrich preps with contact names
+        preparations = []
+        for p in preps_response.data or []:
+            prep = {**p}
+            contact_ids = p.get("contact_ids") or []
+            prep["contact_names"] = [contact_name_map.get(cid, "") for cid in contact_ids if contact_name_map.get(cid)]
+            preparations.append(prep)
+        
+        # Enrich followups with contact names  
+        followups = []
+        for f in followups_response.data or []:
+            fu = {**f}
+            contact_ids = f.get("contact_ids") or []
+            fu["contact_names"] = [contact_name_map.get(cid, "") for cid in contact_ids if contact_name_map.get(cid)]
+            followups.append(fu)
         
         # Filter for completed counts in stats
         completed_preps = [p for p in preparations if p.get("status") == "completed"]

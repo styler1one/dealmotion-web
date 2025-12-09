@@ -504,6 +504,8 @@ export interface ProspectHubPreparation {
   status: 'pending' | 'generating' | 'completed' | 'failed'
   created_at: string
   completed_at?: string
+  contact_ids?: string[]
+  contact_names?: string[]  // Enriched by backend
 }
 
 export interface ProspectHubFollowup {
@@ -513,6 +515,8 @@ export interface ProspectHubFollowup {
   status: 'pending' | 'transcribing' | 'summarizing' | 'completed' | 'failed'
   created_at: string
   completed_at?: string
+  contact_ids?: string[]
+  contact_names?: string[]  // Enriched by backend
 }
 
 export interface ProspectHub {
