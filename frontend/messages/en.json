@@ -72,7 +72,15 @@
     },
     "toast": {
       "researchStarted": "Research started!",
-      "researchStartedDesc": "Your prospect will be created automatically"
+      "researchStartedDesc": "Your prospect will be created automatically",
+      "prepStarted": "Preparation started!",
+      "prepStartedDesc": "Your meeting brief is being generated",
+      "followupStarted": "Follow-up started!",
+      "followupStartedDesc": "Your recording is being processed"
+    },
+    "sheets": {
+      "createPrepDesc": "Create a personalized meeting preparation",
+      "uploadFollowupDesc": "Upload and analyze your meeting recording"
     }
   },
   "common": {

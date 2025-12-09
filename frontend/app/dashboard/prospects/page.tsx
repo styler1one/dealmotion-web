@@ -34,6 +34,7 @@ import { Icons } from '@/components/icons'
 import { api } from '@/lib/api'
 import { Prospect } from '@/types'
 import { getProspectStatusColor } from '@/lib/constants/activity'
+import { logger } from '@/lib/logger'
 import { smartDate } from '@/lib/date-utils'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 import { ResearchForm } from '@/components/forms'
@@ -104,7 +105,7 @@ export default function ProspectsPage() {
       
       setProspects(data?.prospects || [])
     } catch (error) {
-      console.error('Error loading prospects:', error)
+      logger.error('Error loading prospects', error)
       toast({ variant: "destructive", title: t('errors.loadFailed') })
     }
   }, [sortBy, sortOrder, statusFilter, searchQuery, t, toast])
@@ -117,7 +118,7 @@ export default function ProspectsPage() {
         setStats(data)
       }
     } catch (error) {
-      console.error('Error loading stats:', error)
+      logger.error('Error loading stats', error)
     }
   }, [])
   
@@ -132,7 +133,7 @@ export default function ProspectsPage() {
           await Promise.all([fetchProspects(), fetchStats()])
         }
       } catch (error) {
-        console.error('Error initializing:', error)
+        logger.error('Error initializing', error)
       } finally {
         setLoading(false)
       }

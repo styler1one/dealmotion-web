@@ -19,6 +19,7 @@ import type { User } from '@supabase/supabase-js'
 
 interface MeetingPrep {
   id: string
+  prospect_id?: string
   prospect_company_name: string
   meeting_type: string
   status: string
@@ -101,12 +102,16 @@ export default function PreparationPage() {
     }
   }
 
-  const handlePrepSuccess = () => {
+  const handlePrepSuccess = (result?: { id: string; prospect_id?: string }) => {
     // Clear initial values after success
     setInitialCompanyName('')
     setCalendarMeetingId(null)
     // Reload preps
     loadPreps()
+    // Redirect to Hub if we have a prospect_id
+    if (result?.prospect_id) {
+      router.push(`/dashboard/prospects/${result.prospect_id}`)
+    }
   }
 
   const viewPrep = (prepId: string) => {
@@ -232,6 +237,20 @@ export default function PreparationPage() {
                       <div className="flex items-center gap-1 ml-4">
                         {prep.status === 'completed' && (
                           <>
+                            {prep.prospect_id && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  router.push(`/dashboard/prospects/${prep.prospect_id}`)
+                                }}
+                              >
+                                <Icons.building className="h-3 w-3 mr-1" />
+                                Hub
+                              </Button>
+                            )}
                             <Button
                               variant="default"
                               size="sm"

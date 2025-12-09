@@ -12,7 +12,7 @@ import { api } from '@/lib/api'
 import { useBilling } from '@/lib/billing-context'
 import { logger } from '@/lib/logger'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
-import { ResearchForm } from '@/components/forms'
+import { ResearchForm, PreparationForm, FollowupUploadForm } from '@/components/forms'
 import type { User } from '@supabase/supabase-js'
 import type { SalesProfile, CompanyProfile, KBFile, ResearchBrief, MeetingPrep, Followup } from '@/types'
 
@@ -61,6 +61,7 @@ function countRecentItems<T extends { created_at: string }>(items: T[]): number 
 
 interface ProspectWithStatus {
     id: string
+    prospectId?: string  // The actual prospect_id from database
     company_name: string
     hasResearch: boolean
     researchId?: string
@@ -89,8 +90,10 @@ export default function DashboardPage() {
     const [followups, setFollowups] = useState<Followup[]>([])
     const [activities, setActivities] = useState<Activity[]>([])
     
-    // Research Sheet state - for adding new prospects
+    // Sheet states - for inline actions
     const [researchSheetOpen, setResearchSheetOpen] = useState(false)
+    const [prepSheetOpen, setPrepSheetOpen] = useState(false)
+    const [followupSheetOpen, setFollowupSheetOpen] = useState(false)
     
     // Billing context for flow usage
     const { subscription, usage, loading: billingLoading } = useBilling()
@@ -145,6 +148,7 @@ export default function DashboardPage() {
             if (!prospectMap.has(name)) {
                 prospectMap.set(name, {
                     id: brief.id,
+                    prospectId: brief.prospect_id,  // Store actual prospect_id for Hub navigation
                     company_name: brief.company_name,
                     hasResearch: true,
                     researchId: brief.id,
@@ -159,6 +163,8 @@ export default function DashboardPage() {
                 existing.hasResearch = true
                 existing.researchId = brief.id
                 existing.researchStatus = brief.status
+                // Update prospect_id if we have one from research
+                if (brief.prospect_id) existing.prospectId = brief.prospect_id
                 if (new Date(brief.created_at) > new Date(existing.lastActivity)) {
                     existing.lastActivity = brief.created_at
                 }
@@ -171,6 +177,7 @@ export default function DashboardPage() {
             if (!prospectMap.has(name)) {
                 prospectMap.set(name, {
                     id: prep.id,
+                    prospectId: prep.prospect_id,  // Store actual prospect_id for Hub navigation
                     company_name: prep.prospect_company_name,
                     hasResearch: false,
                     hasPrep: true,
@@ -185,6 +192,8 @@ export default function DashboardPage() {
                 existing.hasPrep = true
                 existing.prepId = prep.id
                 existing.prepStatus = prep.status
+                // Update prospect_id if we have one from prep
+                if (prep.prospect_id) existing.prospectId = prep.prospect_id
                 if (prep.status === 'completed') {
                     existing.nextAction = 'followup'
                 }
@@ -202,6 +211,7 @@ export default function DashboardPage() {
             if (!prospectMap.has(name)) {
                 prospectMap.set(name, {
                     id: followup.id,
+                    prospectId: followup.prospect_id,  // Store actual prospect_id for Hub navigation
                     company_name: followup.prospect_company_name || followup.meeting_subject || '',
                     hasResearch: false,
                     hasPrep: false,
@@ -216,6 +226,8 @@ export default function DashboardPage() {
                 existing.hasFollowup = true
                 existing.followupId = followup.id
                 existing.followupStatus = followup.status
+                // Update prospect_id if we have one from followup
+                if (followup.prospect_id) existing.prospectId = followup.prospect_id
                 if (followup.status === 'completed') {
                     existing.nextAction = 'complete'
                 }
@@ -353,6 +365,11 @@ export default function DashboardPage() {
     }
 
     const getProspectLink = (prospect: ProspectWithStatus) => {
+        // If we have a prospect_id, always navigate to the Prospect Hub
+        if (prospect.prospectId) {
+            return `/dashboard/prospects/${prospect.prospectId}`
+        }
+        // Fallback to document pages if no prospect_id (legacy data)
         if (prospect.followupId && prospect.followupStatus === 'completed') {
             return `/dashboard/followup/${prospect.followupId}`
         }
@@ -743,14 +760,14 @@ export default function DashboardPage() {
                                         <span className="text-xs font-medium text-blue-700 dark:text-blue-300">{t('quickActions.newResearch')}</span>
                                     </button>
                                     <button
-                                        onClick={() => router.push('/dashboard/preparation')}
+                                        onClick={() => setPrepSheetOpen(true)}
                                         className="p-3 rounded-lg bg-green-50 dark:bg-green-900/50 hover:bg-green-100 dark:hover:bg-green-900 transition-colors text-center"
                                     >
                                         <Icons.fileText className="h-5 w-5 text-green-600 dark:text-green-400 mx-auto mb-1" />
                                         <span className="text-xs font-medium text-green-700 dark:text-green-300">{tNavigation('preparation')}</span>
                                     </button>
                                     <button
-                                        onClick={() => router.push('/dashboard/followup')}
+                                        onClick={() => setFollowupSheetOpen(true)}
                                         className="p-3 rounded-lg bg-orange-50 dark:bg-orange-900/50 hover:bg-orange-100 dark:hover:bg-orange-900 transition-colors text-center"
                                     >
                                         <Icons.mic className="h-5 w-5 text-orange-600 dark:text-orange-400 mx-auto mb-1" />
@@ -867,6 +884,68 @@ export default function DashboardPage() {
                                 }}
                                 onCancel={() => setResearchSheetOpen(false)}
                                 isSheet={true}
+                            />
+                        </div>
+                    </SheetContent>
+                </Sheet>
+                
+                {/* Preparation Sheet - Opens when clicking "Preparation" in Quick Actions */}
+                <Sheet open={prepSheetOpen} onOpenChange={setPrepSheetOpen}>
+                    <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
+                        <SheetHeader>
+                            <SheetTitle className="flex items-center gap-2">
+                                <Icons.fileText className="w-5 h-5 text-green-600" />
+                                {tNavigation('preparation')}
+                            </SheetTitle>
+                            <SheetDescription>
+                                {t('sheets.createPrepDesc')}
+                            </SheetDescription>
+                        </SheetHeader>
+                        <div className="mt-6">
+                            <PreparationForm
+                                onSuccess={(result) => {
+                                    setPrepSheetOpen(false)
+                                    toast({ 
+                                        title: t('toast.prepStarted'),
+                                        description: t('toast.prepStartedDesc')
+                                    })
+                                    // Navigate to prospect hub if we have a prospect_id
+                                    if (result?.prospect_id) {
+                                        router.push(`/dashboard/prospects/${result.prospect_id}`)
+                                    }
+                                }}
+                                onCancel={() => setPrepSheetOpen(false)}
+                            />
+                        </div>
+                    </SheetContent>
+                </Sheet>
+                
+                {/* Followup Upload Sheet - Opens when clicking "Follow-up" in Quick Actions */}
+                <Sheet open={followupSheetOpen} onOpenChange={setFollowupSheetOpen}>
+                    <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
+                        <SheetHeader>
+                            <SheetTitle className="flex items-center gap-2">
+                                <Icons.mic className="w-5 h-5 text-orange-600" />
+                                {tNavigation('followup')}
+                            </SheetTitle>
+                            <SheetDescription>
+                                {t('sheets.uploadFollowupDesc')}
+                            </SheetDescription>
+                        </SheetHeader>
+                        <div className="mt-6">
+                            <FollowupUploadForm
+                                onSuccess={(result) => {
+                                    setFollowupSheetOpen(false)
+                                    toast({ 
+                                        title: t('toast.followupStarted'),
+                                        description: t('toast.followupStartedDesc')
+                                    })
+                                    // Navigate to prospect hub if we have a prospect_id
+                                    if (result?.prospect_id) {
+                                        router.push(`/dashboard/prospects/${result.prospect_id}`)
+                                    }
+                                }}
+                                onCancel={() => setFollowupSheetOpen(false)}
                             />
                         </div>
                     </SheetContent>

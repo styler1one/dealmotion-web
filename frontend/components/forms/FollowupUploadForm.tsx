@@ -17,6 +17,11 @@ import { logger } from '@/lib/logger'
 import { getErrorMessage } from '@/lib/error-utils'
 import type { ProspectContact, Deal } from '@/types'
 
+interface FollowupStartResult {
+  id: string
+  prospect_id?: string
+}
+
 interface FollowupUploadFormProps {
   // Pre-filled values (from Hub context)
   initialProspectCompany?: string
@@ -24,7 +29,7 @@ interface FollowupUploadFormProps {
   initialDeals?: Deal[]                 // Pre-loaded deals from Hub
   
   // Callbacks
-  onSuccess?: () => void
+  onSuccess?: (result?: FollowupStartResult) => void
   onCancel?: () => void
   
   // Mode
@@ -243,6 +248,9 @@ export function FollowupUploadForm({
         throw new Error(error.detail || 'Upload failed')
       }
 
+      // Get the response data with followup id and prospect_id
+      const data = await response.json()
+
       setUploadProgress(100)
 
       toast({
@@ -263,8 +271,8 @@ export function FollowupUploadForm({
         setAvailableDeals([])
       }
       
-      // Call success callback
-      onSuccess?.()
+      // Call success callback with result data for redirect
+      onSuccess?.({ id: data.id, prospect_id: data.prospect_id })
 
     } catch (error) {
       logger.error('Upload failed', error)

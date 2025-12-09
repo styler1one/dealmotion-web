@@ -16,6 +16,11 @@ import { api } from '@/lib/api'
 import { logger } from '@/lib/logger'
 import type { ProspectContact, Deal } from '@/types'
 
+interface PrepStartResult {
+  id: string
+  prospect_id?: string
+}
+
 interface PreparationFormProps {
   // Pre-filled values (from Hub context)
   initialCompanyName?: string
@@ -24,7 +29,7 @@ interface PreparationFormProps {
   calendarMeetingId?: string | null     // Link to calendar meeting
   
   // Callbacks
-  onSuccess?: () => void
+  onSuccess?: (result?: PrepStartResult) => void
   onCancel?: () => void
   
   // Mode
@@ -168,7 +173,7 @@ export function PreparationForm({
         return
       }
 
-      const { error } = await api.post('/api/v1/prep/start', {
+      const { data, error } = await api.post<{ id: string; prospect_id?: string }>('/api/v1/prep/start', {
         prospect_company_name: companyName,
         meeting_type: meetingType,
         custom_notes: customNotes || null,
@@ -178,7 +183,7 @@ export function PreparationForm({
         language: outputLanguage
       })
 
-      if (!error) {
+      if (!error && data) {
         toast({ title: t('toast.started'), description: t('toast.startedDesc') })
         
         // Only reset form if not in Hub context
@@ -194,8 +199,8 @@ export function PreparationForm({
           setShowAdvanced(false)
         }
         
-        // Call success callback
-        onSuccess?.()
+        // Call success callback with result data for redirect
+        onSuccess?.({ id: data.id, prospect_id: data.prospect_id })
       } else {
         toast({ title: t('toast.failed'), description: error.message || t('toast.failedDesc'), variant: 'destructive' })
       }

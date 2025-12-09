@@ -19,6 +19,7 @@ import type { User } from '@supabase/supabase-js'
 
 interface FollowupItem {
   id: string
+  prospect_id?: string
   prospect_company_name: string | null
   meeting_subject: string | null
   meeting_date: string | null
@@ -90,9 +91,13 @@ export default function FollowupPage() {
     return () => clearInterval(interval)
   }, [fetchFollowups])
 
-  const handleUploadSuccess = () => {
+  const handleUploadSuccess = (result?: { id: string; prospect_id?: string }) => {
     setInitialProspectCompany('')
     fetchFollowups()
+    // Redirect to Hub if we have a prospect_id
+    if (result?.prospect_id) {
+      router.push(`/dashboard/prospects/${result.prospect_id}`)
+    }
   }
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
@@ -254,18 +259,34 @@ export default function FollowupPage() {
                       
                       <div className="flex items-center gap-1 ml-4">
                         {followup.status === 'completed' && (
-                          <Button
-                            variant="default"
-                            size="sm"
-                            className="h-8 text-xs bg-orange-600 hover:bg-orange-700 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              router.push(`/dashboard/followup/${followup.id}`)
-                            }}
-                          >
-                            <Icons.eye className="h-3 w-3 mr-1" />
-                            {tCommon('view')}
-                          </Button>
+                          <>
+                            {followup.prospect_id && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  router.push(`/dashboard/prospects/${followup.prospect_id}`)
+                                }}
+                              >
+                                <Icons.building className="h-3 w-3 mr-1" />
+                                Hub
+                              </Button>
+                            )}
+                            <Button
+                              variant="default"
+                              size="sm"
+                              className="h-8 text-xs bg-orange-600 hover:bg-orange-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                router.push(`/dashboard/followup/${followup.id}`)
+                              }}
+                            >
+                              <Icons.eye className="h-3 w-3 mr-1" />
+                              {tCommon('view')}
+                            </Button>
+                          </>
                         )}
                         <Button
                           variant="ghost"

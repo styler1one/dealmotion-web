@@ -228,6 +228,20 @@ export default function ResearchPage() {
                       <div className="flex items-center gap-1 ml-4">
                         {brief.status === 'completed' && (
                           <>
+                            {brief.prospect_id && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 text-xs"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  router.push(`/dashboard/prospects/${brief.prospect_id}`)
+                                }}
+                              >
+                                <Icons.building className="h-3 w-3 mr-1" />
+                                Hub
+                              </Button>
+                            )}
                             <Button
                               variant="default"
                               size="sm"
