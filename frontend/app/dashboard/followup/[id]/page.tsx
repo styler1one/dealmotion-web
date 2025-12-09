@@ -835,7 +835,40 @@ export default function FollowupDetailPage() {
               {/* Left Column - Main Content */}
               <div className="flex-1 min-w-0 space-y-6">
                 
-                {/* Actions Section - NOW FIRST */}
+                {/* Quick Summary - Direct "In One Sentence" display */}
+                {followup.executive_summary && (
+                  <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/50 dark:to-teal-950/50 p-5 shadow-sm">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 flex-shrink-0">
+                        <Icons.messageSquare className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-semibold text-emerald-800 dark:text-emerald-200 mb-1">
+                          {t('detail.inOneSentence')}
+                        </h3>
+                        <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
+                          {/* Extract first sentence or use executive summary */}
+                          {followup.executive_summary.split('.')[0]?.trim() || followup.executive_summary}
+                          {followup.executive_summary.includes('.') && '.'}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 flex-shrink-0"
+                        onClick={() => {
+                          const summaryAction = buildSummaryAction()
+                          if (summaryAction) setSelectedAction(summaryAction)
+                        }}
+                      >
+                        {t('detail.readMore')}
+                        <Icons.chevronRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Actions Section with Progress */}
                 <div className="rounded-xl border-2 border-indigo-200 dark:border-indigo-800 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950 p-6 shadow-sm">
                   <div className="flex items-center justify-between mb-4">
                     <div>
@@ -846,6 +879,21 @@ export default function FollowupDetailPage() {
                       <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
                         {t('actions.subtitle')}
                       </p>
+                    </div>
+                    {/* Progress indicator */}
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <p className="text-xs text-slate-500 dark:text-slate-400">{t('actions.progress')}</p>
+                        <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">
+                          {allActions.filter(a => a.content).length}/{ACTION_TYPES.length}
+                        </p>
+                      </div>
+                      <div className="w-24 h-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-500"
+                          style={{ width: `${(allActions.filter(a => a.content).length / ACTION_TYPES.length) * 100}%` }}
+                        />
+                      </div>
                     </div>
                   </div>
                   

@@ -71,31 +71,13 @@ export const ACTION_TYPES: ActionTypeInfo[] = [
     type: 'summary',
     icon: '📋',
     label: 'Summary',
-    description: 'Meeting summary with key points and next steps',
-  },
-  {
-    type: 'customer_report',
-    icon: '📄',
-    label: 'Customer Report',
-    description: 'Professional report to share with the customer',
+    description: 'Full meeting summary with key points',
   },
   {
     type: 'share_email',
     icon: '✉️',
-    label: 'Share Email',
-    description: 'Ready-to-send email to share the report',
-  },
-  {
-    type: 'commercial_analysis',
-    icon: '💰',
-    label: 'Commercial Analysis',
-    description: 'Buying signals, risks, and deal assessment',
-  },
-  {
-    type: 'sales_coaching',
-    icon: '📈',
-    label: 'Sales Coaching',
-    description: 'Feedback on your sales performance',
+    label: 'Follow-up Email',
+    description: 'Ready-to-send email to your prospect',
   },
   {
     type: 'action_items',
@@ -104,10 +86,28 @@ export const ACTION_TYPES: ActionTypeInfo[] = [
     description: 'Structured tasks with owners and deadlines',
   },
   {
+    type: 'commercial_analysis',
+    icon: '💰',
+    label: 'Deal Analysis',
+    description: 'Buying signals, BANT, and deal assessment',
+  },
+  {
+    type: 'customer_report',
+    icon: '📄',
+    label: 'Client Summary',
+    description: 'Professional summary to share with the customer',
+  },
+  {
+    type: 'sales_coaching',
+    icon: '🎯',
+    label: 'Sales Coaching',
+    description: 'Feedback on your sales performance',
+  },
+  {
     type: 'internal_report',
     icon: '📝',
-    label: 'Internal Report',
-    description: 'Short summary for CRM or team',
+    label: 'CRM Notes',
+    description: 'Short summary for your CRM or team',
   },
 ]
 

@@ -641,6 +641,8 @@
     },
     "detail": {
       "summary": "Summary",
+      "inOneSentence": "In One Sentence",
+      "readMore": "Read full summary",
       "keyPoints": "Key Points",
       "concerns": "Concerns",
       "nextSteps": "Next Steps",
@@ -685,6 +687,7 @@
     "actions": {
       "title": "Follow-up Actions",
       "subtitle": "Generate targeted outputs from your meeting",
+      "progress": "Progress",
       "generating": "Generating...",
       "generatingDesc": "{actionType} is being generated...",
       "generated": "Generated",
