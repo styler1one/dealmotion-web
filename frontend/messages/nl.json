@@ -1061,6 +1061,13 @@
       "title": "Nog Geen Prospects",
       "description": "Begin met het onderzoeken van je eerste prospect"
     },
+    "sheet": {
+      "newProspect": "Nieuwe Prospect Toevoegen",
+      "newProspectDesc": "Zoek naar een bedrijf om AI research te starten en een nieuwe prospect aan te maken."
+    },
+    "toast": {
+      "researchStarted": "Research gestart - prospect wordt automatisch aangemaakt"
+    },
     "errors": {
       "loadFailed": "Kon prospects niet laden"
     }

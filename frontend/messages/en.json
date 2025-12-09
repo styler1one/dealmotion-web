@@ -1313,6 +1313,17 @@
       "deleteFailed": "Delete failed",
       "deleteFailedDesc": "Could not delete the prospect"
     },
+    "sheet": {
+      "newProspect": "Add New Prospect",
+      "newProspectDesc": "Search for a company to start AI research and create a new prospect."
+    },
+    "toast": {
+      "deleted": "Prospect deleted",
+      "deletedDesc": "The prospect has been removed",
+      "deleteFailed": "Delete failed",
+      "deleteFailedDesc": "Could not delete the prospect",
+      "researchStarted": "Research started - prospect will be created automatically"
+    },
     "errors": {
       "loadFailed": "Failed to load prospects"
     }

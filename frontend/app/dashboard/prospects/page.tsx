@@ -35,6 +35,8 @@ import { api } from '@/lib/api'
 import { Prospect } from '@/types'
 import { getProspectStatusColor } from '@/lib/constants/activity'
 import { smartDate } from '@/lib/date-utils'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
+import { ResearchForm } from '@/components/forms'
 
 // Status configurations
 const STATUS_ORDER = ['new', 'researching', 'qualified', 'meeting_scheduled', 'proposal_sent', 'won', 'lost', 'inactive']
@@ -77,6 +79,9 @@ export default function ProspectsPage() {
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState<'last_activity_at' | 'company_name' | 'created_at'>('last_activity_at')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  
+  // Research Sheet state - for adding new prospects
+  const [researchSheetOpen, setResearchSheetOpen] = useState(false)
   
   // Fetch prospects
   const fetchProspects = useCallback(async () => {
@@ -279,7 +284,7 @@ export default function ProspectsPage() {
                 <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">
                   {t('empty.description')}
                 </p>
-                <Button onClick={() => router.push('/dashboard/research')} className="bg-purple-600 hover:bg-purple-700">
+                <Button onClick={() => setResearchSheetOpen(true)} className="bg-purple-600 hover:bg-purple-700">
                   <Search className="w-4 h-4 mr-2" />
                   {t('actions.startResearch')}
                 </Button>
@@ -382,6 +387,15 @@ export default function ProspectsPage() {
                     <p className="text-xs text-emerald-700 dark:text-emerald-300">{t('stats.active')}</p>
                   </div>
                 </div>
+                
+                {/* New Prospect Button - directly under stats */}
+                <Button 
+                  className="w-full mt-4 bg-purple-600 hover:bg-purple-700" 
+                  onClick={() => setResearchSheetOpen(true)}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  {t('actions.newProspect')}
+                </Button>
               </div>
 
               {/* Quick Filters */}
@@ -418,26 +432,39 @@ export default function ProspectsPage() {
                 </div>
               </div>
 
-              {/* Quick Actions */}
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
-                <h3 className="font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-                  <Target className="h-4 w-4 text-purple-500" />
-                  {t('actions.title')}
-                </h3>
-                <div className="space-y-2">
-                  <Button 
-                    className="w-full bg-purple-600 hover:bg-purple-700" 
-                    onClick={() => router.push('/dashboard/research')}
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    {t('actions.newProspect')}
-                  </Button>
-                </div>
-              </div>
-
             </div>
           </div>
         </div>
+        
+        {/* Research Sheet - Opens when clicking "New Prospect" */}
+        <Sheet open={researchSheetOpen} onOpenChange={setResearchSheetOpen}>
+          <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle className="flex items-center gap-2">
+                <Search className="w-5 h-5 text-blue-600" />
+                {t('sheet.newProspect')}
+              </SheetTitle>
+              <SheetDescription>
+                {t('sheet.newProspectDesc')}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="mt-6">
+              <ResearchForm
+                onSuccess={() => {
+                  setResearchSheetOpen(false)
+                  toast({ title: t('toast.researchStarted') })
+                  // Refresh prospects list after a delay (research creates prospect)
+                  setTimeout(() => {
+                    fetchProspects()
+                    fetchStats()
+                  }, 2000)
+                }}
+                onCancel={() => setResearchSheetOpen(false)}
+                isSheet={true}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     </DashboardLayout>
   )
