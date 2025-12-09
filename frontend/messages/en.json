@@ -124,6 +124,7 @@
     "preparation": "Preparation",
     "meetings": "Meetings",
     "followup": "Meeting Analysis",
+    "recordings": "Recordings",
     "profile": "Profile",
     "companyProfile": "Company Profile",
     "knowledgeBase": "Knowledge Base",
@@ -2324,6 +2325,39 @@
       "next": "Next",
       "showing": "Showing {from} to {to} of {total}",
       "perPage": "per page"
+    }
+  },
+  "recordings": {
+    "title": "Meeting Recordings",
+    "subtitle": "All your meeting recordings from mobile app, integrations, and web uploads",
+    "loading": "Loading recordings...",
+    "untitled": "Untitled Recording",
+    "viewAnalysis": "View Analysis",
+    "filters": {
+      "allSources": "All Sources",
+      "allStatus": "All Status"
+    },
+    "status": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "completed": "Completed",
+      "failed": "Failed"
+    },
+    "stats": {
+      "title": "Overview",
+      "total": "Total",
+      "bySources": "By Source"
+    },
+    "empty": {
+      "title": "No recordings yet",
+      "description": "Start by uploading a recording or connecting an integration",
+      "uploadWeb": "Upload Recording",
+      "connectIntegration": "Connect Integration"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "uploadRecording": "Upload Recording",
+      "manageIntegrations": "Manage Integrations"
     }
   }
 }

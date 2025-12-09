@@ -50,6 +50,12 @@ const navigationItems = [
     icon: Icons.mail,
     color: 'text-orange-500',
   },
+  {
+    key: 'recordings',
+    href: '/dashboard/recordings',
+    icon: Icons.mic,
+    color: 'text-rose-500',
+  },
 ]
 
 const profileItems = [
