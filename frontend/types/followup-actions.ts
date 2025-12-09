@@ -66,12 +66,19 @@ export interface ActionTypesResponse {
 }
 
 // Action type configuration for UI
+// Order matters: Client Summary first (attachment), then Follow-up Email
 export const ACTION_TYPES: ActionTypeInfo[] = [
   {
     type: 'summary',
     icon: '📋',
     label: 'Summary',
     description: 'Full meeting summary with key points',
+  },
+  {
+    type: 'customer_report',
+    icon: '📄',
+    label: 'Client Summary',
+    description: 'Professional summary to attach to your follow-up email',
   },
   {
     type: 'share_email',
@@ -90,12 +97,6 @@ export const ACTION_TYPES: ActionTypeInfo[] = [
     icon: '💰',
     label: 'Deal Analysis',
     description: 'Buying signals, BANT, and deal assessment',
-  },
-  {
-    type: 'customer_report',
-    icon: '📄',
-    label: 'Client Summary',
-    description: 'Professional summary to share with the customer',
   },
   {
     type: 'sales_coaching',
