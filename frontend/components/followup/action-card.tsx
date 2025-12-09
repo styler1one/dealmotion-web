@@ -49,7 +49,7 @@ export function ActionCard({
       className={cn(
         'flex flex-col items-center p-4 rounded-xl border-2 transition-all text-center min-h-[120px]',
         'hover:shadow-md hover:scale-[1.02]',
-        isCompleted && 'border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-900/20',
+        isCompleted && 'border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-900/20 hover:bg-green-100/70 dark:hover:bg-green-900/40 cursor-pointer',
         isGenerating && 'border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-900/20',
         hasError && 'border-red-300 dark:border-red-700 bg-red-50/50 dark:bg-red-900/20',
         !isCompleted && !isGenerating && !hasError && 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900',
@@ -66,9 +66,10 @@ export function ActionCard({
       
       {/* Status badge */}
       {isCompleted && (
-        <span className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+        <span className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1 font-medium">
           <Icons.check className="h-3 w-3" />
-          {t('generated')}
+          {t('viewAction')}
+          <Icons.chevronRight className="h-3 w-3" />
         </span>
       )}
       

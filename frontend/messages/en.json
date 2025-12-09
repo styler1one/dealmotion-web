@@ -688,6 +688,7 @@
       "title": "Follow-up Actions",
       "subtitle": "Generate targeted outputs from your meeting",
       "progress": "Progress",
+      "viewAction": "View",
       "generating": "Generating...",
       "generatingDesc": "{actionType} is being generated...",
       "generated": "Generated",
