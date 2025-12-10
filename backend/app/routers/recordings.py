@@ -134,6 +134,43 @@ def map_external_recording(row: dict, prospect_map: dict) -> UnifiedRecording:
     )
 
 
+def map_scheduled_recording(row: dict, prospect_map: dict) -> UnifiedRecording:
+    """Map scheduled_recordings (AI Notetaker) row to UnifiedRecording."""
+    prospect_name = None
+    if row.get("prospect_id") and row["prospect_id"] in prospect_map:
+        prospect_name = prospect_map[row["prospect_id"]]
+    
+    # Map AI Notetaker status to unified status
+    status_map = {
+        "scheduled": "pending",
+        "joining": "processing",
+        "waiting_room": "processing",
+        "recording": "processing",
+        "processing": "processing",
+        "complete": "completed",
+        "error": "failed",
+        "cancelled": "failed",
+    }
+    
+    return UnifiedRecording(
+        id=row["id"],
+        source="ai_notetaker",
+        source_table="scheduled_recordings",
+        title=row.get("meeting_title") or "AI Notetaker Recording",
+        prospect_id=row.get("prospect_id"),
+        prospect_name=prospect_name,
+        duration_seconds=row.get("duration_seconds"),
+        file_size_bytes=None,
+        status=status_map.get(row.get("status", "scheduled"), "pending"),
+        error=row.get("error_message"),
+        followup_id=row.get("followup_id"),
+        audio_url=row.get("recording_url"),
+        recorded_at=row.get("completed_at") or row.get("scheduled_time"),
+        created_at=row["created_at"],
+        processed_at=row.get("completed_at"),
+    )
+
+
 def map_followup_recording(row: dict) -> UnifiedRecording:
     """Map followups row (with audio) to UnifiedRecording."""
     # Only include followups that have audio (direct uploads)
@@ -194,6 +231,7 @@ async def list_recordings(
         "teams": 0,
         "zoom": 0,
         "web_upload": 0,
+        "ai_notetaker": 0,
     }
     
     try:
@@ -266,6 +304,34 @@ async def list_recordings(
                 if row.get("prospect_id"):
                     prospect_ids.add(row["prospect_id"])
         
+        # 4. Fetch scheduled recordings (AI Notetaker)
+        if source is None or source == "ai_notetaker":
+            scheduled_query = supabase.table("scheduled_recordings").select(
+                "id, organization_id, user_id, recall_bot_id, meeting_url, meeting_title, "
+                "meeting_platform, scheduled_time, status, prospect_id, followup_id, "
+                "recording_url, duration_seconds, participants, error_message, source, "
+                "created_at, updated_at, completed_at"
+            ).eq("organization_id", org_id).order("created_at", desc=True)
+            
+            if prospect_id:
+                scheduled_query = scheduled_query.eq("prospect_id", prospect_id)
+            
+            # Filter by status if provided
+            if status == "pending":
+                scheduled_query = scheduled_query.eq("status", "scheduled")
+            elif status == "processing":
+                scheduled_query = scheduled_query.in_("status", ["joining", "waiting_room", "recording", "processing"])
+            elif status == "completed":
+                scheduled_query = scheduled_query.eq("status", "complete")
+            elif status == "failed":
+                scheduled_query = scheduled_query.in_("status", ["error", "cancelled"])
+            
+            scheduled_result = scheduled_query.execute()
+            
+            for row in scheduled_result.data or []:
+                if row.get("prospect_id"):
+                    prospect_ids.add(row["prospect_id"])
+        
         # Batch fetch prospect names
         prospect_map = {}
         if prospect_ids:
@@ -293,6 +359,12 @@ async def list_recordings(
                 rec = map_followup_recording(row)
                 all_recordings.append(rec)
                 sources_count["web_upload"] += 1
+        
+        if source is None or source == "ai_notetaker":
+            for row in scheduled_result.data or []:
+                rec = map_scheduled_recording(row, prospect_map)
+                all_recordings.append(rec)
+                sources_count["ai_notetaker"] += 1
         
         # Sort all by recorded_at (or created_at as fallback) descending - newest first
         all_recordings.sort(
@@ -401,6 +473,26 @@ async def get_recordings_stats(
             elif s == "completed":
                 stats["completed"] += 1
             elif s == "failed":
+                stats["failed"] += 1
+        
+        # Scheduled recordings (AI Notetaker) stats
+        scheduled_result = supabase.table("scheduled_recordings").select(
+            "status"
+        ).eq("organization_id", org_id).execute()
+        
+        ai_count = len(scheduled_result.data or [])
+        stats["by_source"]["ai_notetaker"] = ai_count
+        stats["total"] += ai_count
+        
+        for row in scheduled_result.data or []:
+            s = row.get("status", "scheduled")
+            if s == "scheduled":
+                stats["pending"] += 1
+            elif s in ["joining", "waiting_room", "recording", "processing"]:
+                stats["processing"] += 1
+            elif s == "complete":
+                stats["completed"] += 1
+            elif s in ["error", "cancelled"]:
                 stats["failed"] += 1
         
         return RecordingsStatsResponse(
@@ -573,13 +665,13 @@ async def delete_recording(
     Delete a recording from any source table.
     
     Args:
-        source_table: One of 'mobile_recordings', 'external_recordings', 'followups'
+        source_table: One of 'mobile_recordings', 'external_recordings', 'followups', 'scheduled_recordings'
         recording_id: The ID of the recording to delete
     """
     user_id, org_id = user_org
     
     # Validate source table
-    valid_tables = ['mobile_recordings', 'external_recordings', 'followups']
+    valid_tables = ['mobile_recordings', 'external_recordings', 'followups', 'scheduled_recordings']
     if source_table not in valid_tables:
         return DeleteRecordingResponse(
             success=False,

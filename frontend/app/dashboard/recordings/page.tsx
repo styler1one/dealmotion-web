@@ -108,6 +108,7 @@ const SOURCE_LABELS: Record<string, { label: string; icon: string; color: string
   teams: { label: 'Teams', icon: '💼', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-400' },
   zoom: { label: 'Zoom', icon: '📹', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400' },
   web_upload: { label: 'Web Upload', icon: '🌐', color: 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400' },
+  ai_notetaker: { label: 'AI Notetaker', icon: '✨', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400' },
 }
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
@@ -514,6 +515,7 @@ export default function RecordingsPage() {
                   <SelectItem value="teams">💼 Teams</SelectItem>
                   <SelectItem value="zoom">📹 Zoom</SelectItem>
                   <SelectItem value="web_upload">🌐 Web Upload</SelectItem>
+                  <SelectItem value="ai_notetaker">✨ AI Notetaker</SelectItem>
                 </SelectContent>
               </Select>
 
