@@ -11,7 +11,7 @@ Endpoints:
 - POST /webhook/recall - Handle Recall.ai webhooks
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Request, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
@@ -572,7 +572,6 @@ async def process_recording_complete(
 @router.post("/webhook/recall")
 async def handle_recall_webhook(
     request: Request,
-    background_tasks: BackgroundTasks,
 ):
     """
     Handle webhooks from Recall.ai.
@@ -619,16 +618,17 @@ async def handle_recall_webhook(
     
     supabase = get_supabase_service()
     
-    # Find the recording by Recall bot ID
+    # Find the recording by Recall bot ID (include all fields needed for Inngest)
     result = supabase.table("scheduled_recordings").select(
-        "id, status"
+        "id, status, organization_id, user_id, prospect_id, meeting_title"
     ).eq("recall_bot_id", bot_id).single().execute()
     
     if not result.data:
         logger.warning(f"Recording not found for bot: {bot_id}")
         return {"status": "ignored", "reason": "recording not found"}
     
-    recording_id = result.data["id"]
+    recording = result.data
+    recording_id = recording["id"]
     new_status = event_data.get("status")
     
     # Update status
@@ -644,26 +644,38 @@ async def handle_recall_webhook(
     
     logger.info(f"Updated recording {recording_id} status to: {new_status}")
     
-    # If recording is complete, process it
+    # If recording is complete, trigger Inngest processing
     if new_status == "complete":
-        recording_url = event_data.get("recording_url")
-        if recording_url:
-            logger.info(f"Recording complete with URL: {recording_url[:50]}...")
-            background_tasks.add_task(
-                process_recording_complete,
-                recording_id,
-                recording_url,
-                event_data.get("duration_seconds", 0),
-                event_data.get("participants", [])
-            )
+        logger.info(f"Recording complete - triggering Inngest processing for {recording_id}")
+        
+        # Send Inngest event (handles download, upload, followup creation, transcription)
+        if use_inngest_for("followup"):  # Use same feature flag as followup
+            try:
+                await send_event(
+                    Events.AI_NOTETAKER_RECORDING_COMPLETE,
+                    {
+                        "recording_id": recording_id,
+                        "bot_id": bot_id,
+                        "organization_id": recording["organization_id"],
+                        "user_id": recording["user_id"],
+                        "prospect_id": recording.get("prospect_id"),
+                        "meeting_title": recording.get("meeting_title"),
+                    }
+                )
+                logger.info(f"Sent AI_NOTETAKER_RECORDING_COMPLETE event for {recording_id}")
+            except Exception as e:
+                logger.error(f"Failed to send Inngest event: {e}")
+                # Fallback: mark as error
+                supabase.table("scheduled_recordings").update({
+                    "status": "error",
+                    "error_message": f"Failed to trigger processing: {e}"
+                }).eq("id", recording_id).execute()
         else:
-            # No recording URL in webhook - need to fetch it from Recall.ai API
-            logger.info(f"Recording complete but no URL in webhook - fetching from API for bot {bot_id}")
-            background_tasks.add_task(
-                fetch_and_process_recording,
-                recording_id,
-                bot_id
-            )
+            logger.warning("Inngest not enabled - cannot process recording")
+            supabase.table("scheduled_recordings").update({
+                "status": "error",
+                "error_message": "Inngest not enabled"
+            }).eq("id", recording_id).execute()
     
     return {"status": "ok"}
 

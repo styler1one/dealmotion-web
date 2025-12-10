@@ -128,6 +128,9 @@ class Events:
     FOLLOWUP_COMPLETED = "dealmotion/followup.completed"
     FOLLOWUP_FAILED = "dealmotion/followup.failed"
     
+    # AI Notetaker
+    AI_NOTETAKER_RECORDING_COMPLETE = "dealmotion/ai-notetaker.recording.complete"
+    
     # Follow-up Actions
     FOLLOWUP_ACTION_REQUESTED = "dealmotion/followup.action.requested"
     FOLLOWUP_ACTION_COMPLETED = "dealmotion/followup.action.completed"
