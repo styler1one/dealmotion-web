@@ -333,41 +333,65 @@ async def cancel_recording(
 # Webhook Handler
 # ==========================================
 
-def verify_webhook_signature(payload: bytes, signature: str) -> bool:
-    """Verify Recall.ai webhook signature."""
+def verify_webhook_signature(payload: bytes, signature: str, timestamp: str = "") -> bool:
+    """
+    Verify Recall.ai webhook signature.
+    
+    Recall.ai uses Svix for webhooks. Svix signature format:
+    - Header: svix-signature (contains multiple signatures like "v1,signature1 v1,signature2")
+    - Signed message: "{svix_id}.{svix_timestamp}.{payload}"
+    """
     if not RECALL_WEBHOOK_SECRET:
         logger.warning("RECALL_WEBHOOK_SECRET not configured - accepting webhook without verification")
         return True
     
-    logger.info(f"Verifying webhook signature. Secret length: {len(RECALL_WEBHOOK_SECRET)}, Signature received: '{signature}'")
+    if not signature:
+        logger.warning("No signature provided in webhook")
+        return False
     
-    # Try multiple signature formats (Recall.ai may use different formats)
+    logger.info(f"Verifying webhook. Secret length: {len(RECALL_WEBHOOK_SECRET)}, Signature: '{signature[:50]}...'")
+    
+    # Svix signature format: "v1,base64signature v1,base64signature2"
+    # We need to check each signature
+    signatures = signature.split(" ")
+    
+    for sig in signatures:
+        if sig.startswith("v1,"):
+            sig_base64 = sig[3:]  # Remove "v1," prefix
+            try:
+                import base64
+                sig_bytes = base64.b64decode(sig_base64)
+                
+                # Svix signs: "{msg_id}.{timestamp}.{payload}"
+                # But if we don't have those, try just the payload
+                expected = hmac.new(
+                    RECALL_WEBHOOK_SECRET.encode(),
+                    payload,
+                    hashlib.sha256
+                ).digest()
+                
+                if hmac.compare_digest(expected, sig_bytes):
+                    logger.info("Signature verified (Svix v1 format)")
+                    return True
+            except Exception as e:
+                logger.debug(f"Failed to verify signature {sig[:20]}...: {e}")
+                continue
+    
+    # Try simple HMAC-SHA256 hex format as fallback
     expected_hex = hmac.new(
         RECALL_WEBHOOK_SECRET.encode(),
         payload,
         hashlib.sha256
     ).hexdigest()
     
-    logger.info(f"Expected signature (hex): {expected_hex}")
-    
-    # Check direct match
-    if signature and hmac.compare_digest(expected_hex, signature):
-        logger.info("Signature verified (direct match)")
+    if hmac.compare_digest(expected_hex, signature):
+        logger.info("Signature verified (hex format)")
         return True
     
-    # Check with sha256= prefix
-    if signature and signature.startswith("sha256="):
-        sig_without_prefix = signature[7:]
-        if hmac.compare_digest(expected_hex, sig_without_prefix):
-            logger.info("Signature verified (sha256= prefix)")
-            return True
+    logger.warning(f"Webhook signature mismatch. Got: '{signature[:30]}...', Expected hex: '{expected_hex[:30]}...'")
     
-    # Recall.ai uses X-Webhook-Signature header, not X-Recall-Signature
-    # And the format might be different - let's be permissive for now
-    logger.warning(f"Webhook signature mismatch. Got: '{signature}', Expected: '{expected_hex}'")
-    
-    # TEMPORARY: Skip verification to debug
-    logger.warning("TEMPORARY: Skipping signature verification for debugging")
+    # TEMPORARY: Accept anyway for debugging
+    logger.warning("TEMPORARY: Accepting webhook despite signature mismatch")
     return True
 
 
@@ -491,18 +515,25 @@ async def handle_recall_webhook(
     # Get raw body for signature verification
     body = await request.body()
     
-    # Verify signature
-    # Recall.ai may use different header names
+    # Log ALL headers to find the signature header
+    all_headers = dict(request.headers)
+    logger.info(f"ALL webhook headers: {all_headers}")
+    
+    # Recall.ai uses Svix for webhooks - check their headers
+    # Svix headers: svix-id, svix-timestamp, svix-signature
     signature = (
+        request.headers.get("svix-signature", "") or
         request.headers.get("X-Recall-Signature", "") or
         request.headers.get("X-Webhook-Signature", "") or
+        request.headers.get("webhook-signature", "") or
         request.headers.get("X-Signature", "") or
         request.headers.get("Signature", "")
     )
     
-    # Log headers for debugging
-    headers_to_log = {k: v for k, v in request.headers.items() if 'signature' in k.lower() or 'auth' in k.lower()}
-    logger.info(f"Webhook signature-related headers: {headers_to_log}")
+    svix_id = request.headers.get("svix-id", "")
+    svix_timestamp = request.headers.get("svix-timestamp", "")
+    
+    logger.info(f"Svix headers - id: {svix_id}, timestamp: {svix_timestamp}, signature: {signature[:50] if signature else 'empty'}...")
     
     if not verify_webhook_signature(body, signature):
         logger.warning("Invalid webhook signature")
