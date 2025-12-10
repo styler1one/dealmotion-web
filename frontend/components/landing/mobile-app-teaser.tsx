@@ -40,9 +40,9 @@ export function MobileAppTeaser() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left: Content */}
           <div>
-            {/* Coming Soon Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/20 text-amber-400 text-sm font-medium mb-6">
-              <Icons.clock className="h-4 w-4" />
+            {/* Beta Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/20 text-green-400 text-sm font-medium mb-6">
+              <Icons.sparkles className="h-4 w-4" />
               {t('badge')}
             </div>
 

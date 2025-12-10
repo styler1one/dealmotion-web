@@ -1736,7 +1736,11 @@
       },
       "smartIntegrations": {
         "title": "Smart Integrations",
-        "description": "Connect Google Calendar. More integrations coming soon: Outlook, Zoom, Teams, and CRM sync."
+        "description": "Connect Google Calendar, Microsoft 365, and Fireflies.ai. CRM sync coming soon."
+      },
+      "aiNotetaker": {
+        "title": "AI Notetaker",
+        "description": "Invite our AI bot to any video call. It joins, records, transcribes, and analyzes—so you can focus on the conversation."
       }
     },
     "socialProof": {
@@ -1851,9 +1855,9 @@
       "highlightSub": "Most tools only give you a transcript. We give you ready-to-use outputs."
     },
     "mobileApp": {
-      "badge": "Coming Soon",
+      "badge": "Beta Available",
       "title": "Your Pocket Recording Studio",
-      "subtitle": "Record in-person meetings right from your phone. Coffee chats, on-site visits, trade shows—never miss an insight.",
+      "subtitle": "Record in-person meetings right from your phone. Coffee chats, on-site visits, trade shows—never miss an insight. App Store launch coming soon!",
       "steps": {
         "record": "Record",
         "upload": "Upload",

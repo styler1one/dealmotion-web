@@ -133,7 +133,7 @@ export default function Home() {
                   </div>
                   <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                     <Icons.calendar className="h-4 w-4" />
-                    <span>December 2024</span>
+                    <span>December 2025</span>
                   </div>
                 </div>
 
@@ -324,6 +324,20 @@ export default function Home() {
               <h3 className="text-lg font-semibold mb-2 text-slate-900 dark:text-white">{t('features.smartIntegrations.title')}</h3>
               <p className="text-slate-600 dark:text-slate-300 text-sm">
                 {t('features.smartIntegrations.description')}
+              </p>
+            </div>
+
+            {/* Feature 10: AI Notetaker */}
+            <div className="group p-6 rounded-2xl border-2 border-violet-200 dark:border-violet-800 bg-gradient-to-br from-violet-50 to-white dark:from-violet-900/20 dark:to-slate-800 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
+              <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400 text-xs font-medium">
+                NEW
+              </div>
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Icons.sparkles className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2 text-slate-900 dark:text-white">{t('features.aiNotetaker.title')}</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">
+                {t('features.aiNotetaker.description')}
               </p>
             </div>
           </div>
