@@ -40,8 +40,6 @@ class RecallBotConfig(BaseModel):
     meeting_url: str
     bot_name: str = AI_NOTETAKER_NAME
     join_at: Optional[datetime] = None  # None = join immediately
-    recording_mode: str = "audio_only"  # audio_only, speaker_view, gallery_view
-    transcription_provider: str = "default"
 
 
 class RecallBotResponse(BaseModel):
@@ -124,15 +122,13 @@ class RecallService:
         payload = {
             "meeting_url": config.meeting_url,
             "bot_name": config.bot_name,
-            "recording_mode": config.recording_mode,
-            "transcription_options": {
-                "provider": config.transcription_provider
-            }
         }
         
         # Add join_at if scheduling for later
         if config.join_at:
             payload["join_at"] = config.join_at.isoformat()
+        
+        logger.info(f"Creating Recall.ai bot with payload: {payload}")
         
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
