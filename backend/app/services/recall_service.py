@@ -8,7 +8,6 @@ SPEC-043: AI Notetaker / Recall.ai Integration
 """
 
 import os
-import re
 import httpx
 from datetime import datetime
 from typing import Optional, Dict, Any, List
@@ -241,12 +240,11 @@ class RecallService:
                         rec = recordings[0]
                         # Calculate duration from started_at and completed_at
                         if rec.get("started_at") and rec.get("completed_at"):
-                            from datetime import datetime
                             try:
                                 started = datetime.fromisoformat(rec["started_at"].replace("Z", "+00:00"))
                                 completed = datetime.fromisoformat(rec["completed_at"].replace("Z", "+00:00"))
                                 duration_seconds = int((completed - started).total_seconds())
-                            except:
+                            except (ValueError, TypeError):
                                 pass
                         
                         # Get video URL from media_shortcuts

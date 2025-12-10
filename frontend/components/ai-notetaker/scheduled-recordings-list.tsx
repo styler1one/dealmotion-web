@@ -62,21 +62,25 @@ export function ScheduledRecordingsList({
     }
   }
 
+  // Fetch on mount and when refreshTrigger changes
   useEffect(() => {
     fetchRecordings()
+  }, [refreshTrigger])
+  
+  // Auto-refresh for active recordings
+  useEffect(() => {
+    const hasActive = recordings.some(r => 
+      ['joining', 'waiting_room', 'recording', 'processing'].includes(r.status)
+    )
     
-    // Auto-refresh for active recordings
+    if (!hasActive) return
+    
     const interval = setInterval(() => {
-      const hasActive = recordings.some(r => 
-        ['joining', 'waiting_room', 'recording', 'processing'].includes(r.status)
-      )
-      if (hasActive) {
-        fetchRecordings()
-      }
+      fetchRecordings()
     }, 10000) // Every 10 seconds
     
     return () => clearInterval(interval)
-  }, [refreshTrigger])
+  }, [recordings])
 
   // Handle cancel
   const handleCancel = async () => {
@@ -92,12 +96,12 @@ export function ScheduledRecordingsList({
         throw new Error(data?.message || 'Failed to cancel')
       }
       
-      toast({ title: 'Recording cancelled' })
+      toast({ title: t('scheduled.cancelled') })
       fetchRecordings()
     } catch (error) {
       logger.error('Failed to cancel recording', error)
       toast({
-        title: 'Failed to cancel',
+        title: t('error'),
         variant: 'destructive'
       })
     } finally {
@@ -242,7 +246,7 @@ export function ScheduledRecordingsList({
           <AlertDialogHeader>
             <AlertDialogTitle>{t('scheduled.cancelConfirm')}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will cancel the AI Notetaker for this meeting. This action cannot be undone.
+              {t('scheduled.cancelDescription')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

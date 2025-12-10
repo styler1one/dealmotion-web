@@ -188,21 +188,21 @@ async def process_ai_notetaker_recording_fn(ctx, step):
         storage_path = upload_result["storage_path"]
         audio_url = upload_result["audio_url"]
         
-        # Step 4: Create followup record
+        # Step 3: Create followup record
         followup_id = await step.run(
             "create-followup",
             create_followup_record,
             organization_id, user_id, prospect_id, meeting_title, audio_url
         )
         
-        # Step 5: Update scheduled_recording as complete
+        # Step 4: Update scheduled_recording as complete
         await step.run(
             "mark-complete",
             update_scheduled_recording_complete,
             recording_id, followup_id, audio_url, duration_seconds
         )
         
-        # Step 6: Trigger transcription pipeline
+        # Step 5: Trigger transcription pipeline
         await step.run(
             "trigger-transcription",
             send_event,

@@ -140,6 +140,7 @@ async def schedule_recording(
         raise HTTPException(status_code=500, detail="Failed to create recording record")
     
     recording_id = insert_result.data[0]["id"]
+    recall_bot_id = None
     
     # Schedule with Recall.ai
     if recall_service.is_configured():
@@ -151,9 +152,10 @@ async def schedule_recording(
         result = await recall_service.create_bot(config)
         
         if result.get("success"):
+            recall_bot_id = result.get("bot_id")
             # Update record with Recall.ai bot ID
             supabase.table("scheduled_recordings").update({
-                "recall_bot_id": result.get("bot_id")
+                "recall_bot_id": recall_bot_id
             }).eq("id", recording_id).execute()
             
             logger.info(f"Scheduled AI Notetaker for {platform} meeting: {recording_id}")
@@ -173,7 +175,7 @@ async def schedule_recording(
     
     return ScheduleRecordingResponse(
         id=recording_id,
-        recall_bot_id=result.get("bot_id") if recall_service.is_configured() else None,
+        recall_bot_id=recall_bot_id,
         status="scheduled",
         meeting_url=request.meeting_url,
         meeting_title=request.meeting_title,
@@ -389,184 +391,8 @@ def verify_webhook_signature(payload: bytes, signature: str, msg_id: str = "", t
             except Exception:
                 continue
     
-    # Signature didn't match - but still accept for now while debugging
-    # TODO: Remove this fallback once signature is working
-    logger.warning(f"Signature mismatch - accepting anyway for debugging")
-    return True
-
-
-async def fetch_and_process_recording(recording_id: str, bot_id: str):
-    """
-    Fetch recording details from Recall.ai API and process.
-    Used when webhook doesn't include recording URL.
-    """
-    supabase = get_supabase_service()
-    
-    try:
-        logger.info(f"Fetching recording details from Recall.ai for bot {bot_id}")
-        
-        # Get bot status which includes recording info
-        bot_status = await recall_service.get_bot_status(bot_id)
-        logger.info(f"Bot status response: {bot_status}")
-        
-        if not bot_status.get("success"):
-            logger.error(f"Failed to get bot status: {bot_status.get('error')}")
-            supabase.table("scheduled_recordings").update({
-                "status": "error",
-                "error_message": f"Failed to get bot status: {bot_status.get('error')}"
-            }).eq("id", recording_id).execute()
-            return
-        
-        # Recording info may be nested differently
-        recording = bot_status.get("recording") or {}
-        if not isinstance(recording, dict):
-            recording = {}
-        
-        recording_url = recording.get("url") or recording.get("download_url")
-        duration = recording.get("duration_seconds") or recording.get("duration") or 0
-        
-        if not recording_url:
-            logger.warning(f"No recording URL found for bot {bot_id}. Full response: {bot_status}")
-            supabase.table("scheduled_recordings").update({
-                "status": "error",
-                "error_message": "No recording URL available from Recall.ai"
-            }).eq("id", recording_id).execute()
-            return
-        
-        logger.info(f"Found recording URL: {recording_url[:50]}...")
-        
-        # Now process the recording
-        await process_recording_complete(recording_id, recording_url, duration, [])
-        
-    except Exception as e:
-        logger.error(f"Error fetching recording for {recording_id}: {e}", exc_info=True)
-        supabase.table("scheduled_recordings").update({
-            "status": "error",
-            "error_message": str(e)
-        }).eq("id", recording_id).execute()
-
-
-async def process_recording_complete(
-    recording_id: str,
-    recording_url: str,
-    duration_seconds: int,
-    participants: List[str]
-):
-    """
-    Background task to process a completed recording.
-    
-    1. Download audio from Recall.ai
-    2. Upload to Supabase Storage
-    3. Create followup record
-    4. Trigger transcription pipeline
-    """
-    supabase = get_supabase_service()
-    
-    try:
-        # Get the scheduled recording
-        result = supabase.table("scheduled_recordings").select(
-            "id, organization_id, user_id, prospect_id, meeting_title"
-        ).eq("id", recording_id).single().execute()
-        
-        if not result.data:
-            logger.error(f"Recording not found: {recording_id}")
-            return
-        
-        recording = result.data
-        
-        # Download audio from Recall.ai
-        logger.info(f"Downloading recording from Recall.ai: {recording_id}")
-        audio_data = await recall_service.download_recording(recording_url)
-        
-        if not audio_data:
-            logger.error(f"Failed to download recording: {recording_id}")
-            supabase.table("scheduled_recordings").update({
-                "status": "error",
-                "error_message": "Failed to download recording"
-            }).eq("id", recording_id).execute()
-            return
-        
-        # Upload to Supabase Storage (followup-audio bucket, same as normal uploads)
-        org_id = recording["organization_id"]
-        storage_path = f"{org_id}/{recording_id}/recording.mp4"
-        
-        storage_result = supabase.storage.from_("followup-audio").upload(
-            storage_path,
-            audio_data,
-            {"content-type": "video/mp4"}
-        )
-        
-        if hasattr(storage_result, 'error') and storage_result.error:
-            logger.error(f"Failed to upload to storage: {storage_result.error}")
-            supabase.table("scheduled_recordings").update({
-                "status": "error",
-                "error_message": "Failed to upload recording"
-            }).eq("id", recording_id).execute()
-            return
-        
-        # Get public URL
-        audio_url = supabase.storage.from_("followup-audio").get_public_url(storage_path)
-        logger.info(f"Uploaded recording to: {audio_url[:50]}...")
-        
-        # Create followup record
-        followup_data = {
-            "organization_id": recording["organization_id"],
-            "user_id": recording["user_id"],
-            "prospect_id": recording.get("prospect_id"),
-            "meeting_subject": recording.get("meeting_title") or "AI Notetaker Recording",
-            "audio_url": audio_url,
-            "status": "pending"
-        }
-        
-        followup_result = supabase.table("followups").insert(followup_data).execute()
-        
-        if followup_result.data:
-            followup_id = followup_result.data[0]["id"]
-            
-            # Update scheduled_recordings with followup_id and mark as complete
-            supabase.table("scheduled_recordings").update({
-                "status": "complete",  # Recording is done, Inngest handles the rest
-                "followup_id": followup_id,
-                "recording_url": audio_url,
-                "duration_seconds": duration_seconds,
-                "participants": participants,
-                "completed_at": datetime.utcnow().isoformat()
-            }).eq("id", recording_id).execute()
-            
-            logger.info(f"Created followup {followup_id} for recording {recording_id}")
-            
-            # Trigger Inngest transcription job (same as normal audio uploads)
-            if use_inngest_for("followup"):
-                try:
-                    await send_event(
-                        Events.FOLLOWUP_AUDIO_UPLOADED,
-                        {
-                            "followup_id": followup_id,
-                            "storage_path": storage_path,
-                            "filename": "recording.mp4",
-                            "organization_id": recording["organization_id"],
-                            "user_id": recording["user_id"],
-                        }
-                    )
-                    logger.info(f"Triggered Inngest transcription for followup {followup_id}")
-                except Exception as e:
-                    logger.error(f"Failed to trigger Inngest: {e}")
-            else:
-                logger.warning("Inngest not enabled for followup - skipping transcription trigger")
-            
-        else:
-            logger.error(f"Failed to create followup for recording {recording_id}")
-            supabase.table("scheduled_recordings").update({
-                "status": "error",
-                "error_message": "Failed to create followup"
-            }).eq("id", recording_id).execute()
-            
-    except Exception as e:
-        logger.error(f"Error processing recording {recording_id}: {e}")
-        supabase.table("scheduled_recordings").update({
-            "status": "error",
-            "error_message": str(e)
-        }).eq("id", recording_id).execute()
+    logger.warning("Webhook signature verification failed")
+    return False
 
 
 @router.post("/webhook/recall")

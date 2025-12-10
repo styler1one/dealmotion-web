@@ -124,7 +124,7 @@ export function AINotetakerSheet({
     if (!meetingUrl.trim()) {
       toast({
         title: t('error'),
-        description: 'Please enter a meeting URL',
+        description: t('urlRequired'),
         variant: 'destructive'
       })
       return
@@ -157,8 +157,8 @@ export function AINotetakerSheet({
       toast({
         title: t('success'),
         description: scheduleMode === 'now' 
-          ? 'AI Notetaker will join your meeting shortly'
-          : `Scheduled for ${scheduledDate} at ${scheduledTime}`
+          ? t('successNow')
+          : t('successLater', { date: scheduledDate, time: scheduledTime })
       })
 
       onSuccess?.(data)
@@ -220,19 +220,19 @@ export function AINotetakerSheet({
           {/* Meeting Title (optional) */}
           <div className="space-y-2">
             <Label htmlFor="meeting-title">
-              Meeting Title <span className="text-slate-400">({tCommon('optional')})</span>
+              {t('titleLabel')} <span className="text-slate-400">({tCommon('optional')})</span>
             </Label>
             <Input
               id="meeting-title"
               value={meetingTitle}
               onChange={(e) => setMeetingTitle(e.target.value)}
-              placeholder="e.g. Sales Call with TechCorp"
+              placeholder={t('titlePlaceholder')}
             />
           </div>
 
           {/* Schedule Mode */}
           <div className="space-y-3">
-            <Label>When to join</Label>
+            <Label>{t('whenToJoin')}</Label>
             <RadioGroup
               value={scheduleMode}
               onValueChange={(v) => setScheduleMode(v as 'now' | 'later')}
@@ -310,7 +310,7 @@ export function AINotetakerSheet({
             {loading ? (
               <>
                 <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />
-                Scheduling...
+                {t('scheduling')}
               </>
             ) : (
               <>
@@ -324,11 +324,7 @@ export function AINotetakerSheet({
           <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 text-sm text-slate-600 dark:text-slate-400">
             <div className="flex items-start gap-2">
               <Icons.info className="h-4 w-4 mt-0.5 flex-shrink-0" />
-              <div>
-                <strong>DealMotion AI Notes</strong> will join your meeting and automatically 
-                record, transcribe, and analyze the conversation. The analysis will appear 
-                in your recordings once complete.
-              </div>
+              <div>{t('infoBox')}</div>
             </div>
           </div>
         </div>
