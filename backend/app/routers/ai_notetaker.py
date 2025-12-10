@@ -399,36 +399,46 @@ async def fetch_and_process_recording(recording_id: str, bot_id: str):
     Fetch recording details from Recall.ai API and process.
     Used when webhook doesn't include recording URL.
     """
+    supabase = get_supabase_service()
+    
     try:
         logger.info(f"Fetching recording details from Recall.ai for bot {bot_id}")
         
         # Get bot status which includes recording info
         bot_status = await recall_service.get_bot_status(bot_id)
+        logger.info(f"Bot status response: {bot_status}")
         
         if not bot_status.get("success"):
             logger.error(f"Failed to get bot status: {bot_status.get('error')}")
-            return
-        
-        recording = bot_status.get("recording", {})
-        recording_url = recording.get("url") or recording.get("download_url")
-        duration = recording.get("duration_seconds") or recording.get("duration", 0)
-        
-        if not recording_url:
-            logger.warning(f"No recording URL found for bot {bot_id}")
-            # Mark as error
-            supabase = get_supabase_service()
             supabase.table("scheduled_recordings").update({
                 "status": "error",
-                "error_message": "No recording URL available"
+                "error_message": f"Failed to get bot status: {bot_status.get('error')}"
             }).eq("id", recording_id).execute()
             return
+        
+        # Recording info may be nested differently
+        recording = bot_status.get("recording") or {}
+        if not isinstance(recording, dict):
+            recording = {}
+        
+        recording_url = recording.get("url") or recording.get("download_url")
+        duration = recording.get("duration_seconds") or recording.get("duration") or 0
+        
+        if not recording_url:
+            logger.warning(f"No recording URL found for bot {bot_id}. Full response: {bot_status}")
+            supabase.table("scheduled_recordings").update({
+                "status": "error",
+                "error_message": "No recording URL available from Recall.ai"
+            }).eq("id", recording_id).execute()
+            return
+        
+        logger.info(f"Found recording URL: {recording_url[:50]}...")
         
         # Now process the recording
         await process_recording_complete(recording_id, recording_url, duration, [])
         
     except Exception as e:
-        logger.error(f"Error fetching recording for {recording_id}: {e}")
-        supabase = get_supabase_service()
+        logger.error(f"Error fetching recording for {recording_id}: {e}", exc_info=True)
         supabase.table("scheduled_recordings").update({
             "status": "error",
             "error_message": str(e)

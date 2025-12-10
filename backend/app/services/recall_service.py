@@ -229,17 +229,24 @@ class RecallService:
                 
                 if response.status_code == 200:
                     data = response.json()
+                    logger.info(f"Recall.ai bot status response: {data}")
+                    
+                    # Recording might be in different locations
+                    recording = data.get("recording") or data.get("video") or data.get("media")
+                    
                     return {
                         "success": True,
                         "bot_id": bot_id,
                         "status": data.get("status", {}).get("code", "unknown"),
-                        "recording": data.get("recording"),
-                        "transcript": data.get("transcript")
+                        "recording": recording,
+                        "transcript": data.get("transcript"),
+                        "raw_data": data  # Include full response for debugging
                     }
                 else:
+                    logger.error(f"Recall.ai API error: {response.status_code} - {response.text}")
                     return {
                         "success": False,
-                        "error": f"Failed to get status: {response.status_code}"
+                        "error": f"Failed to get status: {response.status_code} - {response.text}"
                     }
                     
         except Exception as e:
