@@ -523,9 +523,9 @@ async def process_recording_complete(
         if followup_result.data:
             followup_id = followup_result.data[0]["id"]
             
-            # Update scheduled_recordings with followup_id
+            # Update scheduled_recordings with followup_id and mark as complete
             supabase.table("scheduled_recordings").update({
-                "status": "processing",
+                "status": "complete",  # Recording is done, Inngest handles the rest
                 "followup_id": followup_id,
                 "recording_url": audio_url,
                 "duration_seconds": duration_seconds,
