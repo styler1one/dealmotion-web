@@ -66,12 +66,14 @@ export function AINotetakerSheet({
   // Detected platform
   const [detectedPlatform, setDetectedPlatform] = useState<MeetingPlatform | null>(null)
 
-  // Context state (contacts and deals linked to prospect)
+  // Context state (contacts, deals, and preparations linked to prospect)
   const [showContext, setShowContext] = useState(false)
   const [availableContacts, setAvailableContacts] = useState<ProspectContact[]>([])
   const [selectedContactIds, setSelectedContactIds] = useState<string[]>([])
   const [availableDeals, setAvailableDeals] = useState<Deal[]>([])
   const [selectedDealId, setSelectedDealId] = useState<string>('')
+  const [availablePreps, setAvailablePreps] = useState<Array<{ id: string; meeting_type: string; created_at: string }>>([])
+  const [selectedPrepId, setSelectedPrepId] = useState<string>('')
   const [loadingContext, setLoadingContext] = useState(false)
 
   // Reset and prefill when sheet opens
@@ -131,28 +133,37 @@ export function AINotetakerSheet({
     }
   }
 
-  // Fetch contacts and deals when prospect changes
+  // Fetch contacts, deals, and preparations when prospect changes
   useEffect(() => {
     const fetchContext = async () => {
       if (!prospectId) {
         setAvailableContacts([])
         setAvailableDeals([])
+        setAvailablePreps([])
         setSelectedContactIds([])
         setSelectedDealId('')
+        setSelectedPrepId('')
         return
       }
 
       setLoadingContext(true)
       try {
-        // Fetch contacts and deals in parallel
-        const [contactsResult, dealsResult] = await Promise.all([
+        // Fetch contacts, deals, and preparations in parallel
+        const [contactsResult, dealsResult, prepsResult] = await Promise.all([
           api.get<{ contacts: ProspectContact[] }>(`/api/v1/prospects/${prospectId}/contacts`),
           supabase
             .from('deals')
             .select('*')
             .eq('prospect_id', prospectId)
             .eq('is_active', true)
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('meeting_preps')
+            .select('id, meeting_type, created_at')
+            .eq('prospect_id', prospectId)
+            .eq('status', 'completed')
             .order('created_at', { ascending: false })
+            .limit(5)
         ])
 
         if (!contactsResult.error && contactsResult.data) {
@@ -160,6 +171,13 @@ export function AINotetakerSheet({
         }
         if (!dealsResult.error && dealsResult.data) {
           setAvailableDeals(dealsResult.data || [])
+        }
+        if (!prepsResult.error && prepsResult.data) {
+          setAvailablePreps(prepsResult.data || [])
+          // Auto-select the most recent preparation
+          if (prepsResult.data.length > 0) {
+            setSelectedPrepId(prepsResult.data[0].id)
+          }
         }
       } catch (error) {
         logger.error('Failed to fetch context', error)
@@ -190,6 +208,7 @@ export function AINotetakerSheet({
         meeting_title: meetingTitle.trim() || undefined,
         prospect_id: prospectId || undefined,
         // Context fields
+        meeting_prep_id: selectedPrepId || undefined,
         contact_ids: selectedContactIds.length > 0 ? selectedContactIds : undefined,
         deal_id: selectedDealId || undefined,
       }
@@ -356,8 +375,8 @@ export function AINotetakerSheet({
             </Select>
           </div>
 
-          {/* Context Section (Contacts & Deals) - only show if prospect selected */}
-          {prospectId && (availableContacts.length > 0 || availableDeals.length > 0) && (
+          {/* Context Section (Preparation, Contacts & Deals) - only show if prospect selected */}
+          {prospectId && (availableContacts.length > 0 || availableDeals.length > 0 || availablePreps.length > 0) && (
             <div className="space-y-3">
               <Button 
                 type="button"
@@ -380,6 +399,31 @@ export function AINotetakerSheet({
               
               {showContext && (
                 <div className="space-y-4 pl-2 border-l-2 border-slate-200 dark:border-slate-700">
+                  {/* Preparation */}
+                  {availablePreps.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="text-sm text-slate-500">{t('prepLabel')}</Label>
+                      <Select
+                        value={selectedPrepId || 'none'}
+                        onValueChange={(v) => setSelectedPrepId(v === 'none' ? '' : v)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('prepPlaceholder')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">
+                            <span className="text-slate-500">{t('noPrep')}</span>
+                          </SelectItem>
+                          {availablePreps.map((prep) => (
+                            <SelectItem key={prep.id} value={prep.id}>
+                              {prep.meeting_type} - {new Date(prep.created_at).toLocaleDateString()}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
                   {/* Contacts */}
                   {availableContacts.length > 0 && (
                     <div className="space-y-2">
