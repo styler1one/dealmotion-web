@@ -293,25 +293,29 @@ class RecallService:
     
     async def download_recording(self, recording_url: str) -> Optional[bytes]:
         """
-        Download a recording from Recall.ai.
+        Download a recording from a pre-signed S3 URL.
+        
+        Note: Pre-signed S3 URLs should NOT include auth headers,
+        as the auth is embedded in the URL itself.
         
         Args:
-            recording_url: The URL to download the recording from
+            recording_url: The pre-signed S3 URL to download from
             
         Returns:
             Recording bytes or None if failed
         """
         try:
+            logger.info(f"Downloading recording from: {recording_url[:80]}...")
+            
             async with httpx.AsyncClient(timeout=300.0) as client:  # 5 min timeout for large files
-                response = await client.get(
-                    recording_url,
-                    headers=self.headers
-                )
+                # DON'T include auth headers for S3 pre-signed URLs
+                response = await client.get(recording_url)
                 
                 if response.status_code == 200:
+                    logger.info(f"Successfully downloaded {len(response.content)} bytes")
                     return response.content
                 else:
-                    logger.error(f"Failed to download recording: {response.status_code}")
+                    logger.error(f"Failed to download recording: {response.status_code} - {response.text[:200]}")
                     return None
                     
         except Exception as e:
