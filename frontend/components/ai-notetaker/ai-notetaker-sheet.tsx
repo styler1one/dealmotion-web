@@ -12,7 +12,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox'
 import { Icons } from '@/components/icons'
 import { useToast } from '@/components/ui/use-toast'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { api } from '@/lib/api'
 import { logger } from '@/lib/logger'
 import { 
@@ -359,81 +358,88 @@ export function AINotetakerSheet({
 
           {/* Context Section (Contacts & Deals) - only show if prospect selected */}
           {prospectId && (availableContacts.length > 0 || availableDeals.length > 0) && (
-            <Collapsible open={showContext} onOpenChange={setShowContext}>
-              <CollapsibleTrigger asChild>
-                <Button variant="ghost" size="sm" className="w-full justify-between text-slate-600 dark:text-slate-400">
-                  <span className="flex items-center gap-2">
-                    <Icons.users className="h-4 w-4" />
-                    {t('contextLabel')}
-                    {selectedContactIds.length > 0 && (
-                      <span className="text-xs bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 px-1.5 py-0.5 rounded">
-                        {selectedContactIds.length}
-                      </span>
-                    )}
-                  </span>
-                  <Icons.chevronDown className={`h-4 w-4 transition-transform ${showContext ? 'rotate-180' : ''}`} />
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="space-y-4 pt-2">
-                {/* Contacts */}
-                {availableContacts.length > 0 && (
-                  <div className="space-y-2">
-                    <Label className="text-sm text-slate-500">{t('contactsLabel')}</Label>
-                    <div className="space-y-2 max-h-32 overflow-y-auto">
-                      {availableContacts.map((contact) => (
-                        <div key={contact.id} className="flex items-center gap-2">
-                          <Checkbox
-                            id={`contact-${contact.id}`}
-                            checked={selectedContactIds.includes(contact.id)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setSelectedContactIds([...selectedContactIds, contact.id])
-                              } else {
-                                setSelectedContactIds(selectedContactIds.filter((id) => id !== contact.id))
-                              }
-                            }}
-                          />
-                          <label
-                            htmlFor={`contact-${contact.id}`}
-                            className="text-sm cursor-pointer flex-1"
-                          >
-                            {contact.name}
-                            {contact.role && (
-                              <span className="text-slate-500 ml-1">({contact.role})</span>
-                            )}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Deals */}
-                {availableDeals.length > 0 && (
-                  <div className="space-y-2">
-                    <Label className="text-sm text-slate-500">{t('dealLabel')}</Label>
-                    <Select
-                      value={selectedDealId || 'none'}
-                      onValueChange={(v) => setSelectedDealId(v === 'none' ? '' : v)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={t('dealPlaceholder')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">
-                          <span className="text-slate-500">{t('noDeal')}</span>
-                        </SelectItem>
-                        {availableDeals.map((deal) => (
-                          <SelectItem key={deal.id} value={deal.id}>
-                            {deal.title || deal.name}
-                          </SelectItem>
+            <div className="space-y-3">
+              <Button 
+                type="button"
+                variant="ghost" 
+                size="sm" 
+                className="w-full justify-between text-slate-600 dark:text-slate-400"
+                onClick={() => setShowContext(!showContext)}
+              >
+                <span className="flex items-center gap-2">
+                  <Icons.users className="h-4 w-4" />
+                  {t('contextLabel')}
+                  {selectedContactIds.length > 0 && (
+                    <span className="text-xs bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 px-1.5 py-0.5 rounded">
+                      {selectedContactIds.length}
+                    </span>
+                  )}
+                </span>
+                <Icons.chevronDown className={`h-4 w-4 transition-transform ${showContext ? 'rotate-180' : ''}`} />
+              </Button>
+              
+              {showContext && (
+                <div className="space-y-4 pl-2 border-l-2 border-slate-200 dark:border-slate-700">
+                  {/* Contacts */}
+                  {availableContacts.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="text-sm text-slate-500">{t('contactsLabel')}</Label>
+                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                        {availableContacts.map((contact) => (
+                          <div key={contact.id} className="flex items-center gap-2">
+                            <Checkbox
+                              id={`contact-${contact.id}`}
+                              checked={selectedContactIds.includes(contact.id)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedContactIds([...selectedContactIds, contact.id])
+                                } else {
+                                  setSelectedContactIds(selectedContactIds.filter((id) => id !== contact.id))
+                                }
+                              }}
+                            />
+                            <label
+                              htmlFor={`contact-${contact.id}`}
+                              className="text-sm cursor-pointer flex-1"
+                            >
+                              {contact.name}
+                              {contact.role && (
+                                <span className="text-slate-500 ml-1">({contact.role})</span>
+                              )}
+                            </label>
+                          </div>
                         ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-              </CollapsibleContent>
-            </Collapsible>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Deals */}
+                  {availableDeals.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="text-sm text-slate-500">{t('dealLabel')}</Label>
+                      <Select
+                        value={selectedDealId || 'none'}
+                        onValueChange={(v) => setSelectedDealId(v === 'none' ? '' : v)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('dealPlaceholder')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">
+                            <span className="text-slate-500">{t('noDeal')}</span>
+                          </SelectItem>
+                          {availableDeals.map((deal) => (
+                            <SelectItem key={deal.id} value={deal.id}>
+                              {deal.title || deal.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           )}
 
           {/* Submit Button */}
