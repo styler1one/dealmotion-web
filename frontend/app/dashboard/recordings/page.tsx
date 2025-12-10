@@ -23,6 +23,8 @@ import {
 import type { User } from '@supabase/supabase-js'
 import { ImportRecordingModal } from '@/components/import-recording-modal'
 import { FollowupUploadForm } from '@/components/forms'
+import { BrowserRecording } from '@/components/browser-recording'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   Sheet,
   SheetContent,
@@ -30,6 +32,17 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet'
+
+// Transcript data interface
+interface TranscriptData {
+  id: string
+  title: string | null
+  transcript_text: string | null
+  recording_date: string | null
+  duration_seconds: number | null
+  participants: string[]
+  provider: string
+}
 
 // Interface for ImportRecordingModal compatibility
 interface ExternalRecordingForModal {
@@ -115,6 +128,14 @@ export default function RecordingsPage() {
   
   // Upload sheet state
   const [uploadSheetOpen, setUploadSheetOpen] = useState(false)
+  
+  // Transcript sheet state
+  const [transcriptSheetOpen, setTranscriptSheetOpen] = useState(false)
+  const [selectedTranscript, setSelectedTranscript] = useState<TranscriptData | null>(null)
+  const [loadingTranscript, setLoadingTranscript] = useState(false)
+  
+  // Recording sheet state  
+  const [recordingSheetOpen, setRecordingSheetOpen] = useState(false)
   
   const fetchRecordings = useCallback(async () => {
     try {
@@ -231,6 +252,43 @@ export default function RecordingsPage() {
     if (result?.id) {
       router.push(`/dashboard/followup/${result.id}`)
     }
+  }
+
+  // Handle view transcript
+  const handleViewTranscript = async (recording: UnifiedRecording) => {
+    setLoadingTranscript(true)
+    setTranscriptSheetOpen(true)
+    
+    try {
+      const { data, error } = await api.get<TranscriptData>(`/api/v1/recordings/transcript/${recording.id}`)
+      
+      if (error || !data) {
+        toast({
+          title: t('transcript.loadFailed'),
+          description: error?.message || 'Failed to load transcript',
+          variant: 'destructive',
+        })
+        setSelectedTranscript(null)
+      } else {
+        setSelectedTranscript(data)
+      }
+    } catch (err) {
+      logger.error('Failed to fetch transcript:', err)
+      toast({
+        title: t('transcript.loadFailed'),
+        variant: 'destructive',
+      })
+    } finally {
+      setLoadingTranscript(false)
+    }
+  }
+
+  // Handle recording complete from browser recording
+  const handleRecordingComplete = (followupId: string) => {
+    setRecordingSheetOpen(false)
+    fetchRecordings()
+    fetchStats()
+    router.push(`/dashboard/followup/${followupId}`)
   }
 
   const handleRecordingClick = (recording: UnifiedRecording) => {
@@ -400,6 +458,21 @@ export default function RecordingsPage() {
                         </div>
                         
                         <div className="flex items-center gap-1 ml-4">
+                          {/* View Transcript button for external recordings */}
+                          {recording.source_table === 'external_recordings' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleViewTranscript(recording)
+                              }}
+                            >
+                              <Icons.fileText className="h-3 w-3 mr-1" />
+                              {t('viewTranscript')}
+                            </Button>
+                          )}
                           {/* Analyze button for external recordings not yet imported */}
                           {!recording.followup_id && recording.source_table === 'external_recordings' && (
                             <Button
@@ -529,6 +602,15 @@ export default function RecordingsPage() {
                   <Button
                     variant="outline"
                     size="sm"
+                    className="w-full justify-start text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/20"
+                    onClick={() => setRecordingSheetOpen(true)}
+                  >
+                    <Icons.mic className="h-4 w-4 mr-2" />
+                    {t('quickActions.startRecording')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="w-full justify-start"
                     onClick={() => router.push('/dashboard/settings')}
                   >
@@ -572,6 +654,95 @@ export default function RecordingsPage() {
                 onSuccess={handleUploadSuccess}
                 isSheet={true}
               />
+            </div>
+          </SheetContent>
+        </Sheet>
+
+        {/* Transcript Viewer Sheet */}
+        <Sheet open={transcriptSheetOpen} onOpenChange={setTranscriptSheetOpen}>
+          <SheetContent side="right" className="sm:max-w-xl overflow-hidden flex flex-col">
+            <SheetHeader className="flex-shrink-0">
+              <SheetTitle className="flex items-center gap-2">
+                <Icons.fileText className="w-5 h-5 text-blue-600" />
+                {t('transcript.title')}
+              </SheetTitle>
+              {selectedTranscript && (
+                <SheetDescription>
+                  {selectedTranscript.title || t('untitled')}
+                  {selectedTranscript.duration_seconds && (
+                    <span className="ml-2">• {formatDuration(selectedTranscript.duration_seconds)}</span>
+                  )}
+                </SheetDescription>
+              )}
+            </SheetHeader>
+            
+            <div className="flex-1 mt-4 overflow-hidden">
+              {loadingTranscript ? (
+                <div className="flex items-center justify-center h-full">
+                  <Icons.spinner className="h-8 w-8 animate-spin text-slate-400" />
+                </div>
+              ) : selectedTranscript?.transcript_text ? (
+                <ScrollArea className="h-full pr-4">
+                  <div className="space-y-4 pb-8">
+                    {/* Participants */}
+                    {selectedTranscript.participants && selectedTranscript.participants.length > 0 && (
+                      <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3">
+                        <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
+                          {t('transcript.participants')}
+                        </h4>
+                        <div className="flex flex-wrap gap-1">
+                          {selectedTranscript.participants.map((p, i) => (
+                            <span key={i} className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+                              {p}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Transcript text */}
+                    <div className="prose prose-sm dark:prose-invert max-w-none">
+                      <pre className="whitespace-pre-wrap font-sans text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                        {selectedTranscript.transcript_text}
+                      </pre>
+                    </div>
+                  </div>
+                </ScrollArea>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-slate-400">
+                  <Icons.fileText className="h-12 w-12 mb-3" />
+                  <p className="text-sm">{t('transcript.notAvailable')}</p>
+                </div>
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
+
+        {/* Browser Recording Sheet */}
+        <Sheet open={recordingSheetOpen} onOpenChange={setRecordingSheetOpen}>
+          <SheetContent side="right" className="sm:max-w-md">
+            <SheetHeader>
+              <SheetTitle className="flex items-center gap-2">
+                <Icons.mic className="w-5 h-5 text-red-600" />
+                {t('quickActions.startRecording')}
+              </SheetTitle>
+              <SheetDescription>
+                {t('recording.description')}
+              </SheetDescription>
+            </SheetHeader>
+            
+            <div className="mt-8 flex flex-col items-center justify-center space-y-6">
+              <p className="text-sm text-slate-500 dark:text-slate-400 text-center">
+                {t('recording.instructions')}
+              </p>
+              
+              <BrowserRecording
+                onRecordingComplete={handleRecordingComplete}
+              />
+              
+              <p className="text-xs text-slate-400 dark:text-slate-500 text-center">
+                {t('recording.hint')}
+              </p>
             </div>
           </SheetContent>
         </Sheet>

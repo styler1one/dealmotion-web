@@ -423,3 +423,71 @@ async def get_recordings_stats(
             by_source={},
         )
 
+
+# ==========================================
+# Transcript Endpoint
+# ==========================================
+
+class TranscriptResponse(BaseModel):
+    """Response for transcript detail."""
+    id: str
+    title: Optional[str] = None
+    transcript_text: Optional[str] = None
+    recording_date: Optional[datetime] = None
+    duration_seconds: Optional[int] = None
+    participants: List[str] = []
+    provider: str
+
+
+@router.get("/transcript/{recording_id}")
+async def get_recording_transcript(
+    recording_id: str,
+    user: dict = Depends(get_current_user),
+    user_org: Tuple[str, str] = Depends(get_user_org),
+) -> TranscriptResponse:
+    """
+    Get the transcript for an external recording (Fireflies, Teams, Zoom).
+    """
+    user_id, org_id = user_org
+    
+    try:
+        # Fetch from external_recordings
+        result = supabase.table("external_recordings").select(
+            "id, title, transcript_text, recording_date, duration_seconds, participants, provider"
+        ).eq("id", recording_id).eq("organization_id", org_id).single().execute()
+        
+        if not result.data:
+            logger.warning(f"Recording {recording_id} not found for org {org_id}")
+            return TranscriptResponse(
+                id=recording_id,
+                title="Not Found",
+                transcript_text=None,
+                recording_date=None,
+                duration_seconds=None,
+                participants=[],
+                provider="unknown"
+            )
+        
+        row = result.data
+        return TranscriptResponse(
+            id=row["id"],
+            title=row.get("title"),
+            transcript_text=row.get("transcript_text"),
+            recording_date=row.get("recording_date"),
+            duration_seconds=row.get("duration_seconds"),
+            participants=row.get("participants") or [],
+            provider=row.get("provider", "unknown")
+        )
+        
+    except Exception as e:
+        logger.error(f"Error fetching transcript for {recording_id}: {e}")
+        return TranscriptResponse(
+            id=recording_id,
+            title="Error",
+            transcript_text=None,
+            recording_date=None,
+            duration_seconds=None,
+            participants=[],
+            provider="unknown"
+        )
+

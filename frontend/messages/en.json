@@ -2333,6 +2333,7 @@
     "loading": "Loading recordings...",
     "untitled": "Untitled Recording",
     "viewAnalysis": "View Analysis",
+    "viewTranscript": "Transcript",
     "analyze": "Analyze",
     "filters": {
       "allSources": "All Sources",
@@ -2358,7 +2359,19 @@
     "quickActions": {
       "title": "Quick Actions",
       "uploadRecording": "Upload Recording",
+      "startRecording": "Start Recording",
       "manageIntegrations": "Manage Integrations"
+    },
+    "transcript": {
+      "title": "Transcript",
+      "participants": "Participants",
+      "notAvailable": "No transcript available for this recording",
+      "loadFailed": "Failed to load transcript"
+    },
+    "recording": {
+      "description": "Record audio directly in your browser",
+      "instructions": "Click the button below to start recording your meeting. You can pause and resume as needed.",
+      "hint": "Your recording will be uploaded and analyzed automatically when you stop."
     }
   }
 }
