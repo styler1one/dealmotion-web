@@ -515,27 +515,44 @@ async def handle_recall_webhook(
     # Parse payload
     try:
         payload = await request.json()
-        logger.info(f"Webhook payload: {payload}")
+        logger.info(f"Webhook payload received: {payload}")
     except Exception as e:
         logger.error(f"Invalid JSON in webhook: {e}")
         raise HTTPException(status_code=400, detail="Invalid JSON")
     
-    # Recall.ai sends bot_id directly in payload or in data.bot.id
-    bot_id = (
-        payload.get("bot_id") or 
-        payload.get("data", {}).get("bot_id") or
-        payload.get("data", {}).get("bot", {}).get("id") or
-        payload.get("bot", {}).get("id")
-    )
+    # Recall.ai webhook format (from their docs):
+    # The payload contains the full bot object directly or in "data"
+    # Try all possible locations for bot ID
+    bot_id = None
+    
+    # Direct "id" field (bot object is the root)
+    if payload.get("id") and isinstance(payload.get("id"), str):
+        bot_id = payload["id"]
+    
+    # "bot_id" field
+    if not bot_id:
+        bot_id = payload.get("bot_id")
+    
+    # Nested in "data"
+    if not bot_id and payload.get("data"):
+        data = payload["data"]
+        bot_id = data.get("id") or data.get("bot_id")
+        if not bot_id and data.get("bot"):
+            bot_id = data["bot"].get("id")
+    
+    # Nested in "bot"
+    if not bot_id and payload.get("bot"):
+        bot_id = payload["bot"].get("id")
     
     if not bot_id:
-        logger.warning(f"Webhook missing bot_id. Payload keys: {payload.keys()}")
+        logger.warning(f"Webhook missing bot_id. Full payload: {payload}")
         return {"status": "ignored", "reason": "no bot_id"}
     
     logger.info(f"Processing webhook for bot: {bot_id}")
     
     # Parse event
     event_data = recall_service.parse_webhook_event(payload)
+    event_data["bot_id"] = bot_id  # Ensure bot_id is set
     
     supabase = get_supabase_service()
     
