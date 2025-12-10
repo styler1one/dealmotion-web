@@ -333,13 +333,14 @@ async def cancel_recording(
 # Webhook Handler
 # ==========================================
 
-def verify_webhook_signature(payload: bytes, signature: str, timestamp: str = "") -> bool:
+def verify_webhook_signature(payload: bytes, signature: str, msg_id: str = "", timestamp: str = "") -> bool:
     """
-    Verify Recall.ai webhook signature.
+    Verify Recall.ai webhook signature using Svix protocol.
     
-    Recall.ai uses Svix for webhooks. Svix signature format:
-    - Header: svix-signature (contains multiple signatures like "v1,signature1 v1,signature2")
-    - Signed message: "{svix_id}.{svix_timestamp}.{payload}"
+    Svix signature format:
+    - Header: svix-signature (contains "v1,base64signature")
+    - Signed message: "{msg_id}.{timestamp}.{payload}"
+    - Secret format: "whsec_..." (base64 encoded)
     """
     if not RECALL_WEBHOOK_SECRET:
         logger.warning("RECALL_WEBHOOK_SECRET not configured - accepting webhook without verification")
@@ -349,48 +350,50 @@ def verify_webhook_signature(payload: bytes, signature: str, timestamp: str = ""
         logger.warning("No signature provided in webhook")
         return False
     
-    logger.info(f"Verifying webhook. Secret length: {len(RECALL_WEBHOOK_SECRET)}, Signature: '{signature[:50]}...'")
+    import base64
     
-    # Svix signature format: "v1,base64signature v1,base64signature2"
-    # We need to check each signature
-    signatures = signature.split(" ")
+    # Get the secret - Svix secrets start with "whsec_" and are base64 encoded
+    secret = RECALL_WEBHOOK_SECRET
+    if secret.startswith("whsec_"):
+        secret = secret[6:]  # Remove "whsec_" prefix
     
-    for sig in signatures:
+    try:
+        secret_bytes = base64.b64decode(secret)
+    except Exception:
+        # If not base64, use as-is
+        secret_bytes = secret.encode()
+    
+    # Svix signed payload format: "{msg_id}.{timestamp}.{payload}"
+    if msg_id and timestamp:
+        signed_payload = f"{msg_id}.{timestamp}.".encode() + payload
+    else:
+        # Fallback to just payload
+        signed_payload = payload
+    
+    # Calculate expected signature
+    expected_signature = hmac.new(
+        secret_bytes,
+        signed_payload,
+        hashlib.sha256
+    ).digest()
+    expected_base64 = base64.b64encode(expected_signature).decode()
+    
+    # Check each signature in the header (format: "v1,sig1 v1,sig2")
+    for sig in signature.split(" "):
         if sig.startswith("v1,"):
             sig_base64 = sig[3:]  # Remove "v1," prefix
             try:
-                import base64
                 sig_bytes = base64.b64decode(sig_base64)
-                
-                # Svix signs: "{msg_id}.{timestamp}.{payload}"
-                # But if we don't have those, try just the payload
-                expected = hmac.new(
-                    RECALL_WEBHOOK_SECRET.encode(),
-                    payload,
-                    hashlib.sha256
-                ).digest()
-                
-                if hmac.compare_digest(expected, sig_bytes):
-                    logger.info("Signature verified (Svix v1 format)")
+                if hmac.compare_digest(expected_signature, sig_bytes):
+                    logger.info("Svix signature verified successfully")
                     return True
             except Exception as e:
-                logger.debug(f"Failed to verify signature {sig[:20]}...: {e}")
+                logger.debug(f"Failed to decode signature: {e}")
                 continue
     
-    # Try simple HMAC-SHA256 hex format as fallback
-    expected_hex = hmac.new(
-        RECALL_WEBHOOK_SECRET.encode(),
-        payload,
-        hashlib.sha256
-    ).hexdigest()
+    logger.warning(f"Svix signature mismatch. Got: '{signature[:40]}...', Expected: 'v1,{expected_base64[:30]}...'")
     
-    if hmac.compare_digest(expected_hex, signature):
-        logger.info("Signature verified (hex format)")
-        return True
-    
-    logger.warning(f"Webhook signature mismatch. Got: '{signature[:30]}...', Expected hex: '{expected_hex[:30]}...'")
-    
-    # TEMPORARY: Accept anyway for debugging
+    # For now, accept anyway (remove this in production)
     logger.warning("TEMPORARY: Accepting webhook despite signature mismatch")
     return True
 
@@ -515,27 +518,14 @@ async def handle_recall_webhook(
     # Get raw body for signature verification
     body = await request.body()
     
-    # Log ALL headers to find the signature header
-    all_headers = dict(request.headers)
-    logger.info(f"ALL webhook headers: {all_headers}")
-    
-    # Recall.ai uses Svix for webhooks - check their headers
-    # Svix headers: svix-id, svix-timestamp, svix-signature
-    signature = (
-        request.headers.get("svix-signature", "") or
-        request.headers.get("X-Recall-Signature", "") or
-        request.headers.get("X-Webhook-Signature", "") or
-        request.headers.get("webhook-signature", "") or
-        request.headers.get("X-Signature", "") or
-        request.headers.get("Signature", "")
-    )
-    
+    # Svix headers (used by Recall.ai)
     svix_id = request.headers.get("svix-id", "")
     svix_timestamp = request.headers.get("svix-timestamp", "")
+    signature = request.headers.get("svix-signature", "")
     
-    logger.info(f"Svix headers - id: {svix_id}, timestamp: {svix_timestamp}, signature: {signature[:50] if signature else 'empty'}...")
+    logger.info(f"Svix headers - id: {svix_id}, ts: {svix_timestamp}, sig: {signature[:40] if signature else 'none'}...")
     
-    if not verify_webhook_signature(body, signature):
+    if not verify_webhook_signature(body, signature, svix_id, svix_timestamp):
         logger.warning("Invalid webhook signature")
         # For now, allow webhooks even with invalid signature if secret not set
         if RECALL_WEBHOOK_SECRET:
