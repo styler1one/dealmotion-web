@@ -23,6 +23,7 @@ import os
 from app.deps import get_current_user, get_user_org
 from app.database import get_supabase_service
 from app.services.recall_service import recall_service, RecallBotConfig
+from app.inngest.events import send_event, use_inngest_for, Events
 
 logger = logging.getLogger(__name__)
 
@@ -485,12 +486,14 @@ async def process_recording_complete(
             }).eq("id", recording_id).execute()
             return
         
-        # Upload to Supabase Storage
-        filename = f"ai-notetaker/{recording_id}.mp3"
-        storage_result = supabase.storage.from_("recordings").upload(
-            filename,
+        # Upload to Supabase Storage (followup-audio bucket, same as normal uploads)
+        org_id = recording["organization_id"]
+        storage_path = f"{org_id}/{recording_id}/recording.mp4"
+        
+        storage_result = supabase.storage.from_("followup-audio").upload(
+            storage_path,
             audio_data,
-            {"content-type": "audio/mpeg"}
+            {"content-type": "video/mp4"}
         )
         
         if hasattr(storage_result, 'error') and storage_result.error:
@@ -502,7 +505,8 @@ async def process_recording_complete(
             return
         
         # Get public URL
-        audio_url = supabase.storage.from_("recordings").get_public_url(filename)
+        audio_url = supabase.storage.from_("followup-audio").get_public_url(storage_path)
+        logger.info(f"Uploaded recording to: {audio_url[:50]}...")
         
         # Create followup record
         followup_data = {
@@ -531,8 +535,24 @@ async def process_recording_complete(
             
             logger.info(f"Created followup {followup_id} for recording {recording_id}")
             
-            # TODO: Trigger Inngest transcription job
-            # This will be handled by the existing transcription pipeline
+            # Trigger Inngest transcription job (same as normal audio uploads)
+            if use_inngest_for("followup"):
+                try:
+                    await send_event(
+                        Events.FOLLOWUP_AUDIO_UPLOADED,
+                        {
+                            "followup_id": followup_id,
+                            "storage_path": storage_path,
+                            "filename": "recording.mp4",
+                            "organization_id": recording["organization_id"],
+                            "user_id": recording["user_id"],
+                        }
+                    )
+                    logger.info(f"Triggered Inngest transcription for followup {followup_id}")
+                except Exception as e:
+                    logger.error(f"Failed to trigger Inngest: {e}")
+            else:
+                logger.warning("Inngest not enabled for followup - skipping transcription trigger")
             
         else:
             logger.error(f"Failed to create followup for recording {recording_id}")
