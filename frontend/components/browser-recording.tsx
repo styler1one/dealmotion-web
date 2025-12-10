@@ -32,6 +32,8 @@ interface BrowserRecordingProps {
   meetingId?: string
   meetingTitle?: string
   prospectId?: string
+  meetingPrepId?: string
+  contactIds?: string[]
   onRecordingComplete?: (followupId: string) => void
 }
 
@@ -45,6 +47,8 @@ export function BrowserRecording({
   meetingId,
   meetingTitle,
   prospectId,
+  meetingPrepId,
+  contactIds,
   onRecordingComplete 
 }: BrowserRecordingProps) {
   const router = useRouter()
@@ -145,6 +149,16 @@ export function BrowserRecording({
       // Link to calendar meeting (SPEC-038)
       if (meetingId) {
         additionalFields.calendar_meeting_id = meetingId
+      }
+      
+      // Link to preparation
+      if (meetingPrepId) {
+        additionalFields.meeting_prep_id = meetingPrepId
+      }
+      
+      // Link to contacts
+      if (contactIds && contactIds.length > 0) {
+        additionalFields.contact_ids = JSON.stringify(contactIds)
       }
       
       setUploadProgress(30)

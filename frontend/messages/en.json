@@ -2366,12 +2366,23 @@
       "title": "Transcript",
       "participants": "Participants",
       "notAvailable": "No transcript available for this recording",
-      "loadFailed": "Failed to load transcript"
+      "loadFailed": "Failed to load transcript",
+      "save": "Save Changes",
+      "saved": "Transcript saved",
+      "saveFailed": "Failed to save transcript",
+      "unsavedChanges": "You have unsaved changes"
     },
     "recording": {
       "description": "Record audio directly in your browser",
       "instructions": "Click the button below to start recording your meeting. You can pause and resume as needed.",
-      "hint": "Your recording will be uploaded and analyzed automatically when you stop."
+      "hint": "Your recording will be uploaded and analyzed automatically when you stop.",
+      "selectProspect": "Select Prospect",
+      "selectProspectPlaceholder": "Choose a company...",
+      "selectPrep": "Link to Preparation",
+      "selectPrepPlaceholder": "Choose a preparation...",
+      "noPreps": "No preparations available",
+      "selectContacts": "Select Contacts",
+      "noContacts": "No contacts available"
     }
   }
 }

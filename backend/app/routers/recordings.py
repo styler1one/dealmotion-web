@@ -491,3 +491,63 @@ async def get_recording_transcript(
             provider="unknown"
         )
 
+
+class TranscriptUpdateRequest(BaseModel):
+    """Request to update transcript text."""
+    transcript_text: str
+
+
+class TranscriptUpdateResponse(BaseModel):
+    """Response after updating transcript."""
+    success: bool
+    message: str
+
+
+@router.put("/transcript/{recording_id}")
+async def update_recording_transcript(
+    recording_id: str,
+    request: TranscriptUpdateRequest,
+    user: dict = Depends(get_current_user),
+    user_org: Tuple[str, str] = Depends(get_user_org),
+) -> TranscriptUpdateResponse:
+    """
+    Update the transcript text for an external recording.
+    """
+    user_id, org_id = user_org
+    
+    try:
+        # First verify the recording exists and belongs to this org
+        check_result = supabase.table("external_recordings").select(
+            "id"
+        ).eq("id", recording_id).eq("organization_id", org_id).single().execute()
+        
+        if not check_result.data:
+            return TranscriptUpdateResponse(
+                success=False,
+                message="Recording not found"
+            )
+        
+        # Update the transcript
+        update_result = supabase.table("external_recordings").update({
+            "transcript_text": request.transcript_text
+        }).eq("id", recording_id).execute()
+        
+        if update_result.data:
+            logger.info(f"Updated transcript for recording {recording_id}")
+            return TranscriptUpdateResponse(
+                success=True,
+                message="Transcript updated successfully"
+            )
+        else:
+            return TranscriptUpdateResponse(
+                success=False,
+                message="Failed to update transcript"
+            )
+        
+    except Exception as e:
+        logger.error(f"Error updating transcript for {recording_id}: {e}")
+        return TranscriptUpdateResponse(
+            success=False,
+            message=str(e)
+        )
+

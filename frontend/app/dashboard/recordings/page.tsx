@@ -133,9 +133,21 @@ export default function RecordingsPage() {
   const [transcriptSheetOpen, setTranscriptSheetOpen] = useState(false)
   const [selectedTranscript, setSelectedTranscript] = useState<TranscriptData | null>(null)
   const [loadingTranscript, setLoadingTranscript] = useState(false)
+  const [editedTranscript, setEditedTranscript] = useState<string>('')
+  const [savingTranscript, setSavingTranscript] = useState(false)
+  const [transcriptDirty, setTranscriptDirty] = useState(false)
   
   // Recording sheet state  
   const [recordingSheetOpen, setRecordingSheetOpen] = useState(false)
+  
+  // Recording context selection
+  const [recordingProspects, setRecordingProspects] = useState<Array<{id: string; company_name: string}>>([])
+  const [selectedRecordingProspect, setSelectedRecordingProspect] = useState<{id: string; company_name: string} | null>(null)
+  const [recordingPreparations, setRecordingPreparations] = useState<Array<{id: string; meeting_subject: string}>>([])
+  const [selectedRecordingPrep, setSelectedRecordingPrep] = useState<{id: string; meeting_subject: string} | null>(null)
+  const [recordingContacts, setRecordingContacts] = useState<Array<{id: string; name: string}>>([])
+  const [selectedRecordingContacts, setSelectedRecordingContacts] = useState<Array<{id: string; name: string}>>([])
+  const [loadingRecordingContext, setLoadingRecordingContext] = useState(false)
   
   const fetchRecordings = useCallback(async () => {
     try {
@@ -167,6 +179,49 @@ export default function RecordingsPage() {
     }
   }, [])
 
+  // Fetch prospects for recording context
+  const fetchRecordingProspects = useCallback(async () => {
+    try {
+      const { data, error } = await api.get<{ prospects: Array<{id: string; company_name: string}> }>('/api/v1/prospects?limit=100')
+      if (!error && data) {
+        setRecordingProspects(data.prospects || [])
+      }
+    } catch (error) {
+      logger.error('Error fetching prospects for recording', error)
+    }
+  }, [])
+
+  // Fetch preps and contacts when prospect is selected
+  const fetchProspectContext = useCallback(async (prospectId: string) => {
+    setLoadingRecordingContext(true)
+    setRecordingPreparations([])
+    setSelectedRecordingPrep(null)
+    setRecordingContacts([])
+    setSelectedRecordingContacts([])
+    
+    try {
+      const { data, error } = await api.get<{
+        preps?: Array<{id: string; meeting_subject?: string; status: string}>
+        contacts?: Array<{id: string; name: string}>
+      }>(`/api/v1/prospects/${prospectId}/hub`)
+      
+      if (!error && data) {
+        // Only show completed preparations
+        const completedPreps = (data.preps || [])
+          .filter(p => p.status === 'completed')
+          .map(p => ({ id: p.id, meeting_subject: p.meeting_subject || 'Preparation' }))
+        setRecordingPreparations(completedPreps)
+        
+        // Set contacts
+        setRecordingContacts(data.contacts || [])
+      }
+    } catch (error) {
+      logger.error('Error fetching prospect context', error)
+    } finally {
+      setLoadingRecordingContext(false)
+    }
+  }, [])
+
   const recordingsRef = useRef<UnifiedRecording[]>([])
   recordingsRef.current = recordings
 
@@ -177,6 +232,20 @@ export default function RecordingsPage() {
       fetchStats(),
     ])
   }, [fetchRecordings, fetchStats])
+
+  // Fetch prospects when recording sheet opens
+  useEffect(() => {
+    if (recordingSheetOpen && recordingProspects.length === 0) {
+      fetchRecordingProspects()
+    }
+  }, [recordingSheetOpen, recordingProspects.length, fetchRecordingProspects])
+
+  // Fetch context when prospect is selected
+  useEffect(() => {
+    if (selectedRecordingProspect) {
+      fetchProspectContext(selectedRecordingProspect.id)
+    }
+  }, [selectedRecordingProspect, fetchProspectContext])
 
   // Auto-refresh for processing recordings
   useEffect(() => {
@@ -258,6 +327,7 @@ export default function RecordingsPage() {
   const handleViewTranscript = async (recording: UnifiedRecording) => {
     setLoadingTranscript(true)
     setTranscriptSheetOpen(true)
+    setTranscriptDirty(false)
     
     try {
       const { data, error } = await api.get<TranscriptData>(`/api/v1/recordings/transcript/${recording.id}`)
@@ -269,8 +339,10 @@ export default function RecordingsPage() {
           variant: 'destructive',
         })
         setSelectedTranscript(null)
+        setEditedTranscript('')
       } else {
         setSelectedTranscript(data)
+        setEditedTranscript(data.transcript_text || '')
       }
     } catch (err) {
       logger.error('Failed to fetch transcript:', err)
@@ -280,6 +352,45 @@ export default function RecordingsPage() {
       })
     } finally {
       setLoadingTranscript(false)
+    }
+  }
+
+  // Handle save transcript
+  const handleSaveTranscript = async () => {
+    if (!selectedTranscript) return
+    
+    setSavingTranscript(true)
+    try {
+      const { data, error } = await api.put<{ success: boolean; message: string }>(
+        `/api/v1/recordings/transcript/${selectedTranscript.id}`,
+        { transcript_text: editedTranscript }
+      )
+      
+      if (error || !data?.success) {
+        toast({
+          title: t('transcript.saveFailed'),
+          description: error?.message || data?.message || 'Failed to save',
+          variant: 'destructive',
+        })
+      } else {
+        toast({
+          title: t('transcript.saved'),
+        })
+        setTranscriptDirty(false)
+        // Update the selected transcript with new text
+        setSelectedTranscript({
+          ...selectedTranscript,
+          transcript_text: editedTranscript
+        })
+      }
+    } catch (err) {
+      logger.error('Failed to save transcript:', err)
+      toast({
+        title: t('transcript.saveFailed'),
+        variant: 'destructive',
+      })
+    } finally {
+      setSavingTranscript(false)
     }
   }
 
@@ -658,8 +769,13 @@ export default function RecordingsPage() {
           </SheetContent>
         </Sheet>
 
-        {/* Transcript Viewer Sheet */}
-        <Sheet open={transcriptSheetOpen} onOpenChange={setTranscriptSheetOpen}>
+        {/* Transcript Viewer/Editor Sheet */}
+        <Sheet open={transcriptSheetOpen} onOpenChange={(open) => {
+          if (!open && transcriptDirty) {
+            // Could add confirmation dialog here
+          }
+          setTranscriptSheetOpen(open)
+        }}>
           <SheetContent side="right" className="sm:max-w-xl overflow-hidden flex flex-col">
             <SheetHeader className="flex-shrink-0">
               <SheetTitle className="flex items-center gap-2">
@@ -676,38 +792,61 @@ export default function RecordingsPage() {
               )}
             </SheetHeader>
             
-            <div className="flex-1 mt-4 overflow-hidden">
+            <div className="flex-1 mt-4 overflow-hidden flex flex-col">
               {loadingTranscript ? (
                 <div className="flex items-center justify-center h-full">
                   <Icons.spinner className="h-8 w-8 animate-spin text-slate-400" />
                 </div>
-              ) : selectedTranscript?.transcript_text ? (
-                <ScrollArea className="h-full pr-4">
-                  <div className="space-y-4 pb-8">
-                    {/* Participants */}
-                    {selectedTranscript.participants && selectedTranscript.participants.length > 0 && (
-                      <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3">
-                        <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
-                          {t('transcript.participants')}
-                        </h4>
-                        <div className="flex flex-wrap gap-1">
-                          {selectedTranscript.participants.map((p, i) => (
-                            <span key={i} className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
-                              {p}
-                            </span>
-                          ))}
-                        </div>
+              ) : selectedTranscript ? (
+                <>
+                  {/* Participants */}
+                  {selectedTranscript.participants && selectedTranscript.participants.length > 0 && (
+                    <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 mb-4 flex-shrink-0">
+                      <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
+                        {t('transcript.participants')}
+                      </h4>
+                      <div className="flex flex-wrap gap-1">
+                        {selectedTranscript.participants.map((p, i) => (
+                          <span key={i} className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+                            {p}
+                          </span>
+                        ))}
                       </div>
-                    )}
-                    
-                    {/* Transcript text */}
-                    <div className="prose prose-sm dark:prose-invert max-w-none">
-                      <pre className="whitespace-pre-wrap font-sans text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                        {selectedTranscript.transcript_text}
-                      </pre>
                     </div>
+                  )}
+                  
+                  {/* Editable Transcript */}
+                  <div className="flex-1 overflow-hidden">
+                    <textarea
+                      className="w-full h-full p-3 text-sm font-sans leading-relaxed resize-none rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={editedTranscript}
+                      onChange={(e) => {
+                        setEditedTranscript(e.target.value)
+                        setTranscriptDirty(true)
+                      }}
+                      placeholder={t('transcript.notAvailable')}
+                    />
                   </div>
-                </ScrollArea>
+                  
+                  {/* Save button */}
+                  <div className="flex items-center justify-between pt-4 flex-shrink-0 border-t border-slate-200 dark:border-slate-700 mt-4">
+                    <span className="text-xs text-slate-500">
+                      {transcriptDirty && t('transcript.unsavedChanges')}
+                    </span>
+                    <Button
+                      onClick={handleSaveTranscript}
+                      disabled={!transcriptDirty || savingTranscript}
+                      className="gap-2"
+                    >
+                      {savingTranscript ? (
+                        <Icons.spinner className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Icons.check className="h-4 w-4" />
+                      )}
+                      {t('transcript.save')}
+                    </Button>
+                  </div>
+                </>
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-slate-400">
                   <Icons.fileText className="h-12 w-12 mb-3" />
@@ -719,8 +858,16 @@ export default function RecordingsPage() {
         </Sheet>
 
         {/* Browser Recording Sheet */}
-        <Sheet open={recordingSheetOpen} onOpenChange={setRecordingSheetOpen}>
-          <SheetContent side="right" className="sm:max-w-md">
+        <Sheet open={recordingSheetOpen} onOpenChange={(open) => {
+          setRecordingSheetOpen(open)
+          if (!open) {
+            // Reset selection when closing
+            setSelectedRecordingProspect(null)
+            setSelectedRecordingPrep(null)
+            setSelectedRecordingContacts([])
+          }
+        }}>
+          <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2">
                 <Icons.mic className="w-5 h-5 text-red-600" />
@@ -731,18 +878,122 @@ export default function RecordingsPage() {
               </SheetDescription>
             </SheetHeader>
             
-            <div className="mt-8 flex flex-col items-center justify-center space-y-6">
-              <p className="text-sm text-slate-500 dark:text-slate-400 text-center">
-                {t('recording.instructions')}
-              </p>
-              
-              <BrowserRecording
-                onRecordingComplete={handleRecordingComplete}
-              />
-              
-              <p className="text-xs text-slate-400 dark:text-slate-500 text-center">
-                {t('recording.hint')}
-              </p>
+            <div className="mt-6 space-y-4">
+              {/* Prospect Selection */}
+              <div>
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
+                  {t('recording.selectProspect')}
+                </label>
+                <Select
+                  value={selectedRecordingProspect?.id || ''}
+                  onValueChange={(value) => {
+                    const prospect = recordingProspects.find(p => p.id === value)
+                    setSelectedRecordingProspect(prospect || null)
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('recording.selectProspectPlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {recordingProspects.map((prospect) => (
+                      <SelectItem key={prospect.id} value={prospect.id}>
+                        {prospect.company_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Preparation Selection (Optional) */}
+              {selectedRecordingProspect && (
+                <div>
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
+                    {t('recording.selectPrep')} <span className="text-slate-400">({tCommon('optional')})</span>
+                  </label>
+                  {loadingRecordingContext ? (
+                    <div className="flex items-center gap-2 text-sm text-slate-500">
+                      <Icons.spinner className="h-4 w-4 animate-spin" />
+                      {tCommon('loading')}
+                    </div>
+                  ) : recordingPreparations.length > 0 ? (
+                    <Select
+                      value={selectedRecordingPrep?.id || ''}
+                      onValueChange={(value) => {
+                        const prep = recordingPreparations.find(p => p.id === value)
+                        setSelectedRecordingPrep(prep || null)
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={t('recording.selectPrepPlaceholder')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {recordingPreparations.map((prep) => (
+                          <SelectItem key={prep.id} value={prep.id}>
+                            {prep.meeting_subject}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="text-sm text-slate-400">{t('recording.noPreps')}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Contact Selection (Optional, Multi) */}
+              {selectedRecordingProspect && recordingContacts.length > 0 && (
+                <div>
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
+                    {t('recording.selectContacts')} <span className="text-slate-400">({tCommon('optional')})</span>
+                  </label>
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {recordingContacts.map((contact) => {
+                      const isSelected = selectedRecordingContacts.some(c => c.id === contact.id)
+                      return (
+                        <label 
+                          key={contact.id}
+                          className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => {
+                              if (isSelected) {
+                                setSelectedRecordingContacts(prev => prev.filter(c => c.id !== contact.id))
+                              } else {
+                                setSelectedRecordingContacts(prev => [...prev, contact])
+                              }
+                            }}
+                            className="rounded border-slate-300"
+                          />
+                          <span className="text-sm">{contact.name}</span>
+                        </label>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Recording Button */}
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                <p className="text-sm text-slate-500 dark:text-slate-400 text-center mb-4">
+                  {t('recording.instructions')}
+                </p>
+                
+                <div className="flex justify-center">
+                  <BrowserRecording
+                    prospectId={selectedRecordingProspect?.id}
+                    meetingTitle={selectedRecordingPrep?.meeting_subject}
+                    meetingPrepId={selectedRecordingPrep?.id}
+                    contactIds={selectedRecordingContacts.map(c => c.id)}
+                    onRecordingComplete={handleRecordingComplete}
+                  />
+                </div>
+                
+                <p className="text-xs text-slate-400 dark:text-slate-500 text-center mt-4">
+                  {t('recording.hint')}
+                </p>
+              </div>
             </div>
           </SheetContent>
         </Sheet>
