@@ -278,7 +278,16 @@ async def list_recordings(
                     prospect_ids.add(row["matched_prospect_id"])
         
         # 3. Fetch followups with audio (web uploads)
+        # Exclude followups that are linked from scheduled_recordings (AI Notetaker)
+        # to avoid duplicates - those are shown as ai_notetaker source
+        ai_notetaker_followup_ids = set()
         if source is None or source == "web_upload":
+            # First get all followup_ids from scheduled_recordings to exclude
+            sr_result = supabase.table("scheduled_recordings").select(
+                "followup_id"
+            ).eq("organization_id", org_id).not_.is_("followup_id", "null").execute()
+            ai_notetaker_followup_ids = {r["followup_id"] for r in sr_result.data or [] if r.get("followup_id")}
+            
             followup_query = supabase.table("followups").select(
                 "id, organization_id, user_id, prospect_id, prospect_company_name, "
                 "meeting_subject, meeting_date, audio_url, audio_filename, audio_size_bytes, "
@@ -356,6 +365,9 @@ async def list_recordings(
         
         if source is None or source == "web_upload":
             for row in followup_result.data or []:
+                # Skip followups that are linked from AI Notetaker (avoid duplicates)
+                if row["id"] in ai_notetaker_followup_ids:
+                    continue
                 rec = map_followup_recording(row)
                 all_recordings.append(rec)
                 sources_count["web_upload"] += 1
@@ -456,15 +468,23 @@ async def get_recordings_stats(
                 stats["failed"] += 1
         
         # Followups with audio stats
+        # Exclude followups linked from AI Notetaker to avoid double counting
+        sr_ids_result = supabase.table("scheduled_recordings").select(
+            "followup_id"
+        ).eq("organization_id", org_id).not_.is_("followup_id", "null").execute()
+        ai_notetaker_followup_ids = {r["followup_id"] for r in sr_ids_result.data or [] if r.get("followup_id")}
+        
         followup_result = supabase.table("followups").select(
-            "status"
+            "id, status"
         ).eq("organization_id", org_id).not_.is_("audio_url", "null").execute()
         
-        web_count = len(followup_result.data or [])
+        # Filter out AI Notetaker followups
+        web_followups = [r for r in (followup_result.data or []) if r["id"] not in ai_notetaker_followup_ids]
+        web_count = len(web_followups)
         stats["by_source"]["web_upload"] = web_count
         stats["total"] += web_count
         
-        for row in followup_result.data or []:
+        for row in web_followups:
             s = row.get("status", "completed")
             if s == "uploading":
                 stats["pending"] += 1

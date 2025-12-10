@@ -98,8 +98,18 @@ async def download_and_upload_recording(recording_url: str, organization_id: str
     }
 
 
-def create_followup_record(organization_id: str, user_id: str, prospect_id: str, meeting_title: str, audio_url: str):
-    """Create a followup record for the AI Notetaker recording."""
+def create_followup_record(
+    organization_id: str, 
+    user_id: str, 
+    prospect_id: str, 
+    meeting_title: str, 
+    audio_url: str,
+    meeting_prep_id: str = None,
+    contact_ids: list = None,
+    deal_id: str = None,
+    calendar_meeting_id: str = None
+):
+    """Create a followup record for the AI Notetaker recording with full context."""
     supabase = get_supabase_service()
     
     followup_data = {
@@ -108,7 +118,12 @@ def create_followup_record(organization_id: str, user_id: str, prospect_id: str,
         "prospect_id": prospect_id,
         "meeting_subject": meeting_title or "AI Notetaker Recording",
         "audio_url": audio_url,
-        "status": "pending"
+        "status": "pending",
+        # Context fields (same as regular followup upload)
+        "meeting_prep_id": meeting_prep_id,
+        "contact_ids": contact_ids or [],
+        "deal_id": deal_id,
+        "calendar_meeting_id": calendar_meeting_id,
     }
     
     result = supabase.table("followups").insert(followup_data).execute()
@@ -117,7 +132,7 @@ def create_followup_record(organization_id: str, user_id: str, prospect_id: str,
         raise Exception("Failed to create followup record")
     
     followup_id = result.data[0]["id"]
-    logger.info(f"Created followup: {followup_id}")
+    logger.info(f"Created followup: {followup_id} with prep={meeting_prep_id}, contacts={len(contact_ids or [])}")
     
     return followup_id
 
@@ -164,6 +179,11 @@ async def process_ai_notetaker_recording_fn(ctx, step):
     user_id = event_data["user_id"]
     prospect_id = event_data.get("prospect_id")
     meeting_title = event_data.get("meeting_title")
+    # Context fields
+    meeting_prep_id = event_data.get("meeting_prep_id")
+    contact_ids = event_data.get("contact_ids") or []
+    deal_id = event_data.get("deal_id")
+    calendar_meeting_id = event_data.get("calendar_meeting_id")
     
     logger.info(f"Starting AI Notetaker processing for recording {recording_id}, bot {bot_id}")
     
@@ -188,11 +208,12 @@ async def process_ai_notetaker_recording_fn(ctx, step):
         storage_path = upload_result["storage_path"]
         audio_url = upload_result["audio_url"]
         
-        # Step 3: Create followup record
+        # Step 3: Create followup record with full context
         followup_id = await step.run(
             "create-followup",
             create_followup_record,
-            organization_id, user_id, prospect_id, meeting_title, audio_url
+            organization_id, user_id, prospect_id, meeting_title, audio_url,
+            meeting_prep_id, contact_ids, deal_id, calendar_meeting_id
         )
         
         # Step 4: Update scheduled_recording as complete

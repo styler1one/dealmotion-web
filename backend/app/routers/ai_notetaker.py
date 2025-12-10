@@ -43,6 +43,11 @@ class ScheduleRecordingRequest(BaseModel):
     scheduled_time: Optional[datetime] = Field(None, description="When to join (None = immediately)")
     meeting_title: Optional[str] = Field(None, description="Optional meeting title")
     prospect_id: Optional[str] = Field(None, description="Optional prospect to link to")
+    # Context fields (same as regular followup upload)
+    meeting_prep_id: Optional[str] = Field(None, description="Link to meeting preparation")
+    contact_ids: Optional[List[str]] = Field(None, description="Contact person IDs attending")
+    deal_id: Optional[str] = Field(None, description="Optional deal to link to")
+    calendar_meeting_id: Optional[str] = Field(None, description="Link to calendar meeting")
 
 
 class ScheduleRecordingResponse(BaseModel):
@@ -121,7 +126,7 @@ async def schedule_recording(
         if prospect_result.data:
             prospect_name = prospect_result.data.get("company_name")
     
-    # Create record in database first
+    # Create record in database first (with context fields)
     db_record = {
         "organization_id": org_id,
         "user_id": user_id,
@@ -131,7 +136,12 @@ async def schedule_recording(
         "scheduled_time": scheduled_time.isoformat(),
         "status": "scheduled",
         "prospect_id": request.prospect_id,
-        "source": "manual"
+        "source": "manual",
+        # Context fields (same as regular followup)
+        "meeting_prep_id": request.meeting_prep_id,
+        "contact_ids": request.contact_ids or [],
+        "deal_id": request.deal_id,
+        "calendar_meeting_id": request.calendar_meeting_id,
     }
     
     insert_result = supabase.table("scheduled_recordings").insert(db_record).execute()
@@ -447,7 +457,8 @@ async def handle_recall_webhook(
     # Find the recording by Recall bot ID (include all fields needed for Inngest)
     # Use limit(1) and check manually to avoid exception when no rows found
     result = supabase.table("scheduled_recordings").select(
-        "id, status, organization_id, user_id, prospect_id, meeting_title"
+        "id, status, organization_id, user_id, prospect_id, meeting_title, "
+        "meeting_prep_id, contact_ids, deal_id, calendar_meeting_id"
     ).eq("recall_bot_id", bot_id).limit(1).execute()
     
     if not result.data or len(result.data) == 0:
@@ -487,6 +498,11 @@ async def handle_recall_webhook(
                         "user_id": recording["user_id"],
                         "prospect_id": recording.get("prospect_id"),
                         "meeting_title": recording.get("meeting_title"),
+                        # Context fields (same as regular followup)
+                        "meeting_prep_id": recording.get("meeting_prep_id"),
+                        "contact_ids": recording.get("contact_ids") or [],
+                        "deal_id": recording.get("deal_id"),
+                        "calendar_meeting_id": recording.get("calendar_meeting_id"),
                     }
                 )
                 logger.info(f"Sent AI_NOTETAKER_RECORDING_COMPLETE event for {recording_id}")

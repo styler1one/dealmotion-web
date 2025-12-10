@@ -35,6 +35,11 @@ export interface ScheduleRecordingRequest {
   scheduled_time?: string // ISO string, null = join immediately
   meeting_title?: string
   prospect_id?: string
+  // Context fields (same as regular followup)
+  meeting_prep_id?: string
+  contact_ids?: string[]
+  deal_id?: string
+  calendar_meeting_id?: string
 }
 
 export interface ScheduleRecordingResponse {
