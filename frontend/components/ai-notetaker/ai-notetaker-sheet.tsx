@@ -474,7 +474,7 @@ export function AINotetakerSheet({
                           </SelectItem>
                           {availableDeals.map((deal) => (
                             <SelectItem key={deal.id} value={deal.id}>
-                              {deal.title || deal.name}
+                              {deal.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
