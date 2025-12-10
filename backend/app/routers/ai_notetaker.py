@@ -336,16 +336,30 @@ async def cancel_recording(
 def verify_webhook_signature(payload: bytes, signature: str) -> bool:
     """Verify Recall.ai webhook signature."""
     if not RECALL_WEBHOOK_SECRET:
-        logger.warning("RECALL_WEBHOOK_SECRET not configured - skipping signature verification")
+        logger.warning("RECALL_WEBHOOK_SECRET not configured - accepting webhook without verification")
         return True
     
-    expected = hmac.new(
+    # Try multiple signature formats (Recall.ai may use different formats)
+    expected_hex = hmac.new(
         RECALL_WEBHOOK_SECRET.encode(),
         payload,
         hashlib.sha256
     ).hexdigest()
     
-    return hmac.compare_digest(expected, signature)
+    # Check direct match
+    if hmac.compare_digest(expected_hex, signature):
+        return True
+    
+    # Check with sha256= prefix
+    if signature.startswith("sha256="):
+        sig_without_prefix = signature[7:]
+        if hmac.compare_digest(expected_hex, sig_without_prefix):
+            return True
+    
+    # Log for debugging
+    logger.warning(f"Webhook signature mismatch. Got: {signature[:20]}..., Expected prefix: {expected_hex[:20]}...")
+    
+    return False
 
 
 async def process_recording_complete(
@@ -468,11 +482,19 @@ async def handle_recall_webhook(
     # Get raw body for signature verification
     body = await request.body()
     
-    # Verify signature
+    # Verify signature (skip if no secret configured for development)
     signature = request.headers.get("X-Recall-Signature", "")
+    
+    # Log all headers for debugging
+    logger.info(f"Webhook headers: {dict(request.headers)}")
+    
     if not verify_webhook_signature(body, signature):
         logger.warning("Invalid webhook signature")
-        raise HTTPException(status_code=401, detail="Invalid signature")
+        # For now, allow webhooks even with invalid signature if secret not set
+        if RECALL_WEBHOOK_SECRET:
+            raise HTTPException(status_code=401, detail="Invalid signature")
+        else:
+            logger.warning("RECALL_WEBHOOK_SECRET not set - accepting webhook anyway")
     
     # Parse payload
     try:
