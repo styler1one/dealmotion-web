@@ -229,18 +229,53 @@ class RecallService:
                 
                 if response.status_code == 200:
                     data = response.json()
-                    logger.info(f"Recall.ai bot status response: {data}")
+                    logger.info(f"Recall.ai bot status response keys: {data.keys()}")
                     
-                    # Recording might be in different locations
-                    recording = data.get("recording") or data.get("video") or data.get("media")
+                    # Extract recording URL from nested structure:
+                    # recordings[0].media_shortcuts.video_mixed.data.download_url
+                    recording_url = None
+                    duration_seconds = None
+                    
+                    recordings = data.get("recordings", [])
+                    if recordings and len(recordings) > 0:
+                        rec = recordings[0]
+                        # Calculate duration from started_at and completed_at
+                        if rec.get("started_at") and rec.get("completed_at"):
+                            from datetime import datetime
+                            try:
+                                started = datetime.fromisoformat(rec["started_at"].replace("Z", "+00:00"))
+                                completed = datetime.fromisoformat(rec["completed_at"].replace("Z", "+00:00"))
+                                duration_seconds = int((completed - started).total_seconds())
+                            except:
+                                pass
+                        
+                        # Get video URL from media_shortcuts
+                        media = rec.get("media_shortcuts", {})
+                        video_mixed = media.get("video_mixed", {})
+                        if video_mixed:
+                            video_data = video_mixed.get("data", {})
+                            recording_url = video_data.get("download_url")
+                        
+                        # Fallback to audio_mixed if no video
+                        if not recording_url:
+                            audio_mixed = media.get("audio_mixed", {})
+                            if audio_mixed:
+                                audio_data = audio_mixed.get("data", {})
+                                recording_url = audio_data.get("download_url")
+                    
+                    logger.info(f"Extracted recording URL: {recording_url[:50] if recording_url else 'None'}...")
                     
                     return {
                         "success": True,
                         "bot_id": bot_id,
                         "status": data.get("status", {}).get("code", "unknown"),
-                        "recording": recording,
+                        "recording": {
+                            "url": recording_url,
+                            "download_url": recording_url,
+                            "duration_seconds": duration_seconds
+                        } if recording_url else None,
                         "transcript": data.get("transcript"),
-                        "raw_data": data  # Include full response for debugging
+                        "raw_data": data
                     }
                 else:
                     logger.error(f"Recall.ai API error: {response.status_code} - {response.text}")
