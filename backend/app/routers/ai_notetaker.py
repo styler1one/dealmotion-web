@@ -515,16 +515,27 @@ async def handle_recall_webhook(
     # Parse payload
     try:
         payload = await request.json()
-    except Exception:
+        logger.info(f"Webhook payload: {payload}")
+    except Exception as e:
+        logger.error(f"Invalid JSON in webhook: {e}")
         raise HTTPException(status_code=400, detail="Invalid JSON")
+    
+    # Recall.ai sends bot_id directly in payload or in data.bot.id
+    bot_id = (
+        payload.get("bot_id") or 
+        payload.get("data", {}).get("bot_id") or
+        payload.get("data", {}).get("bot", {}).get("id") or
+        payload.get("bot", {}).get("id")
+    )
+    
+    if not bot_id:
+        logger.warning(f"Webhook missing bot_id. Payload keys: {payload.keys()}")
+        return {"status": "ignored", "reason": "no bot_id"}
+    
+    logger.info(f"Processing webhook for bot: {bot_id}")
     
     # Parse event
     event_data = recall_service.parse_webhook_event(payload)
-    bot_id = event_data.get("bot_id")
-    
-    if not bot_id:
-        logger.warning("Webhook missing bot_id")
-        return {"status": "ignored", "reason": "no bot_id"}
     
     supabase = get_supabase_service()
     

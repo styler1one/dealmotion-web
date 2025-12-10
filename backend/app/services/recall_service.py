@@ -280,14 +280,37 @@ class RecallService:
         """
         Parse a webhook event from Recall.ai.
         
+        Recall.ai webhook format varies - handle multiple formats.
+        
         Args:
             payload: The webhook payload
             
         Returns:
             Parsed event data
         """
+        logger.info(f"Parsing webhook payload: {payload}")
+        
         event_type = payload.get("event", "")
         data = payload.get("data", {})
+        
+        # Bot ID can be in different places
+        bot_id = (
+            payload.get("bot_id") or 
+            data.get("bot_id") or
+            data.get("bot", {}).get("id") or
+            payload.get("bot", {}).get("id")
+        )
+        
+        # Status can be in different places
+        raw_status = ""
+        if isinstance(data.get("status"), dict):
+            raw_status = data["status"].get("code", "")
+        elif isinstance(data.get("status"), str):
+            raw_status = data["status"]
+        elif isinstance(payload.get("status"), dict):
+            raw_status = payload["status"].get("code", "")
+        elif isinstance(payload.get("status"), str):
+            raw_status = payload["status"]
         
         # Map Recall.ai status codes to our status values
         status_map = {
@@ -296,31 +319,40 @@ class RecallService:
             "in_waiting_room": "waiting_room",
             "in_call_not_recording": "joining",
             "in_call_recording": "recording",
+            "recording": "recording",
             "call_ended": "processing",
+            "processing": "processing",
             "done": "complete",
+            "complete": "complete",
             "fatal": "error",
+            "error": "error",
             "analysis_done": "complete"
         }
         
         result = {
             "event_type": event_type,
-            "bot_id": data.get("bot_id"),
-            "status": status_map.get(data.get("status", {}).get("code", ""), "unknown"),
-            "raw_status": data.get("status", {}).get("code", "")
+            "bot_id": bot_id,
+            "status": status_map.get(raw_status, "unknown"),
+            "raw_status": raw_status
         }
         
-        # Add recording info if available
-        if "recording" in data:
-            result["recording_url"] = data["recording"].get("download_url")
-            result["duration_seconds"] = data["recording"].get("duration_seconds")
+        logger.info(f"Parsed webhook: event={event_type}, bot_id={bot_id}, status={raw_status} -> {result['status']}")
+        
+        # Add recording info if available (check multiple locations)
+        recording = data.get("recording") or payload.get("recording")
+        if recording:
+            result["recording_url"] = recording.get("download_url") or recording.get("url")
+            result["duration_seconds"] = recording.get("duration_seconds") or recording.get("duration")
         
         # Add transcript if available
-        if "transcript" in data:
-            result["transcript"] = data["transcript"]
+        transcript = data.get("transcript") or payload.get("transcript")
+        if transcript:
+            result["transcript"] = transcript
         
         # Add participants if available
-        if "participants" in data:
-            result["participants"] = [p.get("name", "Unknown") for p in data["participants"]]
+        participants = data.get("participants") or payload.get("participants")
+        if participants:
+            result["participants"] = [p.get("name", "Unknown") for p in participants if isinstance(p, dict)]
         
         return result
 
