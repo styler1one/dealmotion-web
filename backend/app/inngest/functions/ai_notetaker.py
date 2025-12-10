@@ -63,19 +63,20 @@ async def fetch_recording_url(bot_id: str):
     }
 
 
-async def download_recording(recording_url: str):
-    """Download recording from Recall.ai."""
+async def download_and_upload_recording(recording_url: str, organization_id: str, recording_id: str):
+    """
+    Download recording from Recall.ai and upload to Supabase Storage.
+    Combined into one step because bytes are not JSON-serializable for Inngest.
+    """
+    # Download
     audio_data = await recall_service.download_recording(recording_url)
     
     if not audio_data:
         raise Exception("Failed to download recording from Recall.ai")
     
     logger.info(f"Downloaded {len(audio_data)} bytes")
-    return audio_data
-
-
-def upload_to_storage(organization_id: str, recording_id: str, audio_data: bytes):
-    """Upload recording to Supabase Storage."""
+    
+    # Upload
     supabase = get_supabase_service()
     storage_path = f"{organization_id}/{recording_id}/recording.mp4"
     
@@ -177,18 +178,11 @@ async def process_ai_notetaker_recording_fn(ctx, step):
         recording_url = recording_info["recording_url"]
         duration_seconds = recording_info["duration_seconds"]
         
-        # Step 2: Download recording
-        audio_data = await step.run(
-            "download-recording",
-            download_recording,
-            recording_url
-        )
-        
-        # Step 3: Upload to Supabase Storage
+        # Step 2: Download and upload recording (combined - bytes not serializable)
         upload_result = await step.run(
-            "upload-to-storage",
-            upload_to_storage,
-            organization_id, recording_id, audio_data
+            "download-and-upload",
+            download_and_upload_recording,
+            recording_url, organization_id, recording_id
         )
         
         storage_path = upload_result["storage_path"]
