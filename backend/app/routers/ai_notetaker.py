@@ -522,3 +522,74 @@ async def handle_recall_webhook(
     
     return {"status": "ok"}
 
+
+# ==========================================
+# Inbound Email Webhook (Phase 2)
+# ==========================================
+
+@router.post("/webhook/inbound-email")
+async def handle_inbound_email(request: Request):
+    """
+    Handle inbound email from SendGrid Inbound Parse.
+    
+    When a user invites notes@dealmotion.ai to a meeting, this endpoint:
+    1. Receives the raw email from SendGrid
+    2. Queues it for Inngest processing
+    3. Returns quickly to satisfy SendGrid timeout requirements
+    
+    The actual processing (parse, match user, schedule bot) happens in Inngest.
+    
+    SendGrid Inbound Parse Configuration:
+    - URL: https://api.dealmotion.ai/api/v1/ai-notetaker/webhook/inbound-email
+    - Domain: dealmotion.ai (MX record pointing to SendGrid)
+    """
+    import base64
+    
+    try:
+        # Get raw email data from SendGrid
+        # SendGrid sends multipart/form-data with 'email' field containing raw MIME
+        form_data = await request.form()
+        
+        # SendGrid fields: https://docs.sendgrid.com/for-developers/parsing-email/setting-up-the-inbound-parse-webhook
+        raw_email = form_data.get("email", "")  # Raw MIME email
+        sender = form_data.get("from", "")
+        to_address = form_data.get("to", "")
+        subject = form_data.get("subject", "")
+        
+        # Log receipt
+        logger.info(f"Received inbound email: from={sender}, to={to_address}, subject={subject[:50] if subject else 'N/A'}")
+        
+        # Validate it's sent to our notetaker address
+        notetaker_addresses = ["notes@dealmotion.ai", "notetaker@dealmotion.ai", "ai@dealmotion.ai"]
+        is_valid_recipient = any(addr in to_address.lower() for addr in notetaker_addresses)
+        
+        if not is_valid_recipient:
+            logger.warning(f"Email not addressed to notetaker: {to_address}")
+            return {"status": "ignored", "reason": "not addressed to notetaker"}
+        
+        # Encode raw email for Inngest (bytes not JSON serializable)
+        if isinstance(raw_email, str):
+            raw_email_b64 = base64.b64encode(raw_email.encode("utf-8")).decode("utf-8")
+        else:
+            raw_email_b64 = base64.b64encode(raw_email).decode("utf-8")
+        
+        # Queue for Inngest processing (fast response for SendGrid)
+        await send_event(
+            Events.AI_NOTETAKER_EMAIL_RECEIVED,
+            {
+                "raw_email_b64": raw_email_b64,
+                "sender": sender,
+                "to_address": to_address,
+                "subject": subject,
+                "received_at": datetime.utcnow().isoformat(),
+            }
+        )
+        
+        logger.info(f"Queued email invite for processing: from={sender}")
+        
+        return {"status": "queued"}
+        
+    except Exception as e:
+        logger.error(f"Error handling inbound email: {e}")
+        # Still return 200 to prevent SendGrid retries on our errors
+        return {"status": "error", "message": str(e)}

@@ -13,6 +13,7 @@ from .knowledge_base import process_knowledge_file_fn
 from .calendar import sync_all_calendars_fn, sync_calendar_connection_fn
 from .fireflies import sync_all_fireflies_fn, sync_fireflies_user_fn
 from .ai_notetaker import process_ai_notetaker_recording_fn
+from .email_invite import process_email_invite_fn
 
 # All functions to register with Inngest
 all_functions = [
@@ -28,6 +29,7 @@ all_functions = [
     sync_all_fireflies_fn,
     sync_fireflies_user_fn,
     process_ai_notetaker_recording_fn,
+    process_email_invite_fn,
 ]
 
 __all__ = [
@@ -44,5 +46,6 @@ __all__ = [
     "sync_all_fireflies_fn",
     "sync_fireflies_user_fn",
     "process_ai_notetaker_recording_fn",
+    "process_email_invite_fn",
 ]
 
