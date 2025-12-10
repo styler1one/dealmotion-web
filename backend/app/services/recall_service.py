@@ -278,41 +278,44 @@ class RecallService:
     
     def parse_webhook_event(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Parse a webhook event from Recall.ai.
+        Parse a webhook event from Recall.ai (via Svix).
         
-        Recall.ai webhook format varies - handle multiple formats.
+        Recall.ai uses Svix for webhooks. The event type IS the status:
+        - bot.joining_call
+        - bot.in_call_not_recording  
+        - bot.in_call_recording
+        - bot.call_ended
+        - bot.done
         
-        Args:
-            payload: The webhook payload
-            
-        Returns:
-            Parsed event data
+        The payload contains the full bot object.
         """
         logger.info(f"Parsing webhook payload: {payload}")
         
         event_type = payload.get("event", "")
-        data = payload.get("data", {})
+        data = payload.get("data", payload)  # Data may be at root or nested
         
-        # Bot ID can be in different places
+        # Bot ID - check multiple locations
         bot_id = (
+            payload.get("id") or  # Svix sends bot object at root
+            data.get("id") or
             payload.get("bot_id") or 
             data.get("bot_id") or
-            data.get("bot", {}).get("id") or
-            payload.get("bot", {}).get("id")
+            data.get("bot", {}).get("id")
         )
         
-        # Status can be in different places
-        raw_status = ""
-        if isinstance(data.get("status"), dict):
-            raw_status = data["status"].get("code", "")
-        elif isinstance(data.get("status"), str):
-            raw_status = data["status"]
-        elif isinstance(payload.get("status"), dict):
-            raw_status = payload["status"].get("code", "")
-        elif isinstance(payload.get("status"), str):
-            raw_status = payload["status"]
+        # Extract status from event type (e.g., "bot.in_call_recording" -> "in_call_recording")
+        # This is more reliable than looking for a status field
+        event_status = event_type.replace("bot.", "") if event_type.startswith("bot.") else ""
         
-        # Map Recall.ai status codes to our status values
+        # Also check for status field as fallback
+        raw_status = event_status
+        if not raw_status:
+            if isinstance(data.get("status"), dict):
+                raw_status = data["status"].get("code", "")
+            elif isinstance(data.get("status"), str):
+                raw_status = data["status"]
+        
+        # Map Recall.ai event/status to our status values
         status_map = {
             "ready": "scheduled",
             "joining_call": "joining",
@@ -329,14 +332,16 @@ class RecallService:
             "analysis_done": "complete"
         }
         
+        mapped_status = status_map.get(raw_status, "unknown")
+        
         result = {
             "event_type": event_type,
             "bot_id": bot_id,
-            "status": status_map.get(raw_status, "unknown"),
+            "status": mapped_status,
             "raw_status": raw_status
         }
         
-        logger.info(f"Parsed webhook: event={event_type}, bot_id={bot_id}, status={raw_status} -> {result['status']}")
+        logger.info(f"Parsed: event={event_type}, bot={bot_id}, raw={raw_status} -> {mapped_status}")
         
         # Add recording info if available (check multiple locations)
         recording = data.get("recording") or payload.get("recording")
