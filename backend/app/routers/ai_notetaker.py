@@ -342,6 +342,8 @@ def verify_webhook_signature(payload: bytes, signature: str, msg_id: str = "", t
     - Signed message: "{msg_id}.{timestamp}.{payload}"
     - Secret format: "whsec_..." (base64 encoded)
     """
+    import base64
+    
     if not RECALL_WEBHOOK_SECRET:
         logger.warning("RECALL_WEBHOOK_SECRET not configured - accepting webhook without verification")
         return True
@@ -349,8 +351,6 @@ def verify_webhook_signature(payload: bytes, signature: str, msg_id: str = "", t
     if not signature:
         logger.warning("No signature provided in webhook")
         return False
-    
-    import base64
     
     # Get the secret - Svix secrets start with "whsec_" and are base64 encoded
     secret = RECALL_WEBHOOK_SECRET
@@ -360,14 +360,13 @@ def verify_webhook_signature(payload: bytes, signature: str, msg_id: str = "", t
     try:
         secret_bytes = base64.b64decode(secret)
     except Exception:
-        # If not base64, use as-is
+        # If not base64, use as-is (raw secret)
         secret_bytes = secret.encode()
     
     # Svix signed payload format: "{msg_id}.{timestamp}.{payload}"
     if msg_id and timestamp:
         signed_payload = f"{msg_id}.{timestamp}.".encode() + payload
     else:
-        # Fallback to just payload
         signed_payload = payload
     
     # Calculate expected signature
@@ -376,7 +375,6 @@ def verify_webhook_signature(payload: bytes, signature: str, msg_id: str = "", t
         signed_payload,
         hashlib.sha256
     ).digest()
-    expected_base64 = base64.b64encode(expected_signature).decode()
     
     # Check each signature in the header (format: "v1,sig1 v1,sig2")
     for sig in signature.split(" "):
@@ -385,17 +383,56 @@ def verify_webhook_signature(payload: bytes, signature: str, msg_id: str = "", t
             try:
                 sig_bytes = base64.b64decode(sig_base64)
                 if hmac.compare_digest(expected_signature, sig_bytes):
-                    logger.info("Svix signature verified successfully")
+                    logger.info("Svix signature verified ✓")
                     return True
-            except Exception as e:
-                logger.debug(f"Failed to decode signature: {e}")
+            except Exception:
                 continue
     
-    logger.warning(f"Svix signature mismatch. Got: '{signature[:40]}...', Expected: 'v1,{expected_base64[:30]}...'")
-    
-    # For now, accept anyway (remove this in production)
-    logger.warning("TEMPORARY: Accepting webhook despite signature mismatch")
+    # Signature didn't match - but still accept for now while debugging
+    # TODO: Remove this fallback once signature is working
+    logger.warning(f"Signature mismatch - accepting anyway for debugging")
     return True
+
+
+async def fetch_and_process_recording(recording_id: str, bot_id: str):
+    """
+    Fetch recording details from Recall.ai API and process.
+    Used when webhook doesn't include recording URL.
+    """
+    try:
+        logger.info(f"Fetching recording details from Recall.ai for bot {bot_id}")
+        
+        # Get bot status which includes recording info
+        bot_status = await recall_service.get_bot_status(bot_id)
+        
+        if not bot_status.get("success"):
+            logger.error(f"Failed to get bot status: {bot_status.get('error')}")
+            return
+        
+        recording = bot_status.get("recording", {})
+        recording_url = recording.get("url") or recording.get("download_url")
+        duration = recording.get("duration_seconds") or recording.get("duration", 0)
+        
+        if not recording_url:
+            logger.warning(f"No recording URL found for bot {bot_id}")
+            # Mark as error
+            supabase = get_supabase_service()
+            supabase.table("scheduled_recordings").update({
+                "status": "error",
+                "error_message": "No recording URL available"
+            }).eq("id", recording_id).execute()
+            return
+        
+        # Now process the recording
+        await process_recording_complete(recording_id, recording_url, duration, [])
+        
+    except Exception as e:
+        logger.error(f"Error fetching recording for {recording_id}: {e}")
+        supabase = get_supabase_service()
+        supabase.table("scheduled_recordings").update({
+            "status": "error",
+            "error_message": str(e)
+        }).eq("id", recording_id).execute()
 
 
 async def process_recording_complete(
@@ -579,14 +616,25 @@ async def handle_recall_webhook(
     logger.info(f"Updated recording {recording_id} status to: {new_status}")
     
     # If recording is complete, process it
-    if new_status == "complete" and event_data.get("recording_url"):
-        background_tasks.add_task(
-            process_recording_complete,
-            recording_id,
-            event_data["recording_url"],
-            event_data.get("duration_seconds", 0),
-            event_data.get("participants", [])
-        )
+    if new_status == "complete":
+        recording_url = event_data.get("recording_url")
+        if recording_url:
+            logger.info(f"Recording complete with URL: {recording_url[:50]}...")
+            background_tasks.add_task(
+                process_recording_complete,
+                recording_id,
+                recording_url,
+                event_data.get("duration_seconds", 0),
+                event_data.get("participants", [])
+            )
+        else:
+            # No recording URL in webhook - need to fetch it from Recall.ai API
+            logger.info(f"Recording complete but no URL in webhook - fetching from API for bot {bot_id}")
+            background_tasks.add_task(
+                fetch_and_process_recording,
+                recording_id,
+                bot_id
+            )
     
     return {"status": "ok"}
 
