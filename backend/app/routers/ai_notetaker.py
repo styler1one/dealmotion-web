@@ -445,9 +445,10 @@ async def handle_recall_webhook(
     supabase = get_supabase_service()
     
     # Find the recording by Recall bot ID (include all fields needed for Inngest)
+    # Use maybe_single() to avoid exception when no rows found
     result = supabase.table("scheduled_recordings").select(
         "id, status, organization_id, user_id, prospect_id, meeting_title"
-    ).eq("recall_bot_id", bot_id).single().execute()
+    ).eq("recall_bot_id", bot_id).maybe_single().execute()
     
     if not result.data:
         logger.warning(f"Recording not found for bot: {bot_id}")
