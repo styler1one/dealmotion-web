@@ -280,36 +280,39 @@ class RecallService:
         """
         Parse a webhook event from Recall.ai (via Svix).
         
-        Recall.ai uses Svix for webhooks. The event type IS the status:
-        - bot.joining_call
-        - bot.in_call_not_recording  
-        - bot.in_call_recording
-        - bot.call_ended
-        - bot.done
-        
-        The payload contains the full bot object.
+        Recall.ai webhook structure:
+        {
+          "event": "bot.done",
+          "data": {
+            "bot": {"id": "xxx", "metadata": {}},
+            "data": {"code": "done", "sub_code": null, "updated_at": "..."}
+          }
+        }
         """
         logger.info(f"Parsing webhook payload: {payload}")
         
         event_type = payload.get("event", "")
-        data = payload.get("data", payload)  # Data may be at root or nested
+        data = payload.get("data", {})
         
-        # Bot ID - check multiple locations
-        bot_id = (
-            payload.get("id") or  # Svix sends bot object at root
-            data.get("id") or
-            payload.get("bot_id") or 
-            data.get("bot_id") or
-            data.get("bot", {}).get("id")
-        )
+        # Bot ID - Recall.ai nests it in data.bot.id
+        bot_id = None
+        if data.get("bot", {}).get("id"):
+            bot_id = data["bot"]["id"]
+        elif data.get("id"):
+            bot_id = data["id"]
+        elif payload.get("id"):
+            bot_id = payload["id"]
+        elif payload.get("bot_id"):
+            bot_id = payload["bot_id"]
         
         # Extract status from event type (e.g., "bot.in_call_recording" -> "in_call_recording")
-        # This is more reliable than looking for a status field
         event_status = event_type.replace("bot.", "") if event_type.startswith("bot.") else ""
         
-        # Also check for status field as fallback
+        # Also check nested data.data.code (Recall.ai format)
         raw_status = event_status
-        if not raw_status:
+        if data.get("data", {}).get("code"):
+            raw_status = data["data"]["code"]
+        elif not raw_status:
             if isinstance(data.get("status"), dict):
                 raw_status = data["status"].get("code", "")
             elif isinstance(data.get("status"), str):
