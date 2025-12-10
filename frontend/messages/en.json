@@ -2382,7 +2382,8 @@
       "selectPrepPlaceholder": "Choose a preparation...",
       "noPreps": "No preparations available",
       "selectContacts": "Select Contacts",
-      "noContacts": "No contacts available"
+      "noContacts": "No contacts available",
+      "selectProspectFirst": "Select a prospect to start recording"
     }
   }
 }

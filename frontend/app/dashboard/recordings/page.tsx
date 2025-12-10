@@ -976,23 +976,34 @@ export default function RecordingsPage() {
 
               {/* Recording Button */}
               <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-                <p className="text-sm text-slate-500 dark:text-slate-400 text-center mb-4">
-                  {t('recording.instructions')}
-                </p>
-                
-                <div className="flex justify-center">
-                  <BrowserRecording
-                    prospectId={selectedRecordingProspect?.id}
-                    meetingTitle={selectedRecordingPrep?.meeting_subject}
-                    meetingPrepId={selectedRecordingPrep?.id}
-                    contactIds={selectedRecordingContacts.map(c => c.id)}
-                    onRecordingComplete={handleRecordingComplete}
-                  />
-                </div>
-                
-                <p className="text-xs text-slate-400 dark:text-slate-500 text-center mt-4">
-                  {t('recording.hint')}
-                </p>
+                {selectedRecordingProspect ? (
+                  <>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 text-center mb-4">
+                      {t('recording.instructions')}
+                    </p>
+                    
+                    <div className="flex justify-center">
+                      <BrowserRecording
+                        prospectId={selectedRecordingProspect.id}
+                        meetingTitle={selectedRecordingPrep?.meeting_subject}
+                        meetingPrepId={selectedRecordingPrep?.id}
+                        contactIds={selectedRecordingContacts.map(c => c.id)}
+                        onRecordingComplete={handleRecordingComplete}
+                      />
+                    </div>
+                    
+                    <p className="text-xs text-slate-400 dark:text-slate-500 text-center mt-4">
+                      {t('recording.hint')}
+                    </p>
+                  </>
+                ) : (
+                  <div className="text-center py-4">
+                    <Icons.mic className="h-8 w-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      {t('recording.selectProspectFirst')}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </SheetContent>
