@@ -1235,10 +1235,210 @@
       "contactAnalysis": {
         "title": "Analyse des contacts",
         "description": "Obtenez des profils détaillés des décideurs avec leurs préférences de communication et des conseils d'engagement."
+      },
+      "meetingsCalendar": {
+        "title": "Calendrier des réunions",
+        "description": "Toutes vos réunions en un coup d'œil. Statut de préparation visible instantanément. Plus jamais de réunion non préparée."
+      },
+      "inPersonMeetings": {
+        "title": "Réunions en personne",
+        "description": "Des appels Zoom aux réunions café—enregistrez et analysez chaque conversation, partout."
+      },
+      "smartIntegrations": {
+        "title": "Intégrations intelligentes",
+        "description": "Connectez Google Calendar, Microsoft 365 et Fireflies.ai. Synchronisation CRM bientôt disponible."
+      },
+      "aiNotetaker": {
+        "title": "AI Notetaker",
+        "description": "Invitez notre bot IA à tout appel vidéo. Il rejoint, enregistre, transcrit et analyse—pour que vous puissiez vous concentrer sur la conversation."
       }
     },
     "socialProof": {
-      "trustedBy": "APPROUVÉ PAR LES ÉQUIPES COMMERCIALES DE"
+      "trustedBy": "APPROUVÉ PAR LES ÉQUIPES COMMERCIALES DE",
+      "usedBy": "Utilisé par des professionnels B2B du monde entier"
+    },
+    "howItWorks": {
+      "title": "Comment ça marche",
+      "subtitle": "De la synchronisation calendrier au suivi—DealMotion couvre tout votre cycle de vente.",
+      "steps": {
+        "calendar": {
+          "title": "Calendrier",
+          "description": "Synchronisez vos réunions"
+        },
+        "research": {
+          "title": "Recherche",
+          "description": "L'IA collecte les insights"
+        },
+        "prep": {
+          "title": "Préparation",
+          "description": "Obtenez votre brief"
+        },
+        "meeting": {
+          "title": "Réunion",
+          "description": "Enregistrez chaque conversation"
+        },
+        "analysis": {
+          "title": "Analyse",
+          "description": "7 outputs instantanément"
+        },
+        "followup": {
+          "title": "Suivi",
+          "description": "Envoyez & suivez"
+        }
+      }
+    },
+    "integrations": {
+      "title": "Fonctionne avec vos outils",
+      "subtitle": "Connectez DealMotion à votre flux de travail existant.",
+      "comingSoon": "Bientôt disponible"
+    },
+    "aiContext": {
+      "badge": "L'ingrédient secret",
+      "title": "Une IA qui vous connaît, connaît votre entreprise et votre prospect",
+      "subtitle": "DealMotion apprend votre style, vos produits et votre prospect—puis personnalise chaque output.",
+      "inputsTitle": "Ce que l'IA sait sur vous",
+      "layers": {
+        "profile": {
+          "title": "Votre profil commercial",
+          "description": "Expérience, forces, style de communication"
+        },
+        "company": {
+          "title": "Votre entreprise",
+          "description": "Produits, services, proposition de valeur"
+        },
+        "knowledge": {
+          "title": "Votre base de connaissances",
+          "description": "Présentations, études de cas, docs produits"
+        },
+        "prospect": {
+          "title": "Votre prospect",
+          "description": "Recherche, contacts, historique, contexte"
+        }
+      },
+      "outputTitle": "Output personnalisé",
+      "outputDescription": "Chaque rapport de recherche, brief de réunion et suivi est adapté à vous.",
+      "benefits": {
+        "personalized": "Adapté à votre style",
+        "instant": "Généré en secondes",
+        "onBrand": "Messages on-brand",
+        "improves": "S'améliore avec le temps"
+      },
+      "quote": "C'est comme avoir un assistant commercial qui connaît tout votre playbook."
+    },
+    "meetingAnalysis": {
+      "badge": "Un enregistrement, 7 outputs",
+      "title": "Tout ce dont vous avez besoin d'une seule conversation",
+      "subtitle": "Uploadez n'importe quel enregistrement de réunion et obtenez instantanément 7 outputs prêts à l'emploi.",
+      "recording": "Enregistrement",
+      "anyMeeting": "Vidéo ou en personne",
+      "outputs": {
+        "summary": {
+          "title": "Résumé",
+          "description": "Points clés & décisions"
+        },
+        "customerReport": {
+          "title": "Rapport client",
+          "description": "Prêt à envoyer au client"
+        },
+        "shareEmail": {
+          "title": "E-mail de partage",
+          "description": "Transférer aux collègues"
+        },
+        "commercialAnalysis": {
+          "title": "Analyse commerciale",
+          "description": "Insights & opportunités de deal"
+        },
+        "salesCoaching": {
+          "title": "Coaching commercial",
+          "description": "Conseils d'amélioration personnalisés"
+        },
+        "actionItems": {
+          "title": "Actions à suivre",
+          "description": "Prochaines étapes avec responsables"
+        },
+        "internalReport": {
+          "title": "Mise à jour CRM",
+          "description": "Prêt pour votre système"
+        }
+      },
+      "highlight": "Les rapports clients et l'analyse commerciale sont uniques à DealMotion.",
+      "highlightSub": "La plupart des outils ne vous donnent qu'une transcription. Nous vous donnons des outputs prêts à l'emploi."
+    },
+    "mobileApp": {
+      "badge": "Beta disponible",
+      "title": "Votre studio d'enregistrement de poche",
+      "subtitle": "Enregistrez vos réunions en personne avec votre téléphone. Réunions café, visites clients, salons—ne manquez aucun insight. Lancement App Store bientôt !",
+      "steps": {
+        "record": "Enregistrer",
+        "upload": "Uploader",
+        "analyze": "Analyser",
+        "share": "Partager"
+      },
+      "useCasesTitle": "Parfait pour",
+      "useCases": {
+        "coffee": "Réunions café",
+        "onsite": "Visites clients",
+        "events": "Salons professionnels",
+        "field": "Ventes terrain"
+      },
+      "tapToRecord": "Appuyez pour enregistrer"
+    },
+    "painPoints": {
+      "title": "Avant & après DealMotion",
+      "subtitle": "Découvrez comment DealMotion transforme votre flux de travail commercial.",
+      "before": "Avant",
+      "after": "Après",
+      "items": {
+        "research": {
+          "before": "30+ minutes de recherche par compte",
+          "after": "Recherche complète en 30 secondes"
+        },
+        "prep": {
+          "before": "Entrer en réunion non préparé",
+          "after": "Brief personnalisé pour chaque réunion"
+        },
+        "notes": {
+          "before": "Perdre des détails importants après les conversations",
+          "after": "L'IA capture tout automatiquement"
+        },
+        "followup": {
+          "before": "Des heures à écrire des e-mails de suivi",
+          "after": "Rapports prêts à envoyer en minutes"
+        }
+      }
+    },
+    "dayInTheLife": {
+      "title": "Une journée avec DealMotion",
+      "intro": "Lundi matin. Vous ouvrez DealMotion.",
+      "steps": {
+        "open": {
+          "time": "8h30",
+          "text": "Vous voyez 3 réunions cette semaine."
+        },
+        "unprepared": {
+          "time": "8h31",
+          "text": "Une réunion n'est pas encore préparée."
+        },
+        "brief": {
+          "time": "8h32",
+          "text": "Clic. Brief personnalisé en 30 secondes.",
+          "highlight": "L'IA connaît votre style et votre prospect"
+        },
+        "confident": {
+          "time": "10h00",
+          "text": "Entrez en réunion en toute confiance."
+        },
+        "record": {
+          "time": "11h00",
+          "text": "Enregistrez la réunion avec votre téléphone.",
+          "highlight": "Les réunions en personne comptent aussi"
+        },
+        "sent": {
+          "time": "11h30",
+          "text": "Rapport client envoyé. Réunion bouclée."
+        }
+      },
+      "tagline": "De la préparation au suivi. DealMotion s'en charge."
     },
     "cta": {
       "title": "Prêt à transformer votre processus de vente ?",
