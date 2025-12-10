@@ -44,6 +44,7 @@ import { Video, Clock } from 'lucide-react'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 import { ResearchForm, PreparationForm, FollowupUploadForm } from '@/components/forms'
 import { ContactSearchModal } from '@/components/contacts'
+import { AINotetakerSheet } from '@/components/ai-notetaker/ai-notetaker-sheet'
 import { logger } from '@/lib/logger'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -105,6 +106,7 @@ export default function ProspectHubPage() {
   const [prepSheetOpen, setPrepSheetOpen] = useState(false)
   const [followupSheetOpen, setFollowupSheetOpen] = useState(false)
   const [contactModalOpen, setContactModalOpen] = useState(false)
+  const [aiNotetakerSheetOpen, setAiNotetakerSheetOpen] = useState(false)
   
   // Contact detail view state
   const [selectedContact, setSelectedContact] = useState<ProspectContact | null>(null)
@@ -536,6 +538,15 @@ export default function ProspectHubPage() {
                   </a>
                 </Button>
               )}
+              <Button 
+                variant="secondary" 
+                size="sm" 
+                className="bg-orange-500/80 hover:bg-orange-600 text-white border-0 gap-1"
+                onClick={() => setAiNotetakerSheetOpen(true)}
+              >
+                <FileText className="w-4 h-4" />
+                📝 AI Notetaker
+              </Button>
             </div>
           </div>
         </div>
@@ -1275,6 +1286,14 @@ export default function ProspectHubPage() {
             )}
           </SheetContent>
         </Sheet>
+        
+        {/* AI Notetaker Sheet */}
+        <AINotetakerSheet
+          open={aiNotetakerSheetOpen}
+          onOpenChange={setAiNotetakerSheetOpen}
+          prefilledProspectId={prospectId}
+          prefilledMeetingTitle={prospect.company_name}
+        />
       </div>
     </DashboardLayout>
   )

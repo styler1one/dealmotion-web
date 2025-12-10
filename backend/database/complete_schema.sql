@@ -1,16 +1,20 @@
 -- ============================================================
 -- DealMotion Complete Database Schema
--- Version: 3.8
--- Last Updated: 9 December 2025
+-- Version: 3.9
+-- Last Updated: 10 December 2025
 -- 
 -- This file consolidates ALL migrations into a single schema.
 -- Use this as reference documentation - DO NOT run on existing DB!
 -- 
 -- COUNTS:
--- - Tables: 45 (+1 mobile_recordings)
+-- - Tables: 46 (+1 scheduled_recordings)
 -- - Functions: 42 (+8 admin functions)
--- - Triggers: 37 (+1 mobile_recordings trigger)
--- - Indexes: 196 (+3 mobile_recordings indexes)
+-- - Triggers: 38 (+1 scheduled_recordings trigger)
+-- - Indexes: 202 (+6 scheduled_recordings indexes)
+-- 
+-- Changes in 3.9:
+-- - Added scheduled_recordings table (AI Notetaker via Recall.ai)
+-- - SPEC-043: AI Notetaker / Recall.ai Integration
 -- 
 -- Changes in 3.8:
 -- - Added mobile_recordings table (for PWA/mobile app recordings)
@@ -2808,10 +2812,93 @@ CREATE POLICY "Users can delete recordings"
     USING (bucket_id = 'recordings');
 
 -- ============================================================
+-- SCHEDULED RECORDINGS (AI Notetaker via Recall.ai)
+-- Added in v3.9 for SPEC-043
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS scheduled_recordings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    
+    -- Recall.ai reference
+    recall_bot_id TEXT UNIQUE,
+    
+    -- Meeting info
+    meeting_url TEXT NOT NULL,
+    meeting_title TEXT,
+    meeting_platform TEXT, -- 'teams', 'meet', 'zoom', 'webex'
+    scheduled_time TIMESTAMPTZ NOT NULL,
+    
+    -- Status: scheduled, joining, waiting_room, recording, processing, complete, error, cancelled
+    status TEXT NOT NULL DEFAULT 'scheduled',
+    
+    -- Linking
+    prospect_id UUID REFERENCES prospects(id) ON DELETE SET NULL,
+    followup_id UUID REFERENCES followups(id) ON DELETE SET NULL,
+    
+    -- Recording data (after completion)
+    recording_url TEXT,
+    duration_seconds INTEGER,
+    participants TEXT[], -- Array of participant names
+    
+    -- Error handling
+    error_message TEXT,
+    
+    -- Metadata
+    source TEXT DEFAULT 'manual', -- 'manual', 'email_invite', 'calendar_sync'
+    invite_email TEXT, -- If created via email invite
+    
+    -- Timestamps
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    completed_at TIMESTAMPTZ
+);
+
+-- Indexes for scheduled_recordings
+CREATE INDEX IF NOT EXISTS idx_scheduled_recordings_org ON scheduled_recordings(organization_id);
+CREATE INDEX IF NOT EXISTS idx_scheduled_recordings_user ON scheduled_recordings(user_id);
+CREATE INDEX IF NOT EXISTS idx_scheduled_recordings_recall ON scheduled_recordings(recall_bot_id);
+CREATE INDEX IF NOT EXISTS idx_scheduled_recordings_status ON scheduled_recordings(status);
+CREATE INDEX IF NOT EXISTS idx_scheduled_recordings_scheduled ON scheduled_recordings(scheduled_time);
+CREATE INDEX IF NOT EXISTS idx_scheduled_recordings_prospect ON scheduled_recordings(prospect_id);
+
+-- RLS for scheduled_recordings
+ALTER TABLE scheduled_recordings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view org scheduled recordings"
+    ON scheduled_recordings FOR SELECT
+    USING (organization_id IN (
+        SELECT organization_id FROM users WHERE id = (SELECT auth.uid())
+    ));
+
+CREATE POLICY "Users can insert own scheduled recordings"
+    ON scheduled_recordings FOR INSERT
+    WITH CHECK (user_id = (SELECT auth.uid()));
+
+CREATE POLICY "Users can update own scheduled recordings"
+    ON scheduled_recordings FOR UPDATE
+    USING (user_id = (SELECT auth.uid()));
+
+CREATE POLICY "Users can delete own scheduled recordings"
+    ON scheduled_recordings FOR DELETE
+    USING (user_id = (SELECT auth.uid()));
+
+-- Trigger for updated_at
+DROP TRIGGER IF EXISTS update_scheduled_recordings_updated_at ON scheduled_recordings;
+CREATE TRIGGER update_scheduled_recordings_updated_at
+    BEFORE UPDATE ON scheduled_recordings
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================================
 -- END OF SCHEMA
 -- ============================================================
--- Version: 3.8
--- Last Updated: 9 December 2025
+-- Version: 3.9
+-- Last Updated: 10 December 2025
+-- 
+-- Changes in 3.9:
+-- - Added scheduled_recordings table (AI Notetaker via Recall.ai)
+-- - SPEC-043: AI Notetaker / Recall.ai Integration
 -- 
 -- Changes in 3.8:
 -- - Added mobile_recordings table (for PWA/mobile app recordings)
@@ -2819,12 +2906,12 @@ CREATE POLICY "Users can delete recordings"
 -- - Added RLS policies for mobile_recordings
 -- 
 -- Summary:
--- - Tables: 45 (36 + 4 admin + 4 calendar/recording + 1 mobile)
+-- - Tables: 46 (36 + 4 admin + 4 calendar/recording + 1 mobile + 1 scheduled)
 -- - Views: 2
 -- - Functions: 42 (34 + 8 admin)
--- - Triggers: 37 (31 + 1 admin + 4 calendar/recording + 1 mobile)
+-- - Triggers: 38 (31 + 1 admin + 4 calendar/recording + 1 mobile + 1 scheduled)
 -- - Storage Buckets: 4 (with policies)
--- - Indexes: 196 (169 + 6 admin + 18 calendar/recording + 3 mobile)
+-- - Indexes: 202 (169 + 6 admin + 18 calendar/recording + 3 mobile + 6 scheduled)
 -- 
 -- This file is for REFERENCE ONLY. Do not run on existing database!
 -- Use individual migration files for updates.

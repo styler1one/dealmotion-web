@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-from app.routers import users, knowledge_base, research, sales_profile, company_profile, context, preparation, followup, followup_actions, prospects, contacts, settings, billing, webhooks, deals, coach, dashboard, calendar, calendar_meetings, integrations, recordings
+from app.routers import users, knowledge_base, research, sales_profile, company_profile, context, preparation, followup, followup_actions, prospects, contacts, settings, billing, webhooks, deals, coach, dashboard, calendar, calendar_meetings, integrations, recordings, ai_notetaker
 
 # Import mobile router separately to catch potential errors
 try:
@@ -132,6 +132,7 @@ app.include_router(calendar.router)  # Already has prefix /api/v1/calendar
 app.include_router(calendar_meetings.router)  # Already has prefix /api/v1/calendar-meetings
 app.include_router(integrations.router)  # Already has prefix /api/v1/integrations
 app.include_router(recordings.router)  # Already has prefix /api/v1/recordings
+app.include_router(ai_notetaker.router, prefix="/api/v1/ai-notetaker", tags=["ai-notetaker"])
 
 # Mobile router (conditionally included)
 if MOBILE_ROUTER_AVAILABLE:

@@ -2394,6 +2394,37 @@
       "success": "Recording deleted",
       "failed": "Failed to delete recording"
     }
+  },
+  "aiNotetaker": {
+    "title": "AI Notetaker",
+    "description": "DealMotion AI Notes will join your meeting and automatically record, transcribe, and analyze the conversation.",
+    "urlLabel": "Meeting URL",
+    "urlPlaceholder": "Paste Teams, Meet, or Zoom link",
+    "urlHelp": "Supported: Microsoft Teams, Google Meet, Zoom, Webex",
+    "joinNow": "Join Now",
+    "scheduleLater": "Schedule for later",
+    "dateLabel": "Date",
+    "timeLabel": "Time",
+    "prospectLabel": "Link to Prospect (optional)",
+    "submit": "Schedule Recording",
+    "success": "AI Notetaker scheduled!",
+    "error": "Failed to schedule",
+    "scheduled": {
+      "title": "Scheduled Recordings",
+      "empty": "No scheduled recordings",
+      "cancel": "Cancel",
+      "cancelConfirm": "Cancel this recording?"
+    },
+    "status": {
+      "scheduled": "Scheduled",
+      "joining": "Joining meeting...",
+      "waitingRoom": "In waiting room",
+      "recording": "Recording...",
+      "processing": "Processing...",
+      "complete": "Complete",
+      "error": "Error",
+      "cancelled": "Cancelled"
+    }
   }
 }
 

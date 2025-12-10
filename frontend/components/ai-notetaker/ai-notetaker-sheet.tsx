@@ -1,0 +1,339 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Icons } from '@/components/icons'
+import { useToast } from '@/components/ui/use-toast'
+import { api } from '@/lib/api'
+import { logger } from '@/lib/logger'
+import { 
+  ScheduleRecordingRequest, 
+  ScheduleRecordingResponse,
+  PLATFORM_INFO,
+  MeetingPlatform 
+} from '@/types/ai-notetaker'
+
+interface AINotetakerSheetProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSuccess?: (recording: ScheduleRecordingResponse) => void
+  // Pre-fill props
+  prefilledMeetingUrl?: string
+  prefilledMeetingTitle?: string
+  prefilledProspectId?: string
+}
+
+interface Prospect {
+  id: string
+  company_name: string
+}
+
+export function AINotetakerSheet({
+  open,
+  onOpenChange,
+  onSuccess,
+  prefilledMeetingUrl,
+  prefilledMeetingTitle,
+  prefilledProspectId
+}: AINotetakerSheetProps) {
+  const t = useTranslations('aiNotetaker')
+  const tCommon = useTranslations('common')
+  const { toast } = useToast()
+
+  // Form state
+  const [meetingUrl, setMeetingUrl] = useState('')
+  const [meetingTitle, setMeetingTitle] = useState('')
+  const [scheduleMode, setScheduleMode] = useState<'now' | 'later'>('now')
+  const [scheduledDate, setScheduledDate] = useState('')
+  const [scheduledTime, setScheduledTime] = useState('')
+  const [prospectId, setProspectId] = useState<string | undefined>(undefined)
+  const [loading, setLoading] = useState(false)
+
+  // Prospects for dropdown
+  const [prospects, setProspects] = useState<Prospect[]>([])
+  const [loadingProspects, setLoadingProspects] = useState(false)
+
+  // Detected platform
+  const [detectedPlatform, setDetectedPlatform] = useState<MeetingPlatform | null>(null)
+
+  // Reset and prefill when sheet opens
+  useEffect(() => {
+    if (open) {
+      setMeetingUrl(prefilledMeetingUrl || '')
+      setMeetingTitle(prefilledMeetingTitle || '')
+      setProspectId(prefilledProspectId)
+      setScheduleMode(prefilledMeetingUrl ? 'now' : 'later')
+      setScheduledDate('')
+      setScheduledTime('')
+      setDetectedPlatform(null)
+
+      // Detect platform from prefilled URL
+      if (prefilledMeetingUrl) {
+        detectPlatform(prefilledMeetingUrl)
+      }
+
+      // Fetch prospects
+      fetchProspects()
+    }
+  }, [open, prefilledMeetingUrl, prefilledMeetingTitle, prefilledProspectId])
+
+  // Detect platform from URL
+  const detectPlatform = (url: string) => {
+    if (url.includes('teams.microsoft.com') || url.includes('teams.live.com')) {
+      setDetectedPlatform('teams')
+    } else if (url.includes('meet.google.com')) {
+      setDetectedPlatform('meet')
+    } else if (url.includes('zoom.us') || url.includes('zoomgov.com')) {
+      setDetectedPlatform('zoom')
+    } else if (url.includes('webex.com')) {
+      setDetectedPlatform('webex')
+    } else {
+      setDetectedPlatform(null)
+    }
+  }
+
+  // Handle URL change
+  const handleUrlChange = (url: string) => {
+    setMeetingUrl(url)
+    detectPlatform(url)
+  }
+
+  // Fetch prospects for dropdown
+  const fetchProspects = async () => {
+    setLoadingProspects(true)
+    try {
+      const { data } = await api.get<{ prospects: Prospect[] }>('/api/v1/prospects')
+      if (data?.prospects) {
+        setProspects(data.prospects)
+      }
+    } catch (error) {
+      logger.error('Failed to fetch prospects', error)
+    } finally {
+      setLoadingProspects(false)
+    }
+  }
+
+  // Handle form submission
+  const handleSubmit = async () => {
+    if (!meetingUrl.trim()) {
+      toast({
+        title: t('error'),
+        description: 'Please enter a meeting URL',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    setLoading(true)
+    try {
+      // Build request
+      const request: ScheduleRecordingRequest = {
+        meeting_url: meetingUrl.trim(),
+        meeting_title: meetingTitle.trim() || undefined,
+        prospect_id: prospectId || undefined
+      }
+
+      // Add scheduled time if scheduling for later
+      if (scheduleMode === 'later' && scheduledDate && scheduledTime) {
+        const scheduledDateTime = new Date(`${scheduledDate}T${scheduledTime}`)
+        request.scheduled_time = scheduledDateTime.toISOString()
+      }
+
+      const { data, error } = await api.post<ScheduleRecordingResponse>(
+        '/api/v1/ai-notetaker/schedule',
+        request
+      )
+
+      if (error || !data) {
+        throw new Error(error?.message || 'Failed to schedule')
+      }
+
+      toast({
+        title: t('success'),
+        description: scheduleMode === 'now' 
+          ? 'AI Notetaker will join your meeting shortly'
+          : `Scheduled for ${scheduledDate} at ${scheduledTime}`
+      })
+
+      onSuccess?.(data)
+      onOpenChange(false)
+
+    } catch (error) {
+      logger.error('Failed to schedule AI Notetaker', error)
+      toast({
+        title: t('error'),
+        description: error instanceof Error ? error.message : 'Failed to schedule',
+        variant: 'destructive'
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Get today's date for min date input
+  const today = new Date().toISOString().split('T')[0]
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+        <SheetHeader className="mb-6">
+          <SheetTitle className="flex items-center gap-2">
+            <Icons.fileText className="h-5 w-5 text-orange-500" />
+            {t('title')}
+          </SheetTitle>
+          <SheetDescription>
+            {t('description')}
+          </SheetDescription>
+        </SheetHeader>
+
+        <div className="space-y-6">
+          {/* Meeting URL */}
+          <div className="space-y-2">
+            <Label htmlFor="meeting-url">{t('urlLabel')} *</Label>
+            <div className="relative">
+              <Input
+                id="meeting-url"
+                value={meetingUrl}
+                onChange={(e) => handleUrlChange(e.target.value)}
+                placeholder={t('urlPlaceholder')}
+                className="pr-10"
+              />
+              {detectedPlatform && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <span className="text-lg" title={PLATFORM_INFO[detectedPlatform].label}>
+                    {PLATFORM_INFO[detectedPlatform].icon}
+                  </span>
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              {t('urlHelp')}
+            </p>
+          </div>
+
+          {/* Meeting Title (optional) */}
+          <div className="space-y-2">
+            <Label htmlFor="meeting-title">
+              Meeting Title <span className="text-slate-400">({tCommon('optional')})</span>
+            </Label>
+            <Input
+              id="meeting-title"
+              value={meetingTitle}
+              onChange={(e) => setMeetingTitle(e.target.value)}
+              placeholder="e.g. Sales Call with TechCorp"
+            />
+          </div>
+
+          {/* Schedule Mode */}
+          <div className="space-y-3">
+            <Label>When to join</Label>
+            <RadioGroup
+              value={scheduleMode}
+              onValueChange={(v) => setScheduleMode(v as 'now' | 'later')}
+              className="space-y-2"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="now" id="join-now" />
+                <Label htmlFor="join-now" className="cursor-pointer font-normal">
+                  {t('joinNow')}
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="later" id="join-later" />
+                <Label htmlFor="join-later" className="cursor-pointer font-normal">
+                  {t('scheduleLater')}
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          {/* Date/Time picker (when scheduling for later) */}
+          {scheduleMode === 'later' && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="scheduled-date">{t('dateLabel')}</Label>
+                <Input
+                  id="scheduled-date"
+                  type="date"
+                  value={scheduledDate}
+                  onChange={(e) => setScheduledDate(e.target.value)}
+                  min={today}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="scheduled-time">{t('timeLabel')}</Label>
+                <Input
+                  id="scheduled-time"
+                  type="time"
+                  value={scheduledTime}
+                  onChange={(e) => setScheduledTime(e.target.value)}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Prospect Selector */}
+          <div className="space-y-2">
+            <Label>{t('prospectLabel')}</Label>
+            <Select
+              value={prospectId || 'none'}
+              onValueChange={(v) => setProspectId(v === 'none' ? undefined : v)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a prospect..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">
+                  <span className="text-slate-500">No prospect linked</span>
+                </SelectItem>
+                {prospects.map((prospect) => (
+                  <SelectItem key={prospect.id} value={prospect.id}>
+                    {prospect.company_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Submit Button */}
+          <Button
+            onClick={handleSubmit}
+            disabled={loading || !meetingUrl.trim()}
+            className="w-full bg-orange-600 hover:bg-orange-700"
+          >
+            {loading ? (
+              <>
+                <Icons.spinner className="h-4 w-4 mr-2 animate-spin" />
+                Scheduling...
+              </>
+            ) : (
+              <>
+                <Icons.fileText className="h-4 w-4 mr-2" />
+                {t('submit')}
+              </>
+            )}
+          </Button>
+
+          {/* Info box */}
+          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 text-sm text-slate-600 dark:text-slate-400">
+            <div className="flex items-start gap-2">
+              <Icons.info className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <div>
+                <strong>DealMotion AI Notes</strong> will join your meeting and automatically 
+                record, transcribe, and analyze the conversation. The analysis will appear 
+                in your recordings once complete.
+              </div>
+            </div>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
+  )
+}
+

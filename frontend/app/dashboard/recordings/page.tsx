@@ -24,6 +24,8 @@ import type { User } from '@supabase/supabase-js'
 import { ImportRecordingModal } from '@/components/import-recording-modal'
 import { FollowupUploadForm } from '@/components/forms'
 import { BrowserRecording } from '@/components/browser-recording'
+import { AINotetakerSheet } from '@/components/ai-notetaker/ai-notetaker-sheet'
+import { ScheduledRecordingsList } from '@/components/ai-notetaker/scheduled-recordings-list'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   Sheet,
@@ -149,6 +151,10 @@ export default function RecordingsPage() {
   
   // Recording sheet state  
   const [recordingSheetOpen, setRecordingSheetOpen] = useState(false)
+  
+  // AI Notetaker sheet state
+  const [aiNotetakerSheetOpen, setAiNotetakerSheetOpen] = useState(false)
+  const [scheduledRecordingsRefresh, setScheduledRecordingsRefresh] = useState(0)
   
   // Delete confirmation state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -769,6 +775,15 @@ export default function RecordingsPage() {
                   <Button
                     variant="outline"
                     size="sm"
+                    className="w-full justify-start text-orange-600 border-orange-200 hover:bg-orange-50 hover:text-orange-700 dark:text-orange-400 dark:border-orange-800 dark:hover:bg-orange-900/20"
+                    onClick={() => setAiNotetakerSheetOpen(true)}
+                  >
+                    <Icons.fileText className="h-4 w-4 mr-2" />
+                    📝 AI Notetaker
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="w-full justify-start"
                     onClick={() => setUploadSheetOpen(true)}
                   >
@@ -794,6 +809,15 @@ export default function RecordingsPage() {
                     {t('quickActions.manageIntegrations')}
                   </Button>
                 </div>
+              </div>
+
+              {/* Scheduled Recordings */}
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
+                <ScheduledRecordingsList
+                  onScheduleClick={() => setAiNotetakerSheetOpen(true)}
+                  maxItems={5}
+                  refreshTrigger={scheduledRecordingsRefresh}
+                />
               </div>
 
             </div>
@@ -1102,6 +1126,15 @@ export default function RecordingsPage() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* AI Notetaker Sheet */}
+        <AINotetakerSheet
+          open={aiNotetakerSheetOpen}
+          onOpenChange={setAiNotetakerSheetOpen}
+          onSuccess={() => {
+            setScheduledRecordingsRefresh(prev => prev + 1)
+          }}
+        />
       </div>
     </DashboardLayout>
   )

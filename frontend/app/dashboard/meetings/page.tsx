@@ -38,6 +38,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import type { User } from '@supabase/supabase-js'
+import { AINotetakerSheet } from '@/components/ai-notetaker/ai-notetaker-sheet'
+import { FileText } from 'lucide-react'
 import { BrowserRecording } from '@/components/browser-recording'
 
 interface Attendee {
@@ -108,6 +110,10 @@ export default function MeetingsPage() {
   const [filter, setFilter] = useState<FilterType>('week')
   const [unpreparedOnly, setUnpreparedOnly] = useState(false)
   const [linkingMeetingId, setLinkingMeetingId] = useState<string | null>(null)
+  
+  // AI Notetaker state
+  const [aiNotetakerOpen, setAiNotetakerOpen] = useState(false)
+  const [selectedMeetingForNotetaker, setSelectedMeetingForNotetaker] = useState<CalendarMeeting | null>(null)
   const [suggestedMatches, setSuggestedMatches] = useState<Record<string, SuggestedMatch[]>>({})
   const [loadingMatches, setLoadingMatches] = useState<Record<string, boolean>>({})
 
@@ -625,6 +631,22 @@ export default function MeetingsPage() {
                             </Button>
                           )}
                           
+                          {/* AI Notetaker button for online meetings */}
+                          {meeting.is_online && meeting.meeting_url && !meeting.is_now && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedMeetingForNotetaker(meeting)
+                                setAiNotetakerOpen(true)
+                              }}
+                              className="gap-1 text-orange-600 border-orange-200 hover:bg-orange-50 hover:text-orange-700 dark:text-orange-400 dark:border-orange-800 dark:hover:bg-orange-900/20"
+                            >
+                              <FileText className="h-3 w-3" />
+                              📝 AI Notetaker
+                            </Button>
+                          )}
+                          
                           {/* Join button for online meetings */}
                           {meeting.is_online && meeting.meeting_url && (
                             <Button
@@ -658,6 +680,20 @@ export default function MeetingsPage() {
           ))}
         </div>
       </div>
+      
+      {/* AI Notetaker Sheet */}
+      <AINotetakerSheet
+        open={aiNotetakerOpen}
+        onOpenChange={(open) => {
+          setAiNotetakerOpen(open)
+          if (!open) {
+            setSelectedMeetingForNotetaker(null)
+          }
+        }}
+        prefilledMeetingUrl={selectedMeetingForNotetaker?.meeting_url}
+        prefilledMeetingTitle={selectedMeetingForNotetaker?.title}
+        prefilledProspectId={selectedMeetingForNotetaker?.prospect_id}
+      />
     </DashboardLayout>
   )
 }
