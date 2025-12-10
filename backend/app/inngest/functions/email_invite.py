@@ -163,7 +163,6 @@ async def send_confirmation_email(
     fn_id="ai-notetaker-process-email-invite",
     trigger=TriggerEvent(event="dealmotion/ai-notetaker.email.received"),
     retries=3,
-    concurrency={"limit": 10},  # Limit concurrent processing for rate limiting
 )
 async def process_email_invite_fn(ctx, step):
     """
