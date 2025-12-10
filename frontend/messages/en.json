@@ -109,6 +109,8 @@
     "extraOptions": "Extra options",
     "confirm": "Confirm",
     "processing": "Processing...",
+    "optional": "optional",
+    "required": "required",
     "export": {
       "markdownDownloaded": "Markdown file downloaded",
       "pdfDownloaded": "PDF file downloaded",
