@@ -1025,15 +1025,47 @@ export default function FollowupDetailPage() {
                       <h2 className="font-bold text-lg flex items-center gap-2 text-slate-900 dark:text-white">
                         <Icons.fileText className="h-5 w-5 text-slate-600 dark:text-slate-400" />
                         {t('detail.transcription')}
+                        {followup.speaker_count > 0 && (
+                          <span className="text-xs font-normal text-slate-500 dark:text-slate-400">
+                            ({followup.speaker_count} {followup.speaker_count === 1 ? 'speaker' : 'speakers'})
+                          </span>
+                        )}
                       </h2>
                       {showTranscript ? <Icons.chevronDown className="h-5 w-5 text-slate-500" /> : <Icons.chevronRight className="h-5 w-5 text-slate-500" />}
                     </button>
                     {showTranscript && (
                       <div className="p-4 pt-0 border-t dark:border-slate-800">
-                        <div className="max-h-96 overflow-y-auto bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
-                          <pre className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300 font-sans">
-                            {followup.transcription_text}
-                          </pre>
+                        <div className="max-h-96 overflow-y-auto bg-slate-50 dark:bg-slate-800 rounded-lg p-4 space-y-3">
+                          {followup.transcription_segments && followup.transcription_segments.length > 0 ? (
+                            // Show segments with speakers
+                            followup.transcription_segments.map((segment, idx) => (
+                              <div key={idx} className="flex gap-3">
+                                <div className="flex-shrink-0">
+                                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-xs font-medium">
+                                    {segment.speaker?.replace('Speaker ', 'S') || `S${idx + 1}`}
+                                  </span>
+                                </div>
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-xs font-medium text-orange-600 dark:text-orange-400">
+                                      {segment.speaker || `Speaker ${idx + 1}`}
+                                    </span>
+                                    <span className="text-xs text-slate-400">
+                                      {Math.floor(segment.start / 60)}:{String(Math.floor(segment.start % 60)).padStart(2, '0')}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-slate-700 dark:text-slate-300">
+                                    {segment.text}
+                                  </p>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            // Fallback to plain text
+                            <pre className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300 font-sans">
+                              {followup.transcription_text}
+                            </pre>
+                          )}
                         </div>
                         <Button
                           variant="outline"
