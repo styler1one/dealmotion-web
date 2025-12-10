@@ -509,10 +509,9 @@ async def process_recording_complete(
             "organization_id": recording["organization_id"],
             "user_id": recording["user_id"],
             "prospect_id": recording.get("prospect_id"),
-            "title": recording.get("meeting_title") or "AI Notetaker Recording",
+            "meeting_subject": recording.get("meeting_title") or "AI Notetaker Recording",
             "audio_url": audio_url,
-            "status": "pending",
-            "source": "ai_notetaker"
+            "status": "pending"
         }
         
         followup_result = supabase.table("followups").insert(followup_data).execute()
