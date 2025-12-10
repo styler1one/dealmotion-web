@@ -19,7 +19,19 @@ logger = logging.getLogger(__name__)
 
 # Configuration
 RECALL_API_KEY = os.getenv("RECALL_API_KEY", "")
-RECALL_API_BASE = "https://api.recall.ai/api/v1"
+# Recall.ai regions: us-east-1 (default), us-west-2, eu-central-1, ap-northeast-1
+# Set RECALL_REGION to match your API key's region
+RECALL_REGION = os.getenv("RECALL_REGION", "us-east-1")
+
+# Build API base URL based on region
+REGION_URLS = {
+    "us-east-1": "https://us-east-1.recall.ai/api/v1",
+    "us-west-2": "https://us-west-2.recall.ai/api/v1",
+    "eu-central-1": "https://eu-central-1.recall.ai/api/v1",
+    "ap-northeast-1": "https://ap-northeast-1.recall.ai/api/v1",
+}
+RECALL_API_BASE = REGION_URLS.get(RECALL_REGION, "https://us-east-1.recall.ai/api/v1")
+
 AI_NOTETAKER_NAME = os.getenv("AI_NOTETAKER_NAME", "DealMotion AI Notes")
 
 
