@@ -32,6 +32,16 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 // Transcript data interface
 interface TranscriptData {
@@ -140,6 +150,11 @@ export default function RecordingsPage() {
   // Recording sheet state  
   const [recordingSheetOpen, setRecordingSheetOpen] = useState(false)
   
+  // Delete confirmation state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [recordingToDelete, setRecordingToDelete] = useState<UnifiedRecording | null>(null)
+  const [deleting, setDeleting] = useState(false)
+
   // Recording context selection
   const [recordingProspects, setRecordingProspects] = useState<Array<{id: string; company_name: string}>>([])
   const [selectedRecordingProspect, setSelectedRecordingProspect] = useState<{id: string; company_name: string} | null>(null)
@@ -412,6 +427,43 @@ export default function RecordingsPage() {
     }
   }
 
+  // Handle delete recording
+  const handleDeleteRecording = async () => {
+    if (!recordingToDelete) return
+    
+    setDeleting(true)
+    try {
+      const { data, error } = await api.delete<{ success: boolean; message: string }>(
+        `/api/v1/recordings/${recordingToDelete.source_table}/${recordingToDelete.id}`
+      )
+      
+      if (error || !data?.success) {
+        toast({
+          title: t('delete.failed'),
+          description: error?.message || data?.message || 'Failed to delete',
+          variant: 'destructive',
+        })
+      } else {
+        toast({
+          title: t('delete.success'),
+        })
+        // Refresh data
+        fetchRecordings()
+        fetchStats()
+      }
+    } catch (err) {
+      logger.error('Failed to delete recording:', err)
+      toast({
+        title: t('delete.failed'),
+        variant: 'destructive',
+      })
+    } finally {
+      setDeleting(false)
+      setDeleteDialogOpen(false)
+      setRecordingToDelete(null)
+    }
+  }
+
   if (loading) {
     return (
       <DashboardLayout user={user}>
@@ -628,6 +680,19 @@ export default function RecordingsPage() {
                               Hub
                             </Button>
                           )}
+                          {/* Delete button */}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setRecordingToDelete(recording)
+                              setDeleteDialogOpen(true)
+                            }}
+                          >
+                            <Icons.trash className="h-4 w-4" />
+                          </Button>
                           {isClickable && (
                             <Icons.chevronRight className="h-5 w-5 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                           )}
@@ -1008,6 +1073,35 @@ export default function RecordingsPage() {
             </div>
           </SheetContent>
         </Sheet>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t('delete.confirmTitle')}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {t('delete.confirmDescription', { title: recordingToDelete?.title || recordingToDelete?.prospect_name || t('untitled') })}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={deleting}>
+                {tCommon('cancel')}
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteRecording}
+                disabled={deleting}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {deleting ? (
+                  <Icons.spinner className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <Icons.trash className="h-4 w-4 mr-2" />
+                )}
+                {t('delete.confirm')}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </DashboardLayout>
   )

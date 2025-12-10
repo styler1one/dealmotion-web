@@ -2386,6 +2386,13 @@
       "selectContacts": "Select Contacts",
       "noContacts": "No contacts available",
       "selectProspectFirst": "Select a prospect to start recording"
+    },
+    "delete": {
+      "confirmTitle": "Delete Recording",
+      "confirmDescription": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+      "confirm": "Delete",
+      "success": "Recording deleted",
+      "failed": "Failed to delete recording"
     }
   }
 }

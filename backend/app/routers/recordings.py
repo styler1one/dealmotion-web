@@ -551,3 +551,82 @@ async def update_recording_transcript(
             message=str(e)
         )
 
+
+# ==========================================
+# Delete Endpoint
+# ==========================================
+
+class DeleteRecordingResponse(BaseModel):
+    """Response after deleting a recording."""
+    success: bool
+    message: str
+
+
+@router.delete("/{source_table}/{recording_id}")
+async def delete_recording(
+    source_table: str,
+    recording_id: str,
+    user: dict = Depends(get_current_user),
+    user_org: Tuple[str, str] = Depends(get_user_org),
+) -> DeleteRecordingResponse:
+    """
+    Delete a recording from any source table.
+    
+    Args:
+        source_table: One of 'mobile_recordings', 'external_recordings', 'followups'
+        recording_id: The ID of the recording to delete
+    """
+    user_id, org_id = user_org
+    
+    # Validate source table
+    valid_tables = ['mobile_recordings', 'external_recordings', 'followups']
+    if source_table not in valid_tables:
+        return DeleteRecordingResponse(
+            success=False,
+            message=f"Invalid source table. Must be one of: {', '.join(valid_tables)}"
+        )
+    
+    try:
+        # First verify the recording exists and belongs to this org
+        check_result = supabase.table(source_table).select(
+            "id"
+        ).eq("id", recording_id).eq("organization_id", org_id).single().execute()
+        
+        if not check_result.data:
+            return DeleteRecordingResponse(
+                success=False,
+                message="Recording not found or access denied"
+            )
+        
+        # Delete the recording
+        delete_result = supabase.table(source_table).delete().eq(
+            "id", recording_id
+        ).eq("organization_id", org_id).execute()
+        
+        if delete_result.data:
+            logger.info(f"Deleted recording {recording_id} from {source_table}")
+            return DeleteRecordingResponse(
+                success=True,
+                message="Recording deleted successfully"
+            )
+        else:
+            # Check if it was actually deleted (Supabase returns empty on success sometimes)
+            verify = supabase.table(source_table).select("id").eq("id", recording_id).execute()
+            if not verify.data:
+                logger.info(f"Deleted recording {recording_id} from {source_table}")
+                return DeleteRecordingResponse(
+                    success=True,
+                    message="Recording deleted successfully"
+                )
+            return DeleteRecordingResponse(
+                success=False,
+                message="Failed to delete recording"
+            )
+        
+    except Exception as e:
+        logger.error(f"Error deleting recording {recording_id} from {source_table}: {e}")
+        return DeleteRecordingResponse(
+            success=False,
+            message=str(e)
+        )
+
