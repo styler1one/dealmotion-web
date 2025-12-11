@@ -64,6 +64,49 @@ def parse_emails_from_header(header_value: str) -> list[str]:
     return emails
 
 
+def parse_attendees_from_header(header_value: str) -> list[dict]:
+    """
+    Parse attendees with name AND email from email header.
+    
+    This is needed for ProspectMatcher which uses name-based matching.
+    
+    Handles formats like:
+    - "Geert Menting" <geert.menting@hoobr.nl>
+    - <geert.menting@hoobr.nl>
+    - geert.menting@hoobr.nl
+    - Multiple comma-separated addresses
+    
+    Returns list of {"email": str, "name": str} dicts.
+    """
+    if not header_value:
+        return []
+    
+    attendees = []
+    
+    # Pattern to match "Name" <email> or just <email> or just email
+    # Group 1: quoted name, Group 2: unquoted name, Group 3: email in brackets, Group 4: plain email
+    pattern = r'(?:"([^"]+)"|([^<,]+?))?\s*<([^>]+)>|([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})'
+    
+    for match in re.finditer(pattern, header_value):
+        quoted_name = match.group(1)
+        unquoted_name = match.group(2)
+        bracketed_email = match.group(3)
+        plain_email = match.group(4)
+        
+        email = (bracketed_email or plain_email or "").lower().strip()
+        name = (quoted_name or unquoted_name or "").strip()
+        
+        if email and email not in NOTETAKER_EMAILS:
+            attendees.append({
+                "email": email,
+                "name": name
+            })
+            if name:
+                logger.debug(f"Parsed attendee: {name} <{email}>")
+    
+    return attendees
+
+
 # =============================================================================
 # Helper Functions
 # =============================================================================
@@ -123,7 +166,7 @@ def match_user_by_email(organizer_email: str) -> dict | None:
 async def find_prospect_and_contacts(
     organization_id: str, 
     meeting_title: str,
-    attendee_emails: list[str],
+    attendees: list[dict],
     organizer_email: str | None = None,
     calendar_meeting_id: str | None = None
 ) -> tuple[str | None, list[str]]:
@@ -131,36 +174,41 @@ async def find_prospect_and_contacts(
     Use ProspectMatcher for smart prospect and contact matching.
     
     Uses the same logic as auto-record/calendar-sync:
-    - Contact name matching (92% confidence)
+    - Contact name matching (92% confidence) - HIGHEST PRIORITY
     - Email exact match (95% confidence)
     - Email domain match (85% confidence)
+    
+    Args:
+        attendees: List of {"email": str, "name": str} dicts (same format as calendar sync)
     
     If calendar_meeting_id is provided, ProspectMatcher will auto-link
     the meeting to the matched prospect and contacts (same as calendar sync).
     
     Returns (prospect_id, contact_ids) tuple.
     """
-    logger.info(f"[EMAIL-INVITE] Finding prospect/contacts for org={organization_id}, title='{meeting_title}', attendees={attendee_emails}, meeting_id={calendar_meeting_id}")
+    logger.info(f"[EMAIL-INVITE] Finding prospect/contacts for org={organization_id}, title='{meeting_title}', attendees={attendees}, meeting_id={calendar_meeting_id}")
     
-    if not attendee_emails:
-        logger.warning("[EMAIL-INVITE] No attendee emails provided for matching!")
+    if not attendees:
+        logger.warning("[EMAIL-INVITE] No attendees provided for matching!")
         return None, []
     
     supabase = get_supabase_service()
     matcher = ProspectMatcher(supabase)
     
-    # Build attendees list for the matcher (same format as calendar sync)
-    attendees = [{"email": email} for email in attendee_emails if email]
+    # Log attendee details for debugging
+    for a in attendees:
+        logger.info(f"[EMAIL-INVITE] Attendee: name='{a.get('name')}', email='{a.get('email')}'")
     
     logger.info(f"[EMAIL-INVITE] Calling ProspectMatcher with {len(attendees)} attendees")
     
     # Use ProspectMatcher for intelligent matching
     # Note: match_meeting returns a MatchResult dataclass
     # If calendar_meeting_id is provided, ProspectMatcher will auto-link when confidence >= 80%
+    # Attendees format: [{"email": "...", "name": "..."}] - same as calendar sync
     result = await matcher.match_meeting(
         meeting_id=calendar_meeting_id or "skip-auto-link",  # Real ID enables auto-linking!
         meeting_title=meeting_title,
-        attendees=attendees,
+        attendees=attendees,  # Now includes names for name-based matching!
         organization_id=organization_id,
         organizer_email=organizer_email
     )
@@ -202,7 +250,7 @@ def create_calendar_meeting(
     meeting_platform: str,
     start_time: datetime,
     end_time: datetime | None,
-    attendees: list[str],
+    attendees: list[dict],
     prospect_id: str | None = None,
     contact_ids: list[str] | None = None,
     ics_uid: str | None = None,
@@ -214,11 +262,14 @@ def create_calendar_meeting(
     
     This ensures email invites appear on /dashboard/meetings alongside
     calendar-synced meetings for consistent user experience.
+    
+    Args:
+        attendees: List of {"email": str, "name": str} dicts (same format as calendar sync)
     """
     supabase = get_supabase_service()
     
-    # Build attendees JSON (same format as calendar sync)
-    attendees_json = [{"email": email} for email in attendees if email]
+    # Attendees already in correct format: [{"email": "...", "name": "..."}]
+    attendees_json = attendees if attendees else []
     
     record = {
         "organization_id": organization_id,
@@ -388,18 +439,15 @@ async def process_email_invite_fn(ctx, step):
     attendees = invite_data.get("attendees", [])
     if not attendees:
         # Microsoft Teams invites often don't include ATTENDEE fields in ICS
-        # Parse recipients from email headers as fallback
-        email_recipients = parse_emails_from_header(to_address)
-        # Also parse sender (might have additional context)
-        sender_email = parse_emails_from_header(sender)
+        # Parse recipients from email headers as fallback - WITH NAMES for ProspectMatcher!
+        header_attendees = parse_attendees_from_header(to_address)
         
-        # Combine all recipients, excluding organizer (they're the sender)
-        all_recipients = set(email_recipients + sender_email)
-        # Remove organizer from attendees (they're the meeting owner, not attendee)
+        # Filter out organizer (they're the meeting owner, not attendee)
         if organizer_email:
-            all_recipients.discard(organizer_email.lower())
+            org_email_lower = organizer_email.lower()
+            header_attendees = [a for a in header_attendees if a["email"] != org_email_lower]
         
-        attendees = list(all_recipients)
+        attendees = header_attendees
         logger.info(f"[EMAIL-INVITE] No ICS attendees found, extracted from email headers: {attendees}")
     
     # Parse start time (timezone-aware)
@@ -489,12 +537,12 @@ async def process_email_invite_fn(ctx, step):
     
     # Step 5: Use ProspectMatcher for smart prospect and contact matching
     # Now we have a real calendar_meeting_id, so ProspectMatcher can auto-link
-    # This uses the same logic as calendar sync: email, domain, name matching
+    # This uses the same logic as calendar sync: email, domain, NAME matching
     async def find_prospect_contacts():
         prospect_id, contact_ids = await find_prospect_and_contacts(
             organization_id=organization_id,
             meeting_title=meeting_title,
-            attendee_emails=attendees,
+            attendees=attendees,  # Now includes names from email headers!
             organizer_email=organizer_email,
             calendar_meeting_id=calendar_meeting_id,  # Pass real ID for auto-linking!
         )
