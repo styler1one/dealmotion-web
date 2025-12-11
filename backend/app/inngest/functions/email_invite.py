@@ -124,19 +124,23 @@ async def find_prospect_and_contacts(
     organization_id: str, 
     meeting_title: str,
     attendee_emails: list[str],
-    organizer_email: str | None = None
+    organizer_email: str | None = None,
+    calendar_meeting_id: str | None = None
 ) -> tuple[str | None, list[str]]:
     """
     Use ProspectMatcher for smart prospect and contact matching.
     
-    Uses the same logic as auto-record:
+    Uses the same logic as auto-record/calendar-sync:
+    - Contact name matching (92% confidence)
     - Email exact match (95% confidence)
     - Email domain match (85% confidence)
-    - Name matching from attendees (90% confidence)
+    
+    If calendar_meeting_id is provided, ProspectMatcher will auto-link
+    the meeting to the matched prospect and contacts (same as calendar sync).
     
     Returns (prospect_id, contact_ids) tuple.
     """
-    logger.info(f"[EMAIL-INVITE] Finding prospect/contacts for org={organization_id}, title='{meeting_title}', attendees={attendee_emails}")
+    logger.info(f"[EMAIL-INVITE] Finding prospect/contacts for org={organization_id}, title='{meeting_title}', attendees={attendee_emails}, meeting_id={calendar_meeting_id}")
     
     if not attendee_emails:
         logger.warning("[EMAIL-INVITE] No attendee emails provided for matching!")
@@ -152,8 +156,9 @@ async def find_prospect_and_contacts(
     
     # Use ProspectMatcher for intelligent matching
     # Note: match_meeting returns a MatchResult dataclass
+    # If calendar_meeting_id is provided, ProspectMatcher will auto-link when confidence >= 80%
     result = await matcher.match_meeting(
-        meeting_id="email-invite",  # Placeholder, not used for email invites
+        meeting_id=calendar_meeting_id or "skip-auto-link",  # Real ID enables auto-linking!
         meeting_title=meeting_title,
         attendees=attendees,
         organization_id=organization_id,
@@ -164,9 +169,11 @@ async def find_prospect_and_contacts(
     prospect_id = result.best_match.prospect_id if result.best_match else None
     contact_ids = result.matched_contact_ids or []
     confidence = result.best_match.confidence if result.best_match else 0
+    auto_linked = result.auto_linked
     
     if prospect_id:
-        logger.info(f"[EMAIL-INVITE] ProspectMatcher found prospect {prospect_id} with {confidence:.0%} confidence, contacts: {contact_ids}")
+        link_status = "auto-linked" if auto_linked else "matched (not auto-linked)"
+        logger.info(f"[EMAIL-INVITE] ProspectMatcher {link_status} prospect {prospect_id} with {confidence:.0%} confidence, contacts: {contact_ids}")
     else:
         logger.info(f"[EMAIL-INVITE] ProspectMatcher found no prospect match for meeting '{meeting_title}' with attendees {attendee_emails}")
     
@@ -418,26 +425,7 @@ async def process_email_invite_fn(ctx, step):
     user_name = user.get("name")
     user_email = user.get("email", organizer_email)
     
-    # Step 3: Use ProspectMatcher for smart prospect and contact matching
-    # Same logic as auto-record: email, domain, name matching
-    async def find_prospect_contacts():
-        prospect_id, contact_ids = await find_prospect_and_contacts(
-            organization_id=organization_id,
-            meeting_title=meeting_title,
-            attendee_emails=attendees,
-            organizer_email=organizer_email,
-        )
-        # Return as serializable dict (UUIDs as strings)
-        return {
-            "prospect_id": str(prospect_id) if prospect_id else None,
-            "contact_ids": [str(cid) for cid in contact_ids] if contact_ids else []
-        }
-    
-    match_result = await step.run("find-prospect-contacts", find_prospect_contacts)
-    prospect_id = match_result.get("prospect_id")
-    contact_ids = match_result.get("contact_ids", [])
-    
-    # Step 4: Schedule AI Notetaker via Recall.ai
+    # Step 3: Schedule AI Notetaker via Recall.ai
     async def schedule_bot():
         if not recall_service.is_configured():
             raise Exception("Recall.ai is not configured")
@@ -469,7 +457,8 @@ async def process_email_invite_fn(ctx, step):
     
     recall_bot_id = await step.run("schedule-bot", schedule_bot)
     
-    # Step 5: Create calendar_meeting record (so it appears on /dashboard/meetings)
+    # Step 4: Create calendar_meeting record FIRST (so we have a valid ID)
+    # This enables ProspectMatcher to properly auto-link
     def save_calendar_meeting():
         # Get additional data from invite
         end_time_str = invite_data.get("end_time")
@@ -479,6 +468,7 @@ async def process_email_invite_fn(ctx, step):
             if end_time.tzinfo is None:
                 end_time = end_time.replace(tzinfo=timezone.utc)
         
+        # Create WITHOUT prospect/contact - ProspectMatcher will update these
         return create_calendar_meeting(
             organization_id=organization_id,
             user_id=user_id,
@@ -488,14 +478,35 @@ async def process_email_invite_fn(ctx, step):
             start_time=start_time,
             end_time=end_time,
             attendees=attendees,
-            prospect_id=prospect_id,
-            contact_ids=contact_ids,
+            prospect_id=None,  # Will be set by ProspectMatcher
+            contact_ids=None,  # Will be set by ProspectMatcher
             ics_uid=invite_data.get("uid"),
             description=invite_data.get("description"),
             location=invite_data.get("location"),
         )
     
     calendar_meeting_id = await step.run("save-calendar-meeting", save_calendar_meeting)
+    
+    # Step 5: Use ProspectMatcher for smart prospect and contact matching
+    # Now we have a real calendar_meeting_id, so ProspectMatcher can auto-link
+    # This uses the same logic as calendar sync: email, domain, name matching
+    async def find_prospect_contacts():
+        prospect_id, contact_ids = await find_prospect_and_contacts(
+            organization_id=organization_id,
+            meeting_title=meeting_title,
+            attendee_emails=attendees,
+            organizer_email=organizer_email,
+            calendar_meeting_id=calendar_meeting_id,  # Pass real ID for auto-linking!
+        )
+        # Return as serializable dict (UUIDs as strings)
+        return {
+            "prospect_id": str(prospect_id) if prospect_id else None,
+            "contact_ids": [str(cid) for cid in contact_ids] if contact_ids else []
+        }
+    
+    match_result = await step.run("find-prospect-contacts", find_prospect_contacts)
+    prospect_id = match_result.get("prospect_id")
+    contact_ids = match_result.get("contact_ids", [])
     
     # Step 6: Save scheduled recording linked to calendar_meeting
     def save_recording():
