@@ -213,25 +213,43 @@ class ICSParser:
         return None
     
     def _parse_datetime(self, dt_string: Optional[str]) -> Optional[datetime]:
-        """Parse ICS datetime string."""
+        """Parse ICS datetime string.
+        
+        ICS datetime formats:
+        - YYYYMMDDTHHMMSSZ (UTC)
+        - YYYYMMDDTHHMMSS (local/naive)
+        - YYYYMMDD (date only)
+        - With TZID parameter: DTSTART;TZID=Europe/Amsterdam:20251212T100000
+        """
         if not dt_string:
             return None
         
         try:
+            # Check if this is UTC (ends with Z)
+            is_utc = dt_string.endswith("Z") or "Z" in dt_string
+            
             # Remove any parameters (e.g., TZID=...)
             if ":" in dt_string:
                 dt_string = dt_string.split(":")[-1]
             
-            # Handle different formats
+            # Remove Z suffix for parsing
             dt_string = dt_string.replace("Z", "")
             
+            parsed_dt = None
             if len(dt_string) == 8:  # Date only: YYYYMMDD
-                return datetime.strptime(dt_string, "%Y%m%d")
+                parsed_dt = datetime.strptime(dt_string, "%Y%m%d")
             elif len(dt_string) == 15:  # DateTime: YYYYMMDDTHHMMSS
-                return datetime.strptime(dt_string, "%Y%m%dT%H%M%S")
+                parsed_dt = datetime.strptime(dt_string, "%Y%m%dT%H%M%S")
             else:
                 # Try ISO format
-                return datetime.fromisoformat(dt_string)
+                parsed_dt = datetime.fromisoformat(dt_string)
+            
+            # Apply UTC timezone if the original had Z suffix
+            if parsed_dt and is_utc:
+                from datetime import timezone
+                parsed_dt = parsed_dt.replace(tzinfo=timezone.utc)
+            
+            return parsed_dt
         except Exception as e:
             logger.debug(f"Could not parse datetime '{dt_string}': {e}")
             return None
