@@ -11,19 +11,21 @@ Events:
 Flow:
 1. Parse email and extract ICS attachment
 2. Match organizer email to DealMotion user
-3. Schedule AI Notetaker via Recall.ai
-4. Send confirmation email
+3. Use ProspectMatcher for smart prospect/contact matching
+4. Schedule AI Notetaker via Recall.ai
+5. Send confirmation email
 """
 
 import logging
 import base64
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from inngest import TriggerEvent
 
 from app.inngest.client import inngest_client
 from app.database import get_supabase_service
 from app.services.ics_parser import ics_parser
 from app.services.recall_service import recall_service, RecallBotConfig
+from app.services.prospect_matcher import ProspectMatcher
 
 logger = logging.getLogger(__name__)
 
@@ -56,32 +58,61 @@ def match_user_by_email(organizer_email: str) -> dict | None:
     return None
 
 
-def find_prospect_by_attendees(organization_id: str, attendee_emails: list[str]) -> str | None:
+async def find_prospect_and_contacts(
+    organization_id: str, 
+    meeting_title: str,
+    attendee_emails: list[str],
+    organizer_email: str | None = None
+) -> tuple[str | None, list[str]]:
     """
-    Try to match meeting attendees to a prospect's contacts.
+    Use ProspectMatcher for smart prospect and contact matching.
     
-    Returns prospect_id or None.
+    Uses the same logic as auto-record:
+    - Email exact match (95% confidence)
+    - Email domain match (85% confidence)
+    - Name matching from attendees (90% confidence)
+    
+    Returns (prospect_id, contact_ids) tuple.
     """
-    if not attendee_emails:
-        return None
+    supabase = get_supabase_service()
+    matcher = ProspectMatcher(supabase)
     
+    # Build a meeting-like dict for the matcher
+    meeting_data = {
+        "id": None,  # No calendar_meeting_id for email invites
+        "title": meeting_title,
+        "organization_id": organization_id,
+        "attendees": [{"email": email} for email in attendee_emails if email],
+        "organizer_email": organizer_email,
+    }
+    
+    # Use ProspectMatcher for intelligent matching
+    result = await matcher.match_meeting(meeting_data)
+    
+    prospect_id = result.get("prospect_id")
+    contact_ids = result.get("contact_ids", [])
+    confidence = result.get("confidence", 0)
+    
+    if prospect_id:
+        logger.info(f"ProspectMatcher found prospect {prospect_id} with {confidence:.0%} confidence, contacts: {contact_ids}")
+    else:
+        logger.info(f"ProspectMatcher found no prospect match for meeting '{meeting_title}'")
+    
+    return prospect_id, contact_ids
+
+
+def get_user_output_language(user_id: str) -> str:
+    """Get user's preferred output language from settings."""
     supabase = get_supabase_service()
     
-    # Search contacts by email
-    for email in attendee_emails:
-        if not email or "@" not in email:
-            continue
-            
-        result = supabase.table("prospect_contacts").select(
-            "prospect_id"
-        ).eq("organization_id", organization_id).eq("email", email.lower()).limit(1).execute()
-        
-        if result.data and len(result.data) > 0:
-            prospect_id = result.data[0]["prospect_id"]
-            logger.info(f"Matched attendee {email} to prospect {prospect_id}")
-            return prospect_id
+    result = supabase.table("user_settings").select(
+        "default_output_language"
+    ).eq("user_id", user_id).limit(1).execute()
     
-    return None
+    if result.data and len(result.data) > 0:
+        return result.data[0].get("default_output_language") or "en"
+    
+    return "en"
 
 
 def create_scheduled_recording(
@@ -93,6 +124,7 @@ def create_scheduled_recording(
     scheduled_time: datetime,
     recall_bot_id: str | None = None,
     prospect_id: str | None = None,
+    contact_ids: list[str] | None = None,
 ) -> str:
     """Create a scheduled recording record in the database."""
     supabase = get_supabase_service()
@@ -106,6 +138,7 @@ def create_scheduled_recording(
         "scheduled_time": scheduled_time.isoformat(),
         "recall_bot_id": recall_bot_id,
         "prospect_id": prospect_id,
+        "contact_ids": contact_ids or [],
         "status": "scheduled" if recall_bot_id else "error",
         "source": "email_invite",  # Mark as coming from email
     }
@@ -116,7 +149,7 @@ def create_scheduled_recording(
         raise Exception("Failed to create scheduled recording")
     
     recording_id = result.data[0]["id"]
-    logger.info(f"Created scheduled recording: {recording_id}")
+    logger.info(f"Created scheduled recording: {recording_id} with prospect={prospect_id}, contacts={contact_ids}")
     return recording_id
 
 
@@ -207,8 +240,13 @@ async def process_email_invite_fn(ctx, step):
     start_time_str = invite_data["start_time"]
     attendees = invite_data.get("attendees", [])
     
-    # Parse start time
-    start_time = datetime.fromisoformat(start_time_str) if start_time_str else datetime.utcnow() + timedelta(minutes=5)
+    # Parse start time (timezone-aware)
+    if start_time_str:
+        start_time = datetime.fromisoformat(start_time_str)
+        if start_time.tzinfo is None:
+            start_time = start_time.replace(tzinfo=timezone.utc)
+    else:
+        start_time = datetime.now(timezone.utc) + timedelta(minutes=5)
     
     logger.info(f"Parsed invite: {meeting_title} on {meeting_platform}, starts at {start_time}")
     
@@ -225,20 +263,32 @@ async def process_email_invite_fn(ctx, step):
     user_name = user.get("name")
     user_email = user.get("email", organizer_email)
     
-    # Step 3: Try to match attendees to a prospect (optional)
-    def find_prospect():
-        return find_prospect_by_attendees(organization_id, attendees)
+    # Step 3: Use ProspectMatcher for smart prospect and contact matching
+    # Same logic as auto-record: email, domain, name matching
+    async def find_prospect_contacts():
+        prospect_id, contact_ids = await find_prospect_and_contacts(
+            organization_id=organization_id,
+            meeting_title=meeting_title,
+            attendee_emails=attendees,
+            organizer_email=organizer_email,
+        )
+        return {"prospect_id": prospect_id, "contact_ids": contact_ids}
     
-    prospect_id = await step.run("find-prospect", find_prospect)
+    match_result = await step.run("find-prospect-contacts", find_prospect_contacts)
+    prospect_id = match_result.get("prospect_id")
+    contact_ids = match_result.get("contact_ids", [])
     
     # Step 4: Schedule AI Notetaker via Recall.ai
     async def schedule_bot():
         if not recall_service.is_configured():
             raise Exception("Recall.ai is not configured")
         
+        now = datetime.now(timezone.utc)
+        join_at = start_time if start_time > now else None
+        
         config = RecallBotConfig(
             meeting_url=meeting_url,
-            join_at=start_time if start_time > datetime.utcnow() else None
+            join_at=join_at
         )
         
         result = await recall_service.create_bot(config)
@@ -261,6 +311,7 @@ async def process_email_invite_fn(ctx, step):
             scheduled_time=start_time,
             recall_bot_id=recall_bot_id,
             prospect_id=prospect_id,
+            contact_ids=contact_ids,
         )
     
     recording_id = await step.run("save-recording", save_recording)
