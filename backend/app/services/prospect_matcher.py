@@ -294,16 +294,12 @@ class ProspectMatcher:
             attendee_name = (attendee.get("name") or "").strip()
             attendee_email = (attendee.get("email") or "").lower().strip()
             
-            logger.info(f"[PROSPECT-MATCHER] Processing attendee: name='{attendee_name}', email='{attendee_email}'")
-            
             # PRIORITY 1: Name matching (most reliable since contacts are linked to prospects)
             if attendee_name and by_name:
                 name_lower = attendee_name.lower()
-                logger.info(f"[PROSPECT-MATCHER] Trying name match for '{name_lower}', available names: {list(by_name.keys())[:10]}...")
                 
                 # Try exact full name match first
                 if name_lower in by_name:
-                    logger.info(f"[PROSPECT-MATCHER] MATCH! Name '{name_lower}' found in contacts")
                     for info in by_name[name_lower]:
                         prospect_id = info["prospect_id"]
                         contact_id = info.get("contact_id")
@@ -315,11 +311,8 @@ class ProspectMatcher:
                         ))
                         if contact_id and contact_id not in matched_contact_ids:
                             matched_contact_ids.append(contact_id)
-                            logger.info(f"[PROSPECT-MATCHER] Added contact_id: {contact_id}")
                         break  # One match per attendee
                     continue  # Found name match, skip email matching
-                else:
-                    logger.info(f"[PROSPECT-MATCHER] No exact name match for '{name_lower}'")
                 
                 # Try matching individual name parts (first or last name)
                 name_parts = name_lower.split()
