@@ -64,6 +64,41 @@ def parse_emails_from_header(header_value: str) -> list[str]:
     return emails
 
 
+def extract_name_from_email(email: str) -> str:
+    """
+    Extract a name from an email address.
+    
+    Examples:
+    - geert.menting@hoobr.nl → "Geert Menting"
+    - g.menting@company.com → "G Menting"
+    - geert@company.com → "Geert"
+    - geert_menting@company.com → "Geert Menting"
+    - GeertMenting@company.com → "Geert Menting" (camelCase)
+    
+    This helps ProspectMatcher find contacts when email header has no display name.
+    """
+    if not email or "@" not in email:
+        return ""
+    
+    local_part = email.split("@")[0].lower()
+    
+    # Replace common separators with spaces
+    local_part = local_part.replace(".", " ").replace("_", " ").replace("-", " ")
+    
+    # Split into parts
+    parts = local_part.split()
+    
+    # Capitalize each part
+    name_parts = []
+    for part in parts:
+        if len(part) >= 2:  # Skip single letters like "g" in "g.menting"
+            name_parts.append(part.capitalize())
+        elif len(part) == 1:
+            name_parts.append(part.upper())  # Keep initials as uppercase
+    
+    return " ".join(name_parts)
+
+
 def parse_attendees_from_header(header_value: str) -> list[dict]:
     """
     Parse attendees with name AND email from email header.
@@ -75,6 +110,9 @@ def parse_attendees_from_header(header_value: str) -> list[dict]:
     - <geert.menting@hoobr.nl>
     - geert.menting@hoobr.nl
     - Multiple comma-separated addresses
+    
+    If no display name is found, extracts name from email address:
+    - geert.menting@hoobr.nl → "Geert Menting"
     
     Returns list of {"email": str, "name": str} dicts.
     """
@@ -95,6 +133,12 @@ def parse_attendees_from_header(header_value: str) -> list[dict]:
         
         email = (bracketed_email or plain_email or "").lower().strip()
         name = (quoted_name or unquoted_name or "").strip()
+        
+        # If no name found in header, try to extract from email address
+        if not name and email:
+            name = extract_name_from_email(email)
+            if name:
+                logger.info(f"[EMAIL-INVITE] Extracted name '{name}' from email address: {email}")
         
         if email and email not in NOTETAKER_EMAILS:
             attendees.append({
