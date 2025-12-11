@@ -11,6 +11,7 @@ from .contacts import analyze_contact_fn
 from .followup_actions import generate_followup_action_fn
 from .knowledge_base import process_knowledge_file_fn
 from .calendar import sync_all_calendars_fn, sync_calendar_connection_fn
+from .calendar_post_sync import process_calendar_post_sync_fn
 from .fireflies import sync_all_fireflies_fn, sync_fireflies_user_fn
 from .ai_notetaker import process_ai_notetaker_recording_fn
 from .email_invite import process_email_invite_fn
@@ -26,6 +27,7 @@ all_functions = [
     process_knowledge_file_fn,
     sync_all_calendars_fn,
     sync_calendar_connection_fn,
+    process_calendar_post_sync_fn,
     sync_all_fireflies_fn,
     sync_fireflies_user_fn,
     process_ai_notetaker_recording_fn,
@@ -43,6 +45,7 @@ __all__ = [
     "process_knowledge_file_fn",
     "sync_all_calendars_fn",
     "sync_calendar_connection_fn",
+    "process_calendar_post_sync_fn",
     "sync_all_fireflies_fn",
     "sync_fireflies_user_fn",
     "process_ai_notetaker_recording_fn",

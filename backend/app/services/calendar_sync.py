@@ -15,7 +15,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 from app.database import get_supabase_service
-from app.services.prospect_matcher import ProspectMatcher
+# ProspectMatcher is now called via Inngest after sync completes
 from app.services.microsoft_calendar import microsoft_calendar_service
 
 logger = logging.getLogger(__name__)
@@ -583,26 +583,12 @@ class CalendarSyncService:
                 f"{result.deleted_meetings} deleted"
             )
             
-            # Run prospect matching on new/updated unlinked meetings
-            # IMPORTANT: We run this synchronously (not create_task) to ensure prospect_id is set
-            # BEFORE auto-record processing reads the calendar_meetings
-            if result.new_meetings > 0 or result.updated_meetings > 0:
-                try:
-                    matcher = ProspectMatcher(self.supabase)
-                    try:
-                        loop = asyncio.get_running_loop()
-                        # Already in async context - run in executor to avoid blocking
-                        import concurrent.futures
-                        with concurrent.futures.ThreadPoolExecutor() as executor:
-                            future = executor.submit(asyncio.run, matcher.match_all_unlinked(conn["organization_id"]))
-                            future.result(timeout=30)  # Wait up to 30 seconds
-                    except RuntimeError:
-                        # No running loop, use asyncio.run() directly
-                        asyncio.run(matcher.match_all_unlinked(conn["organization_id"]))
-                    logger.info(f"Ran prospect matching for organization {conn['organization_id']}")
-                except Exception as match_error:
-                    logger.error(f"Prospect matching failed: {match_error}")
-                    # Don't fail the sync for matching errors
+            # NOTE: Prospect matching and auto-record are now handled via Inngest
+            # after the sync completes. This ensures:
+            # 1. Fast API response (no blocking)
+            # 2. Reliable retries on failure
+            # 3. Proper ordering (matching before auto-record)
+            # See: inngest/functions/calendar_post_sync.py
             
             return result
             

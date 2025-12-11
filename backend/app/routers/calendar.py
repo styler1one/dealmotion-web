@@ -513,7 +513,8 @@ async def trigger_calendar_sync(
     Trigger manual calendar sync for all connected providers.
     
     Fetches latest events from Google/Microsoft and updates local database.
-    Also triggers auto-record processing if enabled.
+    Post-processing (prospect matching + auto-record) is handled via Inngest
+    for reliability and scalability.
     """
     user_id, organization_id = user_org
     
@@ -533,17 +534,25 @@ async def trigger_calendar_sync(
             total_updated += result.updated_meetings
             total_deleted += result.deleted_meetings
         
-        # Process auto-record for this user (if enabled)
+        # Trigger Inngest event for post-sync processing
+        # This handles: 1) ProspectMatcher  2) Auto-Record scheduling
+        # Benefits: fast API response, reliable retries, proper ordering
         try:
-            logger.warning(f"[AUTO-RECORD] Starting processing for user {user_id[:8]}... org={organization_id[:8]}")
-            from app.services.auto_record_matcher import process_calendar_for_auto_record
-            auto_result = await process_calendar_for_auto_record(user_id, organization_id)
-            logger.warning(f"[AUTO-RECORD] Completed: {auto_result.get('scheduled', 0)} scheduled, {auto_result.get('skipped', 0)} skipped")
+            await send_event(
+                Events.CALENDAR_SYNC_COMPLETED,
+                {
+                    "user_id": user_id,
+                    "organization_id": organization_id,
+                    "new_meetings": total_new,
+                    "updated_meetings": total_updated,
+                    "deleted_meetings": total_deleted,
+                    "total_synced": total_synced,
+                }
+            )
+            logger.info(f"Calendar sync completed for user {user_id[:8]}..., Inngest event sent")
         except Exception as e:
-            import traceback
-            logger.error(f"[AUTO-RECORD] Failed: {e}")
-            logger.error(f"[AUTO-RECORD] Traceback: {traceback.format_exc()}")
-            # Don't fail the sync if auto-record fails
+            logger.error(f"Failed to send calendar sync completed event: {e}")
+            # Don't fail the sync if event fails - the sync data is still valid
         
         return CalendarSyncResponse(
             synced_meetings=total_synced,

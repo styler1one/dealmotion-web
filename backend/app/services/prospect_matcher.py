@@ -45,6 +45,8 @@ class ProspectMatcher:
     WEIGHT_TITLE_EXACT = 0.9
     WEIGHT_TITLE_PARTIAL = 0.6
     WEIGHT_EMAIL_DOMAIN = 0.7
+    WEIGHT_CONTACT_EMAIL_EXACT = 0.95  # Direct match with known contact
+    WEIGHT_CONTACT_DOMAIN = 0.85  # Same domain as known contact
     WEIGHT_ATTENDEE_NAME = 0.4
     
     def __init__(self, supabase: Client):
@@ -158,45 +160,181 @@ class ProspectMatcher:
         
         return 0.0
     
+    async def get_contacts_for_matching(self, organization_id: str) -> dict:
+        """
+        Fetch all contacts for the organization and build lookup structures.
+        
+        Returns:
+            {
+                "by_email": {email: prospect_id},
+                "by_domain": {domain: [prospect_ids]},
+                "prospect_names": {prospect_id: company_name}
+            }
+        """
+        try:
+            # Fetch contacts with their prospect info
+            contacts_result = self.supabase.table("contacts").select(
+                "id, email, prospect_id, prospects(id, company_name)"
+            ).eq("organization_id", organization_id).not_.is_("email", "null").execute()
+            
+            contacts = contacts_result.data or []
+            
+            by_email = {}
+            by_domain = {}
+            prospect_names = {}
+            
+            for contact in contacts:
+                email = contact.get("email", "").lower().strip()
+                prospect_id = contact.get("prospect_id")
+                
+                if not email or not prospect_id:
+                    continue
+                
+                # Store prospect name
+                prospect_data = contact.get("prospects") or {}
+                if prospect_id not in prospect_names:
+                    prospect_names[prospect_id] = prospect_data.get("company_name", "Unknown")
+                
+                # Direct email lookup
+                by_email[email] = prospect_id
+                
+                # Domain lookup
+                domain = self.extract_domain_from_email(email)
+                if domain:
+                    if domain not in by_domain:
+                        by_domain[domain] = set()
+                    by_domain[domain].add(prospect_id)
+            
+            # Convert sets to lists for JSON serialization
+            by_domain = {k: list(v) for k, v in by_domain.items()}
+            
+            return {
+                "by_email": by_email,
+                "by_domain": by_domain,
+                "prospect_names": prospect_names
+            }
+            
+        except Exception as e:
+            logger.error(f"Error fetching contacts for matching: {e}")
+            return {"by_email": {}, "by_domain": {}, "prospect_names": {}}
+    
+    def calculate_contact_match(
+        self,
+        attendee_emails: List[str],
+        contacts_lookup: dict
+    ) -> List[Tuple[str, float, str]]:
+        """
+        Match attendee emails against known contacts.
+        
+        Returns list of (prospect_id, confidence, reason) tuples.
+        """
+        matches = []
+        by_email = contacts_lookup.get("by_email", {})
+        by_domain = contacts_lookup.get("by_domain", {})
+        
+        for email in attendee_emails:
+            email_lower = email.lower().strip()
+            
+            # Exact email match (highest confidence)
+            if email_lower in by_email:
+                prospect_id = by_email[email_lower]
+                matches.append((
+                    prospect_id,
+                    self.WEIGHT_CONTACT_EMAIL_EXACT,
+                    f"attendee email matches contact"
+                ))
+                continue
+            
+            # Domain match (good confidence)
+            domain = self.extract_domain_from_email(email_lower)
+            if domain and domain in by_domain:
+                # Return first prospect with this domain
+                for prospect_id in by_domain[domain]:
+                    matches.append((
+                        prospect_id,
+                        self.WEIGHT_CONTACT_DOMAIN,
+                        f"attendee domain matches contact domain ({domain})"
+                    ))
+                    break  # Only add one match per email
+        
+        return matches
+    
     async def match_meeting(
         self,
         meeting_id: str,
         meeting_title: str,
         attendees: List[dict],
-        organization_id: str
+        organization_id: str,
+        contacts_lookup: dict = None
     ) -> MatchResult:
         """
         Match a single meeting to prospects in the organization.
+        
+        Matching strategies (in order of confidence):
+        1. Attendee email matches known contact email (95%)
+        2. Title contains exact company name (90%)
+        3. Attendee domain matches contact domain (85%)
+        4. Attendee domain matches prospect website/email (70%)
+        5. Title contains partial company name (60%)
         
         Returns MatchResult with best match and all matches above threshold.
         """
         result = MatchResult(meeting_id=meeting_id)
         
-        # Extract attendee emails
+        # Extract attendee emails (exclude organizer)
         attendee_emails = [
-            a.get('email', '') 
+            a.get('email', '').lower().strip()
             for a in attendees 
             if a.get('email') and not a.get('is_organizer', False)
         ]
         
         try:
+            # Fetch contacts lookup if not provided (for batch efficiency)
+            if contacts_lookup is None:
+                contacts_lookup = await self.get_contacts_for_matching(organization_id)
+            
             # Fetch all prospects for organization
             prospects_result = self.supabase.table("prospects").select(
                 "id, company_name, website, contact_email"
             ).eq("organization_id", organization_id).execute()
             
             prospects = prospects_result.data or []
+            prospect_map = {p['id']: p for p in prospects}
             
-            if not prospects:
+            if not prospects and not contacts_lookup.get("by_email"):
                 return result
             
             matches: List[ProspectMatch] = []
+            matched_prospect_ids = set()
             
+            # Strategy 1 & 3: Contact-based matching (highest confidence)
+            contact_matches = self.calculate_contact_match(attendee_emails, contacts_lookup)
+            for prospect_id, confidence, reason in contact_matches:
+                if prospect_id in matched_prospect_ids:
+                    continue
+                matched_prospect_ids.add(prospect_id)
+                
+                # Get company name
+                company_name = contacts_lookup.get("prospect_names", {}).get(prospect_id)
+                if not company_name and prospect_id in prospect_map:
+                    company_name = prospect_map[prospect_id].get("company_name", "Unknown")
+                
+                matches.append(ProspectMatch(
+                    prospect_id=prospect_id,
+                    company_name=company_name or "Unknown",
+                    confidence=confidence,
+                    match_reason=reason
+                ))
+            
+            # Strategy 2, 4, 5: Prospect-based matching
             for prospect in prospects:
+                if prospect['id'] in matched_prospect_ids:
+                    continue  # Already matched via contacts
+                
                 confidence = 0.0
                 reasons = []
                 
-                # Title matching
+                # Title matching (exact or partial)
                 title_score = self.calculate_title_match(
                     meeting_title, 
                     prospect.get('company_name', '')
@@ -205,19 +343,18 @@ class ProspectMatcher:
                     confidence = max(confidence, title_score)
                     reasons.append(f"title match ({title_score:.0%})")
                 
-                # Email domain matching
+                # Email domain matching against prospect website/email
                 email_score = self.calculate_email_domain_match(
                     attendee_emails,
                     prospect.get('website'),
                     prospect.get('contact_email')
                 )
                 if email_score > 0:
-                    # Combine scores (taking max, not sum)
                     confidence = max(confidence, email_score)
                     reasons.append(f"email domain match ({email_score:.0%})")
                 
                 # Only include if we have some confidence
-                if confidence >= 0.3:  # Minimum threshold to consider
+                if confidence >= 0.3:
                     matches.append(ProspectMatch(
                         prospect_id=prospect['id'],
                         company_name=prospect['company_name'],
@@ -244,7 +381,8 @@ class ProspectMatcher:
                     logger.info(
                         f"Auto-linked meeting {meeting_id} to prospect "
                         f"{result.best_match.company_name} "
-                        f"(confidence: {result.best_match.confidence:.0%})"
+                        f"(confidence: {result.best_match.confidence:.0%}, "
+                        f"reason: {result.best_match.match_reason})"
                     )
             
             return result
@@ -270,10 +408,22 @@ class ProspectMatcher:
             logger.error(f"Failed to auto-link meeting {meeting_id}: {str(e)}")
     
     async def match_all_unlinked(self, organization_id: str) -> List[MatchResult]:
-        """Match all unlinked meetings to prospects."""
+        """
+        Match all unlinked meetings to prospects.
+        
+        Pre-fetches contacts lookup for efficiency when processing multiple meetings.
+        """
         results = []
         
         try:
+            # Pre-fetch contacts lookup (once for all meetings)
+            contacts_lookup = await self.get_contacts_for_matching(organization_id)
+            
+            logger.debug(
+                f"Contacts lookup: {len(contacts_lookup.get('by_email', {}))} emails, "
+                f"{len(contacts_lookup.get('by_domain', {}))} domains"
+            )
+            
             # Fetch unlinked meetings
             meetings_result = self.supabase.table("calendar_meetings").select(
                 "id, title, attendees"
@@ -285,14 +435,21 @@ class ProspectMatcher:
             
             meetings = meetings_result.data or []
             
+            logger.info(f"Matching {len(meetings)} unlinked meetings for org {organization_id[:8]}...")
+            
             for meeting in meetings:
                 result = await self.match_meeting(
                     meeting_id=meeting['id'],
                     meeting_title=meeting.get('title', ''),
                     attendees=meeting.get('attendees', []),
-                    organization_id=organization_id
+                    organization_id=organization_id,
+                    contacts_lookup=contacts_lookup  # Reuse for efficiency
                 )
                 results.append(result)
+            
+            # Log summary
+            auto_linked = sum(1 for r in results if r.auto_linked)
+            logger.info(f"Matching complete: {auto_linked}/{len(results)} auto-linked")
             
             return results
             
