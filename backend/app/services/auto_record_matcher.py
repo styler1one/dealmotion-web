@@ -306,10 +306,10 @@ async def process_calendar_for_auto_record(user_id: str, organization_id: str):
                     scheduled_time = start_time
                 
                 # Validate meeting URL
-                is_valid, platform = recall_service.validate_meeting_url(meeting["meeting_url"])
+                is_valid, platform, url_error = recall_service.validate_meeting_url(meeting["meeting_url"])
                 
                 if not is_valid:
-                    logger.warning(f"Invalid meeting URL for '{meeting['title']}': {meeting['meeting_url']}")
+                    logger.warning(f"Invalid meeting URL for '{meeting['title']}': {url_error}")
                     continue
                 
                 # Create scheduled_recording record
