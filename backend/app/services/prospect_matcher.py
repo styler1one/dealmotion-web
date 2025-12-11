@@ -50,6 +50,8 @@ class ProspectMatcher:
     WEIGHT_EMAIL_DOMAIN = 0.85  # Increased: website domain match is reliable
     WEIGHT_CONTACT_EMAIL_EXACT = 0.95  # Direct match with known contact
     WEIGHT_CONTACT_DOMAIN = 0.85  # Same domain as known contact
+    WEIGHT_CONTACT_NAME_MATCH = 0.92  # Full name matches a contact (high confidence!)
+    WEIGHT_CONTACT_NAME_PARTIAL = 0.82  # First or last name matches
     WEIGHT_ATTENDEE_NAME = 0.4
     
     def __init__(self, supabase: Client):
@@ -171,28 +173,29 @@ class ProspectMatcher:
             {
                 "by_email": {email: {"prospect_id": str, "contact_id": str}},
                 "by_domain": {domain: [{"prospect_id": str, "contact_id": str}]},
+                "by_name": {normalized_name: [{"prospect_id": str, "contact_id": str, "full_name": str}]},
                 "prospect_names": {prospect_id: company_name}
             }
         """
         try:
-            # Fetch contacts with their prospect info
+            # Fetch contacts with their prospect info (include name fields!)
             # Note: table is "prospect_contacts" not "contacts"
             contacts_result = self.supabase.table("prospect_contacts").select(
-                "id, email, prospect_id, prospects(id, company_name)"
-            ).eq("organization_id", organization_id).not_.is_("email", "null").execute()
+                "id, email, first_name, last_name, prospect_id, prospects(id, company_name)"
+            ).eq("organization_id", organization_id).execute()
             
             contacts = contacts_result.data or []
             
             by_email = {}
             by_domain = {}
+            by_name = {}  # New: name-based lookup
             prospect_names = {}
             
             for contact in contacts:
-                email = contact.get("email", "").lower().strip()
                 prospect_id = contact.get("prospect_id")
                 contact_id = contact.get("id")
                 
-                if not email or not prospect_id:
+                if not prospect_id:
                     continue
                 
                 # Store prospect name
@@ -200,39 +203,79 @@ class ProspectMatcher:
                 if prospect_id not in prospect_names:
                     prospect_names[prospect_id] = prospect_data.get("company_name", "Unknown")
                 
-                # Direct email lookup - now includes contact_id
-                by_email[email] = {
-                    "prospect_id": prospect_id,
-                    "contact_id": contact_id
-                }
-                
-                # Domain lookup
-                domain = self.extract_domain_from_email(email)
-                if domain:
-                    if domain not in by_domain:
-                        by_domain[domain] = []
-                    by_domain[domain].append({
+                # Email-based lookup
+                email = (contact.get("email") or "").lower().strip()
+                if email:
+                    by_email[email] = {
                         "prospect_id": prospect_id,
                         "contact_id": contact_id
-                    })
+                    }
+                    
+                    # Domain lookup
+                    domain = self.extract_domain_from_email(email)
+                    if domain:
+                        if domain not in by_domain:
+                            by_domain[domain] = []
+                        by_domain[domain].append({
+                            "prospect_id": prospect_id,
+                            "contact_id": contact_id
+                        })
+                
+                # Name-based lookup (most important!)
+                first_name = (contact.get("first_name") or "").strip()
+                last_name = (contact.get("last_name") or "").strip()
+                
+                if first_name or last_name:
+                    full_name = f"{first_name} {last_name}".strip()
+                    contact_info = {
+                        "prospect_id": prospect_id,
+                        "contact_id": contact_id,
+                        "first_name": first_name.lower(),
+                        "last_name": last_name.lower(),
+                        "full_name": full_name
+                    }
+                    
+                    # Index by normalized full name
+                    norm_full = full_name.lower()
+                    if norm_full:
+                        if norm_full not in by_name:
+                            by_name[norm_full] = []
+                        by_name[norm_full].append(contact_info)
+                    
+                    # Also index by first name (for partial matches)
+                    if first_name:
+                        norm_first = first_name.lower()
+                        if norm_first not in by_name:
+                            by_name[norm_first] = []
+                        by_name[norm_first].append(contact_info)
+                    
+                    # Also index by last name
+                    if last_name:
+                        norm_last = last_name.lower()
+                        if norm_last not in by_name:
+                            by_name[norm_last] = []
+                        by_name[norm_last].append(contact_info)
             
             return {
                 "by_email": by_email,
                 "by_domain": by_domain,
+                "by_name": by_name,
                 "prospect_names": prospect_names
             }
             
         except Exception as e:
             logger.error(f"Error fetching contacts for matching: {e}")
-            return {"by_email": {}, "by_domain": {}, "prospect_names": {}}
+            return {"by_email": {}, "by_domain": {}, "by_name": {}, "prospect_names": {}}
     
     def calculate_contact_match(
         self,
-        attendee_emails: List[str],
+        attendees: List[dict],
         contacts_lookup: dict
     ) -> Tuple[List[Tuple[str, float, str]], List[str]]:
         """
-        Match attendee emails against known contacts.
+        Match attendees against known contacts by NAME (primary) and email (secondary).
+        
+        Attendees typically have: {"email": "...", "name": "Geert Menting", "is_organizer": bool}
         
         Returns:
             (matches, contact_ids) where:
@@ -243,41 +286,86 @@ class ProspectMatcher:
         matched_contact_ids = []
         by_email = contacts_lookup.get("by_email", {})
         by_domain = contacts_lookup.get("by_domain", {})
+        by_name = contacts_lookup.get("by_name", {})
         
-        for email in attendee_emails:
-            email_lower = email.lower().strip()
+        for attendee in attendees:
+            attendee_name = (attendee.get("name") or "").strip()
+            attendee_email = (attendee.get("email") or "").lower().strip()
             
-            # Exact email match (highest confidence)
-            if email_lower in by_email:
-                info = by_email[email_lower]
+            # PRIORITY 1: Name matching (most reliable since contacts are linked to prospects)
+            if attendee_name and by_name:
+                name_lower = attendee_name.lower()
+                
+                # Try exact full name match first
+                if name_lower in by_name:
+                    for info in by_name[name_lower]:
+                        prospect_id = info["prospect_id"]
+                        contact_id = info.get("contact_id")
+                        
+                        matches.append((
+                            prospect_id,
+                            self.WEIGHT_CONTACT_NAME_MATCH,
+                            f"attendee name '{attendee_name}' matches contact"
+                        ))
+                        if contact_id and contact_id not in matched_contact_ids:
+                            matched_contact_ids.append(contact_id)
+                        break  # One match per attendee
+                    continue  # Found name match, skip email matching
+                
+                # Try matching individual name parts (first or last name)
+                name_parts = name_lower.split()
+                for part in name_parts:
+                    if len(part) >= 3 and part in by_name:  # Minimum 3 chars to avoid false positives
+                        for info in by_name[part]:
+                            prospect_id = info["prospect_id"]
+                            contact_id = info.get("contact_id")
+                            full_name = info.get("full_name", "")
+                            
+                            matches.append((
+                                prospect_id,
+                                self.WEIGHT_CONTACT_NAME_PARTIAL,
+                                f"attendee name contains '{part}' matching contact '{full_name}'"
+                            ))
+                            if contact_id and contact_id not in matched_contact_ids:
+                                matched_contact_ids.append(contact_id)
+                            break  # One match per name part
+                        break  # Found partial match, stop looking
+            
+            # PRIORITY 2: Exact email match (if we have it)
+            if attendee_email and attendee_email in by_email:
+                info = by_email[attendee_email]
                 prospect_id = info["prospect_id"]
                 contact_id = info.get("contact_id")
                 
-                matches.append((
-                    prospect_id,
-                    self.WEIGHT_CONTACT_EMAIL_EXACT,
-                    f"attendee email matches contact"
-                ))
-                if contact_id and contact_id not in matched_contact_ids:
-                    matched_contact_ids.append(contact_id)
-                continue
-            
-            # Domain match (good confidence)
-            domain = self.extract_domain_from_email(email_lower)
-            if domain and domain in by_domain:
-                # Return first prospect with this domain
-                for info in by_domain[domain]:
-                    prospect_id = info["prospect_id"]
-                    contact_id = info.get("contact_id")
-                    
+                # Only add if not already matched by name
+                if contact_id not in matched_contact_ids:
                     matches.append((
                         prospect_id,
-                        self.WEIGHT_CONTACT_DOMAIN,
-                        f"attendee domain matches contact domain ({domain})"
+                        self.WEIGHT_CONTACT_EMAIL_EXACT,
+                        f"attendee email matches contact"
                     ))
-                    if contact_id and contact_id not in matched_contact_ids:
+                    if contact_id:
                         matched_contact_ids.append(contact_id)
-                    break  # Only add one match per email
+                continue
+            
+            # PRIORITY 3: Domain match (fallback)
+            if attendee_email:
+                domain = self.extract_domain_from_email(attendee_email)
+                if domain and domain in by_domain:
+                    for info in by_domain[domain]:
+                        prospect_id = info["prospect_id"]
+                        contact_id = info.get("contact_id")
+                        
+                        # Only add if not already matched
+                        if contact_id not in matched_contact_ids:
+                            matches.append((
+                                prospect_id,
+                                self.WEIGHT_CONTACT_DOMAIN,
+                                f"attendee domain matches contact domain ({domain})"
+                            ))
+                            if contact_id:
+                                matched_contact_ids.append(contact_id)
+                        break
         
         return matches, matched_contact_ids
     
@@ -304,22 +392,25 @@ class ProspectMatcher:
         """
         result = MatchResult(meeting_id=meeting_id)
         
-        # Extract ALL attendee emails INCLUDING organizer
-        # The organizer is often the most important person to match!
-        # (e.g., when an external party like "geert@hoobr.nl" sends the invite)
+        # Build complete attendees list including organizer
+        all_attendees = list(attendees) if attendees else []
+        
+        # Also add organizer if provided separately (stored at meeting level)
+        if organizer_email:
+            org_email = organizer_email.lower().strip()
+            # Check if organizer is already in attendees list
+            existing_emails = [a.get('email', '').lower() for a in all_attendees]
+            if org_email and org_email not in existing_emails:
+                all_attendees.append({"email": org_email, "name": "", "is_organizer": True})
+        
+        # Extract emails for domain-based matching against prospects
         attendee_emails = [
             a.get('email', '').lower().strip()
-            for a in attendees 
+            for a in all_attendees 
             if a.get('email')
         ]
         
-        # Also add organizer_email if provided separately (stored at meeting level)
-        if organizer_email:
-            org_email = organizer_email.lower().strip()
-            if org_email and org_email not in attendee_emails:
-                attendee_emails.append(org_email)
-        
-        logger.debug(f"Matching meeting {meeting_id[:8]}... with {len(attendee_emails)} emails: {attendee_emails[:3]}...")
+        logger.debug(f"Matching meeting {meeting_id[:8]}... with {len(all_attendees)} attendees")
         
         try:
             # Fetch contacts lookup if not provided (for batch efficiency)
@@ -334,14 +425,14 @@ class ProspectMatcher:
             prospects = prospects_result.data or []
             prospect_map = {p['id']: p for p in prospects}
             
-            if not prospects and not contacts_lookup.get("by_email"):
+            if not prospects and not contacts_lookup.get("by_email") and not contacts_lookup.get("by_name"):
                 return result
             
             matches: List[ProspectMatch] = []
             matched_prospect_ids = set()
             
-            # Strategy 1 & 3: Contact-based matching (highest confidence)
-            contact_matches, matched_contact_ids = self.calculate_contact_match(attendee_emails, contacts_lookup)
+            # Strategy 1: Contact-based matching by NAME (highest priority!) and email
+            contact_matches, matched_contact_ids = self.calculate_contact_match(all_attendees, contacts_lookup)
             result.matched_contact_ids = matched_contact_ids
             
             for prospect_id, confidence, reason in contact_matches:
