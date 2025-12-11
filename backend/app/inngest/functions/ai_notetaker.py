@@ -59,6 +59,41 @@ def get_user_output_language(user_id: str) -> str:
     return "en"  # Default to English
 
 
+def get_context_from_calendar_meeting(calendar_meeting_id: str) -> dict:
+    """
+    Fetch context from calendar_meeting if not provided in scheduled_recording.
+    
+    This is needed for email invites where preparation might be added later,
+    after the scheduled_recording was created.
+    
+    Returns dict with: prospect_id, contact_ids, preparation_id
+    """
+    if not calendar_meeting_id:
+        return {}
+    
+    supabase = get_supabase_service()
+    try:
+        result = supabase.table("calendar_meetings").select(
+            "prospect_id, contact_ids, preparation_id"
+        ).eq("id", calendar_meeting_id).limit(1).execute()
+        
+        if result.data and len(result.data) > 0:
+            meeting = result.data[0]
+            logger.info(f"Got context from calendar_meeting {calendar_meeting_id}: "
+                       f"prospect={meeting.get('prospect_id')}, "
+                       f"contacts={len(meeting.get('contact_ids') or [])}, "
+                       f"prep={meeting.get('preparation_id')}")
+            return {
+                "prospect_id": meeting.get("prospect_id"),
+                "contact_ids": meeting.get("contact_ids") or [],
+                "preparation_id": meeting.get("preparation_id"),
+            }
+    except Exception as e:
+        logger.warning(f"Could not get context from calendar_meeting {calendar_meeting_id}: {e}")
+    
+    return {}
+
+
 async def fetch_recording_url(bot_id: str):
     """Fetch recording URL from Recall.ai API."""
     bot_status = await recall_service.get_bot_status(bot_id)
@@ -207,13 +242,33 @@ async def process_ai_notetaker_recording_fn(ctx, step):
     user_id = event_data["user_id"]
     prospect_id = event_data.get("prospect_id")
     meeting_title = event_data.get("meeting_title")
-    # Context fields
+    # Context fields from scheduled_recording
     meeting_prep_id = event_data.get("meeting_prep_id")
     contact_ids = event_data.get("contact_ids") or []
     deal_id = event_data.get("deal_id")
     calendar_meeting_id = event_data.get("calendar_meeting_id")
     
     logger.info(f"Starting AI Notetaker processing for recording {recording_id}, bot {bot_id}")
+    
+    # For email invites, context might be empty in scheduled_recording
+    # but available in calendar_meeting (if user added preparation later)
+    # Fetch fresh context from calendar_meeting
+    if calendar_meeting_id:
+        cm_context = get_context_from_calendar_meeting(calendar_meeting_id)
+        
+        # Use calendar_meeting context as fallback/override
+        # (it may have been updated after scheduled_recording was created)
+        if not prospect_id and cm_context.get("prospect_id"):
+            prospect_id = cm_context["prospect_id"]
+            logger.info(f"Using prospect_id from calendar_meeting: {prospect_id}")
+        
+        if not contact_ids and cm_context.get("contact_ids"):
+            contact_ids = cm_context["contact_ids"]
+            logger.info(f"Using contact_ids from calendar_meeting: {contact_ids}")
+        
+        if not meeting_prep_id and cm_context.get("preparation_id"):
+            meeting_prep_id = cm_context["preparation_id"]
+            logger.info(f"Using preparation_id from calendar_meeting: {meeting_prep_id}")
     
     try:
         # Step 1: Fetch recording URL from Recall.ai
