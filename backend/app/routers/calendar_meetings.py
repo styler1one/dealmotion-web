@@ -37,6 +37,13 @@ class PrepStatus(BaseModel):
     prep_created_at: Optional[datetime] = None
 
 
+class LinkedContact(BaseModel):
+    """A linked contact person."""
+    id: str
+    name: str
+    role: Optional[str] = None
+
+
 class CalendarMeetingResponse(BaseModel):
     """Response model for a calendar meeting."""
     id: str
@@ -59,6 +66,8 @@ class CalendarMeetingResponse(BaseModel):
     # Linked data
     prospect_id: Optional[str] = None
     prospect_name: Optional[str] = None
+    contact_ids: List[str] = []
+    contacts: List[LinkedContact] = []  # Resolved contact info
     prep_status: Optional[PrepStatus] = None
     
     # Recurring
@@ -95,6 +104,29 @@ def is_meeting_tomorrow(start_time: datetime) -> bool:
     return start_time.date() == tomorrow.date()
 
 
+async def fetch_contacts_by_ids(contact_ids: List[str]) -> List[LinkedContact]:
+    """Fetch contact details by their IDs."""
+    if not contact_ids:
+        return []
+    
+    try:
+        result = supabase.table("prospect_contacts").select(
+            "id, name, role"
+        ).in_("id", contact_ids).execute()
+        
+        return [
+            LinkedContact(
+                id=c["id"],
+                name=c.get("name", "Unknown"),
+                role=c.get("role")
+            )
+            for c in (result.data or [])
+        ]
+    except Exception as e:
+        logger.error(f"Failed to fetch contacts: {e}")
+        return []
+
+
 # ==========================================
 # Endpoints
 # ==========================================
@@ -118,13 +150,14 @@ async def list_meetings(
     user_id, organization_id = user_org
     
     try:
-        # Build query
+        # Build query (including contact_ids)
         query = supabase.table("calendar_meetings").select(
             """
             id, title, description, start_time, end_time,
             location, meeting_url, is_online, status,
             attendees, organizer_email, is_recurring,
-            prospect_id, prospects(id, company_name)
+            prospect_id, contact_ids,
+            prospects(id, company_name)
             """
         ).eq(
             "organization_id", organization_id
@@ -195,6 +228,10 @@ async def list_meetings(
             if unprepared_only and prep_status and prep_status.has_prep:
                 continue
             
+            # Get linked contacts
+            contact_ids = row.get("contact_ids") or []
+            contacts = await fetch_contacts_by_ids(contact_ids)
+            
             meetings.append(CalendarMeetingResponse(
                 id=row["id"],
                 title=row["title"],
@@ -212,6 +249,8 @@ async def list_meetings(
                 is_tomorrow=is_meeting_tomorrow(start_time),
                 prospect_id=prospect_id_val,
                 prospect_name=prospect_name,
+                contact_ids=contact_ids,
+                contacts=contacts,
                 prep_status=prep_status,
                 is_recurring=row.get("is_recurring", False),
             ))
@@ -407,11 +446,12 @@ async def unlink_meeting_from_prospect(
                 detail="Meeting not found"
             )
         
-        # Remove prospect link
+        # Remove prospect link AND contact links (contacts are tied to prospect)
         supabase.table("calendar_meetings").update({
             "prospect_id": None,
             "prospect_link_type": None,
             "match_confidence": None,
+            "contact_ids": [],  # Clear contacts too
         }).eq("id", meeting_id).execute()
         
         return LinkProspectResponse(
@@ -426,6 +466,51 @@ async def unlink_meeting_from_prospect(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to unlink meeting: {str(e)}"
+        )
+
+
+@router.delete("/{meeting_id}/contacts/{contact_id}", response_model=LinkProspectResponse)
+async def unlink_contact_from_meeting(
+    meeting_id: str,
+    contact_id: str,
+    user_org: tuple = Depends(get_user_org),
+):
+    """Remove a specific contact link from a meeting."""
+    user_id, organization_id = user_org
+    
+    try:
+        # Verify meeting belongs to organization and get current contact_ids
+        meeting_result = supabase.table("calendar_meetings").select(
+            "id, contact_ids"
+        ).eq("id", meeting_id).eq("organization_id", organization_id).execute()
+        
+        if not meeting_result.data or len(meeting_result.data) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Meeting not found"
+            )
+        
+        current_contact_ids = meeting_result.data[0].get("contact_ids") or []
+        
+        # Remove the specific contact
+        new_contact_ids = [cid for cid in current_contact_ids if cid != contact_id]
+        
+        supabase.table("calendar_meetings").update({
+            "contact_ids": new_contact_ids,
+        }).eq("id", meeting_id).execute()
+        
+        return LinkProspectResponse(
+            success=True,
+            message="Contact unlinked from meeting"
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to unlink contact {contact_id} from meeting {meeting_id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to unlink contact: {str(e)}"
         )
 
 

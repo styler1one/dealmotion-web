@@ -23,7 +23,9 @@ import {
   Link2,
   Link2Off,
   Building2,
-  Sparkles
+  Sparkles,
+  User,
+  X
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useToast } from '@/components/ui/use-toast'
@@ -55,6 +57,12 @@ interface PrepStatus {
   prep_created_at?: string
 }
 
+interface LinkedContact {
+  id: string
+  name: string
+  role?: string
+}
+
 interface CalendarMeeting {
   id: string
   title: string
@@ -72,6 +80,8 @@ interface CalendarMeeting {
   is_tomorrow: boolean
   prospect_id?: string
   prospect_name?: string
+  contact_ids?: string[]
+  contacts?: LinkedContact[]
   prep_status?: PrepStatus
   is_recurring: boolean
 }
@@ -303,6 +313,33 @@ export default function MeetingsPage() {
     }
   }
 
+  // Unlink a specific contact from meeting
+  const unlinkContact = async (meetingId: string, contactId: string) => {
+    try {
+      const { error: apiError } = await api.delete(
+        `/api/v1/calendar-meetings/${meetingId}/contacts/${contactId}`
+      )
+      
+      if (apiError) {
+        throw new Error(apiError.message || 'Unlink contact failed')
+      }
+      
+      toast({
+        title: t('contact.unlinkSuccess'),
+      })
+      
+      // Reload meetings
+      loadMeetings()
+    } catch (err) {
+      logger.error('Unlink contact failed', err, { source: 'MeetingsPage' })
+      toast({
+        title: 'Failed to unlink contact',
+        description: err instanceof Error ? err.message : 'Unknown error',
+        variant: 'destructive',
+      })
+    }
+  }
+
   // Format time
   const formatTime = (dateStr: string) => {
     const date = new Date(dateStr)
@@ -510,32 +547,58 @@ export default function MeetingsPage() {
                               </div>
                             )}
                             
-                            {/* Prospect link */}
-                            <div className="mt-2">
+                            {/* Prospect & Contact links */}
+                            <div className="mt-2 flex flex-wrap items-center gap-2">
                               {meeting.prospect_name ? (
-                                <div className="flex items-center gap-2">
-                                  <Badge 
-                                    variant="secondary" 
-                                    className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 cursor-pointer hover:bg-blue-200"
-                                    onClick={() => router.push(`/dashboard/prospects/${meeting.prospect_id}`)}
-                                  >
-                                    <Building2 className="h-3 w-3 mr-1" />
-                                    {meeting.prospect_name}
-                                  </Badge>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-6 w-6 p-0 text-slate-400 hover:text-red-500"
-                                    onClick={() => unlinkMeeting(meeting.id)}
-                                    disabled={linkingMeetingId === meeting.id}
-                                  >
-                                    {linkingMeetingId === meeting.id ? (
-                                      <Loader2 className="h-3 w-3 animate-spin" />
-                                    ) : (
-                                      <Link2Off className="h-3 w-3" />
-                                    )}
-                                  </Button>
-                                </div>
+                                <>
+                                  {/* Prospect badge */}
+                                  <div className="flex items-center gap-1">
+                                    <Badge 
+                                      variant="secondary" 
+                                      className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 cursor-pointer hover:bg-blue-200"
+                                      onClick={() => router.push(`/dashboard/prospects/${meeting.prospect_id}`)}
+                                    >
+                                      <Building2 className="h-3 w-3 mr-1" />
+                                      {meeting.prospect_name}
+                                    </Badge>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-5 w-5 p-0 text-slate-400 hover:text-red-500"
+                                      onClick={() => unlinkMeeting(meeting.id)}
+                                      disabled={linkingMeetingId === meeting.id}
+                                    >
+                                      {linkingMeetingId === meeting.id ? (
+                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                      ) : (
+                                        <X className="h-3 w-3" />
+                                      )}
+                                    </Button>
+                                  </div>
+                                  
+                                  {/* Contact badges */}
+                                  {meeting.contacts && meeting.contacts.length > 0 && (
+                                    meeting.contacts.map((contact) => (
+                                      <div key={contact.id} className="flex items-center gap-1">
+                                        <Badge 
+                                          variant="secondary" 
+                                          className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+                                        >
+                                          <User className="h-3 w-3 mr-1" />
+                                          {contact.name}
+                                        </Badge>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-5 w-5 p-0 text-slate-400 hover:text-red-500"
+                                          onClick={() => unlinkContact(meeting.id, contact.id)}
+                                        >
+                                          <X className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    ))
+                                  )}
+                                </>
                               ) : (
                                 <DropdownMenu onOpenChange={(open) => {
                                   if (open) loadSuggestedMatches(meeting.id)

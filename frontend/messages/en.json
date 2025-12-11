@@ -596,6 +596,9 @@
       "linkSuccess": "Meeting linked to {name}",
       "unlinkSuccess": "Prospect link removed",
       "confidence": "{percent}% match"
+    },
+    "contact": {
+      "unlinkSuccess": "Contact unlinked from meeting"
     }
   },
   "followup": {
