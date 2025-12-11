@@ -40,6 +40,25 @@ def update_scheduled_recording_status(recording_id: str, status: str, error_mess
     logger.info(f"Updated scheduled_recording {recording_id} status to: {status}")
 
 
+def get_user_output_language(user_id: str) -> str:
+    """Get user's preferred output language from settings."""
+    supabase = get_supabase_service()
+    try:
+        result = supabase.table("user_settings").select(
+            "output_language"
+        ).eq("user_id", user_id).limit(1).execute()
+        
+        if result.data and len(result.data) > 0:
+            lang = result.data[0].get("output_language")
+            if lang:
+                logger.info(f"User {user_id[:8]}... output_language: {lang}")
+                return lang
+    except Exception as e:
+        logger.warning(f"Could not get user language preference: {e}")
+    
+    return "en"  # Default to English
+
+
 async def fetch_recording_url(bot_id: str):
     """Fetch recording URL from Recall.ai API."""
     bot_status = await recall_service.get_bot_status(bot_id)
@@ -232,7 +251,14 @@ async def process_ai_notetaker_recording_fn(ctx, step):
             recording_id, followup_id, audio_url, duration_seconds
         )
         
-        # Step 5: Trigger transcription pipeline
+        # Step 5: Get user's language preference
+        user_language = await step.run(
+            "get-user-language",
+            get_user_output_language,
+            user_id
+        )
+        
+        # Step 6: Trigger transcription pipeline with language
         await step.run(
             "trigger-transcription",
             send_event,
@@ -243,6 +269,7 @@ async def process_ai_notetaker_recording_fn(ctx, step):
                 "filename": "recording.mp4",
                 "organization_id": organization_id,
                 "user_id": user_id,
+                "language": user_language,
             }
         )
         
