@@ -134,7 +134,13 @@ def parse_attendees_from_header(header_value: str) -> list[dict]:
         email = (bracketed_email or plain_email or "").lower().strip()
         name = (quoted_name or unquoted_name or "").strip()
         
-        # If no name found in header, try to extract from email address
+        # Check if "name" is actually an email address (common in some email clients)
+        # e.g., "geert.menting@hoobr.nl" <geert.menting@hoobr.nl>
+        if name and "@" in name:
+            logger.info(f"[EMAIL-INVITE] Name '{name}' looks like email, ignoring")
+            name = ""
+        
+        # If no valid name found in header, try to extract from email address
         if not name and email:
             name = extract_name_from_email(email)
             if name:
