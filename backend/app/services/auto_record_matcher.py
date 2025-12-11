@@ -85,9 +85,22 @@ def should_auto_record(
                 logger.warning(f"Failed to parse meeting times: {e}")
     
     # Check exclude keywords FIRST (they take priority)
+    # Use word boundary matching to avoid partial matches (e.g., "hr" matching "shr")
+    import re
     exclude_keywords = settings.get("exclude_keywords") or []
+    title_words = set(re.findall(r'\b\w+\b', title))  # Extract words from title
     for keyword in exclude_keywords:
-        if keyword.lower() in title:
+        keyword_lower = keyword.lower().strip()
+        # For multi-word keywords, check if they appear as substring
+        if ' ' in keyword_lower:
+            if keyword_lower in title:
+                return {
+                    "should_record": False,
+                    "reason": f"Title contains excluded keyword",
+                    "matched_keyword": keyword
+                }
+        # For single-word keywords, check exact word match
+        elif keyword_lower in title_words:
             return {
                 "should_record": False,
                 "reason": f"Title contains excluded keyword",
@@ -103,12 +116,22 @@ def should_auto_record(
                 "reason": "Meeting has no external attendees"
             }
     
-    # Check include keywords
+    # Check include keywords (use same word boundary logic as exclude)
     include_keywords = settings.get("include_keywords") or []
     
     if include_keywords:
         for keyword in include_keywords:
-            if keyword.lower() in title:
+            keyword_lower = keyword.lower().strip()
+            # For multi-word keywords, check if they appear as substring
+            if ' ' in keyword_lower:
+                if keyword_lower in title:
+                    return {
+                        "should_record": True,
+                        "reason": f"Title contains keyword",
+                        "matched_keyword": keyword
+                    }
+            # For single-word keywords, check exact word match
+            elif keyword_lower in title_words:
                 return {
                     "should_record": True,
                     "reason": f"Title contains keyword",
