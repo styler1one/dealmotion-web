@@ -560,7 +560,13 @@ async def handle_inbound_email(request: Request):
         logger.info(f"Received inbound email: from={sender}, to={to_address}, subject={subject[:50] if subject else 'N/A'}")
         
         # Validate it's sent to our notetaker address
-        notetaker_addresses = ["notes@dealmotion.ai", "notetaker@dealmotion.ai", "ai@dealmotion.ai"]
+        # Includes both main domain and parse subdomain (for forwarding setup)
+        notetaker_addresses = [
+            "notes@dealmotion.ai", 
+            "notes@parse.dealmotion.ai",
+            "notetaker@dealmotion.ai", 
+            "ai@dealmotion.ai"
+        ]
         is_valid_recipient = any(addr in to_address.lower() for addr in notetaker_addresses)
         
         if not is_valid_recipient:
