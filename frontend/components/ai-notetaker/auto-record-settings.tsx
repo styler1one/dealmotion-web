@@ -100,13 +100,13 @@ export function AutoRecordSettings() {
     setLoading(true)
     try {
       const { data, error } = await api.get<AutoRecordSettings>('/api/v1/auto-record/settings')
-      if (error) throw new Error(error)
+      if (error) throw new Error(typeof error === 'string' ? error : 'Failed to fetch settings')
       if (data) {
         setSettings(data)
         setOriginalSettings(data)
       }
-    } catch (error) {
-      logger.error('Failed to fetch auto-record settings', error)
+    } catch (err) {
+      logger.error('Failed to fetch auto-record settings', err)
       toast({
         title: t('error.fetchFailed'),
         variant: 'destructive'
@@ -120,7 +120,7 @@ export function AutoRecordSettings() {
     setSaving(true)
     try {
       const { data, error } = await api.put<AutoRecordSettings>('/api/v1/auto-record/settings', settings)
-      if (error) throw new Error(error)
+      if (error) throw new Error(typeof error === 'string' ? error : 'Failed to save settings')
       if (data) {
         setSettings(data)
         setOriginalSettings(data)
@@ -146,7 +146,7 @@ export function AutoRecordSettings() {
       const { data, error } = await api.post<{ include_keywords: string[], exclude_keywords: string[] }>(
         '/api/v1/auto-record/settings/reset-keywords'
       )
-      if (error) throw new Error(error)
+      if (error) throw new Error(typeof error === 'string' ? error : 'Failed to reset keywords')
       if (data) {
         setSettings(prev => ({
           ...prev,
@@ -172,10 +172,10 @@ export function AutoRecordSettings() {
     setShowPreview(true)
     try {
       const { data, error } = await api.get<PreviewResult>('/api/v1/auto-record/preview')
-      if (error) throw new Error(error)
+      if (error) throw new Error(typeof error === 'string' ? error : 'Failed to fetch preview')
       setPreview(data || null)
-    } catch (error) {
-      logger.error('Failed to fetch preview', error)
+    } catch (err) {
+      logger.error('Failed to fetch preview', err)
       toast({
         title: t('error.previewFailed'),
         variant: 'destructive'
