@@ -224,7 +224,7 @@ class MicrosoftCalendarService:
                 params = {
                     "startDateTime": start_datetime,
                     "endDateTime": end_datetime,
-                    "$select": "id,subject,start,end,organizer,attendees,location,isAllDay,isCancelled,webLink,onlineMeeting",
+                    "$select": "id,subject,start,end,organizer,attendees,location,isAllDay,isCancelled,webLink,onlineMeeting,isOnlineMeeting,onlineMeetingUrl,body",
                     "$orderby": "start/dateTime",
                     "$top": 250,  # Max per page
                 }
@@ -315,11 +315,44 @@ class MicrosoftCalendarService:
         location = event.get("location", {})
         location_str = location.get("displayName") or ""
         
-        # Check if it's a Teams meeting
-        is_online = bool(event.get("onlineMeeting"))
+        # Check if it's a Teams meeting - multiple ways to detect
+        is_online = False
         meeting_url = None
-        if is_online and event.get("onlineMeeting"):
-            meeting_url = event.get("onlineMeeting", {}).get("joinUrl")
+        
+        # Method 1: onlineMeeting object with joinUrl
+        online_meeting = event.get("onlineMeeting")
+        if online_meeting and isinstance(online_meeting, dict):
+            meeting_url = online_meeting.get("joinUrl")
+            if meeting_url:
+                is_online = True
+        
+        # Method 2: isOnlineMeeting flag with onlineMeetingUrl
+        if not meeting_url and event.get("isOnlineMeeting"):
+            meeting_url = event.get("onlineMeetingUrl")
+            if meeting_url:
+                is_online = True
+        
+        # Method 3: Check location for Teams URL
+        if not meeting_url and location_str:
+            if "teams.microsoft.com" in location_str.lower():
+                # Try to extract URL from location
+                import re
+                url_match = re.search(r'https://teams\.microsoft\.com/l/meetup-join/[^\s<>"]+', location_str)
+                if url_match:
+                    meeting_url = url_match.group(0)
+                    is_online = True
+        
+        # Method 4: Check body/description for Teams URL (if available)
+        body = event.get("body", {})
+        body_content = body.get("content", "") if isinstance(body, dict) else ""
+        if not meeting_url and body_content and "teams.microsoft.com" in body_content.lower():
+            import re
+            url_match = re.search(r'https://teams\.microsoft\.com/l/meetup-join/[^\s<>"\']+', body_content)
+            if url_match:
+                meeting_url = url_match.group(0)
+                is_online = True
+        
+        logger.debug(f"Event '{event.get('subject')}': is_online={is_online}, meeting_url={meeting_url[:50] if meeting_url else None}")
         
         # Determine status
         status = "confirmed"
