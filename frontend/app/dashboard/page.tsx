@@ -203,16 +203,18 @@ export default function DashboardPage() {
             }
         })
 
-        // Add from followups
+        // Add from followups - only those with a real prospect linked
         followups.forEach(followup => {
-            const name = (followup.prospect_company_name || followup.meeting_subject || '').toLowerCase()
-            if (!name) return
+            // Only include followups that have a real prospect (not just meeting titles)
+            if (!followup.prospect_company_name) return
+            
+            const name = followup.prospect_company_name.toLowerCase()
             
             if (!prospectMap.has(name)) {
                 prospectMap.set(name, {
                     id: followup.id,
                     prospectId: followup.prospect_id,  // Store actual prospect_id for Hub navigation
-                    company_name: followup.prospect_company_name || followup.meeting_subject || '',
+                    company_name: followup.prospect_company_name,
                     hasResearch: false,
                     hasPrep: false,
                     hasFollowup: true,
