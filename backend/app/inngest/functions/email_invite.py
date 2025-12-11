@@ -145,6 +145,64 @@ def get_user_output_language(user_id: str) -> str:
     return "en"
 
 
+def create_calendar_meeting(
+    organization_id: str,
+    user_id: str,
+    meeting_url: str,
+    meeting_title: str,
+    meeting_platform: str,
+    start_time: datetime,
+    end_time: datetime | None,
+    attendees: list[str],
+    prospect_id: str | None = None,
+    contact_ids: list[str] | None = None,
+    ics_uid: str | None = None,
+    description: str | None = None,
+    location: str | None = None,
+) -> str:
+    """
+    Create a calendar_meetings record for email invites.
+    
+    This ensures email invites appear on /dashboard/meetings alongside
+    calendar-synced meetings for consistent user experience.
+    """
+    supabase = get_supabase_service()
+    
+    # Build attendees JSON (same format as calendar sync)
+    attendees_json = [{"email": email} for email in attendees if email]
+    
+    record = {
+        "organization_id": organization_id,
+        "user_id": user_id,
+        # No calendar_connection_id for email invites (NULL)
+        "calendar_connection_id": None,
+        "external_event_id": ics_uid or f"email-invite-{datetime.now(timezone.utc).timestamp()}",
+        "title": meeting_title,
+        "description": description,
+        "start_time": start_time.isoformat(),
+        "end_time": (end_time or start_time + timedelta(hours=1)).isoformat(),
+        "location": location,
+        "meeting_url": meeting_url,
+        "is_online": True,
+        "platform": meeting_platform,
+        "status": "confirmed",
+        "attendees": attendees_json,
+        "prospect_id": prospect_id,
+        "contact_ids": contact_ids or [],
+        "source": "email_invite",  # Mark origin
+        "prospect_link_type": "auto" if prospect_id else None,
+    }
+    
+    result = supabase.table("calendar_meetings").insert(record).execute()
+    
+    if not result.data:
+        raise Exception("Failed to create calendar meeting record")
+    
+    meeting_id = result.data[0]["id"]
+    logger.info(f"Created calendar_meeting: {meeting_id} (source=email_invite)")
+    return meeting_id
+
+
 def create_scheduled_recording(
     organization_id: str,
     user_id: str,
@@ -155,6 +213,7 @@ def create_scheduled_recording(
     recall_bot_id: str | None = None,
     prospect_id: str | None = None,
     contact_ids: list[str] | None = None,
+    calendar_meeting_id: str | None = None,
 ) -> str:
     """Create a scheduled recording record in the database."""
     supabase = get_supabase_service()
@@ -169,6 +228,7 @@ def create_scheduled_recording(
         "recall_bot_id": recall_bot_id,
         "prospect_id": prospect_id,
         "contact_ids": contact_ids or [],
+        "calendar_meeting_id": calendar_meeting_id,
         "status": "scheduled" if recall_bot_id else "error",
         "source": "email_invite",  # Mark as coming from email
     }
@@ -179,7 +239,7 @@ def create_scheduled_recording(
         raise Exception("Failed to create scheduled recording")
     
     recording_id = result.data[0]["id"]
-    logger.info(f"Created scheduled recording: {recording_id} with prospect={prospect_id}, contacts={contact_ids}")
+    logger.info(f"Created scheduled recording: {recording_id} with prospect={prospect_id}, contacts={contact_ids}, calendar_meeting={calendar_meeting_id}")
     return recording_id
 
 
@@ -234,9 +294,11 @@ async def process_email_invite_fn(ctx, step):
     Steps:
     1. Parse email and extract meeting details from ICS
     2. Match organizer email to DealMotion user
-    3. Schedule AI Notetaker via Recall.ai
-    4. Save scheduled recording
-    5. Send confirmation email
+    3. Use ProspectMatcher for smart prospect/contact matching
+    4. Schedule AI Notetaker via Recall.ai
+    5. Create calendar_meeting record (appears on /dashboard/meetings)
+    6. Save scheduled recording linked to calendar_meeting
+    7. Send confirmation email
     """
     event_data = ctx.event.data
     raw_email_b64 = event_data["raw_email_b64"]
@@ -334,7 +396,35 @@ async def process_email_invite_fn(ctx, step):
     
     recall_bot_id = await step.run("schedule-bot", schedule_bot)
     
-    # Step 5: Save scheduled recording to database
+    # Step 5: Create calendar_meeting record (so it appears on /dashboard/meetings)
+    def save_calendar_meeting():
+        # Get additional data from invite
+        end_time_str = invite_data.get("end_time")
+        end_time = None
+        if end_time_str:
+            end_time = datetime.fromisoformat(end_time_str)
+            if end_time.tzinfo is None:
+                end_time = end_time.replace(tzinfo=timezone.utc)
+        
+        return create_calendar_meeting(
+            organization_id=organization_id,
+            user_id=user_id,
+            meeting_url=meeting_url,
+            meeting_title=meeting_title,
+            meeting_platform=meeting_platform,
+            start_time=start_time,
+            end_time=end_time,
+            attendees=attendees,
+            prospect_id=prospect_id,
+            contact_ids=contact_ids,
+            ics_uid=invite_data.get("uid"),
+            description=invite_data.get("description"),
+            location=invite_data.get("location"),
+        )
+    
+    calendar_meeting_id = await step.run("save-calendar-meeting", save_calendar_meeting)
+    
+    # Step 6: Save scheduled recording linked to calendar_meeting
     def save_recording():
         return create_scheduled_recording(
             organization_id=organization_id,
@@ -346,11 +436,12 @@ async def process_email_invite_fn(ctx, step):
             recall_bot_id=recall_bot_id,
             prospect_id=prospect_id,
             contact_ids=contact_ids,
+            calendar_meeting_id=calendar_meeting_id,
         )
     
     recording_id = await step.run("save-recording", save_recording)
     
-    # Step 6: Send confirmation email
+    # Step 7: Send confirmation email
     async def send_confirmation():
         await send_confirmation_email(
             user_email=user_email,
@@ -363,11 +454,12 @@ async def process_email_invite_fn(ctx, step):
     
     await step.run("send-confirmation", send_confirmation)
     
-    logger.info(f"Email invite processed successfully: recording={recording_id}, bot={recall_bot_id}")
+    logger.info(f"Email invite processed successfully: recording={recording_id}, bot={recall_bot_id}, calendar_meeting={calendar_meeting_id}")
     
     return {
         "recording_id": recording_id,
         "recall_bot_id": recall_bot_id,
+        "calendar_meeting_id": calendar_meeting_id,
         "user_id": user_id,
         "meeting_title": meeting_title,
         "meeting_time": start_time.isoformat(),
