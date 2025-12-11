@@ -513,6 +513,7 @@ async def trigger_calendar_sync(
     Trigger manual calendar sync for all connected providers.
     
     Fetches latest events from Google/Microsoft and updates local database.
+    Also triggers auto-record processing if enabled.
     """
     user_id, organization_id = user_org
     
@@ -531,6 +532,15 @@ async def trigger_calendar_sync(
             total_new += result.new_meetings
             total_updated += result.updated_meetings
             total_deleted += result.deleted_meetings
+        
+        # Process auto-record for this user (if enabled)
+        try:
+            from app.services.auto_record_matcher import process_calendar_for_auto_record
+            auto_result = await process_calendar_for_auto_record(user_id, organization_id)
+            logger.info(f"Auto-record processed: {auto_result.get('scheduled', 0)} scheduled, {auto_result.get('skipped', 0)} skipped")
+        except Exception as e:
+            logger.error(f"Auto-record processing failed: {e}")
+            # Don't fail the sync if auto-record fails
         
         return CalendarSyncResponse(
             synced_meetings=total_synced,
