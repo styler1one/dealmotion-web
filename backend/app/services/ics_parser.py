@@ -191,9 +191,17 @@ class ICSParser:
             return None
     
     def _extract_field(self, content: str, field_name: str) -> Optional[str]:
-        """Extract a field value from ICS content."""
+        """Extract a field value from ICS content.
+        
+        ICS format can have parameters:
+        - SUMMARY:Meeting Title (simple)
+        - SUMMARY;LANGUAGE=en-GB:Meeting Title (with parameters)
+        
+        We need to extract the value after the last colon.
+        """
         # Handle multi-line values (lines starting with space are continuations)
-        pattern = rf"^{field_name}[;:]([^\r\n]*(?:\r?\n[ \t][^\r\n]*)*)"
+        # Match FIELDNAME followed by optional params (;...) then : then value
+        pattern = rf"^{field_name}(?:;[^:\r\n]*)?:([^\r\n]*(?:\r?\n[ \t][^\r\n]*)*)"
         match = re.search(pattern, content, re.MULTILINE | re.IGNORECASE)
         if match:
             value = match.group(1)
