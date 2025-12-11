@@ -54,7 +54,6 @@ interface Followup {
   error_message: string | null
   created_at: string
   completed_at: string | null
-  include_coaching: boolean
   contact_ids?: string[]
   commercial_signals: {
     koopsignalen: string[]
@@ -66,11 +65,6 @@ interface Followup {
     unspoken_needs: string[]
     opportunities: string[]
     red_flags: string[]
-  } | null
-  coaching_feedback: {
-    strengths: string[]
-    improvements: string[]
-    tips: string[]
   } | null
   full_summary_content: string | null
   deal_id?: string

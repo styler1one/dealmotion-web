@@ -192,7 +192,6 @@ export interface Followup {
   error_message?: string
   created_at: string
   completed_at?: string
-  include_coaching?: boolean
 }
 
 export interface ActionItem {
@@ -612,7 +611,6 @@ export interface PrepFormData {
 export interface FollowupFormData {
   prep_id?: string
   company_name: string
-  include_coaching?: boolean
   language?: string
 }
 

@@ -224,7 +224,6 @@ export function FollowupUploadForm({
       if (meetingDate) formData.append('meeting_date', meetingDate)
       if (selectedContactIds.length > 0) formData.append('contact_ids', selectedContactIds.join(','))
       if (selectedDealId) formData.append('deal_id', selectedDealId)
-      formData.append('include_coaching', 'false')
       formData.append('language', settings.email_language)
 
       setUploadProgress(30)

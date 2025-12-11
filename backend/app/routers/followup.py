@@ -69,8 +69,7 @@ class FollowupDetail(BaseModel):
     error_message: Optional[str]
     created_at: str
     completed_at: Optional[str]
-    # NEW: Enhanced follow-up fields
-    include_coaching: bool = False
+    # Enhanced follow-up fields
     commercial_signals: Optional[Dict[str, Any]] = None
     observations: Optional[Dict[str, Any]] = None
     coaching_feedback: Optional[Dict[str, Any]] = None
@@ -99,7 +98,6 @@ def process_followup_background(
     user_id: str,
     meeting_prep_id: Optional[str] = None,
     prospect_company: Optional[str] = None,
-    include_coaching: bool = False,  # opt-in coaching
     language: str = "en"  # i18n: output language (default: English)
 ):
     """Background task to process audio and generate follow-up content.
@@ -109,7 +107,7 @@ def process_followup_background(
     """
     asyncio.run(_process_followup_async(
         followup_id, audio_data, filename, organization_id, user_id,
-        meeting_prep_id, prospect_company, include_coaching, language
+        meeting_prep_id, prospect_company, language
     ))
 
 
@@ -121,7 +119,6 @@ async def _process_followup_async(
     user_id: str,
     meeting_prep_id: Optional[str] = None,
     prospect_company: Optional[str] = None,
-    include_coaching: bool = False,
     language: str = "en"
 ):
     """Actual async processing logic for follow-up"""
@@ -210,8 +207,7 @@ async def _process_followup_async(
         summary = await followup_generator.generate_summary(
             transcription=transcription_result.full_text,
             prospect_context=prospect_context,
-            include_coaching=include_coaching,  # pass coaching flag
-            language=language,  # i18n: output language
+            language=language,
             prospect_company=prospect_company
         )
         
@@ -232,7 +228,7 @@ async def _process_followup_async(
             tone="professional"
         )
         
-        # Step 7: Save all results (including enhanced sections)
+        # Step 7: Save all results
         update_data = {
             "status": "completed",
             "executive_summary": summary.get("executive_summary", ""),
@@ -243,16 +239,10 @@ async def _process_followup_async(
             "action_items": action_items,
             "email_draft": email_draft,
             "completed_at": datetime.utcnow().isoformat(),
-            # NEW: Enhanced follow-up fields
             "commercial_signals": summary.get("commercial_signals", {}),
             "observations": summary.get("observations", {}),
             "full_summary_content": summary.get("full_content", "")
         }
-        
-        # Only save coaching if requested
-        if include_coaching:
-            update_data["coaching_feedback"] = summary.get("coaching_feedback", {})
-            update_data["include_coaching"] = True
         
         supabase.table("followups").update(update_data).eq("id", followup_id).execute()
         
@@ -293,7 +283,6 @@ async def upload_audio(
     contact_ids: Optional[str] = Form(None),  # Comma-separated contact UUIDs
     deal_id: Optional[str] = Form(None),  # Optional deal to link this follow-up to
     calendar_meeting_id: Optional[str] = Form(None),  # Link to calendar meeting (SPEC-038)
-    include_coaching: bool = Form(False),  # opt-in coaching feedback
     language: str = Form("en"),  # i18n: output language (default: English)
     current_user: dict = Depends(get_current_user)
 ):
@@ -384,7 +373,6 @@ async def upload_audio(
             "deal_id": deal_id,  # Link to deal (optional)
             "status": "uploading",
             "audio_filename": file.filename,
-            "include_coaching": include_coaching,  # Store coaching preference
             "contact_ids": parsed_contact_ids  # Store linked contacts
         }
         
@@ -443,7 +431,6 @@ async def upload_audio(
                     "user_id": user_id,
                     "meeting_prep_id": meeting_prep_id,
                     "prospect_company": prospect_company_name,
-                    "include_coaching": include_coaching,
                     "language": language
                 },
                 user={"id": user_id}
@@ -463,7 +450,6 @@ async def upload_audio(
                     user_id,
                     meeting_prep_id,
                     prospect_company_name,
-                    include_coaching,
                     language
                 )
         else:
@@ -477,7 +463,6 @@ async def upload_audio(
                 user_id,
                 meeting_prep_id,
                 prospect_company_name,
-                include_coaching,
                 language
             )
             logger.info(f"Followup {followup_id} triggered via BackgroundTasks")
@@ -485,7 +470,7 @@ async def upload_audio(
         # Increment usage counter
         await usage_service.increment_usage(organization_id, "followup")
         
-        logger.info(f"Created followup {followup_id} for prospect {prospect_id}, coaching={include_coaching}")
+        logger.info(f"Created followup {followup_id} for prospect {prospect_id}")
         
         return FollowupResponse(
             id=followup_id,
@@ -510,8 +495,7 @@ def process_transcript_background(
     meeting_prep_id: Optional[str] = None,
     prospect_company: Optional[str] = None,
     estimated_duration: Optional[float] = None,
-    include_coaching: bool = False,  # opt-in coaching
-    language: str = "en"  # i18n: output language (default: English)
+    language: str = "en"
 ):
     """Background task to process transcript and generate follow-up content.
     
@@ -521,7 +505,7 @@ def process_transcript_background(
     asyncio.run(_process_transcript_async(
         followup_id, transcription_text, segments, speaker_count,
         organization_id, user_id, meeting_prep_id, prospect_company,
-        estimated_duration, include_coaching, language
+        estimated_duration, language
     ))
 
 
@@ -535,7 +519,6 @@ async def _process_transcript_async(
     meeting_prep_id: Optional[str] = None,
     prospect_company: Optional[str] = None,
     estimated_duration: Optional[float] = None,
-    include_coaching: bool = False,
     language: str = "en"
 ):
     """Actual async processing logic for transcript"""
@@ -575,8 +558,7 @@ async def _process_transcript_async(
         summary = await followup_generator.generate_summary(
             transcription=transcription_text,
             prospect_context=prospect_context,
-            include_coaching=include_coaching,  # pass coaching flag
-            language=language,  # i18n: output language
+            language=language,
             prospect_company=prospect_company
         )
         
@@ -584,7 +566,7 @@ async def _process_transcript_async(
         action_items = await followup_generator.extract_action_items(
             transcription=transcription_text,
             summary=summary.get("executive_summary"),
-            language=language  # i18n: output language
+            language=language
         )
         
         # Generate email draft with full context
@@ -592,12 +574,12 @@ async def _process_transcript_async(
             summary=summary,
             action_items=action_items,
             prospect_context=prospect_context,
-            language=language,  # i18n: output language
+            language=language,
             prospect_company=prospect_company,
             tone="professional"
         )
         
-        # Save all results (including enhanced sections)
+        # Save all results
         update_data = {
             "status": "completed",
             "executive_summary": summary.get("executive_summary", ""),
@@ -608,16 +590,10 @@ async def _process_transcript_async(
             "action_items": action_items,
             "email_draft": email_draft,
             "completed_at": datetime.utcnow().isoformat(),
-            # NEW: Enhanced follow-up fields
             "commercial_signals": summary.get("commercial_signals", {}),
             "observations": summary.get("observations", {}),
             "full_summary_content": summary.get("full_content", "")
         }
-        
-        # Only save coaching if requested
-        if include_coaching:
-            update_data["coaching_feedback"] = summary.get("coaching_feedback", {})
-            update_data["include_coaching"] = True
         
         supabase.table("followups").update(update_data).eq("id", followup_id).execute()
         
@@ -643,7 +619,6 @@ async def upload_transcript(
     meeting_subject: Optional[str] = Form(None),
     contact_ids: Optional[str] = Form(None),  # Comma-separated contact UUIDs
     deal_id: Optional[str] = Form(None),  # Optional deal to link this follow-up to
-    include_coaching: bool = Form(False),  # opt-in coaching feedback
     language: str = Form("en"),  # i18n: output language (default: English)
     current_user: dict = Depends(get_current_user)
 ):
@@ -747,7 +722,6 @@ async def upload_transcript(
             "deal_id": deal_id,  # Link to deal (optional)
             "status": "summarizing",
             "audio_filename": file.filename,  # Store transcript filename
-            "include_coaching": include_coaching,  # Store coaching preference
             "contact_ids": parsed_contact_ids  # Store linked contacts
         }
         
@@ -772,7 +746,6 @@ async def upload_transcript(
                     "user_id": user_id,
                     "meeting_prep_id": meeting_prep_id,
                     "prospect_company": prospect_company_name,
-                    "include_coaching": include_coaching,
                     "language": language,
                     "estimated_duration": parsed.estimated_duration
                 },
@@ -795,7 +768,6 @@ async def upload_transcript(
                     meeting_prep_id,
                     prospect_company_name,
                     parsed.estimated_duration,
-                    include_coaching,
                     language
                 )
         else:
@@ -811,7 +783,6 @@ async def upload_transcript(
                 meeting_prep_id,
                 prospect_company_name,
                 parsed.estimated_duration,
-                include_coaching,
                 language
             )
             logger.info(f"Transcript followup {followup_id} triggered via BackgroundTasks")
@@ -819,7 +790,7 @@ async def upload_transcript(
         # Increment usage counter
         await usage_service.increment_usage(organization_id, "followup")
         
-        logger.info(f"Created transcript followup {followup_id} for prospect {prospect_id}, coaching={include_coaching}, language={language}")
+        logger.info(f"Created transcript followup {followup_id} for prospect {prospect_id}, language={language}")
         
         return FollowupResponse(
             id=followup_id,

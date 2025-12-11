@@ -60,7 +60,6 @@ async def process_followup_audio_fn(ctx, step):
     user_id = event_data["user_id"]
     meeting_prep_id = event_data.get("meeting_prep_id")
     prospect_company = event_data.get("prospect_company")
-    include_coaching = event_data.get("include_coaching", False)
     language = event_data.get("language", "en")
     
     logger.info(f"Starting Inngest followup audio processing for {followup_id}")
@@ -108,7 +107,7 @@ async def process_followup_audio_fn(ctx, step):
     summary = await step.run(
         "generate-summary",
         generate_followup_summary,
-        transcription_result["full_text"], prospect_context, include_coaching, language, prospect_company
+        transcription_result["full_text"], prospect_context, language, prospect_company
     )
     
     # Step 6: Extract action items
@@ -122,7 +121,7 @@ async def process_followup_audio_fn(ctx, step):
     await step.run(
         "save-results",
         save_followup_results,
-        followup_id, summary, action_items, include_coaching
+        followup_id, summary, action_items
     )
     
     # Step 8: Emit completion event
@@ -178,7 +177,6 @@ async def process_followup_transcript_fn(ctx, step):
     user_id = event_data["user_id"]
     meeting_prep_id = event_data.get("meeting_prep_id")
     prospect_company = event_data.get("prospect_company")
-    include_coaching = event_data.get("include_coaching", False)
     language = event_data.get("language", "en")
     estimated_duration = event_data.get("estimated_duration")
     
@@ -202,7 +200,7 @@ async def process_followup_transcript_fn(ctx, step):
     summary = await step.run(
         "generate-summary",
         generate_followup_summary,
-        transcription_text, prospect_context, include_coaching, language, prospect_company
+        transcription_text, prospect_context, language, prospect_company
     )
     
     # Step 4: Extract action items
@@ -216,7 +214,7 @@ async def process_followup_transcript_fn(ctx, step):
     await step.run(
         "save-results",
         save_followup_results,
-        followup_id, summary, action_items, include_coaching
+        followup_id, summary, action_items
     )
     
     # Step 6: Emit completion event
@@ -373,7 +371,6 @@ async def get_prospect_context(
 async def generate_followup_summary(
     transcription_text: str,
     prospect_context: Optional[dict],
-    include_coaching: bool,
     language: str,
     prospect_company: Optional[str]
 ) -> dict:
@@ -383,7 +380,6 @@ async def generate_followup_summary(
         summary = await followup_generator.generate_summary(
             transcription=transcription_text,
             prospect_context=prospect_context,
-            include_coaching=include_coaching,
             language=language,
             prospect_company=prospect_company
         )
@@ -418,8 +414,7 @@ async def extract_action_items(
 async def save_followup_results(
     followup_id: str,
     summary: dict,
-    action_items: List[dict],
-    include_coaching: bool
+    action_items: List[dict]
 ) -> dict:
     """Save all followup results to database (without email - handled by Actions)."""
     try:
@@ -432,16 +427,10 @@ async def save_followup_results(
             "next_steps": summary.get("next_steps", []),
             "action_items": action_items,
             "completed_at": datetime.utcnow().isoformat(),
-            # Enhanced follow-up fields
             "commercial_signals": summary.get("commercial_signals", {}),
             "observations": summary.get("observations", {}),
             "full_summary_content": summary.get("full_content", "")
         }
-        
-        # Only save coaching if requested
-        if include_coaching:
-            update_data["coaching_feedback"] = summary.get("coaching_feedback", {})
-            update_data["include_coaching"] = True
         
         supabase.table("followups").update(update_data).eq("id", followup_id).execute()
         

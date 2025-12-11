@@ -134,9 +134,7 @@ export function BrowserRecording({
     setUploadProgress(10)
     
     try {
-      const additionalFields: Record<string, string> = {
-        include_coaching: 'false',
-      }
+      const additionalFields: Record<string, string> = {}
       
       if (meetingTitle) {
         additionalFields.meeting_subject = meetingTitle

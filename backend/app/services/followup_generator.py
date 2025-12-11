@@ -32,8 +32,7 @@ class FollowupGenerator:
         self,
         transcription: str,
         prospect_context: Optional[Dict[str, Any]] = None,
-        include_coaching: bool = False,  # NEW: opt-in coaching feedback
-        language: str = DEFAULT_LANGUAGE,  # i18n: output language
+        language: str = DEFAULT_LANGUAGE,
         # Legacy params for backwards compatibility
         meeting_prep_context: Optional[str] = None,
         profile_context: Optional[str] = None,
@@ -44,8 +43,10 @@ class FollowupGenerator:
         
         Args:
             transcription: Full meeting transcription
-            meeting_prep_context: Context from meeting prep (if linked)
-            profile_context: Sales rep and company profile context
+            prospect_context: Full prospect context (research, prep, contacts)
+            language: Output language code
+            meeting_prep_context: Legacy - context from meeting prep
+            profile_context: Legacy - sales rep and company profile context
             prospect_company: Name of prospect company
             
         Returns:
@@ -55,9 +56,7 @@ class FollowupGenerator:
         prompt = self._build_summary_prompt(
             transcription,
             prospect_context=prospect_context,
-            include_coaching=include_coaching,
             language=language,
-            # Legacy fallback
             meeting_prep_context=meeting_prep_context,
             profile_context=profile_context,
             prospect_company=prospect_company
@@ -194,7 +193,6 @@ If there are no action items, return an empty array: []
         self,
         transcription: str,
         prospect_context: Optional[Dict[str, Any]] = None,
-        include_coaching: bool = False,  # Deprecated: coaching is now a separate action
         language: str = DEFAULT_LANGUAGE,
         meeting_prep_context: Optional[str] = None,
         profile_context: Optional[str] = None,
