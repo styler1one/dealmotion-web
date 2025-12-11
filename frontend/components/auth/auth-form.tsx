@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Icons } from '@/components/icons'
 import { OAuthButtons } from './oauth-buttons'
 import { useTranslations } from 'next-intl'
+import { CheckCircle2, Mail } from 'lucide-react'
 
 interface AuthFormProps {
     view: 'login' | 'signup'
@@ -22,6 +23,7 @@ export function AuthForm({ view }: AuthFormProps) {
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [signupSuccess, setSignupSuccess] = useState(false)
     const t = useTranslations('authForm')
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -31,7 +33,7 @@ export function AuthForm({ view }: AuthFormProps) {
 
         try {
             if (view === 'signup') {
-                const { error } = await supabase.auth.signUp({
+                const { data, error } = await supabase.auth.signUp({
                     email,
                     password,
                     options: {
@@ -39,10 +41,20 @@ export function AuthForm({ view }: AuthFormProps) {
                     },
                 })
                 if (error) throw error
-                // For signup, we might want to show a "check your email" message
-                // But for dev mode with "Confirm email" disabled, it logs in automatically
-                router.refresh()
-                router.push('/dashboard')
+                
+                // Check if email confirmation is required
+                // If user.identities is empty or user is not confirmed, show check email message
+                if (data.user && !data.user.confirmed_at && data.user.identities?.length === 0) {
+                    // User already exists
+                    setError(t('userAlreadyExists'))
+                } else if (data.user && !data.session) {
+                    // Email confirmation required - show success message
+                    setSignupSuccess(true)
+                } else {
+                    // Email confirmation disabled - user is logged in
+                    router.refresh()
+                    router.push('/dashboard')
+                }
             } else {
                 const { error } = await supabase.auth.signInWithPassword({
                     email,
@@ -57,6 +69,30 @@ export function AuthForm({ view }: AuthFormProps) {
         } finally {
             setLoading(false)
         }
+    }
+
+    // Show success message after signup
+    if (signupSuccess) {
+        return (
+            <div className="grid gap-6">
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <div className="mb-4 rounded-full bg-green-100 p-3 dark:bg-green-900/30">
+                        <Mail className="h-8 w-8 text-green-600 dark:text-green-400" />
+                    </div>
+                    <h3 className="mb-2 text-xl font-semibold">{t('checkYourEmail')}</h3>
+                    <p className="mb-4 text-muted-foreground">
+                        {t('confirmationEmailSent', { email })}
+                    </p>
+                    <Button 
+                        variant="outline" 
+                        onClick={() => router.push('/login')}
+                        className="mt-2"
+                    >
+                        {t('backToLogin')}
+                    </Button>
+                </div>
+            </div>
+        )
     }
 
     return (
