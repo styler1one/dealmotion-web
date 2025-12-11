@@ -380,7 +380,17 @@ async def process_email_invite_fn(ctx, step):
             raise Exception("Recall.ai is not configured")
         
         now = datetime.now(timezone.utc)
-        join_at = start_time if start_time > now else None
+        
+        # Log for debugging
+        logger.info(f"[EMAIL-INVITE] Scheduling bot: start_time={start_time}, now={now}, start_time > now = {start_time > now}")
+        
+        # Only schedule for future if meeting is more than 1 minute away
+        if start_time > now + timedelta(minutes=1):
+            join_at = start_time
+            logger.info(f"[EMAIL-INVITE] Bot will join at scheduled time: {join_at}")
+        else:
+            join_at = None
+            logger.info(f"[EMAIL-INVITE] Meeting is now or in past, bot will join immediately")
         
         config = RecallBotConfig(
             meeting_url=meeting_url,
