@@ -18,6 +18,7 @@ Flow:
 
 import logging
 import base64
+import re
 from datetime import datetime, timedelta, timezone
 from inngest import TriggerEvent
 
@@ -28,6 +29,39 @@ from app.services.recall_service import recall_service, RecallBotConfig
 from app.services.prospect_matcher import ProspectMatcher
 
 logger = logging.getLogger(__name__)
+
+
+# Our notetaker email addresses to filter out from attendees
+NOTETAKER_EMAILS = {"notes@dealmotion.ai", "notes@parse.dealmotion.ai"}
+
+
+def parse_emails_from_header(header_value: str) -> list[str]:
+    """
+    Parse email addresses from email header (To, Cc, From).
+    
+    Handles formats like:
+    - "Name" <email@example.com>
+    - <email@example.com>
+    - email@example.com
+    - Multiple comma-separated addresses
+    
+    Returns list of lowercase email addresses.
+    """
+    if not header_value:
+        return []
+    
+    emails = []
+    # Find all email addresses using regex
+    pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+    matches = re.findall(pattern, header_value)
+    
+    for email in matches:
+        email_lower = email.lower()
+        # Filter out our notetaker emails
+        if email_lower not in NOTETAKER_EMAILS:
+            emails.append(email_lower)
+    
+    return emails
 
 
 # =============================================================================
@@ -102,11 +136,19 @@ async def find_prospect_and_contacts(
     
     Returns (prospect_id, contact_ids) tuple.
     """
+    logger.info(f"[EMAIL-INVITE] Finding prospect/contacts for org={organization_id}, title='{meeting_title}', attendees={attendee_emails}")
+    
+    if not attendee_emails:
+        logger.warning("[EMAIL-INVITE] No attendee emails provided for matching!")
+        return None, []
+    
     supabase = get_supabase_service()
     matcher = ProspectMatcher(supabase)
     
-    # Build attendees list for the matcher
+    # Build attendees list for the matcher (same format as calendar sync)
     attendees = [{"email": email} for email in attendee_emails if email]
+    
+    logger.info(f"[EMAIL-INVITE] Calling ProspectMatcher with {len(attendees)} attendees")
     
     # Use ProspectMatcher for intelligent matching
     # Note: match_meeting returns a MatchResult dataclass
@@ -124,9 +166,9 @@ async def find_prospect_and_contacts(
     confidence = result.best_match.confidence if result.best_match else 0
     
     if prospect_id:
-        logger.info(f"ProspectMatcher found prospect {prospect_id} with {confidence:.0%} confidence, contacts: {contact_ids}")
+        logger.info(f"[EMAIL-INVITE] ProspectMatcher found prospect {prospect_id} with {confidence:.0%} confidence, contacts: {contact_ids}")
     else:
-        logger.info(f"ProspectMatcher found no prospect match for meeting '{meeting_title}'")
+        logger.info(f"[EMAIL-INVITE] ProspectMatcher found no prospect match for meeting '{meeting_title}' with attendees {attendee_emails}")
     
     return prospect_id, contact_ids
 
@@ -304,8 +346,9 @@ async def process_email_invite_fn(ctx, step):
     raw_email_b64 = event_data["raw_email_b64"]
     sender = event_data.get("sender", "")
     subject = event_data.get("subject", "")
+    to_address = event_data.get("to_address", "")
     
-    logger.info(f"Processing email invite from: {sender}, subject: {subject}")
+    logger.info(f"Processing email invite from: {sender}, subject: {subject}, to: {to_address}")
     
     # Step 1: Parse email and extract meeting details
     def parse_email():
@@ -333,7 +376,24 @@ async def process_email_invite_fn(ctx, step):
     meeting_title = invite_data["title"] or subject or "Meeting"
     organizer_email = invite_data["organizer_email"]
     start_time_str = invite_data["start_time"]
+    
+    # Get attendees: prefer ICS attendees, fallback to email To/Cc headers
     attendees = invite_data.get("attendees", [])
+    if not attendees:
+        # Microsoft Teams invites often don't include ATTENDEE fields in ICS
+        # Parse recipients from email headers as fallback
+        email_recipients = parse_emails_from_header(to_address)
+        # Also parse sender (might have additional context)
+        sender_email = parse_emails_from_header(sender)
+        
+        # Combine all recipients, excluding organizer (they're the sender)
+        all_recipients = set(email_recipients + sender_email)
+        # Remove organizer from attendees (they're the meeting owner, not attendee)
+        if organizer_email:
+            all_recipients.discard(organizer_email.lower())
+        
+        attendees = list(all_recipients)
+        logger.info(f"[EMAIL-INVITE] No ICS attendees found, extracted from email headers: {attendees}")
     
     # Parse start time (timezone-aware)
     if start_time_str:
