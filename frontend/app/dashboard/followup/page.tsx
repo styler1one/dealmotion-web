@@ -202,7 +202,9 @@ export default function FollowupPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <h4 className="font-semibold text-slate-900 dark:text-white truncate">
-                            {followup.prospect_company_name || followup.meeting_subject || 'Meeting'}
+                            {followup.prospect_company_name && followup.meeting_subject
+                              ? `${followup.prospect_company_name} - ${followup.meeting_subject}`
+                              : followup.prospect_company_name || followup.meeting_subject || 'Meeting'}
                           </h4>
                           
                           {followup.status === 'completed' && (
