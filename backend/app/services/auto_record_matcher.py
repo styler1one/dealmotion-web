@@ -3,7 +3,7 @@ Auto-Record Matcher Service - Determines if a meeting should be auto-recorded
 SPEC-043: Calendar Integration with Auto-Record
 """
 import logging
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from typing import Dict, Any, Optional, List
 
 from app.database import get_supabase_service
@@ -226,8 +226,8 @@ async def process_calendar_for_auto_record(user_id: str, organization_id: str):
         settings = settings_result.data[0]
         
         # Get upcoming online meetings that don't already have a scheduled recording
-        from datetime import timedelta
-        now = datetime.utcnow()
+        # Use timezone-aware datetime for proper comparison with stored times
+        now = datetime.now(timezone.utc)
         future = now + timedelta(days=14)  # Look ahead 14 days
         
         meetings_result = supabase.table("calendar_meetings").select(

@@ -270,11 +270,11 @@ class CalendarSyncService:
             service = build("calendar", "v3", credentials=credentials)
             
             # Fetch events from yesterday (to catch recent meetings) through SYNC_DAYS_AHEAD
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
             # Start from beginning of yesterday to include recent meetings
             from_date = (now - timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
-            time_min = from_date.isoformat() + "Z"
-            time_max = (now + timedelta(days=SYNC_DAYS_AHEAD)).isoformat() + "Z"
+            time_min = from_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+            time_max = (now + timedelta(days=SYNC_DAYS_AHEAD)).strftime("%Y-%m-%dT%H:%M:%SZ")
             
             events = []
             page_token = None
