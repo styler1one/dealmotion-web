@@ -44,7 +44,7 @@ class ProspectMatcher:
     # Weights for different matching signals
     WEIGHT_TITLE_EXACT = 0.9
     WEIGHT_TITLE_PARTIAL = 0.6
-    WEIGHT_EMAIL_DOMAIN = 0.7
+    WEIGHT_EMAIL_DOMAIN = 0.85  # Increased: website domain match is reliable
     WEIGHT_CONTACT_EMAIL_EXACT = 0.95  # Direct match with known contact
     WEIGHT_CONTACT_DOMAIN = 0.85  # Same domain as known contact
     WEIGHT_ATTENDEE_NAME = 0.4
