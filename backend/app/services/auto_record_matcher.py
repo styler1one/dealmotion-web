@@ -254,7 +254,7 @@ async def process_calendar_for_auto_record(user_id: str, organization_id: str):
         future = now + timedelta(days=14)  # Look ahead 14 days
         
         meetings_result = supabase.table("calendar_meetings").select(
-            "id, external_event_id, title, start_time, end_time, is_online, meeting_url, attendees, status, prospect_id"
+            "id, external_event_id, title, start_time, end_time, is_online, meeting_url, attendees, status, prospect_id, contact_ids, preparation_id"
         ).eq(
             "user_id", user_id
         ).eq(
@@ -313,8 +313,10 @@ async def process_calendar_for_auto_record(user_id: str, organization_id: str):
                     continue
                 
                 # Create scheduled_recording record
-                # Include prospect_id if the calendar meeting has one linked
+                # Include all context from calendar meeting for full traceability
                 prospect_id = meeting.get("prospect_id")
+                contact_ids = meeting.get("contact_ids") or []
+                meeting_prep_id = meeting.get("preparation_id")
                 
                 recording_data = {
                     "organization_id": organization_id,
@@ -328,7 +330,10 @@ async def process_calendar_for_auto_record(user_id: str, organization_id: str):
                     "auto_scheduled": True,
                     "calendar_meeting_id": meeting["id"],
                     "calendar_event_id": meeting.get("external_event_id"),
-                    "prospect_id": prospect_id,  # Link to prospect if available
+                    # Full context from calendar meeting
+                    "prospect_id": prospect_id,
+                    "contact_ids": contact_ids,
+                    "meeting_prep_id": meeting_prep_id,
                 }
                 
                 insert_result = supabase.table("scheduled_recordings").insert(recording_data).execute()

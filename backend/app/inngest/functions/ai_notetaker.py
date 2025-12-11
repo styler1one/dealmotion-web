@@ -258,7 +258,16 @@ async def process_ai_notetaker_recording_fn(ctx, step):
             user_id
         )
         
-        # Step 6: Trigger transcription pipeline with language
+        # Step 6: Fetch prospect company name for context
+        prospect_company = None
+        if prospect_id:
+            supabase = get_supabase_service()
+            prospect_result = supabase.table("prospects").select("company_name").eq("id", prospect_id).limit(1).execute()
+            if prospect_result.data and len(prospect_result.data) > 0:
+                prospect_company = prospect_result.data[0].get("company_name")
+        
+        # Step 7: Trigger transcription pipeline with FULL context
+        # This ensures the AI summary has access to preparation and prospect info
         await step.run(
             "trigger-transcription",
             send_event,
@@ -270,6 +279,9 @@ async def process_ai_notetaker_recording_fn(ctx, step):
                 "organization_id": organization_id,
                 "user_id": user_id,
                 "language": user_language,
+                # Context for AI summary (was missing!)
+                "meeting_prep_id": meeting_prep_id,
+                "prospect_company": prospect_company,
             }
         )
         
