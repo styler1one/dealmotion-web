@@ -105,21 +105,23 @@ async def find_prospect_and_contacts(
     supabase = get_supabase_service()
     matcher = ProspectMatcher(supabase)
     
-    # Build a meeting-like dict for the matcher
-    meeting_data = {
-        "id": None,  # No calendar_meeting_id for email invites
-        "title": meeting_title,
-        "organization_id": organization_id,
-        "attendees": [{"email": email} for email in attendee_emails if email],
-        "organizer_email": organizer_email,
-    }
+    # Build attendees list for the matcher
+    attendees = [{"email": email} for email in attendee_emails if email]
     
     # Use ProspectMatcher for intelligent matching
-    result = await matcher.match_meeting(meeting_data)
+    # Note: match_meeting returns a MatchResult dataclass
+    result = await matcher.match_meeting(
+        meeting_id="email-invite",  # Placeholder, not used for email invites
+        meeting_title=meeting_title,
+        attendees=attendees,
+        organization_id=organization_id,
+        organizer_email=organizer_email
+    )
     
-    prospect_id = result.get("prospect_id")
-    contact_ids = result.get("contact_ids", [])
-    confidence = result.get("confidence", 0)
+    # Extract results from MatchResult dataclass
+    prospect_id = result.best_match.prospect_id if result.best_match else None
+    contact_ids = result.matched_contact_ids or []
+    confidence = result.best_match.confidence if result.best_match else 0
     
     if prospect_id:
         logger.info(f"ProspectMatcher found prospect {prospect_id} with {confidence:.0%} confidence, contacts: {contact_ids}")
@@ -300,7 +302,11 @@ async def process_email_invite_fn(ctx, step):
             attendee_emails=attendees,
             organizer_email=organizer_email,
         )
-        return {"prospect_id": prospect_id, "contact_ids": contact_ids}
+        # Return as serializable dict (UUIDs as strings)
+        return {
+            "prospect_id": str(prospect_id) if prospect_id else None,
+            "contact_ids": [str(cid) for cid in contact_ids] if contact_ids else []
+        }
     
     match_result = await step.run("find-prospect-contacts", find_prospect_contacts)
     prospect_id = match_result.get("prospect_id")
