@@ -535,14 +535,14 @@ async def trigger_calendar_sync(
         
         # Process auto-record for this user (if enabled)
         try:
-            logger.info(f"Starting auto-record processing for user {user_id[:8]}...")
+            logger.warning(f"[AUTO-RECORD] Starting processing for user {user_id[:8]}... org={organization_id[:8]}")
             from app.services.auto_record_matcher import process_calendar_for_auto_record
             auto_result = await process_calendar_for_auto_record(user_id, organization_id)
-            logger.info(f"Auto-record processed: {auto_result.get('scheduled', 0)} scheduled, {auto_result.get('skipped', 0)} skipped")
+            logger.warning(f"[AUTO-RECORD] Completed: {auto_result.get('scheduled', 0)} scheduled, {auto_result.get('skipped', 0)} skipped")
         except Exception as e:
             import traceback
-            logger.error(f"Auto-record processing failed: {e}")
-            logger.error(f"Traceback: {traceback.format_exc()}")
+            logger.error(f"[AUTO-RECORD] Failed: {e}")
+            logger.error(f"[AUTO-RECORD] Traceback: {traceback.format_exc()}")
             # Don't fail the sync if auto-record fails
         
         return CalendarSyncResponse(
