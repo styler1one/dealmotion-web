@@ -266,7 +266,8 @@ async def process_calendar_for_auto_record(user_id: str, organization_id: str):
             
             if not result["should_record"]:
                 skipped_count += 1
-                logger.warning(f"[AUTO-RECORD] Skipping '{meeting['title']}': {result['reason']}")
+                matched_kw = result.get('matched_keyword', '')
+                logger.warning(f"[AUTO-RECORD] Skipping '{meeting['title']}': {result['reason']} {f'({matched_kw})' if matched_kw else ''}")
                 continue
             
             # Schedule the recording
