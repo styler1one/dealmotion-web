@@ -24,7 +24,7 @@ import {
   Link2Off,
   Building2,
   Sparkles,
-  User,
+  User as UserIcon,
   X
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -584,7 +584,7 @@ export default function MeetingsPage() {
                                           variant="secondary" 
                                           className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
                                         >
-                                          <User className="h-3 w-3 mr-1" />
+                                          <UserIcon className="h-3 w-3 mr-1" />
                                           {contact.name}
                                         </Badge>
                                         <Button
