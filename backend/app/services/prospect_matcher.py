@@ -173,7 +173,8 @@ class ProspectMatcher:
         """
         try:
             # Fetch contacts with their prospect info
-            contacts_result = self.supabase.table("contacts").select(
+            # Note: table is "prospect_contacts" not "contacts"
+            contacts_result = self.supabase.table("prospect_contacts").select(
                 "id, email, prospect_id, prospects(id, company_name)"
             ).eq("organization_id", organization_id).not_.is_("email", "null").execute()
             
