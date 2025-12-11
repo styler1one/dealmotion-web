@@ -265,7 +265,8 @@ class ProspectMatcher:
         meeting_title: str,
         attendees: List[dict],
         organization_id: str,
-        contacts_lookup: dict = None
+        contacts_lookup: dict = None,
+        organizer_email: str = None
     ) -> MatchResult:
         """
         Match a single meeting to prospects in the organization.
@@ -281,12 +282,22 @@ class ProspectMatcher:
         """
         result = MatchResult(meeting_id=meeting_id)
         
-        # Extract attendee emails (exclude organizer)
+        # Extract ALL attendee emails INCLUDING organizer
+        # The organizer is often the most important person to match!
+        # (e.g., when an external party like "geert@hoobr.nl" sends the invite)
         attendee_emails = [
             a.get('email', '').lower().strip()
             for a in attendees 
-            if a.get('email') and not a.get('is_organizer', False)
+            if a.get('email')
         ]
+        
+        # Also add organizer_email if provided separately (stored at meeting level)
+        if organizer_email:
+            org_email = organizer_email.lower().strip()
+            if org_email and org_email not in attendee_emails:
+                attendee_emails.append(org_email)
+        
+        logger.debug(f"Matching meeting {meeting_id[:8]}... with {len(attendee_emails)} emails: {attendee_emails[:3]}...")
         
         try:
             # Fetch contacts lookup if not provided (for batch efficiency)
@@ -424,9 +435,9 @@ class ProspectMatcher:
                 f"{len(contacts_lookup.get('by_domain', {}))} domains"
             )
             
-            # Fetch unlinked meetings
+            # Fetch unlinked meetings (including organizer_email)
             meetings_result = self.supabase.table("calendar_meetings").select(
-                "id, title, attendees"
+                "id, title, attendees, organizer_email"
             ).eq(
                 "organization_id", organization_id
             ).is_(
@@ -443,7 +454,8 @@ class ProspectMatcher:
                     meeting_title=meeting.get('title', ''),
                     attendees=meeting.get('attendees', []),
                     organization_id=organization_id,
-                    contacts_lookup=contacts_lookup  # Reuse for efficiency
+                    contacts_lookup=contacts_lookup,  # Reuse for efficiency
+                    organizer_email=meeting.get('organizer_email')  # Include organizer!
                 )
                 results.append(result)
             
