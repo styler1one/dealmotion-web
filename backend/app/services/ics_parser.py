@@ -13,7 +13,7 @@ SPEC-043 Phase 2: Email-based AI Notetaker Invite
 
 import re
 import logging
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from typing import Optional, List, Dict, Any
 from dataclasses import dataclass
 from email import message_from_bytes
@@ -93,26 +93,43 @@ class ICSParser:
         invite = ParsedMeetingInvite()
         
         try:
-            # Extract basic fields
-            invite.title = self._extract_field(ics_content, "SUMMARY")
-            invite.description = self._extract_field(ics_content, "DESCRIPTION")
-            invite.location = self._extract_field(ics_content, "LOCATION")
-            invite.uid = self._extract_field(ics_content, "UID")
+            # Extract VEVENT block - this is where meeting data lives
+            # IMPORTANT: ICS files contain VTIMEZONE blocks with DTSTART fields
+            # that use epoch dates (1601-01-01) for timezone rules.
+            # We must extract from VEVENT only to avoid parsing wrong DTSTART.
+            vevent_content = self._extract_vevent(ics_content)
+            if not vevent_content:
+                logger.warning("No VEVENT block found in ICS, falling back to full content")
+                vevent_content = ics_content
             
-            # Extract times
-            dtstart = self._extract_field(ics_content, "DTSTART")
-            dtend = self._extract_field(ics_content, "DTEND")
-            invite.start_time = self._parse_datetime(dtstart)
-            invite.end_time = self._parse_datetime(dtend)
+            # Extract basic fields from VEVENT
+            invite.title = self._extract_field(vevent_content, "SUMMARY")
+            invite.description = self._extract_field(vevent_content, "DESCRIPTION")
+            invite.location = self._extract_field(vevent_content, "LOCATION")
+            invite.uid = self._extract_field(vevent_content, "UID")
+            
+            # Extract times from VEVENT (not VTIMEZONE!) with timezone info
+            dtstart_val, dtstart_tz = self._extract_datetime_with_tz(vevent_content, "DTSTART")
+            dtend_val, dtend_tz = self._extract_datetime_with_tz(vevent_content, "DTEND")
+            
+            # Debug logging
+            logger.info(f"[ICS-PARSER] Raw DTSTART from VEVENT: '{dtstart_val}' (tz={dtstart_tz})")
+            logger.info(f"[ICS-PARSER] Raw DTEND from VEVENT: '{dtend_val}' (tz={dtend_tz})")
+            
+            invite.start_time = self._parse_datetime(dtstart_val, dtstart_tz)
+            invite.end_time = self._parse_datetime(dtend_val, dtend_tz)
+            
+            logger.info(f"[ICS-PARSER] Parsed start_time: {invite.start_time}")
+            logger.info(f"[ICS-PARSER] Parsed end_time: {invite.end_time}")
             
             # Extract organizer
-            organizer = self._extract_field(ics_content, "ORGANIZER")
+            organizer = self._extract_field(vevent_content, "ORGANIZER")
             if organizer:
                 invite.organizer_email = self._extract_email(organizer)
                 invite.organizer_name = self._extract_cn(organizer)
             
-            # Extract attendees
-            invite.attendees = self._extract_attendees(ics_content)
+            # Extract attendees from VEVENT
+            invite.attendees = self._extract_attendees(vevent_content)
             
             # Find meeting URL in description, location, or content
             search_text = f"{invite.description or ''} {invite.location or ''} {ics_content}"
@@ -120,12 +137,27 @@ class ICSParser:
             invite.meeting_url = meeting_url
             invite.meeting_platform = platform
             
-            logger.info(f"Parsed ICS: title='{invite.title}', platform={platform}, organizer={invite.organizer_email}")
+            logger.info(f"Parsed ICS: title='{invite.title}', platform={platform}, organizer={invite.organizer_email}, start={invite.start_time}")
             
         except Exception as e:
             logger.error(f"Error parsing ICS content: {e}")
         
         return invite
+    
+    def _extract_vevent(self, ics_content: str) -> Optional[str]:
+        """
+        Extract the VEVENT block from ICS content.
+        
+        This is crucial because ICS files contain VTIMEZONE blocks
+        with DTSTART fields using epoch dates (1601-01-01 for Windows).
+        We must only parse fields from the VEVENT block for actual meeting data.
+        """
+        # Match BEGIN:VEVENT ... END:VEVENT block
+        pattern = r"BEGIN:VEVENT[\r\n]+(.*?)[\r\n]+END:VEVENT"
+        match = re.search(pattern, ics_content, re.DOTALL | re.IGNORECASE)
+        if match:
+            return match.group(1)
+        return None
     
     def parse_email_for_ics(self, raw_email: bytes) -> Optional[ParsedMeetingInvite]:
         """
@@ -212,46 +244,96 @@ class ICSParser:
             return value.strip()
         return None
     
-    def _parse_datetime(self, dt_string: Optional[str]) -> Optional[datetime]:
+    def _extract_datetime_with_tz(self, content: str, field_name: str) -> tuple[Optional[str], Optional[str]]:
+        """
+        Extract datetime field with timezone info.
+        
+        Returns (value, tzid) tuple.
+        Example: DTSTART;TZID=W. Europe Standard Time:20251211T210000
+        Returns: ("20251211T210000", "W. Europe Standard Time")
+        """
+        # Match FIELDNAME optionally with TZID parameter
+        pattern = rf"^{field_name}(?:;TZID=([^:;\r\n]+))?(?:;[^:\r\n]*)?:([^\r\n]*)"
+        match = re.search(pattern, content, re.MULTILINE | re.IGNORECASE)
+        if match:
+            tzid = match.group(1)  # May be None
+            value = match.group(2)
+            # Clean up line continuations
+            value = re.sub(r'\r?\n[ \t]', '', value)
+            return value.strip(), tzid
+        return None, None
+    
+    # Common Windows timezone names to UTC offset (in hours)
+    # Note: These are standard time offsets; DST handling would need more logic
+    WINDOWS_TZ_OFFSETS = {
+        "W. Europe Standard Time": 1,  # CET (UTC+1)
+        "Central European Standard Time": 1,
+        "Romance Standard Time": 1,  # France, etc
+        "Central Europe Standard Time": 1,
+        "GMT Standard Time": 0,  # UK
+        "UTC": 0,
+        "Eastern Standard Time": -5,  # US East
+        "Pacific Standard Time": -8,  # US West
+        "Mountain Standard Time": -7,
+        "Central Standard Time": -6,
+    }
+    
+    def _parse_datetime(self, dt_string: Optional[str], tzid: Optional[str] = None) -> Optional[datetime]:
         """Parse ICS datetime string.
         
         ICS datetime formats:
         - YYYYMMDDTHHMMSSZ (UTC)
         - YYYYMMDDTHHMMSS (local/naive)
         - YYYYMMDD (date only)
-        - With TZID parameter: DTSTART;TZID=Europe/Amsterdam:20251212T100000
+        
+        Args:
+            dt_string: The datetime value (e.g. "20251211T210000")
+            tzid: Optional timezone ID (e.g. "W. Europe Standard Time")
         """
         if not dt_string:
             return None
         
         try:
             # Check if this is UTC (ends with Z)
-            is_utc = dt_string.endswith("Z") or "Z" in dt_string
-            
-            # Remove any parameters (e.g., TZID=...)
-            if ":" in dt_string:
-                dt_string = dt_string.split(":")[-1]
+            is_utc = dt_string.endswith("Z")
             
             # Remove Z suffix for parsing
-            dt_string = dt_string.replace("Z", "")
+            clean_dt = dt_string.replace("Z", "")
             
             parsed_dt = None
-            if len(dt_string) == 8:  # Date only: YYYYMMDD
-                parsed_dt = datetime.strptime(dt_string, "%Y%m%d")
-            elif len(dt_string) == 15:  # DateTime: YYYYMMDDTHHMMSS
-                parsed_dt = datetime.strptime(dt_string, "%Y%m%dT%H%M%S")
+            if len(clean_dt) == 8:  # Date only: YYYYMMDD
+                parsed_dt = datetime.strptime(clean_dt, "%Y%m%d")
+            elif len(clean_dt) == 15:  # DateTime: YYYYMMDDTHHMMSS
+                parsed_dt = datetime.strptime(clean_dt, "%Y%m%dT%H%M%S")
             else:
                 # Try ISO format
-                parsed_dt = datetime.fromisoformat(dt_string)
+                parsed_dt = datetime.fromisoformat(clean_dt)
             
-            # Apply UTC timezone if the original had Z suffix
-            if parsed_dt and is_utc:
-                from datetime import timezone
-                parsed_dt = parsed_dt.replace(tzinfo=timezone.utc)
+            if parsed_dt:
+                if is_utc:
+                    # Explicit UTC
+                    parsed_dt = parsed_dt.replace(tzinfo=timezone.utc)
+                elif tzid:
+                    # Try to convert from Windows timezone to UTC
+                    offset_hours = self.WINDOWS_TZ_OFFSETS.get(tzid)
+                    if offset_hours is not None:
+                        # Create timezone and convert to UTC
+                        local_tz = timezone(timedelta(hours=offset_hours))
+                        parsed_dt = parsed_dt.replace(tzinfo=local_tz)
+                        # Convert to UTC for consistent storage
+                        parsed_dt = parsed_dt.astimezone(timezone.utc)
+                        logger.info(f"[ICS-PARSER] Converted {dt_string} from {tzid} (UTC{offset_hours:+d}) to UTC: {parsed_dt}")
+                    else:
+                        logger.warning(f"[ICS-PARSER] Unknown timezone '{tzid}', treating as UTC")
+                        parsed_dt = parsed_dt.replace(tzinfo=timezone.utc)
+                else:
+                    # No timezone info - assume UTC (safer for scheduling)
+                    parsed_dt = parsed_dt.replace(tzinfo=timezone.utc)
+                    logger.debug(f"[ICS-PARSER] No timezone info, assuming UTC for {dt_string}")
             
             return parsed_dt
         except Exception as e:
-            logger.debug(f"Could not parse datetime '{dt_string}': {e}")
+            logger.error(f"Could not parse datetime '{dt_string}' (tzid={tzid}): {e}")
             return None
     
     def _extract_email(self, value: str) -> Optional[str]:

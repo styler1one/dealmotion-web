@@ -321,6 +321,9 @@ async def process_email_invite_fn(ctx, step):
         if not invite.organizer_email:
             raise Exception("No organizer email found in invite")
         
+        # Debug logging for datetime parsing
+        logger.info(f"[EMAIL-INVITE] Parsed ICS: title='{invite.title}', start_time={invite.start_time}, end_time={invite.end_time}")
+        
         return invite.to_dict()
     
     invite_data = await step.run("parse-email", parse_email)
