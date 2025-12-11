@@ -178,10 +178,11 @@ class ProspectMatcher:
             }
         """
         try:
-            # Fetch contacts with their prospect info (include name fields!)
+            # Fetch contacts with their prospect info (include name field!)
             # Note: table is "prospect_contacts" not "contacts"
+            # Note: contacts have a single "name" field, not first_name/last_name
             contacts_result = self.supabase.table("prospect_contacts").select(
-                "id, email, first_name, last_name, prospect_id, prospects(id, company_name)"
+                "id, email, name, prospect_id, prospects(id, company_name)"
             ).eq("organization_id", organization_id).execute()
             
             contacts = contacts_result.data or []
@@ -222,35 +223,36 @@ class ProspectMatcher:
                         })
                 
                 # Name-based lookup (most important!)
-                first_name = (contact.get("first_name") or "").strip()
-                last_name = (contact.get("last_name") or "").strip()
+                # Note: contacts have a single "name" field like "Geert Menting"
+                full_name = (contact.get("name") or "").strip()
                 
-                if first_name or last_name:
-                    full_name = f"{first_name} {last_name}".strip()
+                if full_name:
+                    # Split into parts for partial matching
+                    name_parts = full_name.split()
+                    first_name = name_parts[0] if name_parts else ""
+                    last_name = name_parts[-1] if len(name_parts) > 1 else ""
+                    
                     contact_info = {
                         "prospect_id": prospect_id,
                         "contact_id": contact_id,
-                        "first_name": first_name.lower(),
-                        "last_name": last_name.lower(),
                         "full_name": full_name
                     }
                     
                     # Index by normalized full name
                     norm_full = full_name.lower()
-                    if norm_full:
-                        if norm_full not in by_name:
-                            by_name[norm_full] = []
-                        by_name[norm_full].append(contact_info)
+                    if norm_full not in by_name:
+                        by_name[norm_full] = []
+                    by_name[norm_full].append(contact_info)
                     
                     # Also index by first name (for partial matches)
-                    if first_name:
+                    if first_name and len(first_name) >= 3:
                         norm_first = first_name.lower()
                         if norm_first not in by_name:
                             by_name[norm_first] = []
                         by_name[norm_first].append(contact_info)
                     
                     # Also index by last name
-                    if last_name:
+                    if last_name and len(last_name) >= 3:
                         norm_last = last_name.lower()
                         if norm_last not in by_name:
                             by_name[norm_last] = []
