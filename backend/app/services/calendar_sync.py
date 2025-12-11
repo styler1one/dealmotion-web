@@ -184,24 +184,56 @@ class CalendarSyncService:
                     "is_organizer": attendee.get("organizer", False),
                 })
             
-            # Check if it's an online meeting
-            conference_data = event.get("conferenceData", {})
-            entry_points = conference_data.get("entryPoints", [])
+            # Check if it's an online meeting - multiple detection methods
             meeting_url = None
             is_online = False
             
+            # Method 1: conferenceData.entryPoints (standard Google Meet)
+            conference_data = event.get("conferenceData", {})
+            entry_points = conference_data.get("entryPoints", [])
             for ep in entry_points:
                 if ep.get("entryPointType") == "video":
                     meeting_url = ep.get("uri")
                     is_online = True
                     break
             
-            # Also check location for common meeting URLs
+            # Method 2: hangoutLink property (older Google Meet format)
+            if not meeting_url and event.get("hangoutLink"):
+                meeting_url = event.get("hangoutLink")
+                is_online = True
+            
+            # Method 3: Check location for meeting URLs
             location = event.get("location", "")
             if location and not is_online:
-                if any(domain in location.lower() for domain in ["meet.google", "zoom.us", "teams.microsoft"]):
-                    meeting_url = location
-                    is_online = True
+                location_lower = location.lower()
+                if any(domain in location_lower for domain in ["meet.google.com", "zoom.us", "teams.microsoft.com", "webex.com"]):
+                    # Try to extract clean URL
+                    import re
+                    url_match = re.search(r'https?://[^\s<>"\']+', location)
+                    if url_match:
+                        meeting_url = url_match.group(0)
+                        is_online = True
+                    else:
+                        meeting_url = location
+                        is_online = True
+            
+            # Method 4: Check description for meeting URLs
+            description = event.get("description", "")
+            if description and not is_online:
+                desc_lower = description.lower()
+                if any(domain in desc_lower for domain in ["meet.google.com", "zoom.us/j/", "teams.microsoft.com/l/meetup", "webex.com"]):
+                    import re
+                    url_match = re.search(r'https?://(?:meet\.google\.com/[a-z\-]+|zoom\.us/j/\d+|teams\.microsoft\.com/l/meetup-join/[^\s<>"\']+|[^\s<>"\']*webex\.com[^\s<>"\']*)', desc_lower)
+                    if url_match:
+                        # Get the actual URL with correct casing from original
+                        start_idx = desc_lower.find(url_match.group(0)[:20])
+                        if start_idx >= 0:
+                            actual_match = re.search(r'https?://[^\s<>"\']+', description[start_idx:])
+                            if actual_match:
+                                meeting_url = actual_match.group(0)
+                                is_online = True
+            
+            logger.debug(f"Event '{event.get('summary')}': is_online={is_online}, url={meeting_url[:50] if meeting_url else None}")
             
             # Handle recurring events
             is_recurring = "recurrence" in event or "recurringEventId" in event
