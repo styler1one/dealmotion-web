@@ -112,10 +112,19 @@ def create_followup_record(
     """Create a followup record for the AI Notetaker recording with full context."""
     supabase = get_supabase_service()
     
+    # Fetch prospect company name if we have a prospect_id
+    prospect_company_name = None
+    if prospect_id:
+        prospect_result = supabase.table("prospects").select("company_name").eq("id", prospect_id).limit(1).execute()
+        if prospect_result.data and len(prospect_result.data) > 0:
+            prospect_company_name = prospect_result.data[0].get("company_name")
+            logger.info(f"Found prospect company name: {prospect_company_name}")
+    
     followup_data = {
         "organization_id": organization_id,
         "user_id": user_id,
         "prospect_id": prospect_id,
+        "prospect_company_name": prospect_company_name,  # Add company name for dashboard display
         "meeting_subject": meeting_title or "AI Notetaker Recording",
         "audio_url": audio_url,
         "status": "pending",
@@ -132,7 +141,7 @@ def create_followup_record(
         raise Exception("Failed to create followup record")
     
     followup_id = result.data[0]["id"]
-    logger.info(f"Created followup: {followup_id} with prep={meeting_prep_id}, contacts={len(contact_ids or [])}")
+    logger.info(f"Created followup: {followup_id} with prep={meeting_prep_id}, contacts={len(contact_ids or [])}, prospect={prospect_company_name}")
     
     return followup_id
 
