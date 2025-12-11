@@ -42,20 +42,48 @@ def match_user_by_email(organizer_email: str) -> dict | None:
     """
     supabase = get_supabase_service()
     
-    # Search in users table by email
+    # First, find the user by email in organization_members (joined with organization)
+    # The users table syncs with auth.users and has id, email
     result = supabase.table("users").select(
-        "id, email, name, organization_id"
+        "id, email"
     ).eq("email", organizer_email.lower()).limit(1).execute()
     
-    if result.data and len(result.data) > 0:
-        user = result.data[0]
-        logger.info(f"Matched email {organizer_email} to user {user['id']}")
-        return user
+    if not result.data or len(result.data) == 0:
+        logger.warning(f"No user found for email: {organizer_email}")
+        return None
     
-    # Try with auth.users (if users table is separate)
-    # Supabase auth users might be in a different location
-    logger.warning(f"No user found for email: {organizer_email}")
-    return None
+    user_id = result.data[0]["id"]
+    user_email = result.data[0]["email"]
+    
+    # Get organization_id from organization_members
+    org_result = supabase.table("organization_members").select(
+        "organization_id"
+    ).eq("user_id", user_id).limit(1).execute()
+    
+    if not org_result.data or len(org_result.data) == 0:
+        logger.warning(f"User {user_id} not in any organization")
+        return None
+    
+    organization_id = org_result.data[0]["organization_id"]
+    
+    # Try to get name from sales_profiles
+    name = None
+    profile_result = supabase.table("sales_profiles").select(
+        "full_name"
+    ).eq("user_id", user_id).limit(1).execute()
+    
+    if profile_result.data and len(profile_result.data) > 0:
+        name = profile_result.data[0].get("full_name")
+    
+    user = {
+        "id": user_id,
+        "email": user_email,
+        "name": name,
+        "organization_id": organization_id
+    }
+    
+    logger.info(f"Matched email {organizer_email} to user {user_id} in org {organization_id}")
+    return user
 
 
 async def find_prospect_and_contacts(
