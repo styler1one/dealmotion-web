@@ -1205,6 +1205,46 @@
     "notifications": {
       "description": "Configure your email and push notifications"
     },
+    "autoRecord": {
+      "title": "Auto-Record Meetings",
+      "description": "Automatically record and transcribe your calendar meetings with AI Notetaker",
+      "saved": "Settings saved",
+      "savedEnabled": "AI Notetaker will automatically join matching meetings",
+      "savedDisabled": "Auto-recording is now disabled",
+      "mode": {
+        "label": "Recording Mode",
+        "filtered": "Smart Filter",
+        "filteredDesc": "Record meetings matching your keyword rules",
+        "all": "All Meetings",
+        "allDesc": "Record every online meeting automatically",
+        "none": "Off",
+        "noneDesc": "Never auto-record (manual only)"
+      },
+      "externalOnly": "External meetings only",
+      "externalOnlyDesc": "Only record meetings with attendees outside your organization",
+      "minDuration": "Minimum duration",
+      "minDurationDesc": "Skip meetings shorter than this",
+      "minutes": "min",
+      "includeKeywords": "Record when title contains",
+      "includeKeywordsDesc": "Meeting will be recorded if title contains any of these words",
+      "excludeKeywords": "Never record when title contains",
+      "excludeKeywordsDesc": "These keywords override include rules - meeting will be skipped",
+      "addKeywordPlaceholder": "Add keyword...",
+      "resetDefaults": "Reset to defaults",
+      "keywordsReset": "Keywords reset",
+      "keywordsResetDesc": "Keywords have been reset to default values",
+      "keywordExists": "Keyword already exists",
+      "preview": "Preview upcoming meetings",
+      "previewResults": "Preview Results",
+      "willRecord": "{count} will be recorded",
+      "willSkip": "{count} will be skipped",
+      "error": {
+        "fetchFailed": "Failed to load settings",
+        "saveFailed": "Failed to save settings",
+        "resetFailed": "Failed to reset keywords",
+        "previewFailed": "Failed to load preview"
+      }
+    },
     "comingSoon": "Coming Soon"
   },
   "deals": {

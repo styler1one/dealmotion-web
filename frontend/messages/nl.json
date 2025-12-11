@@ -959,6 +959,46 @@
     "notifications": {
       "description": "Stel je e-mail en push notificaties in"
     },
+    "autoRecord": {
+      "title": "Automatisch Opnemen",
+      "description": "Automatisch je kalendermeetings opnemen en transcriberen met AI Notetaker",
+      "saved": "Instellingen opgeslagen",
+      "savedEnabled": "AI Notetaker neemt automatisch deel aan matchende meetings",
+      "savedDisabled": "Automatisch opnemen is nu uitgeschakeld",
+      "mode": {
+        "label": "Opnamemodus",
+        "filtered": "Slim Filteren",
+        "filteredDesc": "Neem meetings op die matchen met je keyword regels",
+        "all": "Alle Meetings",
+        "allDesc": "Neem automatisch elke online meeting op",
+        "none": "Uit",
+        "noneDesc": "Nooit automatisch opnemen (alleen handmatig)"
+      },
+      "externalOnly": "Alleen externe meetings",
+      "externalOnlyDesc": "Alleen opnemen bij meetings met deelnemers buiten je organisatie",
+      "minDuration": "Minimale duur",
+      "minDurationDesc": "Sla meetings over die korter zijn dan dit",
+      "minutes": "min",
+      "includeKeywords": "Opnemen wanneer titel bevat",
+      "includeKeywordsDesc": "Meeting wordt opgenomen als titel een van deze woorden bevat",
+      "excludeKeywords": "Nooit opnemen wanneer titel bevat",
+      "excludeKeywordsDesc": "Deze keywords overschrijven include regels - meeting wordt overgeslagen",
+      "addKeywordPlaceholder": "Voeg keyword toe...",
+      "resetDefaults": "Reset naar standaard",
+      "keywordsReset": "Keywords gereset",
+      "keywordsResetDesc": "Keywords zijn teruggezet naar standaardwaarden",
+      "keywordExists": "Keyword bestaat al",
+      "preview": "Preview aankomende meetings",
+      "previewResults": "Preview Resultaten",
+      "willRecord": "{count} worden opgenomen",
+      "willSkip": "{count} worden overgeslagen",
+      "error": {
+        "fetchFailed": "Kon instellingen niet laden",
+        "saveFailed": "Kon instellingen niet opslaan",
+        "resetFailed": "Kon keywords niet resetten",
+        "previewFailed": "Kon preview niet laden"
+      }
+    },
     "comingSoon": "Binnenkort"
   },
   "deals": {

@@ -48,6 +48,7 @@ import { UsageMeter } from '@/components/usage-meter'
 import { api } from '@/lib/api'
 import { logger } from '@/lib/logger'
 import { useConfirmDialog } from '@/components/confirm-dialog'
+import { AutoRecordSettings } from '@/components/ai-notetaker/auto-record-settings'
 import type { User } from '@supabase/supabase-js'
 
 export default function SettingsPage() {
@@ -1699,6 +1700,9 @@ export default function SettingsPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Auto-Record Settings */}
+          <AutoRecordSettings />
 
           {/* Coming Soon: Notifications */}
           <Card className="opacity-60">

@@ -17,6 +17,7 @@ from inngest import TriggerEvent, TriggerCron
 from app.inngest.client import inngest_client
 from app.database import get_supabase_service
 from app.services.calendar_sync import CalendarSyncService
+from app.services.auto_record_matcher import process_calendar_for_auto_record
 
 logger = logging.getLogger(__name__)
 
@@ -113,6 +114,18 @@ async def sync_calendar_connection_fn(ctx, step):
     
     # Step 2: Perform sync
     result = await step.run("sync-connection", sync_connection, connection_id)
+    
+    # Step 3: Process auto-record for this user's calendar (if enabled)
+    user_id = connection.get("user_id")
+    organization_id = connection.get("organization_id")
+    
+    if user_id and organization_id:
+        auto_record_result = await step.run(
+            "process-auto-record",
+            process_calendar_for_auto_record,
+            user_id, organization_id
+        )
+        logger.info(f"Auto-record processed: {auto_record_result.get('scheduled', 0)} scheduled")
     
     return {
         "success": True,
