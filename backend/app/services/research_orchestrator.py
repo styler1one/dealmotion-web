@@ -146,13 +146,14 @@ class ResearchOrchestrator:
                 if result.get("success"):
                     combined_data["success_count"] += 1
                     
-                    # Log cache statistics for Claude
-                    if source_name == "claude" and result.get("cache_stats"):
-                        cache = result["cache_stats"]
+                    # Log token statistics for Claude (two-phase approach)
+                    if source_name == "claude" and result.get("token_stats"):
+                        stats = result["token_stats"]
                         logger.info(
-                            f"Claude cache stats: hit={cache.get('cache_hit')}, "
-                            f"read={cache.get('cache_read_tokens', 0)}, "
-                            f"write={cache.get('cache_write_tokens', 0)}"
+                            f"Claude two-phase research completed. "
+                            f"Phase 1 (search): {stats.get('phase1_input', 0)} in / {stats.get('phase1_output', 0)} out. "
+                            f"Phase 2 (analysis): {stats.get('phase2_input', 0)} in / {stats.get('phase2_output', 0)} out. "
+                            f"Total: {stats.get('total_input', 0)} input, {stats.get('total_output', 0)} output tokens."
                         )
         
         # Get relevant KB chunks for case studies
