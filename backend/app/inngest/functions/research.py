@@ -1,7 +1,11 @@
 """
-Research Agent Inngest Function.
+Research Agent Inngest Function - Gemini-First Architecture.
 
-Handles company research workflow with full observability and automatic retries.
+Cost-optimized workflow:
+- Gemini: ALL web searching (cheap, $0.10/1M tokens)
+- Claude: ONLY analysis (no web search, one call)
+
+Savings: ~85% reduction in token costs.
 
 Events:
 - dealmotion/research.requested: Triggers new research
@@ -15,17 +19,17 @@ from inngest import NonRetriableError, TriggerEvent
 
 from app.inngest.client import inngest_client
 from app.database import get_supabase_service
-from app.services.claude_researcher import ClaudeResearcher
 from app.services.gemini_researcher import GeminiResearcher
+from app.services.claude_researcher import ClaudeResearcher
 from app.services.kvk_api import KVKApi
 from app.services.website_scraper import get_website_scraper
 from app.i18n.config import DEFAULT_LANGUAGE
 
 logger = logging.getLogger(__name__)
 
-# Initialize services (will be created once)
-claude_researcher = ClaudeResearcher()
+# Initialize services (created once)
 gemini_researcher = GeminiResearcher()
+claude_researcher = ClaudeResearcher()
 kvk_api = KVKApi()
 website_scraper = get_website_scraper()
 
@@ -36,21 +40,23 @@ supabase = get_supabase_service()
 @inngest_client.create_function(
     fn_id="research-company",
     trigger=TriggerEvent(event="dealmotion/research.requested"),
-    retries=2,  # Total attempts = 3 (1 initial + 2 retries)
+    retries=2,
 )
 async def research_company_fn(ctx, step):
     """
-    Multi-step company research with full observability.
+    Gemini-first company research with full observability.
     
-    Steps:
+    Architecture (Cost-Optimized):
     1. Update status to 'researching'
-    2. Claude AI research
-    3. Gemini AI research
+    2. Get seller context
+    3. Gemini: Comprehensive web search (PRIMARY - does all searching)
     4. KVK lookup (if Dutch company)
     5. Website scraping (if URL provided)
-    6. Merge results and generate brief
+    6. Claude: Analyze data and generate report (NO web search)
     7. Save to database
     8. Emit completion event
+    
+    Cost: ~$0.15-0.20 per research (was ~$0.50-1.00)
     """
     # Extract event data
     event_data = ctx.event.data
@@ -64,7 +70,7 @@ async def research_company_fn(ctx, step):
     user_id = event_data.get("user_id")
     language = event_data.get("language", DEFAULT_LANGUAGE)
     
-    logger.info(f"Starting Inngest research for {company_name} (id={research_id})")
+    logger.info(f"Starting Gemini-first research for {company_name} (id={research_id})")
     
     # Step 1: Update status to researching
     await step.run("update-status-researching", update_research_status, research_id, "researching")
@@ -72,49 +78,42 @@ async def research_company_fn(ctx, step):
     # Step 2: Get seller context (for personalized research)
     seller_context = await step.run("get-seller-context", get_seller_context, organization_id, user_id)
     
-    # Add organization_id to seller_context for caching purposes
+    # Add organization_id to seller_context for caching
     if seller_context:
         seller_context["organization_id"] = organization_id
     
-    # Step 3: Claude research with retry
-    claude_result = await step.run(
-        "claude-research",
-        run_claude_research,
-        company_name, country, city, linkedin_url, seller_context, language
-    )
-    
-    # Step 4: Gemini research with retry
+    # Step 3: Gemini comprehensive research (PRIMARY - does all web searching)
     gemini_result = await step.run(
-        "gemini-research",
+        "gemini-comprehensive-research",
         run_gemini_research,
         company_name, country, city, linkedin_url, seller_context, language
     )
     
-    # Step 5: KVK lookup (conditional - only for Dutch companies)
+    # Step 4: KVK lookup (conditional - only for Dutch companies)
     kvk_result = None
     if kvk_api.is_dutch_company(country):
         kvk_result = await step.run("kvk-lookup", run_kvk_lookup, company_name, city)
     
-    # Step 6: Website scraping (conditional - if URL provided)
+    # Step 5: Website scraping (conditional - if URL provided)
     website_result = None
     if website_url:
         website_result = await step.run("website-scrape", run_website_scrape, website_url)
     
-    # Step 7: Merge results and generate brief
+    # Step 6: Claude analysis (NO web search - just analyzes Gemini data)
     brief_content = await step.run(
-        "generate-brief",
-        merge_and_generate_brief,
-        company_name, country, city, claude_result, gemini_result, kvk_result, website_result, seller_context, language
+        "claude-analysis",
+        run_claude_analysis,
+        company_name, country, city, gemini_result, kvk_result, website_result, seller_context, language
     )
     
-    # Step 8: Save results to database
+    # Step 7: Save results to database
     await step.run(
         "save-results",
         save_research_results,
-        research_id, claude_result, gemini_result, kvk_result, website_result, brief_content
+        research_id, gemini_result, kvk_result, website_result, brief_content
     )
     
-    # Step 9: Emit completion event
+    # Step 8: Emit completion event
     await step.send_event(
         "emit-completion",
         inngest.Event(
@@ -129,7 +128,7 @@ async def research_company_fn(ctx, step):
         )
     )
     
-    logger.info(f"Research completed for {company_name} (id={research_id})")
+    logger.info(f"Gemini-first research completed for {company_name} (id={research_id})")
     
     return {
         "research_id": research_id,
@@ -154,12 +153,10 @@ async def get_seller_context(organization_id: Optional[str], user_id: Optional[s
     """
     Get seller context for personalized research.
     
-    OPTIMIZED for research quality and token efficiency:
-    - Focus on ICP details for precise fit assessment
-    - Products with benefits for use case matching
-    - No narratives or personal info (saves tokens, low value)
-    
-    Token budget: ~235 tokens (down from ~460)
+    Includes:
+    - Products with benefits
+    - ICP (pain points, decision makers, company sizes)
+    - Differentiators and value propositions
     """
     if not organization_id:
         return {"has_context": False}
@@ -171,44 +168,36 @@ async def get_seller_context(organization_id: Optional[str], user_id: Optional[s
         ).limit(1).execute()
         company_profile = company_response.data[0] if company_response.data else None
         
-        # Build optimized context
+        # Build context
         context = {
             "has_context": bool(company_profile),
-            # Essential identification
             "company_name": None,
-            # Products with benefits for use case matching
-            "products": [],  # [{name, benefits}]
-            # Value propositions and differentiation
+            "products": [],
             "value_propositions": [],
             "differentiators": [],
-            # ICP for fit assessment (CRITICAL for quality)
             "target_industries": [],
             "target_company_sizes": [],
-            "ideal_pain_points": [],      # What pains do we solve?
-            "target_decision_makers": [], # Who are typical buyers?
+            "ideal_pain_points": [],
+            "target_decision_makers": [],
         }
         
-        # Extract from company_profile
         if company_profile:
             context["company_name"] = company_profile.get("company_name")
             
-            # Products: extract name AND benefits for use case matching
+            # Products with benefits
             products = company_profile.get("products", []) or []
-            context["products"] = []
-            for p in products[:5]:  # Limit to 5 products
+            for p in products[:5]:
                 if isinstance(p, dict) and p.get("name"):
                     context["products"].append({
                         "name": p.get("name"),
                         "benefits": p.get("benefits", [])[:3] if p.get("benefits") else []
                     })
             
-            # Value propositions from core_value_props
+            # Value propositions and differentiators
             context["value_propositions"] = (company_profile.get("core_value_props", []) or [])[:5]
-            
-            # Differentiators
             context["differentiators"] = (company_profile.get("differentiators", []) or [])[:3]
             
-            # ICP - Ideal Customer Profile (CRITICAL for quality)
+            # ICP details
             icp = company_profile.get("ideal_customer_profile", {}) or {}
             context["target_industries"] = (icp.get("industries", []) or [])[:5]
             context["target_company_sizes"] = (icp.get("company_sizes", []) or [])[:3]
@@ -221,7 +210,7 @@ async def get_seller_context(organization_id: Optional[str], user_id: Optional[s
                 f"pain_points={len(context['ideal_pain_points'])}"
             )
         
-        # Fallback: get company name from sales profile role
+        # Fallback: get company name from sales profile
         if not context.get("company_name") and user_id:
             profile_response = supabase.table("sales_profiles").select("role").eq(
                 "user_id", user_id
@@ -231,38 +220,12 @@ async def get_seller_context(organization_id: Optional[str], user_id: Optional[s
                 if " at " in role:
                     context["company_name"] = role.split(" at ")[-1].strip()
                     context["has_context"] = True
-                    logger.info(f"Company name from sales_profile: {context['company_name']}")
         
         return context
         
     except Exception as e:
         logger.warning(f"Failed to get seller context: {e}")
         return {"has_context": False}
-
-
-async def run_claude_research(
-    company_name: str,
-    country: Optional[str],
-    city: Optional[str],
-    linkedin_url: Optional[str],
-    seller_context: dict,
-    language: str
-) -> dict:
-    """Run Claude AI research."""
-    try:
-        result = await claude_researcher.search_company(
-            company_name=company_name,
-            country=country,
-            city=city,
-            linkedin_url=linkedin_url,
-            seller_context=seller_context,
-            language=language
-        )
-        return result
-    except Exception as e:
-        logger.error(f"Claude research failed: {e}")
-        # Return error result but don't fail the entire workflow
-        return {"success": False, "error": str(e), "source": "claude"}
 
 
 async def run_gemini_research(
@@ -273,7 +236,12 @@ async def run_gemini_research(
     seller_context: dict,
     language: str
 ) -> dict:
-    """Run Gemini AI research."""
+    """
+    Run Gemini comprehensive research.
+    
+    This is the PRIMARY research step - Gemini does ALL web searching.
+    Much cheaper than Claude web search (~30x less per token).
+    """
     try:
         result = await gemini_researcher.search_company(
             company_name=company_name,
@@ -283,6 +251,15 @@ async def run_gemini_research(
             seller_context=seller_context,
             language=language
         )
+        
+        # Log token usage
+        if result.get("token_stats"):
+            stats = result["token_stats"]
+            logger.info(
+                f"Gemini research tokens: {stats.get('input_tokens', 'N/A')} in, "
+                f"{stats.get('output_tokens', 'N/A')} out"
+            )
+        
         return result
     except Exception as e:
         logger.error(f"Gemini research failed: {e}")
@@ -309,57 +286,69 @@ async def run_website_scrape(website_url: str) -> dict:
         return {"success": False, "error": str(e), "source": "website"}
 
 
-async def merge_and_generate_brief(
+async def run_claude_analysis(
     company_name: str,
     country: Optional[str],
     city: Optional[str],
-    claude_result: dict,
     gemini_result: dict,
     kvk_result: Optional[dict],
     website_result: Optional[dict],
     seller_context: dict,
     language: str
 ) -> str:
-    """Merge all research results and generate unified brief."""
-    from app.services.research_orchestrator import ResearchOrchestrator
+    """
+    Run Claude analysis on collected data.
     
-    # Create orchestrator instance for brief generation
-    orchestrator = ResearchOrchestrator()
+    This step does NOT perform web searches - Claude only analyzes
+    the data collected by Gemini and generates the final report.
     
-    # Combine sources
-    sources = {
-        "claude": claude_result,
-        "gemini": gemini_result
-    }
-    if kvk_result:
-        sources["kvk"] = kvk_result
-    if website_result:
-        sources["website"] = website_result
+    Much cheaper than Claude with web_search tool.
+    """
+    # Check if Gemini succeeded
+    if not gemini_result.get("success"):
+        logger.error(f"Cannot analyze - Gemini research failed: {gemini_result.get('error')}")
+        return f"# Research Failed: {company_name}\n\nGemini research failed. Unable to generate report."
     
-    # Count successes
-    success_count = sum(1 for s in sources.values() if s.get("success"))
+    gemini_data = gemini_result.get("data", "")
     
-    # Generate unified brief (argument order matches _generate_unified_brief signature)
+    if not gemini_data:
+        return f"# Research Failed: {company_name}\n\nNo research data available."
+    
     try:
-        brief = await orchestrator._generate_unified_brief(
-            sources=sources,
+        result = await claude_researcher.analyze_research_data(
             company_name=company_name,
+            gemini_data=gemini_data,
             country=country,
             city=city,
+            kvk_data=kvk_result,
+            website_data=website_result,
+            kb_chunks=None,  # KB chunks can be added later if needed
             seller_context=seller_context,
-            kb_chunks=None,  # KB chunks are handled in orchestrator.research_company, not here
             language=language
         )
-        return brief
+        
+        # Log token usage
+        if result.get("token_stats"):
+            stats = result["token_stats"]
+            logger.info(
+                f"Claude analysis tokens: {stats.get('input_tokens', 0)} in, "
+                f"{stats.get('output_tokens', 0)} out"
+            )
+        
+        if result.get("success"):
+            return result.get("data", "")
+        else:
+            logger.error(f"Claude analysis failed: {result.get('error')}")
+            # Fallback: return raw Gemini data
+            return f"# Research Brief: {company_name}\n\n**Note**: Analysis failed, showing raw data.\n\n{gemini_data}"
+            
     except Exception as e:
-        logger.error(f"Brief generation failed: {e}")
-        # Return a basic brief on failure
-        return f"# {company_name}\n\nResearch completed with {success_count} sources."
+        logger.error(f"Claude analysis failed: {e}")
+        return f"# Research Brief: {company_name}\n\n**Note**: Analysis failed, showing raw data.\n\n{gemini_data}"
 
 
 async def save_research_results(
     research_id: str,
-    claude_result: dict,
     gemini_result: dict,
     kvk_result: Optional[dict],
     website_result: Optional[dict],
@@ -369,36 +358,40 @@ async def save_research_results(
     
     # Map source names to allowed source_type values
     source_type_map = {
-        "claude": "claude",
         "gemini": "gemini",
         "kvk": "kvk",
         "website": "web"
     }
     
-    # Save source data
-    sources = {
-        "claude": claude_result,
-        "gemini": gemini_result
-    }
+    # Build sources dict
+    sources = {"gemini": gemini_result}
     if kvk_result:
         sources["kvk"] = kvk_result
     if website_result:
         sources["website"] = website_result
     
+    # Save each source to research_sources table
     for source_name, source_result in sources.items():
         source_type = source_type_map.get(source_name, "web")
-        supabase.table("research_sources").insert({
-            "research_id": research_id,
-            "source_type": source_type,
-            "source_name": source_name,
-            "data": source_result
-        }).execute()
+        try:
+            supabase.table("research_sources").insert({
+                "research_id": research_id,
+                "source_type": source_type,
+                "source_name": source_name,
+                "data": source_result
+            }).execute()
+        except Exception as e:
+            logger.warning(f"Failed to save source {source_name}: {e}")
     
-    # Update research record with results
+    # Calculate success metrics
+    success_count = sum(1 for s in sources.values() if s.get("success"))
+    
+    # Update research record
     research_data = {
         "sources": sources,
-        "success_count": sum(1 for s in sources.values() if s.get("success")),
-        "total_sources": len(sources)
+        "success_count": success_count,
+        "total_sources": len(sources),
+        "architecture": "gemini-first"  # Track which architecture was used
     }
     
     supabase.table("research_briefs").update({
@@ -408,5 +401,6 @@ async def save_research_results(
         "completed_at": "now()"
     }).eq("id", research_id).execute()
     
-    return {"saved": True, "sources_count": len(sources)}
-
+    logger.info(f"Saved research results: {success_count}/{len(sources)} sources successful")
+    
+    return {"saved": True, "sources_count": len(sources), "success_count": success_count}

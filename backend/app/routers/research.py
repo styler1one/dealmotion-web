@@ -161,9 +161,11 @@ def process_research_background(
         # Map source names to allowed source_type values in database
         source_type_map = {
             "claude": "claude",
+            "claude_analysis": "claude",  # New Gemini-first architecture
             "gemini": "gemini",
             "kvk": "kvk",
             "website": "web",  # website scraper -> 'web' in database
+            "knowledge_base": "web",  # KB chunks -> 'web' in database
             "premium": "premium",
             "web": "web"
         }

@@ -1,12 +1,15 @@
 """
-Research orchestrator - coordinates multiple research sources for 360° prospect intelligence.
+Research orchestrator - Gemini-first architecture for cost-optimized 360° prospect intelligence.
 
-Enhanced with full context awareness:
-- Sales profile context (who is selling)
-- Company profile context (what are we selling)
-- Knowledge Base integration (case studies, product info)
-- Prompt caching for cost optimization
-- Current date awareness for accurate news search
+ARCHITECTURE:
+1. Gemini (cheap): Does ALL web searching via Google Search
+2. KVK/Website: Supplementary data sources
+3. Claude (expensive): ONLY analyzes data, generates final report
+
+COST COMPARISON:
+- Old (Claude web_search): ~$0.50-1.00 per research
+- New (Gemini-first): ~$0.15-0.20 per research
+- Savings: ~75-85%
 """
 import asyncio
 import logging
@@ -18,19 +21,27 @@ from .gemini_researcher import GeminiResearcher
 from .kvk_api import KVKApi
 from .website_scraper import get_website_scraper
 from app.database import get_supabase_service
-from app.i18n.utils import get_language_instruction
 from app.i18n.config import DEFAULT_LANGUAGE
 from app.utils.timeout import with_timeout, AITimeoutError
 
 logger = logging.getLogger(__name__)
 
 # Timeout settings for research operations (in seconds)
-RESEARCH_TASK_TIMEOUT = 90  # Individual AI task timeout (increased for comprehensive research)
-RESEARCH_TOTAL_TIMEOUT = 240  # Total research timeout (4 minutes for thorough research)
+GEMINI_TIMEOUT = 120  # Gemini comprehensive research
+CLAUDE_TIMEOUT = 90   # Claude analysis
+SUPPLEMENTARY_TIMEOUT = 30  # KVK, website scraping
+TOTAL_TIMEOUT = 240   # Total research timeout
 
 
 class ResearchOrchestrator:
-    """Orchestrate research from multiple sources with full context."""
+    """
+    Orchestrate research with Gemini-first architecture.
+    
+    Flow:
+    1. Gemini searches for ALL company data (cheap)
+    2. KVK/Website scraper add supplementary data
+    3. Claude analyzes everything and generates report (one call, no web search)
+    """
     
     def __init__(self):
         """Initialize all research services."""
@@ -54,30 +65,32 @@ class ResearchOrchestrator:
         language: str = DEFAULT_LANGUAGE
     ) -> Dict[str, Any]:
         """
-        Research company using multiple sources in parallel for 360° intelligence.
+        Research company using Gemini-first architecture for 360° intelligence.
         
-        Sources:
-        - Claude: Comprehensive 360° prospect research (with caching)
-        - Gemini: Real-time news and market signals
-        - KVK: Official Dutch company data (NL only)
-        - Website Scraper: Direct website content
-        - Knowledge Base: Relevant case studies (for merge)
+        Architecture:
+        1. Gemini: Comprehensive web search (cheap, ~$0.02)
+        2. KVK: Official Dutch company data (NL only)
+        3. Website: Direct content scraping
+        4. KB: Relevant knowledge base chunks
+        5. Claude: Analysis and report generation (no web search, ~$0.12)
+        
+        Total cost: ~$0.15-0.20 per research (was ~$0.50-1.00)
         
         Args:
             company_name: Name of the company
             country: Optional country
             city: Optional city
             linkedin_url: Optional LinkedIn URL
-            website_url: Optional website URL for direct scraping
-            organization_id: Organization ID for context retrieval
-            user_id: User ID for sales profile context
-            language: Output language code (default from config)
+            website_url: Optional website URL
+            organization_id: Organization ID for context
+            user_id: User ID for sales profile
+            language: Output language code
             
         Returns:
-            Dictionary with combined research data and unified brief
+            Dictionary with research data and unified brief
         """
         current_date = datetime.now().strftime("%d %B %Y")
-        logger.info(f"Starting 360° research for {company_name} on {current_date}")
+        logger.info(f"Starting Gemini-first 360° research for {company_name} on {current_date}")
         
         # Get seller context for personalized research
         seller_context = await self._get_seller_context(organization_id, user_id)
@@ -86,106 +99,155 @@ class ResearchOrchestrator:
         if seller_context and organization_id:
             seller_context["organization_id"] = organization_id
         
-        # Determine which sources to use
+        # ═══════════════════════════════════════════════════════════════════
+        # PHASE 1: Data Collection (Parallel)
+        # ═══════════════════════════════════════════════════════════════════
+        
+        # Build task list
         tasks = []
-        source_names = []
+        task_names = []
         
-        # Always use Claude (360° research with caching) and Gemini (real-time signals)
-        tasks.append(self.claude.search_company(
-            company_name, country, city, linkedin_url,
-            seller_context=seller_context,
-            language=language
-        ))
-        source_names.append("claude")
-        
+        # Primary: Gemini comprehensive research (REQUIRED)
         tasks.append(self.gemini.search_company(
-            company_name, country, city, linkedin_url,
+            company_name=company_name,
+            country=country,
+            city=city,
+            linkedin_url=linkedin_url,
             seller_context=seller_context,
             language=language
         ))
-        source_names.append("gemini")
+        task_names.append("gemini")
         
-        # Use KVK only for Dutch companies
+        # Supplementary: KVK for Dutch companies
         if self.kvk.is_dutch_company(country):
             tasks.append(self.kvk.search_company(company_name, city))
-            source_names.append("kvk")
+            task_names.append("kvk")
         
-        # Use website scraper if URL provided
+        # Supplementary: Website scraper if URL provided
         if website_url:
             tasks.append(self.website_scraper.scrape_website(website_url))
-            source_names.append("website")
+            task_names.append("website")
         
-        # Execute all searches in parallel with timeout
+        # Execute all data collection in parallel
         try:
             results = await with_timeout(
                 asyncio.gather(*tasks, return_exceptions=True),
-                timeout_seconds=RESEARCH_TOTAL_TIMEOUT,
-                operation_name="Research parallel tasks"
+                timeout_seconds=TOTAL_TIMEOUT,
+                operation_name="Data collection"
             )
         except AITimeoutError:
-            logger.error(f"Research timed out after {RESEARCH_TOTAL_TIMEOUT}s for {company_name}")
-            results = [asyncio.TimeoutError("Research timed out")] * len(tasks)
+            logger.error(f"Data collection timed out for {company_name}")
+            results = [asyncio.TimeoutError("Timed out")] * len(tasks)
         
-        # Combine results
-        combined_data = {
-            "sources": {},
-            "success_count": 0,
-            "total_sources": len(tasks),
-            "research_date": current_date
-        }
+        # Process results
+        sources = {}
+        gemini_data = None
+        kvk_data = None
+        website_data = None
         
-        for source_name, result in zip(source_names, results):
+        for name, result in zip(task_names, results):
             if isinstance(result, Exception):
-                combined_data["sources"][source_name] = {
-                    "success": False,
-                    "error": str(result)
-                }
-                logger.warning(f"Source {source_name} failed: {result}")
+                sources[name] = {"success": False, "error": str(result)}
+                logger.warning(f"Source {name} failed: {result}")
             else:
-                combined_data["sources"][source_name] = result
-                if result.get("success"):
-                    combined_data["success_count"] += 1
-                    
-                    # Log token statistics for Claude (two-phase approach)
-                    if source_name == "claude" and result.get("token_stats"):
+                sources[name] = result
+                if name == "gemini" and result.get("success"):
+                    gemini_data = result.get("data", "")
+                    # Log Gemini token stats
+                    if result.get("token_stats"):
                         stats = result["token_stats"]
                         logger.info(
-                            f"Claude two-phase research completed. "
-                            f"Phase 1 (search): {stats.get('phase1_input', 0)} in / {stats.get('phase1_output', 0)} out. "
-                            f"Phase 2 (analysis): {stats.get('phase2_input', 0)} in / {stats.get('phase2_output', 0)} out. "
-                            f"Total: {stats.get('total_input', 0)} input, {stats.get('total_output', 0)} output tokens."
+                            f"Gemini research: {stats.get('input_tokens', 'N/A')} in, "
+                            f"{stats.get('output_tokens', 'N/A')} out"
                         )
+                elif name == "kvk" and result.get("success"):
+                    kvk_data = result
+                elif name == "website" and result.get("success"):
+                    website_data = result
         
-        # Get relevant KB chunks for case studies
+        # Check if Gemini succeeded (required)
+        if not gemini_data:
+            logger.error(f"Gemini research failed for {company_name} - cannot proceed")
+            return {
+                "sources": sources,
+                "success_count": 0,
+                "total_sources": len(tasks),
+                "research_date": current_date,
+                "brief": f"# Research Failed: {company_name}\n\n**Date**: {current_date}\n\nGemini research failed. Unable to generate report.",
+                "error": "Primary research source (Gemini) failed"
+            }
+        
+        # Get relevant KB chunks
         kb_chunks = []
         if organization_id:
             kb_chunks = await self._get_relevant_kb_chunks(
                 company_name, organization_id, seller_context
             )
             if kb_chunks:
-                combined_data["sources"]["knowledge_base"] = {
-                    "success": True,
-                    "data": kb_chunks
-                }
-                combined_data["success_count"] += 1
+                sources["knowledge_base"] = {"success": True, "data": kb_chunks}
         
-        # Generate unified brief by merging all sources
-        combined_data["brief"] = await self._generate_unified_brief(
-            combined_data["sources"],
-            company_name,
-            country,
-            city,
-            seller_context=seller_context,
-            kb_chunks=kb_chunks,
-            language=language
-        )
+        # ═══════════════════════════════════════════════════════════════════
+        # PHASE 2: Claude Analysis (Single Call, No Web Search)
+        # ═══════════════════════════════════════════════════════════════════
+        
+        logger.info(f"Phase 2: Claude analysis for {company_name}")
+        
+        try:
+            analysis_result = await with_timeout(
+                self.claude.analyze_research_data(
+                    company_name=company_name,
+                    gemini_data=gemini_data,
+                    country=country,
+                    city=city,
+                    kvk_data=kvk_data,
+                    website_data=website_data,
+                    kb_chunks=kb_chunks,
+                    seller_context=seller_context,
+                    language=language
+                ),
+                timeout_seconds=CLAUDE_TIMEOUT,
+                operation_name="Claude analysis"
+            )
+        except AITimeoutError:
+            logger.error(f"Claude analysis timed out for {company_name}")
+            analysis_result = {
+                "success": False,
+                "error": "Analysis timed out",
+                "data": ""
+            }
+        
+        sources["claude_analysis"] = analysis_result
+        
+        # Get the final brief
+        if analysis_result.get("success"):
+            brief = analysis_result.get("data", "")
+            # Log Claude token stats
+            if analysis_result.get("token_stats"):
+                stats = analysis_result["token_stats"]
+                logger.info(
+                    f"Claude analysis: {stats.get('input_tokens', 0)} in, "
+                    f"{stats.get('output_tokens', 0)} out"
+                )
+        else:
+            # Fallback: Return Gemini data directly (not ideal but better than nothing)
+            logger.warning(f"Claude analysis failed, falling back to Gemini data")
+            brief = f"# Research Brief: {company_name}\n\n**Date**: {current_date}\n\n**Note**: Analysis failed, showing raw research data.\n\n{gemini_data}"
+        
+        # Calculate success count
+        success_count = sum(1 for s in sources.values() if s.get("success"))
         
         logger.info(
-            f"360° research completed for {company_name}: "
-            f"{combined_data['success_count']}/{combined_data['total_sources']} sources successful"
+            f"Gemini-first research completed for {company_name}: "
+            f"{success_count}/{len(sources)} sources successful"
         )
         
-        return combined_data
+        return {
+            "sources": sources,
+            "success_count": success_count,
+            "total_sources": len(sources),
+            "research_date": current_date,
+            "brief": brief
+        }
     
     async def _get_seller_context(
         self,
@@ -193,30 +255,23 @@ class ResearchOrchestrator:
         user_id: Optional[str]
     ) -> Dict[str, Any]:
         """
-        Get seller context: who is selling, what are they selling.
+        Get seller context for personalized research.
         
-        OPTIMIZED for research quality and token efficiency:
-        - Focus on what's needed for prospect fit assessment
-        - Include ICP details for precise targeting
-        - Exclude narratives and personal info (low value, high token cost)
-        
-        Token budget: ~235 tokens (down from ~460)
-        Quality impact: Higher due to ICP pain points and decision makers
+        Includes:
+        - Products with benefits
+        - ICP (pain points, decision makers, company sizes)
+        - Differentiators and value propositions
         """
         context = {
             "has_context": False,
-            # Essential identification
             "company_name": None,
-            # Products with benefits for use case matching
-            "products": [],  # [{name, benefits}]
-            # Value propositions and differentiation
+            "products": [],
             "value_propositions": [],
             "differentiators": [],
-            # ICP for fit assessment (CRITICAL for quality)
             "target_industries": [],
             "target_company_sizes": [],
-            "ideal_pain_points": [],      # What pains do we solve?
-            "target_decision_makers": [], # Who are typical buyers?
+            "ideal_pain_points": [],
+            "target_decision_makers": [],
         }
         
         if not organization_id:
@@ -235,23 +290,21 @@ class ResearchOrchestrator:
                 context["has_context"] = True
                 context["company_name"] = company.get("company_name")
                 
-                # Products: extract name AND benefits for use case matching
+                # Products with benefits
                 products = company.get("products", []) or []
                 context["products"] = []
-                for p in products[:5]:  # Limit to 5 products
+                for p in products[:5]:
                     if isinstance(p, dict) and p.get("name"):
                         context["products"].append({
                             "name": p.get("name"),
                             "benefits": p.get("benefits", [])[:3] if p.get("benefits") else []
                         })
                 
-                # Value propositions from core_value_props
+                # Value propositions and differentiators
                 context["value_propositions"] = (company.get("core_value_props", []) or [])[:5]
-                
-                # Differentiators
                 context["differentiators"] = (company.get("differentiators", []) or [])[:3]
                 
-                # ICP - Ideal Customer Profile (CRITICAL for quality)
+                # ICP details
                 icp = company.get("ideal_customer_profile", {}) or {}
                 context["target_industries"] = (icp.get("industries", []) or [])[:5]
                 context["target_company_sizes"] = (icp.get("company_sizes", []) or [])[:3]
@@ -261,11 +314,10 @@ class ResearchOrchestrator:
                 logger.info(
                     f"Seller context loaded: {context['company_name']}, "
                     f"products={len(context['products'])}, "
-                    f"pain_points={len(context['ideal_pain_points'])}, "
-                    f"decision_makers={len(context['target_decision_makers'])}"
+                    f"pain_points={len(context['ideal_pain_points'])}"
                 )
             
-            # Get sales profile - only for fallback company name
+            # Fallback: Get company name from sales profile
             if user_id and not context.get("company_name"):
                 sales_response = self.supabase.table("sales_profiles")\
                     .select("role")\
@@ -278,9 +330,6 @@ class ResearchOrchestrator:
                     if " at " in role:
                         context["company_name"] = role.split(" at ")[-1].strip()
                         context["has_context"] = True
-                        logger.info(f"Company name from sales_profile role: {context['company_name']}")
-            
-            logger.debug(f"Seller context ready: {context['company_name']}, has_context={context['has_context']}")
             
         except Exception as e:
             logger.warning(f"Could not load seller context: {e}")
@@ -305,7 +354,9 @@ class ResearchOrchestrator:
             vector_store = VectorStore()
             
             # Build query based on prospect and what we sell
-            products = ", ".join(seller_context.get("products_services", [])[:3])
+            products = ", ".join([
+                p.get("name", "") for p in seller_context.get("products", [])[:3]
+            ])
             query = f"{prospect_company} case study success {products}"
             
             query_embedding = await embeddings.embed_text(query)
@@ -319,7 +370,7 @@ class ResearchOrchestrator:
             
             chunks = []
             for match in matches:
-                if match.score > 0.5:  # Only include relevant chunks
+                if match.score > 0.5:
                     chunks.append({
                         "text": match.metadata.get("text", "")[:500],
                         "source": match.metadata.get("filename", "Document"),
@@ -333,6 +384,7 @@ class ResearchOrchestrator:
             logger.warning(f"Error getting KB chunks: {e}")
             return []
     
+    # Legacy method for backward compatibility with Inngest functions
     async def _generate_unified_brief(
         self,
         sources: Dict[str, Any],
@@ -344,205 +396,53 @@ class ResearchOrchestrator:
         language: str = DEFAULT_LANGUAGE
     ) -> str:
         """
-        Generate unified research brief by merging all sources.
+        Legacy method - generates brief from collected sources.
         
-        Strategy:
-        - Claude's 360° research is the primary structure
-        - Gemini's market intelligence adds real-time news depth
-        - KVK adds official registration data
-        - Website scraper adds direct content
-        - KB chunks add relevant case studies
-        
-        The merge prompt is simpler now because Claude already provides
-        a complete structured output.
+        This method is kept for backward compatibility with Inngest functions.
+        New code should use research_company which handles everything.
         """
-        lang_instruction = get_language_instruction(language)
         current_date = datetime.now().strftime("%d %B %Y")
         
-        # Collect successful source data
-        source_sections = []
-        
-        # Claude's 360° research is the primary content
-        if sources.get("claude", {}).get("success"):
-            source_sections.append(f"""
-## PRIMARY RESEARCH (Claude 360° Analysis)
-{sources['claude']['data']}
-""")
-        
-        # Gemini adds real-time market intelligence
+        # Get Gemini data
+        gemini_data = ""
         if sources.get("gemini", {}).get("success"):
-            source_sections.append(f"""
-## SUPPLEMENTARY: REAL-TIME MARKET INTELLIGENCE (Gemini)
-{sources['gemini']['data']}
-""")
+            gemini_data = sources["gemini"].get("data", "")
         
-        # KVK adds official Dutch company data
-        if sources.get("kvk", {}).get("success"):
-            kvk_data = sources['kvk']['data']
-            kvk_text = f"""
-## SUPPLEMENTARY: OFFICIAL REGISTRATION DATA (Dutch Chamber of Commerce)
-
-| Field | Value |
-|-------|-------|
-| **KVK Number** | {kvk_data.get('kvk_number', 'Not found')} |
-| **Legal Form** | {kvk_data.get('legal_form', 'Not found')} |
-| **Trade Name** | {kvk_data.get('trade_name', 'Not found')} |
-| **Address** | {kvk_data.get('address', {}).get('street', '')} {kvk_data.get('address', {}).get('house_number', '')}, {kvk_data.get('address', {}).get('postal_code', '')} {kvk_data.get('address', {}).get('city', '')} |
-| **Established** | {kvk_data.get('establishment_date', 'Not found')} |
-| **Employees** | {kvk_data.get('employees', 'Not found')} |
-| **Website** | {kvk_data.get('website', 'Not found')} |
-"""
-            source_sections.append(kvk_text)
+        # Get supplementary data
+        kvk_data = sources.get("kvk") if sources.get("kvk", {}).get("success") else None
+        website_data = sources.get("website") if sources.get("website", {}).get("success") else None
         
-        # Website scraper adds direct content
-        if sources.get("website", {}).get("success"):
-            website_data = sources['website']
-            website_text = f"""
-## SUPPLEMENTARY: COMPANY WEBSITE CONTENT
-
-**URL**: {website_data.get('url', 'Unknown')}
-**Pages Scraped**: {website_data.get('pages_scraped', 0)}
-
-{website_data.get('summary', 'No summary available')}
-"""
-            source_sections.append(website_text)
+        if not gemini_data:
+            return f"# Research Failed: {company_name}\n\n**Date**: {current_date}\n\nNo research data available."
         
-        # If no sources succeeded, return error
-        if not source_sections:
-            return f"""# Research Failed: {company_name}
-
-**Date**: {current_date}
-
-No data could be retrieved from any source. Please try again or verify the company name.
-"""
-        
-        # Build KB context section
-        kb_section = ""
-        if kb_chunks:
-            kb_texts = "\n".join([
-                f"- **{chunk['source']}** (relevance: {chunk['score']:.0%}): {chunk['text'][:200]}..."
-                for chunk in kb_chunks
-            ])
-            kb_section = f"""
-## YOUR KNOWLEDGE BASE MATCHES
-
-The following documents from your knowledge base may be relevant:
-
-{kb_texts}
-"""
-        
-        # Build seller context reminder
-        seller_section = ""
-        if seller_context and seller_context.get("has_context"):
-            products = ", ".join(seller_context.get("products_services", [])[:3]) or "Not specified"
-            seller_section = f"""
-## SELLER CONTEXT REMINDER
-
-You are {seller_context.get('company_name', 'Unknown')} selling {products}.
-"""
-        
-        # Calculate source statistics
-        claude_status = "✅" if sources.get("claude", {}).get("success") else "❌"
-        gemini_status = "✅" if sources.get("gemini", {}).get("success") else "❌"
-        kvk_status = "✅" if sources.get("kvk", {}).get("success") else ("N/A" if "kvk" not in sources else "❌")
-        website_status = "✅" if sources.get("website", {}).get("success") else ("N/A" if "website" not in sources else "❌")
-        kb_status = f"✅ {len(kb_chunks)} matches" if kb_chunks else "No matches"
-        
-        # Build the merge prompt
-        # This is simpler now because Claude provides a complete structure
-        merge_prompt = f"""You are merging multiple research sources into one comprehensive 360° prospect intelligence report.
-
-**TODAY'S DATE**: {current_date}
-**TARGET COMPANY**: {company_name}
-{f"**LOCATION**: {city}, {country}" if city and country else f"**COUNTRY**: {country}" if country else ""}
-
-{seller_section}
-{kb_section}
-
-═══════════════════════════════════════════════════════════════════════════════
-                           SOURCE DATA TO MERGE
-═══════════════════════════════════════════════════════════════════════════════
-
-{chr(10).join(source_sections)}
-
-═══════════════════════════════════════════════════════════════════════════════
-                           MERGE INSTRUCTIONS
-═══════════════════════════════════════════════════════════════════════════════
-
-Create a SINGLE, unified 360° prospect intelligence report by:
-
-1. **Use Claude's structure as the base** - it provides the complete framework
-2. **Enhance with Gemini's news** - add any additional recent news/signals not in Claude's report
-3. **Add KVK official data** - incorporate registration details into Company Identity section
-4. **Include website insights** - add any unique content from direct scraping
-5. **Reference KB matches** - note relevant case studies in the Commercial Opportunity section
-
-**DEDUPLICATION RULES**:
-- If the same information appears in multiple sources, include it ONCE
-- Prefer official sources (KVK) for registration data
-- Prefer more recent news items
-- Combine leadership information from all sources
-
-**OUTPUT REQUIREMENTS**:
-- Maintain the 9-section structure from Claude's report
-- Add a Research Sources section at the end showing what was used
-- Keep the professional, intelligence-focused tone
-- Do NOT add conversation scripts or meeting preparation content
-- {lang_instruction}
-
-**SOURCE STATUS**:
-| Source | Status |
-|--------|--------|
-| Claude 360° Research | {claude_status} |
-| Gemini Market Intelligence | {gemini_status} |
-| Dutch Chamber of Commerce | {kvk_status} |
-| Website Scraper | {website_status} |
-| Knowledge Base | {kb_status} |
-
-Generate the unified 360° prospect intelligence report now:"""
-
+        # Use Claude to analyze
         try:
-            # Use Claude to merge the sources
-            response = await self.claude.client.messages.create(
-                model="claude-sonnet-4-20250514",
-                max_tokens=8192,
-                temperature=0.2,
-                messages=[{
-                    "role": "user",
-                    "content": merge_prompt
-                }]
+            result = await self.claude.analyze_research_data(
+                company_name=company_name,
+                gemini_data=gemini_data,
+                country=country,
+                city=city,
+                kvk_data=kvk_data,
+                website_data=website_data,
+                kb_chunks=kb_chunks,
+                seller_context=seller_context,
+                language=language
             )
             
-            merged_brief = response.content[0].text
-            logger.info(f"Successfully merged research sources for {company_name}")
-            return merged_brief
-            
+            if result.get("success"):
+                return result.get("data", "")
+            else:
+                return f"# Research Brief: {company_name}\n\n**Date**: {current_date}\n\n{gemini_data}"
+                
         except Exception as e:
-            # Fallback: If merge fails, return Claude's research if available
-            logger.error(f"Error merging research sources: {e}")
-            
-            if sources.get("claude", {}).get("success"):
-                logger.info("Falling back to Claude's raw research output")
-                return sources["claude"]["data"]
-            
-            # Last resort: concatenate all sources
-            return f"""# Research Brief: {company_name}
-
-**Date**: {current_date}
-**Note**: Merge failed, showing raw source data.
-
-{"".join(source_sections)}
-"""
+            logger.error(f"Error generating unified brief: {e}")
+            return f"# Research Brief: {company_name}\n\n**Date**: {current_date}\n\n{gemini_data}"
     
     def clear_caches(self, organization_id: Optional[str] = None) -> None:
         """
         Clear research caches.
         
-        Call this when organization's company profile is updated to ensure
-        fresh seller context is used in next research.
-        
-        Args:
-            organization_id: Specific org to clear, or None to clear all
+        Call this when organization's company profile is updated.
         """
         self.claude.clear_seller_cache(organization_id)
         logger.info(f"Cleared research caches for org: {organization_id or 'all'}")
