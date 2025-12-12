@@ -143,18 +143,7 @@ export function AINotetakerSection() {
           </div>
         </div>
 
-        {/* Platform Badges */}
-        <div className="mt-12 flex flex-wrap justify-center gap-4">
-          {['Microsoft Teams', 'Google Meet', 'Zoom', 'Webex'].map((platform) => (
-            <div 
-              key={platform}
-              className="px-4 py-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-sm font-medium border dark:border-slate-700"
-            >
-              {platform}
-            </div>
-          ))}
         </div>
-      </div>
     </section>
   )
 }

@@ -1744,7 +1744,7 @@
     },
     "features": {
       "title": "Everything you need to keep deals moving",
-      "description": "From research to follow-up, DealMotion helps you at every stage of your deal cycle.",
+      "description": "From research to follow-up, we've got you covered at every stage of your deal cycle.",
       "research": {
         "title": "Account Research",
         "description": "AI-powered research on any company. Get insights on their business, challenges, decision makers, and opportunities."
@@ -1791,7 +1791,7 @@
       "usedBy": "Used by B2B sales professionals worldwide"
     },
     "howItWorks": {
-      "title": "How It Works",
+      "title": "How it works",
       "subtitle": "From calendar sync to follow-up—DealMotion covers your entire deal cycle.",
       "steps": {
         "calendar": {
@@ -1821,13 +1821,13 @@
       }
     },
     "integrations": {
-      "title": "Works With Your Tools",
-      "subtitle": "Connect DealMotion to your existing workflow.",
+      "title": "Works with your tools",
+      "subtitle": "Connect to your existing workflow in seconds.",
       "comingSoon": "Coming soon"
     },
     "aiContext": {
-      "badge": "The Secret Sauce",
-      "title": "AI That Knows You, Your Company, and Your Prospect",
+      "badge": "The secret sauce",
+      "title": "AI that knows you, your company, and your prospect",
       "subtitle": "DealMotion learns your style, your products, and your prospect—then personalizes every output.",
       "inputsTitle": "What the AI knows about you",
       "layers": {
@@ -1860,7 +1860,7 @@
     },
     "meetingAnalysis": {
       "badge": "One Recording, 7 Outputs",
-      "title": "Everything You Need From One Conversation",
+      "title": "Everything you need from one conversation",
       "subtitle": "Upload any meeting recording and get 7 ready-to-use outputs instantly.",
       "recording": "Recording",
       "anyMeeting": "Video or in-person",
@@ -1899,7 +1899,7 @@
     },
     "aiNotetakerSection": {
       "badge": "Set It & Forget It",
-      "title": "AI That Joins Your Meetings For You",
+      "title": "AI that joins your meetings for you",
       "subtitle": "Never manually start a recording again. Our AI Notetaker joins your video calls automatically, captures everything, and delivers insights before you're back at your desk.",
       "emailInvite": {
         "title": "Invite Like a Colleague",
@@ -1918,7 +1918,7 @@
         "description": "Microsoft Teams, Google Meet, Zoom, and Webex—all supported out of the box."
       },
       "botName": "DealMotion AI Notes",
-      "howItWorksTitle": "How It Works",
+      "howItWorksTitle": "How it works",
       "steps": {
         "invite": "Invite bot or sync calendar",
         "join": "Bot joins automatically",
@@ -1928,7 +1928,7 @@
     },
     "mobileApp": {
       "badge": "Beta Available",
-      "title": "Your Pocket Recording Studio",
+      "title": "Your pocket recording studio",
       "subtitle": "Record in-person meetings right from your phone. Coffee chats, on-site visits, trade shows—never miss an insight. App Store launch coming soon!",
       "steps": {
         "record": "Record",
@@ -1946,7 +1946,7 @@
       "tapToRecord": "Tap to start recording"
     },
     "painPoints": {
-      "title": "Before & After DealMotion",
+      "title": "Before & after DealMotion",
       "subtitle": "See how DealMotion transforms your sales workflow.",
       "before": "Before",
       "after": "After",
@@ -1974,7 +1974,7 @@
       }
     },
     "dayInTheLife": {
-      "title": "A Day with DealMotion",
+      "title": "A day with DealMotion",
       "intro": "Monday morning. You open DealMotion.",
       "steps": {
         "open": {
@@ -2009,7 +2009,7 @@
           "text": "Customer report sent before your next coffee."
         }
       },
-      "tagline": "That's DealMotion. Your deals, in motion."
+      "tagline": "That's DealMotion. Put your deals in motion."
     },
     "cta": {
       "title": "Walk into every meeting confident. Walk out with a clear plan.",

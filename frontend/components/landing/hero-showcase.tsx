@@ -58,7 +58,7 @@ export function HeroShowcase() {
         <div className="flex-1 flex justify-center">
           <div className="px-4 py-1 bg-white dark:bg-slate-700 rounded-md text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
             <Icons.globe className="h-3 w-3" />
-            app.dealmotion.ai
+            dealmotion.ai
           </div>
         </div>
       </div>
