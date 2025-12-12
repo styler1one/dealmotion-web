@@ -14,6 +14,7 @@ import {
   IntegrationsRow,
   AIContextSection,
   MeetingAnalysisShowcase,
+  AINotetakerSection,
   MobileAppTeaser,
   PainPointsSection,
   DayInTheLife,
@@ -352,6 +353,9 @@ export default function Home() {
 
       {/* Meeting Analysis Showcase */}
       <MeetingAnalysisShowcase />
+
+      {/* AI Notetaker - Auto Recording */}
+      <AINotetakerSection />
 
       {/* Integrations */}
       <IntegrationsRow />

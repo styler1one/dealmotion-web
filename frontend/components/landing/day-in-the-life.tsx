@@ -8,6 +8,7 @@ const steps = [
   { icon: 'alertCircle', key: 'unprepared' },
   { icon: 'sparkles', key: 'brief' },
   { icon: 'checkCircle', key: 'confident' },
+  { icon: 'bot', key: 'botJoins' },
   { icon: 'mic', key: 'record' },
   { icon: 'mail', key: 'sent' },
 ] as const
@@ -21,6 +22,7 @@ export function DayInTheLife() {
       alertCircle: Icons.alertCircle,
       sparkles: Icons.sparkles,
       checkCircle: Icons.checkCircle,
+      bot: Icons.sparkles, // AI bot
       mic: Icons.mic,
       mail: Icons.mail,
     }
@@ -49,7 +51,7 @@ export function DayInTheLife() {
           <div className="space-y-6">
             {steps.map((step, index) => {
               const Icon = getIcon(step.icon)
-              const isHighlight = step.key === 'brief' || step.key === 'record'
+              const isHighlight = step.key === 'brief' || step.key === 'botJoins' || step.key === 'record'
 
               return (
                 <div key={step.key} className="flex items-start gap-6 group">

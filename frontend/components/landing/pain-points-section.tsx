@@ -6,6 +6,7 @@ import { Icons } from '@/components/icons'
 const painPoints = [
   { key: 'research', beforeIcon: 'clock', afterIcon: 'zap' },
   { key: 'prep', beforeIcon: 'alertTriangle', afterIcon: 'check' },
+  { key: 'recording', beforeIcon: 'mic', afterIcon: 'bot' },
   { key: 'notes', beforeIcon: 'x', afterIcon: 'sparkles' },
   { key: 'followup', beforeIcon: 'clock', afterIcon: 'mail' },
 ] as const
@@ -22,6 +23,8 @@ export function PainPointsSection() {
       x: Icons.x,
       sparkles: Icons.sparkles,
       mail: Icons.mail,
+      mic: Icons.mic,
+      bot: Icons.sparkles, // AI bot icon
     }
     return iconMap[iconName] || Icons.circle
   }
