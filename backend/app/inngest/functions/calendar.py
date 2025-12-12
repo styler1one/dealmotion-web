@@ -59,6 +59,8 @@ async def sync_all_calendars_fn(ctx, step):
             results.append({
                 "connection_id": conn["id"],
                 "provider": conn["provider"],
+                "user_id": conn.get("user_id"),
+                "organization_id": conn.get("organization_id"),
                 "success": True,
                 **result
             })
@@ -71,13 +73,49 @@ async def sync_all_calendars_fn(ctx, step):
                 "error": str(e)
             })
     
+    # Step 3: Post-process for each unique user (prospect matching + auto-record)
+    # Group by user to avoid duplicate processing
+    from app.inngest.functions.calendar_post_sync import run_prospect_matching
+    
+    processed_users = set()
+    for r in results:
+        if not r.get("success"):
+            continue
+        user_id = r.get("user_id")
+        org_id = r.get("organization_id")
+        if not user_id or not org_id:
+            continue
+        if user_id in processed_users:
+            continue
+        processed_users.add(user_id)
+        
+        try:
+            # Run prospect matching
+            match_result = await step.run(
+                f"prospect-match-{user_id[:8]}",
+                run_prospect_matching,
+                user_id, org_id
+            )
+            logger.info(f"User {user_id[:8]}: {match_result.get('auto_linked', 0)} prospects auto-linked")
+            
+            # Run auto-record processing
+            auto_result = await step.run(
+                f"auto-record-{user_id[:8]}",
+                process_calendar_for_auto_record,
+                user_id, org_id
+            )
+            logger.info(f"User {user_id[:8]}: {auto_result.get('scheduled', 0)} recordings scheduled")
+        except Exception as e:
+            logger.error(f"Post-processing failed for user {user_id[:8]}: {e}")
+    
     # Summary
     successful = sum(1 for r in results if r["success"])
-    logger.info(f"Calendar sync complete: {successful}/{len(results)} successful")
+    logger.info(f"Calendar sync complete: {successful}/{len(results)} successful, {len(processed_users)} users post-processed")
     
     return {
         "synced": len(results),
         "successful": successful,
+        "users_processed": len(processed_users),
         "results": results
     }
 
@@ -115,11 +153,23 @@ async def sync_calendar_connection_fn(ctx, step):
     # Step 2: Perform sync
     result = await step.run("sync-connection", sync_connection, connection_id)
     
-    # Step 3: Process auto-record for this user's calendar (if enabled)
+    # Step 3: Run ProspectMatcher to link meetings to prospects
+    # This was missing before - prospect matching only happened on manual sync!
     user_id = connection.get("user_id")
     organization_id = connection.get("organization_id")
     
     if user_id and organization_id:
+        # Import here to avoid circular imports
+        from app.inngest.functions.calendar_post_sync import run_prospect_matching
+        
+        prospect_result = await step.run(
+            "prospect-matching",
+            run_prospect_matching,
+            user_id, organization_id
+        )
+        logger.info(f"Prospect matching: {prospect_result.get('auto_linked', 0)} auto-linked")
+        
+        # Step 4: Process auto-record for this user's calendar (if enabled)
         auto_record_result = await step.run(
             "process-auto-record",
             process_calendar_for_auto_record,
