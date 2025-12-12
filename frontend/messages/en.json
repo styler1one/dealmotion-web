@@ -1730,7 +1730,7 @@
       "badge": "AI-Powered Sales Enablement for B2B",
       "title": "Put your deals",
       "titleHighlight": "in motion",
-      "description": "Research accounts, prepare meetings, analyse conversations, and follow up—all powered by AI that knows your style, your product, and your customer.",
+      "description": "Research accounts, prepare meetings, let AI capture every conversation, and follow up—all powered by AI that knows your style, your product, and your customer.",
       "startTrial": "Start Free Trial",
       "startFree": "Start Free",
       "viewPricing": "View Pricing",
@@ -1783,7 +1783,7 @@
       },
       "aiNotetaker": {
         "title": "AI Notetaker",
-        "description": "Invite our AI bot to any video call. It joins, records, transcribes, and analyzes—so you can focus on the conversation."
+        "description": "Invite notes@dealmotion.ai to any call, or enable auto-record. Our bot joins Teams, Meet, Zoom, and Webex—then transcribes and analyzes automatically."
       }
     },
     "socialProof": {
@@ -1808,7 +1808,7 @@
         },
         "meeting": {
           "title": "Meeting",
-          "description": "Record any conversation"
+          "description": "AI bot joins or record on mobile"
         },
         "analysis": {
           "title": "Analysis",
@@ -1897,6 +1897,35 @@
       "highlight": "Customer reports and commercial analysis are unique to DealMotion.",
       "highlightSub": "Most tools only give you a transcript. We give you ready-to-use outputs."
     },
+    "aiNotetakerSection": {
+      "badge": "Set It & Forget It",
+      "title": "AI That Joins Your Meetings For You",
+      "subtitle": "Never manually start a recording again. Our AI Notetaker joins your video calls automatically, captures everything, and delivers insights before you're back at your desk.",
+      "emailInvite": {
+        "title": "Invite Like a Colleague",
+        "description": "Just add notes@dealmotion.ai to any meeting invite. Our bot joins, records, and analyzes—no setup required."
+      },
+      "autoRecord": {
+        "title": "Auto-Record from Calendar",
+        "description": "Sync your calendar once. Set rules for which meetings to record. DealMotion handles the rest."
+      },
+      "smartFilters": {
+        "title": "Smart Filtering",
+        "description": "Only record what matters. Filter by keywords, external attendees, or meeting duration."
+      },
+      "platforms": {
+        "title": "Works Everywhere",
+        "description": "Microsoft Teams, Google Meet, Zoom, and Webex—all supported out of the box."
+      },
+      "botName": "DealMotion AI Notes",
+      "howItWorksTitle": "How It Works",
+      "steps": {
+        "invite": "Invite bot or sync calendar",
+        "join": "Bot joins automatically",
+        "record": "Records & transcribes",
+        "analyze": "7 outputs delivered"
+      }
+    },
     "mobileApp": {
       "badge": "Beta Available",
       "title": "Your Pocket Recording Studio",
@@ -1930,9 +1959,13 @@
           "before": "Walking into meetings unprepared",
           "after": "Personalized brief for every meeting"
         },
+        "recording": {
+          "before": "Manually starting recordings every call",
+          "after": "AI bot joins and records automatically"
+        },
         "notes": {
-          "before": "Losing key details after conversations",
-          "after": "AI captures everything automatically"
+          "before": "Scrambling to take notes during calls",
+          "after": "AI captures every detail for you"
         },
         "followup": {
           "before": "Hours writing follow-up emails",
@@ -1961,14 +1994,19 @@
           "time": "10:00 AM",
           "text": "Walk into the meeting confident."
         },
+        "botJoins": {
+          "time": "10:01 AM",
+          "text": "AI Notetaker joins automatically. You focus on the conversation.",
+          "highlight": "No manual recording needed"
+        },
         "record": {
           "time": "11:00 AM",
-          "text": "Upload recording. 7 outputs instantly.",
+          "text": "Meeting ends. 7 outputs ready instantly.",
           "highlight": "Summary, customer report, coaching, and more"
         },
         "sent": {
-          "time": "11:15 AM",
-          "text": "Customer report sent before you're back at your desk."
+          "time": "11:05 AM",
+          "text": "Customer report sent before your next coffee."
         }
       },
       "tagline": "That's DealMotion. Your deals, in motion."
