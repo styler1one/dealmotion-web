@@ -161,10 +161,10 @@ class ActionGeneratorService:
             parts.append(f"""
 ## Sales Representative Profile
 - Name: {sales.get('full_name', 'Unknown')}
-- Role: {sales.get('job_title', 'Sales Representative')}
-- Experience: {sales.get('years_experience', 'Unknown')} years
+- Role: {sales.get('role', 'Sales Representative')}
+- Experience: {sales.get('experience_years', 'Unknown')} years
 - Communication Style: {sales.get('communication_style', 'Professional')}
-- Selling Style: {sales.get('selling_style', 'Consultative')}
+- Sales Methodology: {sales.get('sales_methodology', 'Consultative')}
 """)
         
         # Company Profile
@@ -256,9 +256,10 @@ class ActionGeneratorService:
         # Get sales rep info
         sales_profile = context.get("sales_profile", {})
         sales_name = sales_profile.get("full_name", "Sales Representative")
-        sales_email = sales_profile.get("email", "")
-        sales_phone = sales_profile.get("phone", "")
-        sales_title = sales_profile.get("job_title", "")
+        # Note: email/phone are not in sales_profiles, would need to come from users table
+        sales_email = ""  # Not available in sales_profiles
+        sales_phone = ""  # Not available in sales_profiles
+        sales_title = sales_profile.get("role", "")
         
         # Get seller company info
         seller_company = context.get("company_profile", {}).get("company_name", "")
@@ -365,9 +366,10 @@ Generate the complete Customer Report now:"""
         # Get sales rep info for signature
         sales_profile = context.get("sales_profile", {})
         rep_name = sales_profile.get("full_name", "")
-        rep_title = sales_profile.get("job_title", "")
-        rep_email = sales_profile.get("email", "")
-        rep_phone = sales_profile.get("phone", "")
+        rep_title = sales_profile.get("role", "")
+        # Note: email/phone are not in sales_profiles, would need to come from users table
+        rep_email = ""  # Not available in sales_profiles
+        rep_phone = ""  # Not available in sales_profiles
         
         # Get company info
         company_profile = context.get("company_profile", {})
@@ -819,13 +821,13 @@ Generate the complete Sales Coaching feedback now:"""
         if name:
             parts.append(f"- Name: {name}")
         
-        experience = sales_profile.get("years_experience")
+        experience = sales_profile.get("experience_years")
         if experience:
             parts.append(f"- Experience: {experience} years in sales")
         
-        style = sales_profile.get("selling_style")
+        style = sales_profile.get("sales_methodology")
         if style:
-            parts.append(f"- Selling style: {style}")
+            parts.append(f"- Sales methodology: {style}")
         
         comm_style = sales_profile.get("communication_style")
         if comm_style:

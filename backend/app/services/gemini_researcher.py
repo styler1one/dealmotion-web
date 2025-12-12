@@ -1,15 +1,21 @@
 """
-Gemini Google Search integration for research.
-Uses the new Google GenAI SDK with Google Search grounding.
+Gemini Google Search integration for real-time market intelligence.
 
-Enhanced for:
-- Real-time news and developments
-- Hiring signals and job postings  
+Uses the Google GenAI SDK with Google Search grounding.
+
+Focus areas (complementary to Claude's 360° research):
+- Real-time news and developments (last 90 days)
+- Hiring signals and job market activity
 - Market trends and competitive intelligence
-- Complementary focus to Claude (news vs. depth)
+- Social signals and sentiment
+- Current date awareness for accurate news search
+
+This service provides the "What's Happening Now" layer while Claude
+provides the deep structural analysis.
 """
 import os
 import logging
+from datetime import datetime
 from typing import Dict, Any, Optional
 from google import genai
 from google.genai import types
@@ -20,14 +26,15 @@ logger = logging.getLogger(__name__)
 
 
 class GeminiResearcher:
-    """Research using Gemini with Google Search grounding.
+    """
+    Research using Gemini with Google Search grounding.
     
     Focus: Real-time intelligence - news, hiring, trends, social signals.
     Complementary to Claude which focuses on company structure and depth.
     """
     
     def __init__(self):
-        """Initialize Gemini API with new Google GenAI SDK."""
+        """Initialize Gemini API with Google GenAI SDK."""
         api_key = os.getenv("GOOGLE_AI_API_KEY")
         if not api_key:
             raise ValueError("GOOGLE_AI_API_KEY environment variable not set")
@@ -45,6 +52,51 @@ class GeminiResearcher:
             temperature=0.2,  # Lower temperature for factual responses
         )
     
+    def _build_search_query(
+        self,
+        company_name: str,
+        country: Optional[str],
+        city: Optional[str],
+        linkedin_url: Optional[str]
+    ) -> str:
+        """Build search query with location context."""
+        query_parts = []
+        
+        if city and country:
+            query_parts.append(f"Location: {city}, {country}")
+        elif city:
+            query_parts.append(f"City: {city}")
+        elif country:
+            query_parts.append(f"Country: {country}")
+        
+        if linkedin_url:
+            query_parts.append(f"LinkedIn: {linkedin_url}")
+        
+        return "\n".join(query_parts) if query_parts else ""
+
+    def _build_seller_context_section(self, seller_context: Dict[str, Any]) -> str:
+        """Build seller context section for the prompt."""
+        if not seller_context or not seller_context.get("has_context"):
+            return ""
+        
+        products = ", ".join(seller_context.get("products_services", [])[:5]) or "not specified"
+        values = ", ".join(seller_context.get("value_propositions", [])[:3]) or "not specified"
+        
+        return f"""
+---
+## 🎯 SELLER CONTEXT (Focus your research on relevance to what we sell)
+
+| Aspect | Details |
+|--------|---------|
+| **Seller Company** | {seller_context.get('company_name', 'Unknown')} |
+| **Products/Services** | {products} |
+| **Value Propositions** | {values} |
+
+**Your mission**: Find NEWS and SIGNALS that indicate this company might need {products}.
+Look for: pain points, growth challenges, hiring in relevant areas, competitor mentions, strategic shifts.
+---
+"""
+
     async def search_company(
         self,
         company_name: str,
@@ -57,175 +109,214 @@ class GeminiResearcher:
         """
         Search for company news and market intelligence using Gemini with Google Search.
         
-        Focus areas (complementary to Claude):
-        - Recent news and press coverage
+        Focus areas (complementary to Claude's 360° research):
+        - Recent news and press coverage (last 90 days)
         - Hiring signals and job postings
         - Market trends and competitive moves
         - Social signals and sentiment
+        - Financial news and funding
         
         Args:
             company_name: Name of the company
             country: Optional country for better search accuracy
             city: Optional city for better search accuracy
             linkedin_url: Optional LinkedIn URL
-            seller_context: Context about what the user sells
+            seller_context: Context about what the seller offers
             language: Output language code
             
         Returns:
             Dictionary with research data
         """
         lang_instruction = get_language_instruction(language)
+        current_date = datetime.now().strftime("%d %B %Y")
+        current_year = datetime.now().year
         
         # Build search query with location context
-        search_query = self._build_search_query(
-            company_name, country, city, linkedin_url
-        )
+        search_query = self._build_search_query(company_name, country, city, linkedin_url)
         
-        # Build seller context section if available
-        seller_section = ""
-        products_list = ""
-        if seller_context and seller_context.get("has_context"):
-            products_list = ", ".join(seller_context.get("products_services", [])[:5]) or "not specified"
-            value_props = ", ".join(seller_context.get("value_propositions", [])[:3]) or "not specified"
-            
-            seller_section = f"""
----
-## 🎯 SELLER CONTEXT (Focus your research on relevance to what I sell)
-
-| Aspect | Details |
-|--------|---------|
-| **My Company** | {seller_context.get('company_name', 'Unknown')} |
-| **What I Sell** | {products_list} |
-| **Our Value Props** | {value_props} |
-
-**Your mission**: Find NEWS and SIGNALS that indicate {company_name} might need {products_list}.
-Look for: pain points, growth challenges, hiring in relevant areas, competitor mentions.
----
-"""
+        # Build seller context section
+        seller_section = self._build_seller_context_section(seller_context)
         
-        # Build prompt for Gemini - focused on NEWS and SIGNALS (complementary to Claude's depth)
-        prompt = f"""You are a market intelligence analyst specializing in real-time business signals. {lang_instruction}
+        # Build prompt focused on NEWS and SIGNALS (complementary to Claude's depth)
+        prompt = f"""You are a market intelligence analyst specializing in real-time business signals.
 
-Your task: Find CURRENT news, hiring signals, and market intelligence about **{company_name}**.
+═══════════════════════════════════════════════════════════════════════════════
+                              CRITICAL CONTEXT
+═══════════════════════════════════════════════════════════════════════════════
 
+**TODAY'S DATE**: {current_date}
+**CURRENT YEAR**: {current_year}
+
+⚠️ IMPORTANT: All "recent" means relative to TODAY ({current_date}).
+⚠️ Only report news from the LAST 90 DAYS.
+⚠️ Always include the publication date for every news item.
+⚠️ If you find news older than 90 days, note it as "older" context.
+
+{lang_instruction}
+
+═══════════════════════════════════════════════════════════════════════════════
+                              TARGET COMPANY
+═══════════════════════════════════════════════════════════════════════════════
+
+**Company**: {company_name}
 {search_query}
 {seller_section}
 
-## YOUR FOCUS (Different from company profile research!)
+═══════════════════════════════════════════════════════════════════════════════
+                           SEARCH STRATEGY
+═══════════════════════════════════════════════════════════════════════════════
 
-You are looking for **TIMING SIGNALS** - information that tells us:
+Your focus is TIMING SIGNALS - information that tells us:
 - What's happening RIGHT NOW at this company
 - Why NOW might be a good/bad time to reach out
 - What challenges or opportunities they're facing
 
-Search Google for:
-1. "{company_name}" news (last 90 days)
-2. "{company_name}" jobs careers hiring
-3. "{company_name}" CEO interview OR announcement
-4. "{company_name}" funding investment acquisition
-5. "{company_name}" expansion growth OR layoffs restructuring
+Search Google thoroughly for:
+1. "{company_name}" news (last 90 days, filter by date)
+2. "{company_name}" press release announcement {current_year}
+3. "{company_name}" jobs careers hiring
+4. "{company_name}" CEO interview OR announcement
+5. "{company_name}" funding investment acquisition {current_year}
+6. "{company_name}" expansion growth OR layoffs restructuring
+7. "{company_name}" partnership deal
+8. "{company_name}" product launch
 
----
+═══════════════════════════════════════════════════════════════════════════════
+                    MARKET INTELLIGENCE REPORT: {company_name}
+                    Generated: {current_date}
+═══════════════════════════════════════════════════════════════════════════════
 
-# MARKET INTELLIGENCE: {company_name}
 
 ## 1. COMPANY QUICK FACTS
 
-| Fact | Details |
-|------|---------|
-| **Industry** | [Sector] |
-| **Size** | [Employees / Revenue estimate] |
-| **HQ** | [Location] |
-| **Website** | [URL] |
+| Fact | Details | Source |
+|------|---------|--------|
+| **Industry** | [Sector] | |
+| **Size** | [Employees / Revenue estimate] | |
+| **HQ** | [Location] | |
+| **Website** | [URL] | |
+| **LinkedIn** | [URL if found] | |
 
-## 2. NEWS & DEVELOPMENTS (Last 90 Days) ⚠️ CRITICAL SECTION
+---
 
-**Search Google News thoroughly!**
+## 2. NEWS & DEVELOPMENTS (Last 90 Days from {current_date}) 🔴 CRITICAL
 
 ### Recent Headlines
+
 | Date | Headline | Source | URL | Sales Relevance |
 |------|----------|--------|-----|-----------------|
-| [Date] | [Title] | [Publication] | [URL] | [Why this matters for sales] |
+| [DD MMM YYYY] | [Title] | [Publication] | [URL] | [Why this matters for sales] |
+| [DD MMM YYYY] | [Title] | [Publication] | [URL] | |
+| [DD MMM YYYY] | [Title] | [Publication] | [URL] | |
 
-### Categorized Events
+### Categorized Signals
 
 **💰 Financial Signals**
 - [Funding, revenue news, financial health indicators]
+- [Investment announcements, earnings, valuations]
 
 **📈 Growth Signals**
 - [Expansion, new markets, scaling initiatives]
+- [Office openings, international moves]
 
 **👥 People Signals**
 - [Leadership changes, hiring sprees, layoffs, reorgs]
+- [New executives, key departures]
 
 **🚀 Product/Strategy Signals**
 - [Launches, pivots, strategic announcements]
+- [New offerings, discontinued products]
 
 **🤝 Partnership Signals**
 - [New deals, integrations, vendor selections]
+- [Strategic alliances, channel partnerships]
 
 **⚠️ Challenge Signals**
 - [Problems, competition issues, market pressures]
+- [Negative news, controversies, setbacks]
 
 ### What This Tells Us
 [2-3 sentence interpretation: What are they focused on? What pressures do they face? What does this mean for timing?]
 
+---
+
 ## 3. HIRING SIGNALS 🔥 HIGH VALUE
 
-**Search job boards: "{company_name}" careers/jobs**
-
 ### Current Job Openings
-| Role | Department | Level | What It Signals | Relevance to Us |
-|------|------------|-------|-----------------|-----------------|
-| [Title] | [Dept] | [Jr/Sr/Dir/VP] | [Strategic meaning] | [Relevant to what we sell?] |
 
-### Hiring Patterns
-- **Growing departments**: [Which teams are scaling]
-- **New capabilities**: [New roles that signal strategic shifts]
-- **Leadership gaps**: [Executive searches underway]
+| Role | Department | Level | What It Signals | Posted Date |
+|------|------------|-------|-----------------|-------------|
+| [Title] | [Dept] | [Jr/Sr/Dir/VP] | [Strategic meaning] | [Date if known] |
+| [Title] | [Dept] | | | |
+
+### Hiring Patterns Analysis
+
+| Aspect | Observation |
+|--------|-------------|
+| **Growing Departments** | [Which teams are scaling] |
+| **New Capabilities** | [New roles that signal strategic shifts] |
+| **Leadership Gaps** | [Executive searches underway] |
+| **Hiring Velocity** | Aggressive / Steady / Slowing / Freezing |
+| **Remote Hiring** | [Patterns in location requirements] |
 
 ### What Hiring Tells Us
 [What do their job postings reveal about priorities and pain points?]
 
+---
+
 ## 4. COMPETITIVE & MARKET CONTEXT
 
 ### Industry Pressures
-| Pressure | Impact on {company_name} | Opportunity for Us |
-|----------|--------------------------|---------------------|
-| [Trend/regulation/competitive move] | [How it affects them] | [How we can help] |
+
+| Pressure | Impact on {company_name} | Opportunity for Seller |
+|----------|--------------------------|------------------------|
+| [Trend/regulation/competitive move] | [How it affects them] | [How seller can help] |
+| [Market change] | | |
 
 ### Competitor Mentions
 - Who are they compared to in articles?
 - Any competitive wins/losses mentioned?
 - Market positioning discussions?
 
+---
+
 ## 5. SOCIAL & SENTIMENT SIGNALS
 
 ### Online Presence
-- **LinkedIn**: Employee count trend, content themes, engagement
-- **Glassdoor**: Employee sentiment, growth perception
-- **Social Media**: Brand perception, customer feedback
+
+| Platform | Observation | Sentiment |
+|----------|-------------|-----------|
+| **LinkedIn** | [Employee count trend, content themes] | 📈/➡️/📉 |
+| **Glassdoor** | [Rating, recent reviews] | 🟢/🟡/🔴 |
+| **Social Media** | [Brand perception, engagement] | |
+| **Review Sites** | [G2, Capterra if B2B software] | |
 
 ### Sentiment Summary
+
 | Aspect | Signal |
 |--------|--------|
-| **Employee sentiment** | 🟢 Positive / 🟡 Mixed / 🔴 Negative / ⚪ Unknown |
-| **Market perception** | 🟢 Leader / 🟡 Challenger / 🔴 Struggling / ⚪ Unknown |
-| **Growth trajectory** | 🟢 Growing / 🟡 Stable / 🔴 Declining / ⚪ Unknown |
+| **Employee Sentiment** | 🟢 Positive / 🟡 Mixed / 🔴 Negative / ⚪ Unknown |
+| **Market Perception** | 🟢 Leader / 🟡 Challenger / 🔴 Struggling / ⚪ Unknown |
+| **Growth Trajectory** | 🟢 Growing / 🟡 Stable / 🔴 Declining / ⚪ Unknown |
+| **Employer Brand** | 🟢 Strong / 🟡 Average / 🔴 Weak / ⚪ Unknown |
+
+---
 
 ## 6. TIMING ASSESSMENT
 
 ### Why NOW?
+
 Based on all signals found, assess the timing:
 
-| Factor | Signal | Implication |
-|--------|--------|-------------|
+| Factor | Signal Found | Implication |
+|--------|--------------|-------------|
 | **Urgency** | [News/events creating pressure] | [Why they might need to act] |
 | **Budget** | [Funding/growth signals] | [Likely ability to spend] |
 | **Change** | [Transitions, new leaders, pivots] | [Windows of opportunity] |
-| **Pain** | [Challenges being discussed] | [Problems we can solve] |
+| **Pain** | [Challenges being discussed] | [Problems seller can solve] |
 
 ### Timing Verdict
+
 | Verdict | Reasoning |
 |---------|-----------|
 | 🟢 **Reach out NOW** | [Specific trigger or reason] |
@@ -234,69 +325,62 @@ Based on all signals found, assess the timing:
 
 ### Best Opening Angle
 Based on the news and signals found:
-> "[Specific, timely opener referencing something you found]"
+> "[Specific, timely opener referencing something discovered in research]"
+
+---
+
+## 7. RESEARCH METADATA
+
+| Aspect | Details |
+|--------|---------|
+| **Report Date** | {current_date} |
+| **News Timeframe** | Last 90 days |
+| **Sources Searched** | Google News, Company Website, Job Boards, LinkedIn, Social Media |
+| **Data Quality** | 🟢 Rich / 🟡 Moderate / 🔴 Limited |
+
+### Information Gaps
+- [What couldn't be found that would be valuable]
+- [Areas needing manual research]
 
 ---
 
 **RULES**:
-- Focus on RECENT info (last 90 days preferred)
+- Focus on RECENT info (last 90 days from {current_date})
 - Include source URLs for ALL news items
-- Include publication dates
-- If nothing found, say "No recent news found" - don't make things up
+- Include publication dates for ALL news
+- If nothing recent found, say "No recent news found" - don't invent
 - Look for SIGNALS that indicate timing and need, not just facts
 - Think like a sales rep: "What would make them want to talk to me NOW?"
 """
-        
+
         try:
-            logger.info(f"Starting Gemini research for {company_name} with Google Search grounding")
+            logger.info(f"Starting Gemini market intelligence for {company_name}")
             
-            # Generate response with Google Search grounding using new SDK
-            # Use gemini-2.0-flash (stable, free tier available)
-            # Use client.aio for async to not block the event loop!
+            # Generate response with Google Search grounding
+            # Use client.aio for async to not block the event loop
             response = await self.client.aio.models.generate_content(
                 model='gemini-2.0-flash',
                 contents=prompt,
                 config=self.config
             )
             
-            logger.info(f"Gemini research completed for {company_name}")
+            logger.info(f"Gemini market intelligence completed for {company_name}")
             
             return {
                 "source": "gemini",
-                "query": search_query,
+                "query": f"{company_name} ({country or 'Unknown'})",
                 "data": response.text,
                 "success": True,
-                "google_search_used": True
+                "google_search_used": True,
+                "research_date": current_date
             }
             
         except Exception as e:
-            logger.error(f"Gemini research failed for {company_name}: {str(e)}")
+            logger.error(f"Gemini market intelligence failed for {company_name}: {str(e)}")
             return {
                 "source": "gemini",
-                "query": search_query,
+                "query": f"{company_name} ({country or 'Unknown'})",
                 "error": str(e),
                 "success": False,
                 "google_search_used": False
             }
-    
-    def _build_search_query(
-        self,
-        company_name: str,
-        country: Optional[str],
-        city: Optional[str],
-        linkedin_url: Optional[str]
-    ) -> str:
-        """Build search query with location context."""
-        query_parts = [f"Company: {company_name}"]
-        
-        if city and country:
-            query_parts.append(f"Location: {city}, {country}")
-        elif city:
-            query_parts.append(f"City: {city}")
-        elif country:
-            query_parts.append(f"Country: {country}")
-        
-        if linkedin_url:
-            query_parts.append(f"LinkedIn: {linkedin_url}")
-        
-        return "\n".join(query_parts)

@@ -169,14 +169,14 @@ class ProspectContextService:
 
 Key Details:
 - Name: {sales.get('full_name', 'N/A')}
-- Experience: {sales.get('years_experience', 'N/A')} years
+- Experience: {sales.get('experience_years', 'N/A')} years
 - Sales Methodology: {sales.get('sales_methodology', 'N/A')}
 - Communication Style: {sales.get('communication_style', 'N/A')}""")
             else:
                 sections.append(f"""## ABOUT YOU (THE SALES REP):
 - Name: {sales.get('full_name', 'N/A')}
-- Role: {sales.get('job_title', 'N/A')}
-- Experience: {sales.get('years_experience', 'N/A')} years
+- Role: {sales.get('role', 'N/A')}
+- Experience: {sales.get('experience_years', 'N/A')} years
 - Sales Style: {sales.get('sales_methodology', 'N/A')}""")
             
             # Add style rules if requested - use centralized SellerContextBuilder

@@ -1,13 +1,16 @@
 """
-Research orchestrator - coordinates multiple research sources.
+Research orchestrator - coordinates multiple research sources for 360° prospect intelligence.
 
 Enhanced with full context awareness:
 - Sales profile context (who is selling)
 - Company profile context (what are we selling)
 - Knowledge Base integration (case studies, product info)
+- Prompt caching for cost optimization
+- Current date awareness for accurate news search
 """
 import asyncio
 import logging
+from datetime import datetime
 from typing import Dict, Any, Optional, List
 from supabase import Client
 from .claude_researcher import ClaudeResearcher
@@ -22,8 +25,8 @@ from app.utils.timeout import with_timeout, AITimeoutError
 logger = logging.getLogger(__name__)
 
 # Timeout settings for research operations (in seconds)
-RESEARCH_TASK_TIMEOUT = 60  # Individual AI task timeout
-RESEARCH_TOTAL_TIMEOUT = 180  # Total research timeout (3 minutes)
+RESEARCH_TASK_TIMEOUT = 90  # Individual AI task timeout (increased for comprehensive research)
+RESEARCH_TOTAL_TIMEOUT = 240  # Total research timeout (4 minutes for thorough research)
 
 
 class ResearchOrchestrator:
@@ -46,17 +49,19 @@ class ResearchOrchestrator:
         city: Optional[str] = None,
         linkedin_url: Optional[str] = None,
         website_url: Optional[str] = None,
-        organization_id: Optional[str] = None,  # NEW: For context
-        user_id: Optional[str] = None,  # NEW: For sales profile
-        language: str = DEFAULT_LANGUAGE  # i18n: output language
+        organization_id: Optional[str] = None,
+        user_id: Optional[str] = None,
+        language: str = DEFAULT_LANGUAGE
     ) -> Dict[str, Any]:
         """
-        Research company using multiple sources in parallel.
+        Research company using multiple sources in parallel for 360° intelligence.
         
-        Enhanced with full context awareness:
-        - Sales profile (who is selling, their strengths)
-        - Company profile (what we sell, value propositions)
-        - Knowledge Base (case studies, product info)
+        Sources:
+        - Claude: Comprehensive 360° prospect research (with caching)
+        - Gemini: Real-time news and market signals
+        - KVK: Official Dutch company data (NL only)
+        - Website Scraper: Direct website content
+        - Knowledge Base: Relevant case studies (for merge)
         
         Args:
             company_name: Name of the company
@@ -66,19 +71,26 @@ class ResearchOrchestrator:
             website_url: Optional website URL for direct scraping
             organization_id: Organization ID for context retrieval
             user_id: User ID for sales profile context
-            language: Output language code (default: nl)
+            language: Output language code (default from config)
             
         Returns:
-            Dictionary with combined research data
+            Dictionary with combined research data and unified brief
         """
+        current_date = datetime.now().strftime("%d %B %Y")
+        logger.info(f"Starting 360° research for {company_name} on {current_date}")
+        
         # Get seller context for personalized research
         seller_context = await self._get_seller_context(organization_id, user_id)
+        
+        # Add organization_id to seller context for caching
+        if seller_context and organization_id:
+            seller_context["organization_id"] = organization_id
         
         # Determine which sources to use
         tasks = []
         source_names = []
         
-        # Always use Claude and Gemini - now with seller context and language!
+        # Always use Claude (360° research with caching) and Gemini (real-time signals)
         tasks.append(self.claude.search_company(
             company_name, country, city, linkedin_url,
             seller_context=seller_context,
@@ -98,7 +110,7 @@ class ResearchOrchestrator:
             tasks.append(self.kvk.search_company(company_name, city))
             source_names.append("kvk")
         
-        # NEW: Use website scraper if URL provided
+        # Use website scraper if URL provided
         if website_url:
             tasks.append(self.website_scraper.scrape_website(website_url))
             source_names.append("website")
@@ -112,14 +124,14 @@ class ResearchOrchestrator:
             )
         except AITimeoutError:
             logger.error(f"Research timed out after {RESEARCH_TOTAL_TIMEOUT}s for {company_name}")
-            # Return partial results with timeout errors
             results = [asyncio.TimeoutError("Research timed out")] * len(tasks)
         
         # Combine results
         combined_data = {
             "sources": {},
             "success_count": 0,
-            "total_sources": len(tasks)
+            "total_sources": len(tasks),
+            "research_date": current_date
         }
         
         for source_name, result in zip(source_names, results):
@@ -128,10 +140,20 @@ class ResearchOrchestrator:
                     "success": False,
                     "error": str(result)
                 }
+                logger.warning(f"Source {source_name} failed: {result}")
             else:
                 combined_data["sources"][source_name] = result
                 if result.get("success"):
                     combined_data["success_count"] += 1
+                    
+                    # Log cache statistics for Claude
+                    if source_name == "claude" and result.get("cache_stats"):
+                        cache = result["cache_stats"]
+                        logger.info(
+                            f"Claude cache stats: hit={cache.get('cache_hit')}, "
+                            f"read={cache.get('cache_read_tokens', 0)}, "
+                            f"write={cache.get('cache_write_tokens', 0)}"
+                        )
         
         # Get relevant KB chunks for case studies
         kb_chunks = []
@@ -146,7 +168,7 @@ class ResearchOrchestrator:
                 }
                 combined_data["success_count"] += 1
         
-        # Generate unified brief with full context
+        # Generate unified brief by merging all sources
         combined_data["brief"] = await self._generate_unified_brief(
             combined_data["sources"],
             company_name,
@@ -155,6 +177,11 @@ class ResearchOrchestrator:
             seller_context=seller_context,
             kb_chunks=kb_chunks,
             language=language
+        )
+        
+        logger.info(
+            f"360° research completed for {company_name}: "
+            f"{combined_data['success_count']}/{combined_data['total_sources']} sources successful"
         )
         
         return combined_data
@@ -221,7 +248,7 @@ class ResearchOrchestrator:
                 
                 context["company_narrative"] = company.get("company_narrative")
                 
-                logger.info(f"Seller context from company_profile: {context['company_name']}, products={len(context['products_services'])}")
+                logger.info(f"Seller context loaded: {context['company_name']}, products={len(context['products_services'])}")
             
             # Get sales profile
             if user_id:
@@ -243,13 +270,12 @@ class ResearchOrchestrator:
                         if " at " in role:
                             context["company_name"] = role.split(" at ")[-1].strip()
                             context["has_context"] = True
-                            logger.info(f"Extracted company from sales_profile role: {context['company_name']}")
                     
                     # Fallback: target industries from sales profile
                     if not context.get("target_industries"):
                         context["target_industries"] = sales.get("target_industries", []) or []
             
-            logger.info(f"Loaded seller context: {context['company_name']}, has_context={context['has_context']}")
+            logger.debug(f"Full seller context: {context['company_name']}, has_context={context['has_context']}")
             
         except Exception as e:
             logger.warning(f"Could not load seller context: {e}")
@@ -313,363 +339,168 @@ class ResearchOrchestrator:
         language: str = DEFAULT_LANGUAGE
     ) -> str:
         """
-        Generate unified research brief from all sources.
+        Generate unified research brief by merging all sources.
         
-        Enhanced with seller context for personalized talking points.
+        Strategy:
+        - Claude's 360° research is the primary structure
+        - Gemini's market intelligence adds real-time news depth
+        - KVK adds official registration data
+        - Website scraper adds direct content
+        - KB chunks add relevant case studies
+        
+        The merge prompt is simpler now because Claude already provides
+        a complete structured output.
         """
         lang_instruction = get_language_instruction(language)
+        current_date = datetime.now().strftime("%d %B %Y")
+        
         # Collect successful source data
-        source_data = []
+        source_sections = []
         
+        # Claude's 360° research is the primary content
         if sources.get("claude", {}).get("success"):
-            source_data.append(f"## Claude Research:\n{sources['claude']['data']}")
+            source_sections.append(f"""
+## PRIMARY RESEARCH (Claude 360° Analysis)
+{sources['claude']['data']}
+""")
         
+        # Gemini adds real-time market intelligence
         if sources.get("gemini", {}).get("success"):
-            source_data.append(f"## Gemini Research:\n{sources['gemini']['data']}")
+            source_sections.append(f"""
+## SUPPLEMENTARY: REAL-TIME MARKET INTELLIGENCE (Gemini)
+{sources['gemini']['data']}
+""")
         
+        # KVK adds official Dutch company data
         if sources.get("kvk", {}).get("success"):
             kvk_data = sources['kvk']['data']
-            kvk_text = f"""## KVK Official Data:
-- KVK Number: {kvk_data.get('kvk_number')}
-- Legal Form: {kvk_data.get('legal_form')}
-- Trade Name: {kvk_data.get('trade_name')}
-- Address: {kvk_data.get('address', {}).get('street')} {kvk_data.get('address', {}).get('house_number')}, {kvk_data.get('address', {}).get('postal_code')} {kvk_data.get('address', {}).get('city')}
-- Established: {kvk_data.get('establishment_date')}
-- Employees: {kvk_data.get('employees')}
-- Website: {kvk_data.get('website')}
+            kvk_text = f"""
+## SUPPLEMENTARY: OFFICIAL REGISTRATION DATA (Dutch Chamber of Commerce)
+
+| Field | Value |
+|-------|-------|
+| **KVK Number** | {kvk_data.get('kvk_number', 'Not found')} |
+| **Legal Form** | {kvk_data.get('legal_form', 'Not found')} |
+| **Trade Name** | {kvk_data.get('trade_name', 'Not found')} |
+| **Address** | {kvk_data.get('address', {}).get('street', '')} {kvk_data.get('address', {}).get('house_number', '')}, {kvk_data.get('address', {}).get('postal_code', '')} {kvk_data.get('address', {}).get('city', '')} |
+| **Established** | {kvk_data.get('establishment_date', 'Not found')} |
+| **Employees** | {kvk_data.get('employees', 'Not found')} |
+| **Website** | {kvk_data.get('website', 'Not found')} |
 """
-            source_data.append(kvk_text)
+            source_sections.append(kvk_text)
         
-        # Add website scraper data
+        # Website scraper adds direct content
         if sources.get("website", {}).get("success"):
             website_data = sources['website']
-            website_text = f"""## Company Website Content:
-**URL**: {website_data.get('url')}
+            website_text = f"""
+## SUPPLEMENTARY: COMPANY WEBSITE CONTENT
+
+**URL**: {website_data.get('url', 'Unknown')}
 **Pages Scraped**: {website_data.get('pages_scraped', 0)}
 
 {website_data.get('summary', 'No summary available')}
 """
-            source_data.append(website_text)
+            source_sections.append(website_text)
         
-        if not source_data:
-            return "# Research Failed\n\nNo data found from sources."
-        
-        # Build seller context section for the prompt
-        seller_section = ""
-        if seller_context and seller_context.get("has_context"):
-            products = ", ".join(seller_context.get("products_services", [])[:5]) or "Not specified"
-            values = ", ".join(seller_context.get("value_propositions", [])[:3]) or "Not specified"
-            diffs = ", ".join(seller_context.get("differentiators", [])[:3]) or "Not specified"
-            
-            seller_section = f"""
-## CONTEXT: WHAT YOU SELL
-**Your company**: {seller_context.get('company_name', 'Unknown')}
-**Products/Services**: {products}
-**Value Propositions**: {values}
-**Differentiators**: {diffs}
-**Target Market**: {seller_context.get('target_market', 'Not specified')}
+        # If no sources succeeded, return error
+        if not source_sections:
+            return f"""# Research Failed: {company_name}
+
+**Date**: {current_date}
+
+No data could be retrieved from any source. Please try again or verify the company name.
 """
         
         # Build KB context section
         kb_section = ""
         if kb_chunks:
             kb_texts = "\n".join([
-                f"- **{chunk['source']}**: {chunk['text'][:200]}..."
+                f"- **{chunk['source']}** (relevance: {chunk['score']:.0%}): {chunk['text'][:200]}..."
                 for chunk in kb_chunks
             ])
             kb_section = f"""
-## RELEVANT CASE STUDIES/DOCUMENTS FROM YOUR KNOWLEDGE BASE:
+## YOUR KNOWLEDGE BASE MATCHES
+
+The following documents from your knowledge base may be relevant:
+
 {kb_texts}
 """
         
-        # Build KB references section for the prompt
-        kb_references = ""
-        if kb_chunks:
-            kb_references = chr(10).join([f"| {chunk['source']} | [Relevance] |" for chunk in kb_chunks])
-        else:
-            kb_references = "| — | — |"
+        # Build seller context reminder
+        seller_section = ""
+        if seller_context and seller_context.get("has_context"):
+            products = ", ".join(seller_context.get("products_services", [])[:3]) or "Not specified"
+            seller_section = f"""
+## SELLER CONTEXT REMINDER
+
+You are {seller_context.get('company_name', 'Unknown')} selling {products}.
+"""
         
-        # Pre-calculate source status for the Research Confidence table
+        # Calculate source statistics
         claude_status = "✅" if sources.get("claude", {}).get("success") else "❌"
         gemini_status = "✅" if sources.get("gemini", {}).get("success") else "❌"
         kvk_status = "✅" if sources.get("kvk", {}).get("success") else ("N/A" if "kvk" not in sources else "❌")
         website_status = "✅" if sources.get("website", {}).get("success") else ("N/A" if "website" not in sources else "❌")
-        kb_status = f"✅ {len(kb_chunks)} matches" if kb_chunks else "❌ No matches"
+        kb_status = f"✅ {len(kb_chunks)} matches" if kb_chunks else "No matches"
         
-        # Use Claude to merge the data - with seller context and language instruction
-        merge_prompt = f"""You are a senior sales intelligence analyst preparing a strategic prospect brief.
+        # Build the merge prompt
+        # This is simpler now because Claude provides a complete structure
+        merge_prompt = f"""You are merging multiple research sources into one comprehensive 360° prospect intelligence report.
 
-Write in clear, sharp and commercially relevant language.
-
-Your tone should reflect strategic insight, market awareness and sales acumen.
-
-Every insight must be grounded in the provided source data, never invented.
-
-Your goal:
-Give the sales professional a full understanding of the prospect's world and the commercial fit in **5 minutes of reading**.
-Provide intelligence, not data dumps.
+**TODAY'S DATE**: {current_date}
+**TARGET COMPANY**: {company_name}
+{f"**LOCATION**: {city}, {country}" if city and country else f"**COUNTRY**: {country}" if country else ""}
 
 {seller_section}
 {kb_section}
 
-I have collected information about {company_name} from multiple sources:
-
-{chr(10).join(source_data)}
-
----
-
-Generate a research brief with EXACTLY this structure:
-
-# Research Brief: {company_name}
-{f"📍 {city}, {country}" if city and country else ""}
-
----
-
-## 📋 In One Sentence
-
-A precise sentence explaining:
-- who this company is
-- what makes them commercially relevant
-- why this might be the right time to engage
-
-Focus on relevance and opportunity, not generic descriptions.
-
----
-
-## 📊 At a Glance
-
-| Aspect | Assessment |
-|--------|------------|
-| **Opportunity Fit** | 🟢 High / 🟡 Medium / 🔴 Low — [based on the seller's offerings] |
-| **Timing** | 🟢 NOW / 🟡 Nurture / 🔴 No Focus — [based on evidence] |
-| **Company Stage** | Startup / Scale-up / SMB / Enterprise |
-| **Industry Match** | 🟢 Core / 🟡 Adjacent / 🔴 Outside Target |
-| **Primary Risk** | [The main commercial or structural obstacle] |
-
-This gives the rep a one-screen strategic snapshot.
-
----
-
-## 🏢 Company Profile
-
-| Element | Details |
-|---------|---------|
-| **Industry** | [Sector + sub-sector] |
-| **Size** | [Employees, revenue if verified] |
-| **Headquarters** | [Location] |
-| **Founded** | [Year] |
-| **Website** | [URL] |
-| **Company ID** | [Chamber of Commerce / registration number if available] |
-
-**What This Means Commercially**
-One concise sentence linking their profile to the seller's potential relevance.
-
----
-
-## 💼 Business Model
-
-### What They Do
-A tight 2–3 sentence explanation.
-
-### Revenue Model
-
-| Stream | Description |
-|--------|-------------|
-| [Stream 1] | [How it works] |
-| [Stream 2] | [How it works] |
-
-### Customers & Segments
-- **Market Type**: [B2B / B2C / Mixed]
-- **Customer Types**: [Enterprise / SMB / Consumer]
-- **Industries Served**: [Key verticals]
-
-### Their Value Proposition
-- [What they promise]
-- [How they differentiate]
-
-**Commercial Insight**
-What their model suggests about priorities, constraints or buying behaviour.
-
----
-
-## 📰 Recent Developments (Last 90 Days)
-
-### News & Signals
-
-| Date | Development | Type |
-|------|-------------|------|
-| [Date] | [Update] | 📈 Growth / 💰 Funding / 👥 Leadership / 🚀 Product / 🤝 Partnership |
-| ... | ... | ... |
-
-### What These Signals Suggest
-Interpret clearly:
-- What are they prioritising?
-- What pressure are they under?
-- Where might they invest next?
-- What might be changing internally?
-
-Make this **evidence-led**, not speculative.
-
----
-
-## 👥 Key People
-
-### Leadership Team
-
-| Name | Role | Background | LinkedIn |
-|------|------|------------|----------|
-| [Name] | [Title] | [Relevant highlights] | [URL] |
-
-### Likely Decision Structure
-Based on company size, industry and signals:
-- **Decision Style**: [Top-down / Consensus / Committee / Pragmatic]
-- **Economic Buyer**: [Role controlling budget]
-- **Technical Evaluator**: [Role validating solution]
-- **Potential Champion**: [Role most aligned with our value]
-
-**Implication**
-One sentence on how to navigate this structure strategically.
-
----
-
-## 🎯 Market Position
-
-### Competitive Landscape
-
-| Competitor | Positioning | Notes |
-|------------|-------------|-------|
-| [Competitor] | [Summary] | [Why relevant] |
-
-### Differentiation
-What makes {company_name} stand out:
-- [Point 1]
-- [Point 2]
-
-### Market Trajectory
-- **Stage**: [Growing / Stable / Declining / Pivoting]
-- **Evidence**: [Signals justifying assessment]
-
----
-
-## ⚡ Why This Company Now
-
-### Trigger Events
-
-| Event | Type | Opportunity Signal |
-|-------|------|--------------------|
-| [Event] | 💰 Funding / 🚀 Product / 👥 Leadership | [Why this matters commercially] |
-
-### Timing Analysis
-- **Urgency**: 🟢 High / 🟡 Medium / 🔴 Low
-- **Window**: [Is this time-sensitive?]
-- **Budget Cycle Clues**: [If any]
-
-### External Pressures
-Factors shaping their decisions:
-- [Industry trend]
-- [Regulatory shift]
-- [Competitive challenge]
-
----
-
-## 🎯 Sales Opportunity
-
-### Pain Points We Can Solve
-
-| Pain Point | Evidence | How We Help |
-|------------|----------|-------------|
-| [Pain] | [Signal or indicator] | [Relevant value proposition] |
-
-Focus on pains that align *directly* with what you sell.
-
-### Entry Strategy
-
-**Primary Entry Angle**
-- [Which role/team to target first and why]
-
-**Rationale**
-Tie directly to research signals.
-
-**Alternative Angle**
-- [If primary path is blocked]
-
-### Relevant Use Cases
-List 2–3 concrete use cases tied to their world, not generic examples:
-- [Use case 1]
-- [Use case 2]
-
----
-
-## ⚠️ Risks & Red Flags
-
-### Competitive Threats
-- [Existing vendor footprint]
-- [Signs of strong competitor presence]
-
-### Fit Concerns
-- [Size or complexity mismatch]
-- [Potential misalignment]
-
-### Research Red Flags
-- [Signals that require validation]
-
----
-
-## ❓ Questions to Validate in First Contact
-
-1. [Question confirming their current situation]
-2. [Question exploring implied challenge]
-3. [Question about their priorities/timeline]
-4. [Question about decision dynamics]
-5. [Question about success criteria]
-
-These are *validation questions*, not discovery questions.
-
----
-
-## 📚 Relevant References
-
-{"From your knowledge base:" if kb_chunks else "No matches found in your knowledge base."}
-
-| Document | Relevance |
-|----------|-----------|
-{kb_references}
-
----
-
-## 📊 Research Confidence & Gaps
-
-| Source | Status | Notes |
-|--------|--------|-------|
-| Claude Web Search | {claude_status} | [Quality] |
-| Google Search | {gemini_status} | [Quality] |
-| Chamber of Commerce | {kvk_status} | [If applicable] |
-| Website Scrape | {website_status} | [If used] |
-| Knowledge Base | {kb_status} | [Matches found] |
-
-### Information Gaps
-List what could not be verified and must be confirmed in conversation.
-
----
-
-RULES:
-- Be precise, commercially relevant and context-aware.
-- Anchor all insights in real evidence; never guess.
-- Write for a senior sales professional who needs intelligence, not volume.
-- Keep the brief under 1200 words (excluding tables).
-- This is **company intelligence**, not meeting preparation.
-- If something is unclear, label it as "Unverified" rather than speculating.
-- Prioritize official sources (Chamber of Commerce, company website) over inferred data.
-
-{lang_instruction}
-
-Generate the complete research brief now:"""
+═══════════════════════════════════════════════════════════════════════════════
+                           SOURCE DATA TO MERGE
+═══════════════════════════════════════════════════════════════════════════════
+
+{chr(10).join(source_sections)}
+
+═══════════════════════════════════════════════════════════════════════════════
+                           MERGE INSTRUCTIONS
+═══════════════════════════════════════════════════════════════════════════════
+
+Create a SINGLE, unified 360° prospect intelligence report by:
+
+1. **Use Claude's structure as the base** - it provides the complete framework
+2. **Enhance with Gemini's news** - add any additional recent news/signals not in Claude's report
+3. **Add KVK official data** - incorporate registration details into Company Identity section
+4. **Include website insights** - add any unique content from direct scraping
+5. **Reference KB matches** - note relevant case studies in the Commercial Opportunity section
+
+**DEDUPLICATION RULES**:
+- If the same information appears in multiple sources, include it ONCE
+- Prefer official sources (KVK) for registration data
+- Prefer more recent news items
+- Combine leadership information from all sources
+
+**OUTPUT REQUIREMENTS**:
+- Maintain the 9-section structure from Claude's report
+- Add a Research Sources section at the end showing what was used
+- Keep the professional, intelligence-focused tone
+- Do NOT add conversation scripts or meeting preparation content
+- {lang_instruction}
+
+**SOURCE STATUS**:
+| Source | Status |
+|--------|--------|
+| Claude 360° Research | {claude_status} |
+| Gemini Market Intelligence | {gemini_status} |
+| Dutch Chamber of Commerce | {kvk_status} |
+| Website Scraper | {website_status} |
+| Knowledge Base | {kb_status} |
+
+Generate the unified 360° prospect intelligence report now:"""
 
         try:
-            # Use await since claude.client is now AsyncAnthropic
+            # Use Claude to merge the sources
             response = await self.claude.client.messages.create(
                 model="claude-sonnet-4-20250514",
-                max_tokens=4096,
+                max_tokens=8192,
                 temperature=0.2,
                 messages=[{
                     "role": "user",
@@ -677,9 +508,36 @@ Generate the complete research brief now:"""
                 }]
             )
             
-            return response.content[0].text
+            merged_brief = response.content[0].text
+            logger.info(f"Successfully merged research sources for {company_name}")
+            return merged_brief
             
         except Exception as e:
-            # Fallback: just concatenate the sources
-            logger.error(f"Error generating unified brief: {e}")
-            return f"# Research Brief: {company_name}\n\n" + "\n\n---\n\n".join(source_data)
+            # Fallback: If merge fails, return Claude's research if available
+            logger.error(f"Error merging research sources: {e}")
+            
+            if sources.get("claude", {}).get("success"):
+                logger.info("Falling back to Claude's raw research output")
+                return sources["claude"]["data"]
+            
+            # Last resort: concatenate all sources
+            return f"""# Research Brief: {company_name}
+
+**Date**: {current_date}
+**Note**: Merge failed, showing raw source data.
+
+{"".join(source_sections)}
+"""
+    
+    def clear_caches(self, organization_id: Optional[str] = None) -> None:
+        """
+        Clear research caches.
+        
+        Call this when organization's company profile is updated to ensure
+        fresh seller context is used in next research.
+        
+        Args:
+            organization_id: Specific org to clear, or None to clear all
+        """
+        self.claude.clear_seller_cache(organization_id)
+        logger.info(f"Cleared research caches for org: {organization_id or 'all'}")

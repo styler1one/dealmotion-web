@@ -72,6 +72,10 @@ async def research_company_fn(ctx, step):
     # Step 2: Get seller context (for personalized research)
     seller_context = await step.run("get-seller-context", get_seller_context, organization_id, user_id)
     
+    # Add organization_id to seller_context for caching purposes
+    if seller_context:
+        seller_context["organization_id"] = organization_id
+    
     # Step 3: Claude research with retry
     claude_result = await step.run(
         "claude-research",
@@ -339,14 +343,15 @@ async def merge_and_generate_brief(
     # Count successes
     success_count = sum(1 for s in sources.values() if s.get("success"))
     
-    # Generate unified brief
+    # Generate unified brief (argument order matches _generate_unified_brief signature)
     try:
         brief = await orchestrator._generate_unified_brief(
+            sources=sources,
             company_name=company_name,
             country=country,
             city=city,
-            sources=sources,
             seller_context=seller_context,
+            kb_chunks=None,  # KB chunks are handled in orchestrator.research_company, not here
             language=language
         )
         return brief
