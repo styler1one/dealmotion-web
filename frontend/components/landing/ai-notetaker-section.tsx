@@ -6,7 +6,7 @@ import { Icons } from '@/components/icons'
 const features = [
   { icon: 'mail', key: 'emailInvite', color: 'blue' },
   { icon: 'calendar', key: 'autoRecord', color: 'green' },
-  { icon: 'filter', key: 'smartFilters', color: 'purple' },
+  { icon: 'settings', key: 'smartFilters', color: 'purple' },
   { icon: 'globe', key: 'platforms', color: 'orange' },
 ] as const
 
@@ -24,7 +24,7 @@ export function AINotetakerSection() {
     const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
       mail: Icons.mail,
       calendar: Icons.calendar,
-      filter: Icons.filter,
+      settings: Icons.settings,
       globe: Icons.globe,
       bot: Icons.sparkles,
       mic: Icons.mic,
