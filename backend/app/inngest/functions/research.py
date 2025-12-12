@@ -154,8 +154,12 @@ async def get_seller_context(organization_id: Optional[str], user_id: Optional[s
     """
     Get seller context for personalized research.
     
-    Extracts and flattens relevant fields from company_profile and sales_profile
-    so they can be directly used in research prompts.
+    OPTIMIZED for research quality and token efficiency:
+    - Focus on ICP details for precise fit assessment
+    - Products with benefits for use case matching
+    - No narratives or personal info (saves tokens, low value)
+    
+    Token budget: ~235 tokens (down from ~460)
     """
     if not organization_id:
         return {"has_context": False}
@@ -167,75 +171,67 @@ async def get_seller_context(organization_id: Optional[str], user_id: Optional[s
         ).limit(1).execute()
         company_profile = company_response.data[0] if company_response.data else None
         
-        # Get sales profile
-        sales_profile = None
-        if user_id:
-            profile_response = supabase.table("sales_profiles").select("*").eq(
-                "user_id", user_id
-            ).limit(1).execute()
-            sales_profile = profile_response.data[0] if profile_response.data else None
-        
-        # Build flattened context with extracted fields
+        # Build optimized context
         context = {
-            "has_context": bool(company_profile or sales_profile),
-            # Keep raw profiles for debugging/logging
-            "company_profile": company_profile,
-            "sales_profile": sales_profile,
-            # Initialize extracted fields
+            "has_context": bool(company_profile),
+            # Essential identification
             "company_name": None,
-            "products_services": [],
+            # Products with benefits for use case matching
+            "products": [],  # [{name, benefits}]
+            # Value propositions and differentiation
             "value_propositions": [],
+            "differentiators": [],
+            # ICP for fit assessment (CRITICAL for quality)
             "target_industries": [],
-            "target_market": "B2B",
+            "target_company_sizes": [],
+            "ideal_pain_points": [],      # What pains do we solve?
+            "target_decision_makers": [], # Who are typical buyers?
         }
         
-        # Extract from company_profile (primary source)
+        # Extract from company_profile
         if company_profile:
             context["company_name"] = company_profile.get("company_name")
             
-            # Products: extract names from products array
+            # Products: extract name AND benefits for use case matching
             products = company_profile.get("products", []) or []
-            context["products_services"] = [
-                p.get("name") for p in products 
-                if isinstance(p, dict) and p.get("name")
-            ]
+            context["products"] = []
+            for p in products[:5]:  # Limit to 5 products
+                if isinstance(p, dict) and p.get("name"):
+                    context["products"].append({
+                        "name": p.get("name"),
+                        "benefits": p.get("benefits", [])[:3] if p.get("benefits") else []
+                    })
             
             # Value propositions from core_value_props
-            context["value_propositions"] = company_profile.get("core_value_props", []) or []
+            context["value_propositions"] = (company_profile.get("core_value_props", []) or [])[:5]
             
-            # Add differentiators to value props if available
-            differentiators = company_profile.get("differentiators", []) or []
-            if differentiators:
-                context["value_propositions"] = context["value_propositions"] + differentiators
+            # Differentiators
+            context["differentiators"] = (company_profile.get("differentiators", []) or [])[:3]
             
-            # Target industries from Ideal Customer Profile
+            # ICP - Ideal Customer Profile (CRITICAL for quality)
             icp = company_profile.get("ideal_customer_profile", {}) or {}
-            context["target_industries"] = icp.get("industries", []) or []
+            context["target_industries"] = (icp.get("industries", []) or [])[:5]
+            context["target_company_sizes"] = (icp.get("company_sizes", []) or [])[:3]
+            context["ideal_pain_points"] = (icp.get("pain_points", []) or [])[:5]
+            context["target_decision_makers"] = (icp.get("decision_makers", []) or [])[:5]
             
-            logger.info(f"Seller context from company_profile: company={context['company_name']}, products={len(context['products_services'])}")
+            logger.info(
+                f"Seller context loaded: {context['company_name']}, "
+                f"products={len(context['products'])}, "
+                f"pain_points={len(context['ideal_pain_points'])}"
+            )
         
-        # Fallback/supplement from sales_profile
-        if sales_profile:
-            # Company name fallback: extract from role "Sales Director at Cmotions"
-            if not context.get("company_name"):
-                role = sales_profile.get("role", "") or ""
+        # Fallback: get company name from sales profile role
+        if not context.get("company_name") and user_id:
+            profile_response = supabase.table("sales_profiles").select("role").eq(
+                "user_id", user_id
+            ).limit(1).execute()
+            if profile_response.data:
+                role = profile_response.data[0].get("role", "") or ""
                 if " at " in role:
                     context["company_name"] = role.split(" at ")[-1].strip()
-                    logger.info(f"Extracted company name from sales_profile role: {context['company_name']}")
-            
-            # Target industries fallback
-            if not context.get("target_industries"):
-                context["target_industries"] = sales_profile.get("target_industries", []) or []
-            
-            # If still no products, try to derive from ai_summary or role
-            if not context.get("products_services"):
-                ai_summary = sales_profile.get("ai_summary", "") or ""
-                # Look for common patterns in the summary
-                if "data" in ai_summary.lower() and "ai" in ai_summary.lower():
-                    context["products_services"] = ["data and AI solutions"]
-                elif "crm" in ai_summary.lower():
-                    context["products_services"] = ["CRM solutions"]
-                logger.info(f"Derived products from ai_summary: {context['products_services']}")
+                    context["has_context"] = True
+                    logger.info(f"Company name from sales_profile: {context['company_name']}")
         
         return context
         

@@ -75,25 +75,39 @@ class GeminiResearcher:
         return "\n".join(query_parts) if query_parts else ""
 
     def _build_seller_context_section(self, seller_context: Dict[str, Any]) -> str:
-        """Build seller context section for the prompt."""
+        """
+        Build seller context section for market intelligence prompt.
+        
+        OPTIMIZED: Uses ICP pain points to focus signal detection.
+        """
         if not seller_context or not seller_context.get("has_context"):
             return ""
         
-        products = ", ".join(seller_context.get("products_services", [])[:5]) or "not specified"
-        values = ", ".join(seller_context.get("value_propositions", [])[:3]) or "not specified"
+        # Products
+        products_list = seller_context.get("products", [])
+        products_str = ", ".join([
+            p.get("name", "") for p in products_list if p.get("name")
+        ]) if products_list else "not specified"
+        
+        # ICP pain points for signal matching
+        pain_points = seller_context.get("ideal_pain_points", [])
+        pain_str = ", ".join(pain_points[:5]) if pain_points else "efficiency, growth, automation"
+        
+        # Target decision makers
+        decision_makers = seller_context.get("target_decision_makers", [])
+        dm_str = ", ".join(decision_makers[:3]) if decision_makers else "executives, directors"
         
         return f"""
 ---
-## 🎯 SELLER CONTEXT (Focus your research on relevance to what we sell)
+## 🎯 SELLER CONTEXT
 
-| Aspect | Details |
-|--------|---------|
-| **Seller Company** | {seller_context.get('company_name', 'Unknown')} |
-| **Products/Services** | {products} |
-| **Value Propositions** | {values} |
+**Seller**: {seller_context.get('company_name', 'Unknown')}
+**Products**: {products_str}
+**Pain Points We Solve**: {pain_str}
+**Typical Buyers**: {dm_str}
 
-**Your mission**: Find NEWS and SIGNALS that indicate this company might need {products}.
-Look for: pain points, growth challenges, hiring in relevant areas, competitor mentions, strategic shifts.
+**Your mission**: Find NEWS and SIGNALS indicating this company experiences these pain points.
+Focus on: hiring for {dm_str} roles, news about {pain_str}, strategic shifts.
 ---
 """
 

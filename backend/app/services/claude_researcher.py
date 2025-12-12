@@ -573,34 +573,67 @@ To complete the picture, consider:
         """
         Build seller context section (semi-static, cacheable per organization).
         
-        This section changes only when the organization's profile changes,
-        so it can be cached per organization_id.
+        OPTIMIZED for research quality and token efficiency (~235 tokens):
+        - Products with benefits for use case matching
+        - ICP pain points for pain matching
+        - Target decision makers for right targeting
+        - No narratives or personal info (saves ~300 tokens)
         """
         if not seller_context or not seller_context.get("has_context"):
             return ""
         
-        products = ", ".join(seller_context.get("products_services", [])[:5]) or "not specified"
+        # Products with benefits
+        products_list = seller_context.get("products", [])
+        if products_list:
+            products_str = ", ".join([
+                p.get("name", "") for p in products_list if p.get("name")
+            ]) or "not specified"
+            # Get benefits from first few products
+            all_benefits = []
+            for p in products_list[:3]:
+                all_benefits.extend(p.get("benefits", [])[:2])
+            benefits_str = ", ".join(all_benefits[:5]) if all_benefits else "not specified"
+        else:
+            products_str = "not specified"
+            benefits_str = "not specified"
+        
         values = ", ".join(seller_context.get("value_propositions", [])[:3]) or "not specified"
-        industries = ", ".join(seller_context.get("target_industries", [])[:3]) or "any"
         diffs = ", ".join(seller_context.get("differentiators", [])[:3]) or "not specified"
+        
+        # ICP details (CRITICAL for quality)
+        industries = ", ".join(seller_context.get("target_industries", [])[:3]) or "any"
+        company_sizes = ", ".join(seller_context.get("target_company_sizes", [])[:3]) or "any size"
+        pain_points = ", ".join(seller_context.get("ideal_pain_points", [])[:5]) or "not specified"
+        decision_makers = ", ".join(seller_context.get("target_decision_makers", [])[:5]) or "not specified"
         
         return f"""
 ═══════════════════════════════════════════════════════════════════════════════
                            SELLER CONTEXT
 ═══════════════════════════════════════════════════════════════════════════════
 
-Use this context to assess commercial relevance and personalize the research.
+Use this to assess FIT and personalize the research.
 
-| Aspect | Details |
-|--------|---------|
-| **Seller Company** | {seller_context.get('company_name', 'Unknown')} |
-| **Products/Services** | {products} |
-| **Value Propositions** | {values} |
+**SELLER**: {seller_context.get('company_name', 'Unknown')}
+
+| What We Sell | Details |
+|--------------|---------|
+| **Products** | {products_str} |
+| **Key Benefits** | {benefits_str} |
+| **Value Props** | {values} |
 | **Differentiators** | {diffs} |
-| **Target Industries** | {industries} |
-| **Target Market** | {seller_context.get('target_market', 'B2B')} |
 
-**Mission**: Build intelligence that helps understand if and how this prospect could benefit from what the seller offers.
+| Ideal Customer Profile | Details |
+|------------------------|---------|
+| **Target Industries** | {industries} |
+| **Company Sizes** | {company_sizes} |
+| **Pain Points We Solve** | {pain_points} |
+| **Typical Decision Makers** | {decision_makers} |
+
+**YOUR MISSION**:
+1. Assess if this prospect FITS our ICP (industry, size, likely pains)
+2. Find evidence of the pain points we solve
+3. Identify decision makers matching our typical buyers
+4. Suggest use cases based on their situation + our benefits
 """
 
     def _build_search_context(
