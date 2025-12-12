@@ -341,7 +341,7 @@ async def list_preps(
         
         # Build query
         query = supabase.table("meeting_preps").select(
-            "id, prospect_company_name, meeting_type, status, created_at, completed_at"
+            "id, prospect_company_name, meeting_type, status, created_at, completed_at, contact_ids"
         ).eq("organization_id", organization_id)
         
         if meeting_type:
@@ -353,16 +353,45 @@ async def list_preps(
         query = query.order("created_at", desc=True).range(offset, offset + limit - 1)
         
         response = query.execute()
+        preps = response.data
+        
+        # Collect all contact_ids and fetch contact names
+        all_contact_ids = []
+        for prep in preps:
+            if prep.get("contact_ids"):
+                all_contact_ids.extend(prep["contact_ids"])
+        
+        # Fetch contact names if there are any contact_ids
+        contact_names_map = {}
+        if all_contact_ids:
+            unique_contact_ids = list(set(all_contact_ids))
+            contacts_response = supabase.table("prospect_contacts").select(
+                "id, name"
+            ).in_("id", unique_contact_ids).execute()
+            
+            for contact in contacts_response.data:
+                contact_names_map[contact["id"]] = contact["name"]
+        
+        # Add contact_names to each prep
+        for prep in preps:
+            if prep.get("contact_ids"):
+                prep["contact_names"] = [
+                    contact_names_map.get(cid, "Unknown") 
+                    for cid in prep["contact_ids"] 
+                    if cid in contact_names_map
+                ]
+            else:
+                prep["contact_names"] = []
         
         # Get total count
         count_response = supabase.table("meeting_preps").select(
             "id", count="exact"
         ).eq("organization_id", organization_id).execute()
         
-        total = count_response.count if hasattr(count_response, 'count') else len(response.data)
+        total = count_response.count if hasattr(count_response, 'count') else len(preps)
         
         return {
-            "preps": response.data,
+            "preps": preps,
             "total": total
         }
         

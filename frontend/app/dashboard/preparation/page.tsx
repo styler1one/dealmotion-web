@@ -32,6 +32,8 @@ interface MeetingPrep {
   created_at: string
   completed_at?: string
   error_message?: string
+  contact_ids?: string[]
+  contact_names?: string[]
 }
 
 export default function PreparationPage() {
@@ -227,8 +229,20 @@ export default function PreparationPage() {
                           )}
                         </div>
                         
-                        <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-                          <span>{getMeetingTypeLabel(prep.meeting_type)}</span>
+                        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 flex-wrap">
+                          <span className="inline-flex items-center gap-1">
+                            <Icons.calendar className="h-3 w-3" />
+                            {getMeetingTypeLabel(prep.meeting_type)}
+                          </span>
+                          {prep.contact_names && prep.contact_names.length > 0 && (
+                            <>
+                              <span>•</span>
+                              <span className="inline-flex items-center gap-1">
+                                <Icons.users className="h-3 w-3" />
+                                {prep.contact_names.join(', ')}
+                              </span>
+                            </>
+                          )}
                           <span>•</span>
                           <span>{formatDate(prep.created_at, settings.output_language)}</span>
                         </div>
