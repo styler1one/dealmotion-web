@@ -569,4 +569,74 @@ async def trigger_calendar_sync(
         )
 
 
+@router.post("/debug/trigger-prospect-matching")
+async def trigger_prospect_matching(
+    user_org: Tuple[str, str] = Depends(get_user_org)
+):
+    """
+    Debug endpoint: Manually trigger prospect matching for all unlinked meetings.
+    Useful for debugging when prospect matching isn't working after sync.
+    """
+    user_id, organization_id = user_org
+    
+    try:
+        from app.services.prospect_matcher import ProspectMatcher
+        from app.database import get_supabase_service
+        
+        supabase = get_supabase_service()
+        
+        # Check unlinked meetings
+        unlinked = supabase.table("calendar_meetings").select(
+            "id, title, attendees, organizer_email"
+        ).eq(
+            "organization_id", organization_id
+        ).is_(
+            "prospect_id", "null"
+        ).execute()
+        
+        unlinked_meetings = unlinked.data or []
+        
+        # Check contacts
+        contacts = supabase.table("prospect_contacts").select(
+            "id, name, email, prospect_id"
+        ).eq(
+            "organization_id", organization_id
+        ).execute()
+        
+        contacts_data = contacts.data or []
+        
+        # Run matching
+        matcher = ProspectMatcher(supabase)
+        results = await matcher.match_all_unlinked(organization_id)
+        
+        auto_linked = sum(1 for r in results if r.auto_linked)
+        total_matched = sum(1 for r in results if r.best_match is not None)
+        
+        return {
+            "success": True,
+            "unlinked_meetings_found": len(unlinked_meetings),
+            "contacts_available": len(contacts_data),
+            "total_meetings_processed": len(results),
+            "auto_linked": auto_linked,
+            "matches_found": total_matched,
+            "unlinked_meeting_titles": [m["title"] for m in unlinked_meetings[:10]],
+            "contact_names": [c.get("name") or c.get("email") for c in contacts_data[:10]],
+            "details": [
+                {
+                    "meeting_title": r.meeting_id[:8] + "...",
+                    "auto_linked": r.auto_linked,
+                    "best_match": r.best_match.company_name if r.best_match else None,
+                    "confidence": r.best_match.confidence if r.best_match else 0,
+                    "reason": r.best_match.match_reason if r.best_match else None,
+                    "contacts_matched": len(r.matched_contact_ids)
+                }
+                for r in results[:10]
+            ]
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to trigger prospect matching: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 

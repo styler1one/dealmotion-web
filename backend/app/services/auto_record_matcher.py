@@ -236,23 +236,55 @@ async def process_calendar_for_auto_record(user_id: str, organization_id: str):
     """
     supabase = get_supabase_service()
     
+    logger.info(f"[AUTO-RECORD] Starting processing for user {user_id[:8]}...")
+    
     try:
         # Get user's auto-record settings
         settings_result = supabase.table("auto_record_settings").select("*").eq(
             "user_id", user_id
         ).limit(1).execute()
         
-        if not settings_result.data or not settings_result.data[0].get("enabled"):
-            logger.debug(f"Auto-record disabled for user {user_id[:8]}...")
-            return {"scheduled": 0, "skipped": 0}
+        if not settings_result.data:
+            logger.warning(f"[AUTO-RECORD] No settings found for user {user_id[:8]}... - user needs to configure auto-record")
+            return {"scheduled": 0, "skipped": 0, "reason": "no_settings"}
         
         settings = settings_result.data[0]
+        
+        if not settings.get("enabled"):
+            logger.info(f"[AUTO-RECORD] Disabled for user {user_id[:8]}... (enabled={settings.get('enabled')}, mode={settings.get('mode')})")
+            return {"scheduled": 0, "skipped": 0, "reason": "disabled"}
+        
+        logger.info(f"[AUTO-RECORD] Settings: mode={settings.get('mode')}, external_only={settings.get('external_only')}, min_duration={settings.get('min_duration_minutes')}")
         
         # Get upcoming online meetings that don't already have a scheduled recording
         # Use timezone-aware datetime for proper comparison with stored times
         now = datetime.now(timezone.utc)
         future = now + timedelta(days=14)  # Look ahead 14 days
         
+        # First, get ALL upcoming meetings to see what we're working with
+        all_meetings_result = supabase.table("calendar_meetings").select(
+            "id, title, start_time, is_online, meeting_url, status"
+        ).eq(
+            "user_id", user_id
+        ).gte(
+            "start_time", now.isoformat()
+        ).lte(
+            "start_time", future.isoformat()
+        ).execute()
+        
+        all_meetings = all_meetings_result.data or []
+        logger.info(f"[AUTO-RECORD] Found {len(all_meetings)} total upcoming meetings in next 14 days")
+        
+        # Log why meetings might be filtered out
+        for m in all_meetings:
+            if not m.get("is_online"):
+                logger.debug(f"[AUTO-RECORD] '{m.get('title')}' - not online meeting")
+            elif not m.get("meeting_url"):
+                logger.debug(f"[AUTO-RECORD] '{m.get('title')}' - no meeting URL")
+            elif m.get("status") != "confirmed":
+                logger.debug(f"[AUTO-RECORD] '{m.get('title')}' - status is '{m.get('status')}', not 'confirmed'")
+        
+        # Now get the filtered meetings
         meetings_result = supabase.table("calendar_meetings").select(
             "id, external_event_id, title, start_time, end_time, is_online, meeting_url, attendees, status, prospect_id, contact_ids, preparation_id"
         ).eq(
@@ -270,9 +302,12 @@ async def process_calendar_for_auto_record(user_id: str, organization_id: str):
         ).execute()
         
         meetings = meetings_result.data or []
+        logger.info(f"[AUTO-RECORD] {len(meetings)} meetings qualify for auto-record evaluation (online + confirmed + has URL)")
         
         scheduled_count = 0
         skipped_count = 0
+        
+        already_scheduled_count = 0
         
         for meeting in meetings:
             # Check if already scheduled
@@ -282,6 +317,8 @@ async def process_calendar_for_auto_record(user_id: str, organization_id: str):
             
             if existing.data and len(existing.data) > 0:
                 # Already scheduled
+                already_scheduled_count += 1
+                logger.debug(f"[AUTO-RECORD] '{meeting['title']}' - already scheduled, skipping")
                 continue
             
             # Check if should auto-record
@@ -378,11 +415,16 @@ async def process_calendar_for_auto_record(user_id: str, organization_id: str):
                 logger.error(f"Failed to schedule recording for '{meeting['title']}': {e}")
                 continue
         
-        logger.info(f"Auto-record for user {user_id[:8]}...: {scheduled_count} scheduled, {skipped_count} skipped")
+        logger.info(
+            f"[AUTO-RECORD] Summary for user {user_id[:8]}...: "
+            f"{scheduled_count} newly scheduled, {skipped_count} skipped by filter, "
+            f"{already_scheduled_count} already scheduled"
+        )
         
         return {
             "scheduled": scheduled_count,
-            "skipped": skipped_count
+            "skipped": skipped_count,
+            "already_scheduled": already_scheduled_count
         }
         
     except Exception as e:

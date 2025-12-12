@@ -31,7 +31,36 @@ async def run_prospect_matching(user_id: str, organization_id: str) -> dict:
     """
     from app.services.prospect_matcher import ProspectMatcher
     
+    logger.info(f"[PROSPECT-MATCH] Starting for user {user_id[:8]}..., org {organization_id[:8]}...")
+    
     supabase = get_supabase_service()
+    
+    # First, check how many unlinked meetings exist
+    unlinked_check = supabase.table("calendar_meetings").select(
+        "id, title"
+    ).eq(
+        "organization_id", organization_id
+    ).is_(
+        "prospect_id", "null"
+    ).execute()
+    
+    unlinked_count = len(unlinked_check.data or [])
+    logger.info(f"[PROSPECT-MATCH] Found {unlinked_count} unlinked meetings for org {organization_id[:8]}...")
+    
+    if unlinked_count > 0:
+        for m in (unlinked_check.data or [])[:5]:  # Log first 5
+            logger.debug(f"[PROSPECT-MATCH] Unlinked meeting: '{m.get('title')}'")
+    
+    # Also check how many contacts exist for matching
+    contacts_check = supabase.table("prospect_contacts").select(
+        "id"
+    ).eq(
+        "organization_id", organization_id
+    ).execute()
+    
+    contacts_count = len(contacts_check.data or [])
+    logger.info(f"[PROSPECT-MATCH] Organization has {contacts_count} contacts for matching")
+    
     matcher = ProspectMatcher(supabase)
     
     results = await matcher.match_all_unlinked(organization_id)
@@ -40,14 +69,16 @@ async def run_prospect_matching(user_id: str, organization_id: str) -> dict:
     total_matched = sum(1 for r in results if r.best_match is not None)
     
     logger.info(
-        f"ProspectMatcher completed for org {organization_id[:8]}...: "
-        f"{auto_linked} auto-linked, {total_matched} total matches"
+        f"[PROSPECT-MATCH] Completed for org {organization_id[:8]}...: "
+        f"{auto_linked} auto-linked, {total_matched} total matches out of {len(results)} meetings"
     )
     
     return {
         "total_meetings": len(results),
         "auto_linked": auto_linked,
-        "total_with_match": total_matched
+        "total_with_match": total_matched,
+        "unlinked_before": unlinked_count,
+        "contacts_available": contacts_count
     }
 
 
@@ -95,20 +126,22 @@ async def process_calendar_post_sync_fn(ctx, step):
     updated_meetings = event_data.get("updated_meetings", 0)
     
     logger.info(
-        f"Starting calendar post-sync for user {user_id[:8]}... "
-        f"({new_meetings} new, {updated_meetings} updated)"
+        f"[POST-SYNC] Starting calendar post-sync for user {user_id[:8]}..., org {organization_id[:8]}... "
+        f"(new={new_meetings}, updated={updated_meetings})"
     )
     
     # Step 1: Run ProspectMatcher (only if there are new/updated meetings)
     match_result = {"skipped": True}
     if new_meetings > 0 or updated_meetings > 0:
+        logger.info(f"[POST-SYNC] Running ProspectMatcher (new={new_meetings}, updated={updated_meetings})")
         match_result = await step.run(
             "prospect-matching",
             run_prospect_matching,
             user_id, organization_id
         )
+        logger.info(f"[POST-SYNC] ProspectMatcher result: {match_result}")
     else:
-        logger.debug("No new/updated meetings - skipping prospect matching")
+        logger.warning(f"[POST-SYNC] Skipping ProspectMatcher - no new/updated meetings (new={new_meetings}, updated={updated_meetings})")
     
     # Step 2: Run auto-record processing (always, to catch any eligible meetings)
     auto_record_result = await step.run(

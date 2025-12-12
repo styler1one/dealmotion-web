@@ -273,7 +273,8 @@ async def find_prospect_and_contacts(
         link_status = "auto-linked" if auto_linked else "matched (not auto-linked)"
         logger.info(f"[EMAIL-INVITE] ProspectMatcher {link_status} prospect {prospect_id} with {confidence:.0%} confidence, contacts: {contact_ids}")
     else:
-        logger.info(f"[EMAIL-INVITE] ProspectMatcher found no prospect match for meeting '{meeting_title}' with attendees {attendee_emails}")
+        attendee_info = [f"{a.get('name', '')} <{a.get('email', '')}>" for a in attendees]
+        logger.info(f"[EMAIL-INVITE] ProspectMatcher found no prospect match for meeting '{meeting_title}' with attendees {attendee_info}")
     
     return prospect_id, contact_ids
 

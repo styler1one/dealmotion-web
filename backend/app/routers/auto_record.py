@@ -331,3 +331,105 @@ async def preview_auto_record(
         logger.error(f"Failed to preview auto-record: {e}")
         raise HTTPException(status_code=500, detail="Failed to generate preview")
 
+
+@router.post("/trigger")
+async def trigger_auto_record(
+    user_org: Tuple[str, str] = Depends(get_user_org)
+):
+    """
+    Manually trigger auto-record processing for the current user.
+    Useful for testing and debugging.
+    """
+    user_id, organization_id = user_org
+    
+    try:
+        from app.services.auto_record_matcher import process_calendar_for_auto_record
+        
+        result = await process_calendar_for_auto_record(user_id, organization_id)
+        
+        return {
+            "success": True,
+            "result": result
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to trigger auto-record: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to trigger: {str(e)}")
+
+
+@router.get("/debug/meetings")
+async def debug_meetings(
+    user_org: Tuple[str, str] = Depends(get_user_org)
+):
+    """
+    Debug endpoint: Show all upcoming calendar meetings with their auto-record eligibility.
+    Shows why meetings might not be eligible for auto-recording.
+    """
+    user_id, organization_id = user_org
+    
+    try:
+        from datetime import datetime, timedelta
+        
+        now = datetime.utcnow()
+        future = now + timedelta(days=14)
+        
+        # Get ALL upcoming meetings (no filters)
+        meetings_result = supabase.table("calendar_meetings").select(
+            "id, title, start_time, end_time, is_online, meeting_url, status, attendees"
+        ).eq(
+            "user_id", user_id
+        ).gte(
+            "start_time", now.isoformat()
+        ).lte(
+            "start_time", future.isoformat()
+        ).order("start_time").execute()
+        
+        meetings = meetings_result.data or []
+        
+        # Check for existing scheduled recordings
+        meeting_ids = [m["id"] for m in meetings]
+        scheduled_result = supabase.table("scheduled_recordings").select(
+            "calendar_meeting_id, status"
+        ).in_("calendar_meeting_id", meeting_ids).execute() if meeting_ids else type('obj', (object,), {'data': []})()
+        
+        scheduled_map = {s["calendar_meeting_id"]: s["status"] for s in (scheduled_result.data or [])}
+        
+        debug_info = []
+        for m in meetings:
+            issues = []
+            
+            if not m.get("is_online"):
+                issues.append("not_online")
+            if not m.get("meeting_url"):
+                issues.append("no_meeting_url")
+            if m.get("status") != "confirmed":
+                issues.append(f"status_is_{m.get('status')}")
+            
+            scheduled_status = scheduled_map.get(m["id"])
+            
+            debug_info.append({
+                "id": m["id"],
+                "title": m["title"],
+                "start_time": m["start_time"],
+                "is_online": m.get("is_online", False),
+                "has_meeting_url": bool(m.get("meeting_url")),
+                "meeting_url_preview": m.get("meeting_url", "")[:50] + "..." if m.get("meeting_url") and len(m.get("meeting_url", "")) > 50 else m.get("meeting_url"),
+                "status": m.get("status"),
+                "attendee_count": len(m.get("attendees") or []),
+                "issues": issues,
+                "eligible": len(issues) == 0,
+                "already_scheduled": scheduled_status
+            })
+        
+        eligible_count = sum(1 for d in debug_info if d["eligible"])
+        
+        return {
+            "total_meetings": len(debug_info),
+            "eligible_for_auto_record": eligible_count,
+            "not_eligible": len(debug_info) - eligible_count,
+            "meetings": debug_info
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get debug meetings: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed: {str(e)}")
