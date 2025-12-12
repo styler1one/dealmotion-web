@@ -18,6 +18,7 @@ import {
   MobileAppTeaser,
   PainPointsSection,
   DayInTheLife,
+  HeroShowcase,
 } from '@/components/landing'
 
 export default function Home() {
@@ -103,115 +104,10 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Hero Image/Preview - Meetings Calendar */}
+          {/* Hero Showcase - Interactive Carousel */}
           <div className="mt-16 relative">
             <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-slate-900 via-transparent to-transparent z-10 pointer-events-none" />
-            <div className="rounded-2xl border dark:border-slate-800 shadow-2xl overflow-hidden bg-white dark:bg-slate-900">
-              {/* Browser Chrome */}
-              <div className="h-10 bg-slate-100 dark:bg-slate-800 border-b dark:border-slate-700 flex items-center px-4 gap-2">
-                <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-red-400" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                  <div className="w-3 h-3 rounded-full bg-green-400" />
-                </div>
-                <div className="flex-1 flex justify-center">
-                  <div className="px-4 py-1 bg-white dark:bg-slate-700 rounded-md text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
-                    <Icons.globe className="h-3 w-3" />
-                    app.dealmotion.ai/meetings
-                  </div>
-                </div>
-              </div>
-              
-              {/* App Content */}
-              <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900">
-                {/* App Header */}
-                <div className="px-6 py-4 border-b dark:border-slate-700 flex items-center justify-between bg-white/50 dark:bg-slate-800/50">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
-                      <Icons.sparkles className="h-4 w-4 text-white" />
-                    </div>
-                    <span className="font-semibold text-slate-900 dark:text-white">My Meetings</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                    <Icons.calendar className="h-4 w-4" />
-                    <span>December 2025</span>
-                  </div>
-                </div>
-
-                {/* Meetings List */}
-                <div className="p-6 space-y-3 min-h-[320px]">
-                  {/* Meeting 1 - Prepared */}
-                  <div className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-slate-800 border dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="w-3 h-3 rounded-full bg-green-500 ring-4 ring-green-500/20" title="Prepared" />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium text-slate-900 dark:text-white truncate">Discovery Call</p>
-                        <span className="px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium">Ready</span>
-                      </div>
-                      <p className="text-sm text-slate-500 dark:text-slate-400 truncate">Acme Corp • Sarah Johnson</p>
-                    </div>
-                    <div className="text-right text-sm">
-                      <p className="font-medium text-slate-900 dark:text-white">Today</p>
-                      <p className="text-slate-500 dark:text-slate-400">2:00 PM</p>
-                    </div>
-                    <Icons.chevronRight className="h-5 w-5 text-slate-300 dark:text-slate-600" />
-                  </div>
-
-                  {/* Meeting 2 - In Progress */}
-                  <div className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-slate-800 border dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="w-3 h-3 rounded-full bg-amber-500 ring-4 ring-amber-500/20" title="In Progress" />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium text-slate-900 dark:text-white truncate">Product Demo</p>
-                        <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-medium">Preparing...</span>
-                      </div>
-                      <p className="text-sm text-slate-500 dark:text-slate-400 truncate">TechStart Inc • Mike Chen</p>
-                    </div>
-                    <div className="text-right text-sm">
-                      <p className="font-medium text-slate-900 dark:text-white">Tomorrow</p>
-                      <p className="text-slate-500 dark:text-slate-400">10:00 AM</p>
-                    </div>
-                    <Icons.chevronRight className="h-5 w-5 text-slate-300 dark:text-slate-600" />
-                  </div>
-
-                  {/* Meeting 3 - Not Prepared */}
-                  <div className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-slate-800 border-2 border-red-200 dark:border-red-900/50 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="w-3 h-3 rounded-full bg-red-500 ring-4 ring-red-500/20" title="Not Prepared" />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium text-slate-900 dark:text-white truncate">Contract Negotiation</p>
-                        <span className="px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-medium">Not Prepared</span>
-                      </div>
-                      <p className="text-sm text-slate-500 dark:text-slate-400 truncate">Global Solutions • Emma Davis</p>
-                    </div>
-                    <div className="text-right text-sm">
-                      <p className="font-medium text-slate-900 dark:text-white">Dec 10</p>
-                      <p className="text-slate-500 dark:text-slate-400">3:30 PM</p>
-                    </div>
-                    <button className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-violet-600 text-white text-xs font-medium hover:opacity-90 transition-opacity">
-                      Prepare Now
-                    </button>
-                  </div>
-
-                  {/* Meeting 4 - Analyzed */}
-                  <div className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-slate-800 border dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow opacity-75">
-                    <div className="w-3 h-3 rounded-full bg-purple-500 ring-4 ring-purple-500/20" title="Analyzed" />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium text-slate-900 dark:text-white truncate">Quarterly Review</p>
-                        <span className="px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 text-xs font-medium">7 Outputs</span>
-                      </div>
-                      <p className="text-sm text-slate-500 dark:text-slate-400 truncate">BigCo Ltd • James Wilson</p>
-                    </div>
-                    <div className="text-right text-sm">
-                      <p className="font-medium text-slate-500 dark:text-slate-400">Yesterday</p>
-                      <p className="text-slate-400 dark:text-slate-500">Completed</p>
-                    </div>
-                    <Icons.chevronRight className="h-5 w-5 text-slate-300 dark:text-slate-600" />
-                  </div>
-                </div>
-              </div>
-            </div>
+            <HeroShowcase />
           </div>
         </div>
       </section>
@@ -251,7 +147,21 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Feature 3: Follow-up */}
+            {/* Feature 3: AI Notetaker */}
+            <div className="group p-6 rounded-2xl border-2 border-violet-200 dark:border-violet-800 bg-gradient-to-br from-violet-50 to-white dark:from-violet-900/20 dark:to-slate-800 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
+              <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400 text-xs font-medium">
+                NEW
+              </div>
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Icons.sparkles className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2 text-slate-900 dark:text-white">{t('features.aiNotetaker.title')}</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">
+                {t('features.aiNotetaker.description')}
+              </p>
+            </div>
+
+            {/* Feature 4: Follow-up */}
             <div className="group p-6 rounded-2xl border dark:border-slate-800 bg-white dark:bg-slate-800 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
               <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <Icons.mail className="h-6 w-6 text-orange-600 dark:text-orange-400" />
@@ -325,20 +235,6 @@ export default function Home() {
               <h3 className="text-lg font-semibold mb-2 text-slate-900 dark:text-white">{t('features.smartIntegrations.title')}</h3>
               <p className="text-slate-600 dark:text-slate-300 text-sm">
                 {t('features.smartIntegrations.description')}
-              </p>
-            </div>
-
-            {/* Feature 10: AI Notetaker */}
-            <div className="group p-6 rounded-2xl border-2 border-violet-200 dark:border-violet-800 bg-gradient-to-br from-violet-50 to-white dark:from-violet-900/20 dark:to-slate-800 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
-              <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400 text-xs font-medium">
-                NEW
-              </div>
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Icons.sparkles className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2 text-slate-900 dark:text-white">{t('features.aiNotetaker.title')}</h3>
-              <p className="text-slate-600 dark:text-slate-300 text-sm">
-                {t('features.aiNotetaker.description')}
               </p>
             </div>
           </div>

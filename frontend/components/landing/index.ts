@@ -6,4 +6,5 @@ export { AINotetakerSection } from './ai-notetaker-section'
 export { MobileAppTeaser } from './mobile-app-teaser'
 export { PainPointsSection } from './pain-points-section'
 export { DayInTheLife } from './day-in-the-life'
+export { HeroShowcase } from './hero-showcase'
 
