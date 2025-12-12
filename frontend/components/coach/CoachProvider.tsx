@@ -73,7 +73,8 @@ export function CoachProvider({ children }: CoachProviderProps) {
       const { data, error } = await api.get<CoachSettings>('/api/v1/coach/settings')
       if (!error && data) {
         setSettings(data)
-        setWidgetStateInternal(data.widget_state || 'expanded')
+        // Always start expanded - user can minimize during session
+        setWidgetStateInternal('expanded')
       }
     } catch (err) {
       logger.error('Failed to fetch coach settings', err, { source: 'CoachProvider' })
