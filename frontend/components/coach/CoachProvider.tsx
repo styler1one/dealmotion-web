@@ -59,7 +59,7 @@ export function CoachProvider({ children }: CoachProviderProps) {
   const [settings, setSettings] = useState<CoachSettings | null>(null)
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
   const [stats, setStats] = useState<CoachStatsResponse | null>(null)
-  const [widgetState, setWidgetStateInternal] = useState<WidgetState>('minimized')
+  const [widgetState, setWidgetStateInternal] = useState<WidgetState>('expanded')
   
   // Derived state
   const isEnabled = settings?.is_enabled ?? true
@@ -73,7 +73,7 @@ export function CoachProvider({ children }: CoachProviderProps) {
       const { data, error } = await api.get<CoachSettings>('/api/v1/coach/settings')
       if (!error && data) {
         setSettings(data)
-        setWidgetStateInternal(data.widget_state || 'minimized')
+        setWidgetStateInternal(data.widget_state || 'expanded')
       }
     } catch (err) {
       logger.error('Failed to fetch coach settings', err, { source: 'CoachProvider' })
