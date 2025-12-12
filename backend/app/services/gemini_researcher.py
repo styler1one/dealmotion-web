@@ -3,14 +3,14 @@ Gemini Google Search integration for comprehensive B2B prospect research.
 
 ARCHITECTURE (Cost-Optimized + Maximum Quality):
 - Gemini does ALL web searching (30x cheaper than Claude)
-- Uses MANY PARALLEL calls for MAXIMUM coverage
+- Uses 22 PARALLEL calls for MAXIMUM coverage
 - Each call focuses on ONE specific research area
 - Output: Comprehensive structured raw data for Claude to analyze
 
 Gemini 2.0 Flash pricing: $0.10/1M input, $0.40/1M output
 Claude Sonnet 4 pricing: $3.00/1M input, $15.00/1M output
 
-15 parallel calls × ~$0.002 = ~$0.03 total (still 97% cheaper than Claude web search)
+22 parallel calls × ~$0.002 = ~$0.045 total (still 96% cheaper than Claude web search)
 Parallel execution = FASTER than fewer sequential calls!
 """
 import os
@@ -30,15 +30,15 @@ class GeminiResearcher:
     """
     Comprehensive B2B research using Gemini with Google Search grounding.
     
-    Uses 15 PARALLEL CALLS for MAXIMUM coverage:
+    Uses 22 PARALLEL CALLS for MAXIMUM coverage:
     
-    COMPANY INFORMATION:
+    COMPANY INFORMATION (4):
     1. company_basics - Identity, founding, locations
     2. company_description - What they do, business model
     3. financials - Revenue, funding, investors
     4. products_services - Detailed product information
     
-    PEOPLE (Critical for Sales):
+    PEOPLE (6):
     5. ceo_founder - CEO with LinkedIn URL
     6. ceo_linkedin_deep - Dedicated CEO LinkedIn search
     7. c_suite - CFO, CTO, COO with LinkedIns
@@ -46,12 +46,21 @@ class GeminiResearcher:
     9. senior_leadership - VPs, Directors with LinkedIns
     10. board_investors - Board members, investors
     
-    MARKET INTELLIGENCE:
+    MARKET INTELLIGENCE (5):
     11. recent_news - Last 90 days news
     12. partnerships_deals - Partnerships, acquisitions
     13. hiring_signals - Job postings, growth signals
     14. tech_stack - Technology and tools
     15. competition - Competitors, market position
+    
+    DEEP INSIGHTS (7):
+    16. culture_reviews - Glassdoor, Indeed, employee sentiment
+    17. events_speaking - Conferences, webinars, networking
+    18. awards_recognition - Industry awards, rankings
+    19. media_interviews - Podcasts, interviews, thought leadership
+    20. customer_reviews - G2, Capterra, product reviews
+    21. challenges_priorities - Public challenges, strategic priorities
+    22. certifications_compliance - Regulatory, security, standards
     """
     
     def __init__(self):
@@ -704,6 +713,328 @@ Search for "{company_name}":
 - [Gaps vs competitors]
 """
 
+        # ═══════════════════════════════════════════════════════════════════════
+        # SECTION 4: DEEP INSIGHTS (7 new queries for maximum intelligence)
+        # ═══════════════════════════════════════════════════════════════════════
+
+        # 16. CULTURE & REVIEWS - Glassdoor, Indeed, employee sentiment
+        prompts["culture_reviews"] = base_context + f"""
+**RESEARCH FOCUS**: Company Culture & Employee Reviews
+
+Search for employee insights about "{company_name}":
+1. "{company_name}" Glassdoor reviews
+2. "{company_name}" Indeed reviews
+3. "{company_name}" employee reviews
+4. "{company_name}" company culture
+5. "{company_name}" working at
+6. "{company_name}" best place to work
+7. "{company_name}" employer rating
+
+**REQUIRED OUTPUT**:
+
+## Employee Reviews & Ratings
+
+| Platform | Rating | # Reviews | Source URL |
+|----------|--------|-----------|------------|
+| Glassdoor | [X/5] | [Number] | [URL] |
+| Indeed | [X/5] | [Number] | [URL] |
+| Kununu | [X/5] | [Number] | [URL] |
+
+## Culture Insights
+
+| Aspect | Observation |
+|--------|-------------|
+| **Overall Sentiment** | 🟢 Positive / 🟡 Mixed / 🔴 Negative |
+| **Common Praise** | [What employees like] |
+| **Common Complaints** | [What employees dislike] |
+| **Work-Life Balance** | [Observations] |
+| **Management Style** | [Observations] |
+| **Growth Opportunities** | [Observations] |
+
+## Red Flags / Opportunities
+- [Any concerning patterns for sales approach]
+- [Opportunities based on internal challenges]
+
+If no reviews found: "No employee reviews found on major platforms"
+"""
+
+        # 17. EVENTS & SPEAKING - Conferences, webinars, networking
+        prompts["events_speaking"] = base_context + f"""
+**RESEARCH FOCUS**: Events, Speaking Engagements & Industry Presence
+
+Search for event participation of "{company_name}":
+1. "{company_name}" conference speaker
+2. "{company_name}" event sponsor
+3. "{company_name}" webinar
+4. "{company_name}" summit presentation
+5. "{company_name}" trade show
+6. "{company_name}" industry event
+7. CEO or founder name + "keynote" OR "speaker"
+
+**REQUIRED OUTPUT**:
+
+## Speaking Engagements
+
+| Date | Event | Speaker | Topic | Source |
+|------|-------|---------|-------|--------|
+| [Date] | [Event Name] | [Person] | [Topic if known] | [URL] |
+
+## Event Sponsorships
+
+| Event | Type | Level | Source |
+|-------|------|-------|--------|
+| [Event Name] | Conference/Trade Show | Gold/Silver/Sponsor | [URL] |
+
+## Webinars & Online Events
+
+| Date | Title | Host | Topic | Source |
+|------|-------|------|-------|--------|
+| [Date] | [Title] | [Person] | [Topic] | [URL] |
+
+## Industry Presence Analysis
+- **Event Activity Level**: 🔥 Very Active / ➡️ Moderate / ❄️ Low
+- **Focus Areas**: [What topics do they speak about?]
+- **Networking Opportunities**: [Where can we meet them?]
+"""
+
+        # 18. AWARDS & RECOGNITION - Industry awards, rankings
+        prompts["awards_recognition"] = base_context + f"""
+**RESEARCH FOCUS**: Awards, Recognition & Industry Rankings
+
+Search for awards and recognition of "{company_name}":
+1. "{company_name}" award winner
+2. "{company_name}" recognition
+3. "{company_name}" best company
+4. "{company_name}" fastest growing
+5. "{company_name}" top company
+6. "{company_name}" innovation award
+7. "{company_name}" industry leader
+
+**REQUIRED OUTPUT**:
+
+## Awards & Recognition
+
+| Year | Award | Category | Issuer | Source |
+|------|-------|----------|--------|--------|
+| [Year] | [Award Name] | [Category] | [Organization] | [URL] |
+
+## Rankings & Lists
+
+| Year | List/Ranking | Position | Issuer | Source |
+|------|--------------|----------|--------|--------|
+| [Year] | "Fastest Growing Companies" | #[X] | [Publication] | [URL] |
+| [Year] | "Best Employers" | #[X] | [Publication] | [URL] |
+
+## Certifications & Accreditations
+
+| Certification | Issuer | Valid Until | Source |
+|---------------|--------|-------------|--------|
+| [Cert Name] | [Issuer] | [Date] | [URL] |
+
+## Recognition Analysis
+- **Industry Standing**: Well-recognized / Emerging / Unknown
+- **Growth Trajectory**: [What do awards suggest about their trajectory?]
+- **Credibility Score**: 🟢 High / 🟡 Medium / 🔴 Low
+"""
+
+        # 19. MEDIA & INTERVIEWS - Podcasts, interviews, thought leadership
+        prompts["media_interviews"] = base_context + f"""
+**RESEARCH FOCUS**: Media Appearances, Podcasts & Executive Interviews
+
+Search for media presence of "{company_name}" and its executives:
+1. "{company_name}" CEO interview
+2. "{company_name}" founder podcast
+3. "{company_name}" executive interview
+4. "{company_name}" featured in
+5. "{company_name}" profile article
+6. CEO or founder name + "interview" OR "podcast"
+7. "{company_name}" thought leadership
+
+**REQUIRED OUTPUT**:
+
+## Podcast Appearances
+
+| Date | Podcast | Guest | Topic | Link |
+|------|---------|-------|-------|------|
+| [Date] | [Podcast Name] | [Person] | [Topic discussed] | [URL] |
+
+## Media Interviews
+
+| Date | Publication | Person | Topic | Link |
+|------|-------------|--------|-------|------|
+| [Date] | [Media Outlet] | [Person] | [Topic] | [URL] |
+
+## Key Quotes & Insights
+[Direct quotes from executives that reveal priorities, challenges, or vision]
+
+| Quote | Person | Context | Source |
+|-------|--------|---------|--------|
+| "[Quote]" | [Name] | [Context] | [URL] |
+
+## Thought Leadership Content
+
+| Type | Title | Author | Link |
+|------|-------|--------|------|
+| Blog Post | [Title] | [Person] | [URL] |
+| LinkedIn Article | [Title] | [Person] | [URL] |
+| White Paper | [Title] | [Company] | [URL] |
+
+## Media Presence Analysis
+- **Visibility Level**: 🔥 High / ➡️ Moderate / ❄️ Low
+- **Key Themes**: [What do they talk about most?]
+- **Conversation Starters**: [Topics to discuss based on their public statements]
+"""
+
+        # 20. CUSTOMER REVIEWS - G2, Capterra, product reviews
+        prompts["customer_reviews"] = base_context + f"""
+**RESEARCH FOCUS**: Customer Reviews & Product Ratings
+
+Search for customer feedback about "{company_name}":
+1. "{company_name}" G2 reviews
+2. "{company_name}" Capterra reviews
+3. "{company_name}" Trustpilot
+4. "{company_name}" customer reviews
+5. "{company_name}" product reviews
+6. "{company_name}" testimonials
+7. site:g2.com "{company_name}"
+
+**REQUIRED OUTPUT**:
+
+## Product/Service Reviews
+
+| Platform | Rating | # Reviews | Source URL |
+|----------|--------|-----------|------------|
+| G2 | [X/5] | [Number] | [URL] |
+| Capterra | [X/5] | [Number] | [URL] |
+| Trustpilot | [X/5] | [Number] | [URL] |
+| Google Reviews | [X/5] | [Number] | [URL] |
+
+## Review Analysis
+
+| Aspect | Positive Themes | Negative Themes |
+|--------|-----------------|-----------------|
+| Product Quality | [What customers like] | [Complaints] |
+| Customer Service | [Praise] | [Issues] |
+| Value for Money | [Observations] | [Concerns] |
+| Ease of Use | [Positive] | [Negative] |
+
+## Notable Customer Quotes
+| Quote | Rating | Date | Source |
+|-------|--------|------|--------|
+| "[Quote]" | [X/5] | [Date] | [Platform] |
+
+## Customer Satisfaction Summary
+- **Overall Sentiment**: 🟢 Very Positive / 🟡 Mixed / 🔴 Concerning
+- **Net Promoter Score** (if available): [Score]
+- **Key Strengths**: [What customers love]
+- **Key Weaknesses**: [Recurring complaints]
+"""
+
+        # 21. CHALLENGES & PRIORITIES - Public statements about challenges
+        prompts["challenges_priorities"] = base_context + f"""
+**RESEARCH FOCUS**: Public Challenges, Strategic Priorities & Pain Points
+
+Search for challenges and priorities mentioned by "{company_name}":
+1. "{company_name}" challenges
+2. "{company_name}" strategy priorities
+3. "{company_name}" transformation
+4. "{company_name}" initiative
+5. "{company_name}" investing in
+6. "{company_name}" focus areas
+7. CEO or founder name + "priorities" OR "challenges" OR "strategy"
+8. "{company_name}" digital transformation
+9. "{company_name}" growth strategy
+
+**REQUIRED OUTPUT**:
+
+## Publicly Stated Priorities
+
+| Priority | Evidence | Source | Date |
+|----------|----------|--------|------|
+| [Priority 1] | [Quote or context] | [Source] | [Date] |
+| [Priority 2] | | | |
+
+## Acknowledged Challenges
+
+| Challenge | Context | Source | Date |
+|-----------|---------|--------|------|
+| [Challenge 1] | [How they described it] | [Source] | [Date] |
+| [Challenge 2] | | | |
+
+## Strategic Initiatives
+
+| Initiative | Status | Investment | Source |
+|------------|--------|------------|--------|
+| [Initiative Name] | Planning/In Progress/Completed | [Amount if known] | [URL] |
+
+## Transformation & Change Signals
+
+| Signal | Type | Implication for Sales |
+|--------|------|----------------------|
+| [Signal] | Tech/People/Process/Market | [How we can help] |
+
+## Pain Point Analysis
+Based on public statements, likely pain points include:
+1. [Pain point with evidence]
+2. [Pain point with evidence]
+3. [Pain point with evidence]
+
+{seller_hint}
+"""
+
+        # 22. CERTIFICATIONS & COMPLIANCE - Regulatory, security, standards
+        prompts["certifications_compliance"] = base_context + f"""
+**RESEARCH FOCUS**: Certifications, Compliance & Regulatory Status
+
+Search for certifications and compliance of "{company_name}":
+1. "{company_name}" ISO certification
+2. "{company_name}" SOC 2
+3. "{company_name}" GDPR compliant
+4. "{company_name}" certified
+5. "{company_name}" accredited
+6. "{company_name}" compliance
+7. "{company_name}" security certification
+8. "{company_name}" industry standards
+
+**REQUIRED OUTPUT**:
+
+## Certifications
+
+| Certification | Type | Status | Valid Until | Source |
+|---------------|------|--------|-------------|--------|
+| ISO 27001 | Security | ✅/❌/❓ | [Date] | [URL] |
+| ISO 9001 | Quality | ✅/❌/❓ | [Date] | [URL] |
+| SOC 2 Type II | Security | ✅/❌/❓ | [Date] | [URL] |
+| GDPR | Privacy | ✅/❌/❓ | N/A | [URL] |
+
+## Industry-Specific Certifications
+
+| Certification | Relevance | Status | Source |
+|---------------|-----------|--------|--------|
+| [Cert Name] | [Why it matters] | ✅/❌/❓ | [URL] |
+
+## Compliance Status
+
+| Regulation | Status | Evidence |
+|------------|--------|----------|
+| GDPR | Compliant/Unknown | [Evidence] |
+| HIPAA | Compliant/Unknown/N/A | [Evidence] |
+| PCI-DSS | Compliant/Unknown/N/A | [Evidence] |
+
+## Regulatory Environment
+
+| Aspect | Observation |
+|--------|-------------|
+| **Industry Regulations** | [Key regulations they must comply with] |
+| **Compliance Maturity** | 🟢 Mature / 🟡 Developing / 🔴 Basic |
+| **Recent Compliance News** | [Any compliance-related news] |
+
+## Security & Trust Signals
+- **Security Page**: [URL if found]
+- **Trust Center**: [URL if found]
+- **Data Processing Agreement**: [Available/Not found]
+"""
+
         return prompts
 
     async def search_company(
@@ -716,9 +1047,9 @@ Search for "{company_name}":
         language: str = DEFAULT_LANGUAGE
     ) -> Dict[str, Any]:
         """
-        Comprehensive company research using 15 PARALLEL Gemini calls.
+        Comprehensive company research using 22 PARALLEL Gemini calls.
         
-        Executes 15 focused research topics in parallel for MAXIMUM coverage:
+        Executes 22 focused research topics in parallel for MAXIMUM coverage:
         
         COMPANY (4):
         1. company_basics - Identity, structure
@@ -741,8 +1072,17 @@ Search for "{company_name}":
         14. tech_stack - Technology
         15. competition - Competitors
         
+        DEEP INSIGHTS (7):
+        16. culture_reviews - Glassdoor, Indeed, employee sentiment
+        17. events_speaking - Conferences, webinars, networking
+        18. awards_recognition - Industry awards, rankings
+        19. media_interviews - Podcasts, interviews, thought leadership
+        20. customer_reviews - G2, Capterra, product reviews
+        21. challenges_priorities - Public challenges, strategic priorities
+        22. certifications_compliance - Regulatory, security, standards
+        
         Returns:
-            Dictionary with comprehensive research data from all 15 topics
+            Dictionary with comprehensive research data from all 22 topics
         """
         current_date = datetime.now().strftime("%d %B %Y")
         current_year = datetime.now().year
