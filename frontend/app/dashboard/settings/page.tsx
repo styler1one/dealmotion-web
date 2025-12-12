@@ -1212,9 +1212,11 @@ export default function SettingsPage() {
                               <span className="font-semibold text-slate-900 dark:text-white">Unlimited Solo</span>
                             </div>
                             <div className="mb-3">
-                              <span className="text-sm text-slate-400 line-through mr-2">€99,95</span>
-                              <span className="text-2xl font-bold text-slate-900 dark:text-white">€49,95</span>
-                              <span className="text-sm text-slate-500">/mo</span>
+                              <div className="text-xs text-slate-400 line-through">€99,95</div>
+                              <div className="flex items-baseline gap-0.5">
+                                <span className="text-2xl font-bold text-slate-900 dark:text-white">€49,95</span>
+                                <span className="text-sm text-slate-500">/mo</span>
+                              </div>
                             </div>
                             <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">Unlimited flows</p>
                             <Button 

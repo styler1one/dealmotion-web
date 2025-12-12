@@ -434,11 +434,11 @@ export default function ResearchBriefPage() {
   const getAuthorityBadge = (authority?: string) => {
     switch (authority) {
       case 'decision_maker':
-        return <Badge className="bg-green-500 hover:bg-green-600 text-xs">DM</Badge>
+        return <Badge className="bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400 text-[10px] px-1.5 py-0 h-4 font-medium">DM</Badge>
       case 'influencer':
-        return <Badge className="bg-blue-500 hover:bg-blue-600 text-xs">INF</Badge>
+        return <Badge className="bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-400 text-[10px] px-1.5 py-0 h-4 font-medium">INF</Badge>
       case 'gatekeeper':
-        return <Badge className="bg-orange-500 hover:bg-orange-600 text-xs">GK</Badge>
+        return <Badge className="bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-400 text-[10px] px-1.5 py-0 h-4 font-medium">GK</Badge>
       default:
         return null
     }
@@ -727,12 +727,12 @@ export default function ResearchBriefPage() {
                                   )}
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                  <div className="font-medium text-sm text-slate-900 dark:text-white truncate flex items-center gap-1">
-                                    {contact.name}
-                                    {getAuthorityBadge(contact.decision_authority)}
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="font-medium text-sm text-slate-900 dark:text-white truncate">{contact.name}</span>
+                                    <span className="flex-shrink-0">{getAuthorityBadge(contact.decision_authority)}</span>
                                   </div>
                                   {contact.role && (
-                                    <div className="text-xs text-slate-500 dark:text-slate-400 truncate">{contact.role}</div>
+                                    <div className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{contact.role}</div>
                                   )}
                                 </div>
                               </div>
@@ -762,10 +762,10 @@ export default function ResearchBriefPage() {
                             {/* Preview van de analyse */}
                             {hasAnalysis && contact.communication_style && (
                               <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-700">
-                                <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                                  <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">{contact.communication_style}</span>
+                                <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                                  <span className="inline-flex items-center bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full">{contact.communication_style}</span>
                                   {contact.probable_drivers && (
-                                    <span className="truncate">• {contact.probable_drivers.split(',')[0]}</span>
+                                    <span className="inline-flex items-center bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full truncate max-w-[150px]">{contact.probable_drivers.split(',')[0]?.trim()}</span>
                                   )}
                                 </div>
                               </div>
