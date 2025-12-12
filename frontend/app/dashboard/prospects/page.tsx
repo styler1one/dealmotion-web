@@ -19,7 +19,6 @@ import {
   RefreshCw,
   TrendingUp,
   ArrowUpDown,
-  Filter,
   BarChart3,
   Trash2
 } from 'lucide-react'
@@ -39,8 +38,7 @@ import { smartDate } from '@/lib/date-utils'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 import { ResearchForm } from '@/components/forms'
 
-// Status configurations
-const STATUS_ORDER = ['new', 'researching', 'qualified', 'meeting_scheduled', 'proposal_sent', 'won', 'lost', 'inactive']
+// Status colors for badge display
 const STATUS_COLORS: Record<string, string> = {
   new: 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800',
   researching: 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800',
@@ -77,7 +75,6 @@ export default function ProspectsPage() {
   const [prospects, setProspects] = useState<ProspectWithCounts[]>([])
   const [stats, setStats] = useState<ProspectStats>({ total: 0, by_status: {} })
   const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState<'last_activity_at' | 'company_name' | 'created_at'>('last_activity_at')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   
@@ -92,7 +89,6 @@ export default function ProspectsPage() {
         sort_order: sortOrder,
         limit: '50'
       })
-      if (statusFilter) params.append('status', statusFilter)
       if (searchQuery && searchQuery.length >= 2) params.append('search', searchQuery)
       
       const { data, error } = await api.get<{ prospects: ProspectWithCounts[], total: number }>(
@@ -108,7 +104,7 @@ export default function ProspectsPage() {
       logger.error('Error loading prospects', error)
       toast({ variant: "destructive", title: t('errors.loadFailed') })
     }
-  }, [sortBy, sortOrder, statusFilter, searchQuery, t, toast])
+  }, [sortBy, sortOrder, searchQuery, t, toast])
   
   // Fetch stats
   const fetchStats = useCallback(async () => {
@@ -147,7 +143,7 @@ export default function ProspectsPage() {
     if (user && !loading) {
       fetchProspects()
     }
-  }, [sortBy, sortOrder, statusFilter, searchQuery, user, loading, fetchProspects])
+  }, [sortBy, sortOrder, searchQuery, user, loading, fetchProspects])
   
   // Delete prospect
   const handleDeleteProspect = async (prospectId: string, e: React.MouseEvent) => {
@@ -397,40 +393,6 @@ export default function ProspectsPage() {
                   <Plus className="w-4 h-4 mr-2" />
                   {t('actions.newProspect')}
                 </Button>
-              </div>
-
-              {/* Quick Filters */}
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
-                <h3 className="font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-                  <Filter className="h-4 w-4 text-slate-400" />
-                  {t('filters.title')}
-                </h3>
-                <div className="space-y-2">
-                  <button
-                    onClick={() => setStatusFilter(null)}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${
-                      !statusFilter 
-                        ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300' 
-                        : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400'
-                    }`}
-                  >
-                    {t('filters.all')} ({stats.total})
-                  </button>
-                  {STATUS_ORDER.slice(0, 6).map(status => (
-                    <button
-                      key={status}
-                      onClick={() => setStatusFilter(status === statusFilter ? null : status)}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition flex items-center justify-between ${
-                        statusFilter === status 
-                          ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300' 
-                          : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400'
-                      }`}
-                    >
-                      <span>{t(`status.${status}`)}</span>
-                      <span className="text-xs opacity-60">{stats.by_status[status] || 0}</span>
-                    </button>
-                  ))}
-                </div>
               </div>
 
             </div>

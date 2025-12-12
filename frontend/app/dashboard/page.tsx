@@ -13,6 +13,7 @@ import { useBilling } from '@/lib/billing-context'
 import { logger } from '@/lib/logger'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 import { ResearchForm, PreparationForm, FollowupUploadForm } from '@/components/forms'
+import { AINotetakerSheet } from '@/components/ai-notetaker/ai-notetaker-sheet'
 import type { User } from '@supabase/supabase-js'
 import type { SalesProfile, CompanyProfile, KBFile, ResearchBrief, MeetingPrep, Followup } from '@/types'
 
@@ -94,6 +95,7 @@ export default function DashboardPage() {
     const [researchSheetOpen, setResearchSheetOpen] = useState(false)
     const [prepSheetOpen, setPrepSheetOpen] = useState(false)
     const [followupSheetOpen, setFollowupSheetOpen] = useState(false)
+    const [aiNotetakerSheetOpen, setAiNotetakerSheetOpen] = useState(false)
     
     // Billing context for flow usage
     const { subscription, usage, loading: billingLoading } = useBilling()
@@ -247,6 +249,7 @@ export default function DashboardPage() {
     const t = useTranslations('dashboard')
     const tCommon = useTranslations('common')
     const tNavigation = useTranslations('navigation')
+    const tAiNotetaker = useTranslations('aiNotetaker')
     const locale = useLocale()
 
     if (loading) {
@@ -776,11 +779,11 @@ export default function DashboardPage() {
                                         <span className="text-xs font-medium text-orange-700 dark:text-orange-300">{tNavigation('followup')}</span>
                                     </button>
                                     <button
-                                        onClick={() => router.push('/dashboard/knowledge-base')}
-                                        className="p-3 rounded-lg bg-purple-50 dark:bg-purple-900/50 hover:bg-purple-100 dark:hover:bg-purple-900 transition-colors text-center"
+                                        onClick={() => setAiNotetakerSheetOpen(true)}
+                                        className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/50 hover:bg-amber-100 dark:hover:bg-amber-900 transition-colors text-center"
                                     >
-                                        <Icons.book className="h-5 w-5 text-purple-600 dark:text-purple-400 mx-auto mb-1" />
-                                        <span className="text-xs font-medium text-purple-700 dark:text-purple-300">Docs</span>
+                                        <Icons.sparkles className="h-5 w-5 text-amber-600 dark:text-amber-400 mx-auto mb-1" />
+                                        <span className="text-xs font-medium text-amber-700 dark:text-amber-300">{tAiNotetaker('title')}</span>
                                     </button>
                                 </div>
                             </div>
@@ -870,7 +873,7 @@ export default function DashboardPage() {
                                 {t('quickActions.newResearch')}
                             </SheetTitle>
                             <SheetDescription>
-                                {t('prospects.emptyDescription')}
+                                {t('sheets.newResearchDesc')}
                             </SheetDescription>
                         </SheetHeader>
                         <div className="mt-6">
@@ -952,6 +955,18 @@ export default function DashboardPage() {
                         </div>
                     </SheetContent>
                 </Sheet>
+                
+                {/* AI Notetaker Sheet */}
+                <AINotetakerSheet
+                    open={aiNotetakerSheetOpen}
+                    onOpenChange={setAiNotetakerSheetOpen}
+                    onSuccess={() => {
+                        toast({
+                            title: tAiNotetaker('success'),
+                            description: tAiNotetaker('successNow')
+                        })
+                    }}
+                />
             </div>
         </DashboardLayout>
     )

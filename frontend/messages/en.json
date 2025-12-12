@@ -79,6 +79,7 @@
       "followupStartedDesc": "Your recording is being processed"
     },
     "sheets": {
+      "newResearchDesc": "Research a new prospect company",
       "createPrepDesc": "Create a personalized meeting preparation",
       "uploadFollowupDesc": "Upload and analyze your meeting recording"
     }
