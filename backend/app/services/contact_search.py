@@ -216,23 +216,27 @@ class ContactSearchService:
         import aiohttp
         
         try:
-            # Build multiple search queries to try (Brave doesn't support site: well)
+            # Build multiple search queries to try
+            # Use quotes around name for exact match
             queries = []
-            role_text = f' {role}' if role else ''
+            quoted_name = f'"{name}"'
+            role_text = f' "{role}"' if role else ''
+            company_text = f' "{company_name}"' if company_name else ''
             
-            # Query 1: Name + Company + Role + LinkedIn (most specific)
+            # Query 1: "Name" "Company" "Role" LinkedIn (most specific)
+            if company_name and role:
+                queries.append(f'{quoted_name}{company_text}{role_text} LinkedIn')
+            
+            # Query 2: "Name" "Company" LinkedIn
             if company_name:
-                queries.append(f'{name} {company_name}{role_text} LinkedIn')
+                queries.append(f'{quoted_name}{company_text} LinkedIn')
             
-            # Query 2: Name + Role + LinkedIn profile
-            queries.append(f'{name}{role_text} LinkedIn profile')
+            # Query 3: "Name" "Role" LinkedIn
+            if role:
+                queries.append(f'{quoted_name}{role_text} LinkedIn')
             
-            # Query 3: Name + Company + LinkedIn (without role)
-            if company_name:
-                queries.append(f'{name} {company_name} LinkedIn')
-            
-            # Query 4: Just name + LinkedIn (broadest)
-            queries.append(f'{name} LinkedIn')
+            # Query 4: "Name" LinkedIn (broadest)
+            queries.append(f'{quoted_name} LinkedIn')
             
             print(f"[CONTACT_SEARCH] Brave will try {len(queries)} queries", flush=True)
             
