@@ -109,58 +109,38 @@ export function ContactSearchModal({
     }
   }
 
-  // Select an executive as the contact
+  // Select an executive - ALWAYS search for LinkedIn profiles
   const handleSelectExecutive = async (exec: ResearchExecutive) => {
-    // Set the search fields
+    // Set the search fields and ALWAYS perform a LinkedIn search
     setSearchName(exec.name)
     setSearchRole(exec.title || '')
-    
-    // If executive has LinkedIn URL, create a match and go to enrich
-    if (exec.linkedin_url) {
-      const match: ContactMatch = {
+    setStep('loading')
+    setError(null)
+
+    try {
+      const { data, error: searchError } = await api.post<{
+        matches: ContactMatch[]
+        search_query_used: string
+        error?: string
+      }>('/api/v1/contacts/search', {
         name: exec.name,
-        title: exec.title,
-        company: companyName,
-        linkedin_url: exec.linkedin_url,
-        headline: exec.background?.slice(0, 100),
-        confidence: 0.95,
-        match_reason: 'From research data',
-        from_research: true
-      }
-      setSelectedMatch(match)
-      setStep('enrich')
-    } else {
-      // No LinkedIn URL - do a search with the executive's name
-      // Can't use handleSearch() directly because React state is async
-      // So we perform the search inline with the exec data
-      setStep('loading')
-      setError(null)
+        role: exec.title || undefined,
+        company_name: companyName,
+        company_linkedin_url: companyLinkedInUrl,
+        research_id: researchId
+      })
 
-      try {
-        const { data, error: searchError } = await api.post<{
-          matches: ContactMatch[]
-          search_query_used: string
-          error?: string
-        }>('/api/v1/contacts/search', {
-          name: exec.name,
-          role: exec.title || undefined,
-          company_name: companyName,
-          company_linkedin_url: companyLinkedInUrl,
-          research_id: researchId
-        })
-
-        if (searchError || data?.error) {
-          setError(searchError?.message || data?.error || 'Search failed')
-          setStep('search')
-          return
-        }
-
-        setMatches(data?.matches || [])
-        setStep('results')
-      } catch (err) {
-        setError('Search failed. Please try again.')
+      if (searchError || data?.error) {
+        setError(searchError?.message || data?.error || 'Search failed')
         setStep('search')
+        return
       }
+
+      setMatches(data?.matches || [])
+      setStep('results')
+    } catch (err) {
+      setError('Search failed. Please try again.')
+      setStep('search')
     }
   }
 

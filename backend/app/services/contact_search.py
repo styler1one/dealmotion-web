@@ -95,49 +95,40 @@ class ContactSearchService:
         search_source = "gemini"
         search_query = f'"{name}" "{company_name or ""}" linkedin'
         
-        # Step 1: Check against known research executives first (free, instant)
-        if research_executives:
-            research_matches = self._match_against_research(
-                name, role, company_name, research_executives
-            )
-            if research_matches:
-                matches.extend(research_matches)
-                logger.info(f"[CONTACT_SEARCH] Found {len(research_matches)} matches from research")
-        
-        # Step 2: Use Gemini with Google Search (primary - cheap)
+        # ALWAYS search for LinkedIn profiles using Gemini (cheap, fast)
         if self.gemini_api_key:
             try:
                 gemini_matches = await self._search_with_gemini(
                     name, role, company_name, company_linkedin_url
                 )
                 if gemini_matches:
-                    # Merge with existing matches, avoiding duplicates
-                    matches = self._merge_matches(matches, gemini_matches)
+                    matches = gemini_matches
                     search_source = "gemini"
-                    logger.info(f"[CONTACT_SEARCH] Gemini found {len(gemini_matches)} matches")
+                    logger.info(f"[CONTACT_SEARCH] Gemini found {len(gemini_matches)} LinkedIn profiles")
             except Exception as e:
                 logger.warning(f"[CONTACT_SEARCH] Gemini failed: {e}, trying Claude")
-                # Fall through to Claude
         
-        # Step 3: Fall back to Claude ONLY if Gemini failed completely (not just few results)
-        # We don't want to use Claude just because Gemini found 1 result - that's fine
+        # Fall back to Claude ONLY if Gemini failed completely
         if len(matches) == 0 and self.anthropic_api_key:
             try:
                 claude_matches = await self._search_with_claude(
                     name, role, company_name, company_linkedin_url
                 )
                 if claude_matches:
-                    matches = self._merge_matches(matches, claude_matches)
-                    search_source = "claude" if not self.gemini_api_key else "gemini+claude"
-                    logger.info(f"[CONTACT_SEARCH] Claude found {len(claude_matches)} matches")
+                    matches = claude_matches
+                    search_source = "claude"
+                    logger.info(f"[CONTACT_SEARCH] Claude found {len(claude_matches)} LinkedIn profiles")
             except Exception as e:
                 logger.error(f"[CONTACT_SEARCH] Claude also failed: {e}")
-                if not matches:
-                    return ContactSearchResult(
-                        matches=[],
-                        search_query_used=search_query,
-                        error=str(e)
-                    )
+                return ContactSearchResult(
+                    matches=[],
+                    search_query_used=search_query,
+                    error=str(e)
+                )
+        
+        # FILTER: Only keep matches that have LinkedIn URLs (the whole point!)
+        matches = [m for m in matches if m.linkedin_url]
+        logger.info(f"[CONTACT_SEARCH] {len(matches)} profiles have LinkedIn URLs")
         
         # Sort by confidence (highest first) and limit to 5
         matches.sort(key=lambda m: m.confidence, reverse=True)
