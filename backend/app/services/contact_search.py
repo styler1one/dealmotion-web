@@ -218,15 +218,20 @@ class ContactSearchService:
         try:
             # Build multiple search queries to try (Brave doesn't support site: well)
             queries = []
+            role_text = f' {role}' if role else ''
             
-            # Query 1: Name + Company + LinkedIn (most specific)
+            # Query 1: Name + Company + Role + LinkedIn (most specific)
+            if company_name:
+                queries.append(f'{name} {company_name}{role_text} LinkedIn')
+            
+            # Query 2: Name + Role + LinkedIn profile
+            queries.append(f'{name}{role_text} LinkedIn profile')
+            
+            # Query 3: Name + Company + LinkedIn (without role)
             if company_name:
                 queries.append(f'{name} {company_name} LinkedIn')
             
-            # Query 2: Name + LinkedIn profile
-            queries.append(f'{name} LinkedIn profile')
-            
-            # Query 3: Just name + LinkedIn (broadest)
+            # Query 4: Just name + LinkedIn (broadest)
             queries.append(f'{name} LinkedIn')
             
             print(f"[CONTACT_SEARCH] Brave will try {len(queries)} queries", flush=True)
