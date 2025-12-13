@@ -234,19 +234,21 @@ class ContactSearchService:
             
             client = genai.Client(api_key=self.gemini_api_key)
             
-            # Build a specific Google-style search query
+            # Build a specific Google-style search query with name, company, AND role
             search_parts = [f'"{name}"']
             if company_name:
                 search_parts.append(f'"{company_name}"')
+            if role:
+                search_parts.append(f'"{role}"')
             search_parts.append('site:linkedin.com/in')
             search_query = ' '.join(search_parts)
             
-            role_hint = f" (looking for someone with role: {role})" if role else ""
+            role_context = f" as {role}" if role else ""
             
             prompt = f"""Search Google for LinkedIn profiles using this exact query:
 {search_query}
 
-I'm looking for the LinkedIn profile of {name} who works at {company_name or 'unknown company'}{role_hint}.
+I'm looking for the LinkedIn profile of {name} who works at {company_name or 'unknown company'}{role_context}.
 
 INSTRUCTIONS:
 1. Use Google Search to find LinkedIn profiles matching this person
