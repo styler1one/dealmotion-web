@@ -46,8 +46,8 @@ class PrepGeneratorService:
             
             response = await self.anthropic.messages.create(
                 model=self.model,
-                max_tokens=4096,
-                temperature=0.7,
+                max_tokens=6000,  # Increased for comprehensive state-of-the-art briefs
+                temperature=0.5,  # Balanced: creative but consistent business output
                 messages=[{
                     "role": "user",
                     "content": prompt
@@ -275,14 +275,44 @@ This brief should enable the sales rep to walk into the meeting fully prepared i
 
 ---
 
+## ⚡ 3-MINUTE EXECUTIVE SUMMARY
+
+**Read this if you only have 3 minutes before the meeting.**
+
+### 🎯 The ONE Thing
+If you remember nothing else from this brief, remember this:
+> [Single most critical insight or action that will determine success in this meeting]
+
+### Quick Facts
+| Element | Details |
+|---------|---------|
+| **Company** | [Name] — [Industry, size, location] |
+| **Contacts** | [Name(s) + Role(s)] |
+| **Timing** | 🟢 NOW / 🟡 Nurture / 🔴 No Focus |
+| **Their #1 Pain** | [Most urgent challenge we can solve] |
+| **Our Best Fit** | [Product/service that addresses their pain] |
+
+### Your 3 Must-Do's
+1. **Validate**: [The one hypothesis you must confirm]
+2. **Discover**: [The critical unknown you must uncover]
+3. **Advance**: [The specific next step to propose]
+
+### Opening Line (Use This)
+> "[Ready-to-use opener personalized to the contact and situation]"
+
+### Top 3 Questions
+1. [Most important discovery question]
+2. [Second priority question]
+3. [Third priority question]
+
+---
+
 ## 📋 In One Sentence
 
 A precise sentence capturing:
 - who you are meeting
 - why this conversation matters for them
 - what you must achieve to progress the opportunity
-
-Keep it specific and outcome-oriented.
 
 ---
 
@@ -292,11 +322,24 @@ Keep it specific and outcome-oriented.
 |--------|------------|
 | **Timing** | 🟢 NOW-Opportunity / 🟡 Nurture / 🔴 No Focus — [one-line rationale] |
 | **Stakeholder Readiness** | High / Medium / Low — [based on behavioural or contextual signals] |
-| **Complexity** | Simple / Medium / Complex — [why] |
+| **Deal Complexity** | Simple / Medium / Complex — [why] |
 | **Recommended Duration** | [30 / 45 / 60 min] |
 | **Key Risk** | [The single factor most likely to derail this meeting] |
 
-Use this section as the rep's snapshot before entering the room.
+---
+
+## 📊 MEDDIC Qualification Status
+
+| Element | Status | Details | Discovery Goal |
+|---------|--------|---------|----------------|
+| **M**etrics | 🔴 Unknown / 🟡 Identified / 🟢 Quantified | [KPIs they want to improve] | [Question to uncover] |
+| **E**conomic Buyer | 🔴 Not found / 🟡 Suspected / 🟢 Confirmed | [Name + evidence] | [Question to confirm] |
+| **D**ecision Criteria | 🔴 Unknown / 🟡 Partial / 🟢 Clear | [How they'll evaluate] | [Question to clarify] |
+| **D**ecision Process | 🔴 Unknown / 🟡 Partial / 🟢 Mapped | [Steps to signature] | [Question to map] |
+| **I**dentified Pain | 🔴 Assumed / 🟡 Stated / 🟢 Quantified | [Pain + business impact] | [Question to deepen] |
+| **C**hampion | 🔴 None / 🟡 Potential / 🟢 Active | [Name + proof of advocacy] | [Question to test] |
+
+**MEDDIC Priority for This Meeting**: Focus on [Element] because [rationale].
 
 ---
 
@@ -309,30 +352,43 @@ One essential outcome required to meaningfully progress the opportunity.
 - [Secondary goal 1]
 - [Secondary goal 2]
 
-(Be specific, not generic.)
-
 ### Success Criteria
 How you know this meeting truly succeeded:
 - [Criterion 1 — observable outcome]
-- [Criterion 2]
+- [Criterion 2 — commitment or statement]
 
 ---
 
-## 🌍 Market Context & Relevance
+## 💡 Value Translation (So What?)
 
-### What's Happening in Their World
+**Don't tell them what we do. Show them what it means for THEM.**
 
-| Trend / Development | Impact on Them | Relevance to Us |
-|---------------------|----------------|------------------|
-| [Trend 1] | [Effect on their operations, risk or strategy] | [How we help] |
-| [Trend 2] | [Effect] | [Relevance] |
-| [Trend 3] | [Effect] | [Relevance] |
+| Our Capability | Their Situation | Concrete Impact |
+|----------------|-----------------|-----------------|
+| [Product/Feature 1] | [Their specific pain or goal] | [Quantified outcome: X hours saved, Y% improvement, €Z saved] |
+| [Product/Feature 2] | [Their specific pain or goal] | [Quantified outcome] |
+| [Product/Feature 3] | [Their specific pain or goal] | [Quantified outcome] |
 
-### Why This Matters Now
-Explain in 2–3 tight sentences:
-- the timing
-- the opportunity window
-- the situational relevance for THEM, not us
+**The Money Question**: If we solve [their #1 pain], what's that worth to them annually? 
+- Estimate: [€ amount or time saved]
+
+---
+
+## ⚔️ Competitive Landscape
+
+### Known/Suspected Alternatives
+
+| Competitor | Likelihood | Their Strength | Our Counter | Landmine to Avoid |
+|------------|------------|----------------|-------------|-------------------|
+| [Name or "Status Quo"] | High / Medium / Low | [What they do well] | [Our differentiator] | [Don't say this] |
+| [Name] | High / Medium / Low | [Strength] | [Counter] | [Avoid] |
+
+### Our Unfair Advantage
+[The one thing only we can offer in this specific situation — not generic features]
+
+### If Competitor Comes Up
+- **Acknowledge**: "[Respectful one-liner about competitor]"
+- **Redirect**: "[Pivot to our unique value]"
 
 ---
 
@@ -345,30 +401,52 @@ For each attendee:
 | Aspect | Details |
 |--------|---------|
 | **Decision Authority** | 🟢 Decision Maker / 🔵 Influencer / 🟡 Gatekeeper / ⚪ User |
-| **Communication Style** | [Formal / Informal / Technical / Strategic] |
+| **Communication Style** | Formal / Informal / Technical / Strategic |
 | **Likely Priorities** | [What matters most to this person] |
 | **Personal Stake** | [What they personally gain or avoid] |
+| **Potential Concerns** | [What might make them hesitant] |
 
-**How We Can Help Them**
-- [Specific, situational value that speaks to their world]
-- [How it reduces friction, improves outcomes, or supports their goals]
+**How We Help Them Specifically**
+- [Value that speaks to THEIR world, not generic benefits]
 
-**Recommended Approach**
-Strategic guidance on how to engage them based on their style and drivers.
+**Tailored Opening for This Person**
+> "[Personalized opener based on their role, recent activity, or interests]"
+
+**Approach Strategy**
+- Engage via: [Technical depth / Business outcomes / Personal relationship]
+- Avoid: [Topic or style that won't resonate]
 
 ---
 
 ## 👥 DMU Overview (Decision Making Unit)
 
-| Name | Role | Position | Style | Stance |
-|------|------|----------|-------|--------|
-| [Name] | [Function] | 🟢 DM / 🔵 Inf / 🟡 GK | [Style] | [Champion / Neutral / Skeptic] |
+| Name | Role | Authority | Style | Stance | Key to Win Them |
+|------|------|-----------|-------|--------|-----------------|
+| [Name] | [Function] | 🟢 DM / 🔵 Inf / 🟡 GK / ⚪ User | [Style] | Champion / Neutral / Skeptic | [What they need] |
 
-**Decision Dynamics**
+### Relationship Dynamics
+- [Name A] reports to [Name B] — relationship: [strong / neutral / tense]
+- Key influencer: [Who shapes opinions internally]
+- Potential blocker: [Who might object and why]
+
+### Decision Dynamics
 - **Process**: [Top-down / Consensus / Committee / Pragmatic]
-- **Likely Criteria**: [ROI / Risk reduction / Operational fit / Adoption ease]
-- **Key Stakeholder to Convince**: [Who matters most right now and why]
-- **Potential Blockers**: [Who might object, and on what grounds]
+- **Criteria**: [ROI / Risk reduction / Ease of use / Speed to value]
+- **Timeline**: [Known or suspected decision timeline]
+- **Budget Cycle**: [Fiscal year end, budget holder if known]
+
+---
+
+## 💰 Budget Intelligence
+
+| Aspect | Status | Details |
+|--------|--------|---------|
+| **Budget Allocated** | Yes / No / Unknown / TBD | [Context] |
+| **Budget Holder** | [Name if known] | [Relationship to contacts] |
+| **Approval Threshold** | [Amount that needs higher approval] | [Process] |
+| **Fiscal Year End** | [Month] | [Implication for timing] |
+
+**Budget Question to Ask**: "[Specific question to uncover budget reality without being pushy]"
 
 ---
 
@@ -382,11 +460,9 @@ Strategic guidance on how to engage them based on their style and drivers.
 - [Signal 3 — competitive dynamics]
 
 **Window of Opportunity**
-Explain:
-- the optimal timing
-- what accelerates movement
-- what slows it
-- what happens if you wait
+- What accelerates: [Factor that speeds up decision]
+- What slows: [Factor that delays]
+- Cost of waiting: [What happens if they do nothing]
 
 ---
 
@@ -396,130 +472,154 @@ Explain:
 
 | Topic | Why Sensitive | How to Approach |
 |-------|---------------|-----------------|
-| ...   | ...           | ...             |
+| [Topic 1] | [Reason] | [Recommended framing] |
+| [Topic 2] | [Reason] | [Recommended framing] |
 
-### Likely Objections
+### Likely Objections & Responses
 
-| Objection | Root Cause | Recommended Response |
-|-----------|------------|----------------------|
-| ...       | ...        | ...                  |
+| Objection | Root Cause | Your Response |
+|-----------|------------|---------------|
+| "[Objection 1]" | [Why they might say this] | "[Ready-to-use response]" |
+| "[Objection 2]" | [Why] | "[Response]" |
 
-### Red Flags
-List the 1–2 behavioural signs that indicate risk or hidden blockers.
+### Red Flags to Watch
+- [Behavioral sign 1 that indicates hidden blockers]
+- [Behavioral sign 2]
 
 ---
 
 ## 💬 Conversation Starters
 
-Rooted in research and contact insight.
+**Personal Opener** (relationship-focused)
+> "[Based on LinkedIn, shared interests, or recent activity]"
 
-**Personal Opener**
-> "[Opener based on recent activity or shared context]"
+**Business Opener** (company-focused)
+> "[Based on recent news, announcement, or market trend]"
 
-**Business Opener**
-> "[Opener tied to a specific trend or company development]"
-
-**Direct Opener** (for time-pressured execs)
-> "[Succinct value-context opener]"
+**Direct Opener** (for time-pressured executives)
+> "[Value-forward, respect their time]"
 
 ---
 
-## 🗣️ Talking Points
+## ❓ Discovery Questions (SPIN-Based + Power Questions)
 
-### Opening (First 5 Minutes)
-- Personal connection
+### Situation (Understand their current state)
+1. [Question about their current process/situation]
+2. [Question about their team/resources]
+3. [Question about their tools/systems]
+
+### Problem (Uncover pain points)
+1. [Question about challenges/frustrations]
+2. [Question about what's not working]
+3. [Question about impact on their work]
+
+### Implication (Deepen the pain)
+1. [Question about consequences if unsolved]
+2. [Question about ripple effects across organization]
+3. [Question about cost of the problem]
+
+### Need-Payoff (Let them articulate the value)
+1. [Question about ideal outcome]
+2. [Question about what success looks like]
+3. [Question about value of solving this]
+
+### 💪 Power Questions (Use Sparingly — These Accelerate Deals)
+- "What happens if this doesn't get solved in the next 6 months?"
+- "If you had unlimited budget, what would you fix first?"
+- "Who else in the organization feels this pain?"
+- "What would it take for this to become a priority?"
+
+### 🤝 Rapport / Human Connection
+- [Thoughtful question showing genuine interest in them as a person]
+
+---
+
+## 🗣️ Talking Points & Flow
+
+### Opening (5 Minutes)
+- Personal connection point: [Specific thing to mention]
 - Confirm agenda and time
-- Set expectation that you'll ask questions to understand their situation
+- Set expectation: "I'd like to ask questions to understand your situation first"
 
-### Discovery Phase (Core 20–25 Minutes)
+### Discovery Phase (20–25 Minutes)
 
 #### Theme 1: Current Situation
-- What to explore
-- What signals to listen for
+- What to explore: [Specific area]
+- Signal to listen for: [What indicates opportunity]
 
-#### Theme 2: Challenges & Frustrations
-- What to explore
-- What pitfalls or pains to validate
+#### Theme 2: Challenges & Pain
+- What to explore: [Specific challenge area]
+- Pain to validate: [Hypothesis to test]
 
-#### Theme 3: Priorities & Goals
-- What to explore
-- What matters to leadership, operations or clients
+#### Theme 3: Goals & Priorities
+- What to explore: [Their objectives]
+- Connection to make: [How we help]
 
 ### Value Connection (10 Minutes)
-- Link findings to relevant value
-- Share one well-chosen case
-- Gauge resonance and reaction
+- Link discovery to value: [Specific connection to make]
+- Case/example to share: [Relevant proof point]
+- Check-in question: "Does this resonate with what you're experiencing?"
 
 ### Close (5 Minutes)
-- Summarise insights
-- Propose next step
-- Confirm stakeholders to involve
+- Summarize key insights: [What you learned]
+- Propose specific next step: [Exact action]
+- Confirm stakeholders: [Who else should be involved]
 
 ---
 
-## ❓ Discovery Questions (SPIN-Based)
-
-### Situation
-1. [Question]
-2. [Question]
-3. [Question]
-
-### Problem
-1. [Question]
-2. [Question]
-3. [Question]
-
-### Implication
-1. [Question]
-2. [Question]
-3. [Question]
-
-### Need-Payoff
-1. [Question]
-2. [Question]
-3. [Question]
-
-### Human / Rapport
-- [Thoughtful, context-aware question]
-
----
-
-## 🎯 Meeting Strategy
+## 🎯 Meeting Strategy & Next Steps
 
 ### If the Meeting Goes Well
-- [Recommended next step]
-- [Who to involve]
-- [Suggested timing]
+
+| Recommended Next Step | Who to Involve | Timing | Say This |
+|----------------------|----------------|--------|----------|
+| [Specific action] | [Names + roles] | [Within X days] | "[Exact words to propose next step]" |
 
 ### If They Are Hesitant
-- [Fallback step]
-- [Message to keep conversation open]
+- **Diagnose**: Ask "[Question to understand hesitation]"
+- **Fallback**: Offer [Lower-commitment next step]
+- **Keep door open**: "[Message to leave them with]"
 
 ### If They Are Not Ready
-- [Nurture motion]
-- [Trigger to re-engage]
+- **Nurture action**: [What to send/do to stay relevant]
+- **Re-engagement trigger**: [Event or timing to reach out again]
+- **Value to provide**: [Helpful content or insight to share]
 
 ---
 
-## ✅ Before You Go (Checklist)
+## 🔔 Last-Minute Check (5 Minutes Before)
 
-- [ ] Research brief reviewed
-- [ ] Contact profiles understood
+Do a quick check on these before you enter the meeting:
+
+- [ ] **LinkedIn scan**: Any recent posts from [Contact Name(s)]?
+- [ ] **Company news**: Google "[Company Name]" news last 7 days
+- [ ] **Competitor check**: Any [Competitor] announcements this week?
+- [ ] **Your opening line**: Say it out loud once
+- [ ] **Calendar open**: Ready to propose specific next step dates
+
+---
+
+## ✅ Full Preparation Checklist
+
+- [ ] Research brief reviewed and key points memorized
+- [ ] Contact profiles understood — know their priorities
 - [ ] Top 3 discovery questions prepared
-- [ ] One relevant example or case readied
-- [ ] Calendar open for next steps
-- [ ] LinkedIn profile of contacts reviewed
+- [ ] MEDDIC gaps identified — know what to uncover
+- [ ] One relevant case study or example ready
+- [ ] Competitive positioning clear in your mind
+- [ ] Next step options prepared (Plan A, B, C)
+- [ ] Calendar open for next 2 weeks
 - [ ] Opening line mentally rehearsed
 
 ---
 
 RULES:
 - Be specific to this prospect and these contacts – no generic templates.
-- Always anchor in customer value, not product features.
-- Keep tone professional, calm and confident.
-- Write for a senior sales professional who values clarity and strategic depth.
-- If context is missing or unclear, note it rather than guessing.
-- Keep total brief under 1200 words (excluding tables).
+- Always anchor in THEIR value, not our product features.
+- Quantify impact wherever possible (time, money, risk).
+- Write for a senior B2B sales professional who values clarity, depth, and strategic insight.
+- If context is missing, note it as "[TO DISCOVER]" rather than guessing.
+- Keep total brief under 1500 words (excluding tables).
 
 {lang_instruction}
 
@@ -540,14 +640,40 @@ This brief should enable the sales rep to deliver a compelling, tailored demo in
 
 ---
 
+## ⚡ 3-MINUTE EXECUTIVE SUMMARY
+
+**Read this if you only have 3 minutes before the demo.**
+
+### 🎯 The ONE Thing
+If you remember nothing else from this brief, remember this:
+> [The single most important insight or outcome that will make this demo successful]
+
+### Quick Facts
+| Element | Details |
+|---------|---------|
+| **Company** | [Name] — [Industry, context] |
+| **Audience** | [Names + Roles] — [Technical / Executive / Mixed] |
+| **Stage** | 🟢 Ready to Buy / 🟡 Evaluating / 🔴 Early Stage |
+| **Their #1 Priority** | [What they most need to see solved] |
+| **Show-Stopper Risk** | [Feature gap or objection that could kill the deal] |
+
+### Your 3 Must-Do's
+1. **Show**: [The feature/workflow that addresses their #1 pain]
+2. **Connect**: [Link demo to their specific situation with "[their words]"]
+3. **Advance**: [The specific next step to propose]
+
+### Key Demo Moment
+> When you show [feature], say: "[Ready-to-use talking point that connects to their pain]"
+
+### Most Likely Question & Your Answer
+> **Q**: "[Anticipated tough question]"
+> **A**: "[Your prepared response]"
+
+---
+
 ## 📋 In One Sentence
 
-A precise sentence capturing:
-- who you are demoing to
-- what specific outcomes they need to see
-- what must happen to progress the opportunity
-
-Keep it specific and outcome-oriented.
+[Who you're demoing to] + [What they need to see] + [What must happen to progress]
 
 ---
 
@@ -558,47 +684,76 @@ Keep it specific and outcome-oriented.
 | **Demo Readiness** | 🟢 Ready to Buy / 🟡 Evaluating / 🔴 Early Stage — [rationale] |
 | **Audience Profile** | Technical / Executive / Mixed — [who's in the room] |
 | **Complexity** | Simple / Medium / Complex — [customization needed] |
-| **Recommended Duration** | [30 / 45 / 60 min] |
+| **Duration** | [30 / 45 / 60 min] |
 | **Key Risk** | [The single factor most likely to derail this demo] |
 
-Use this section as the rep's snapshot before entering the room.
+---
+
+## 📊 MEDDIC Status Check
+
+| Element | Status | Implication for Demo |
+|---------|--------|---------------------|
+| **Metrics** | 🔴/🟡/🟢 | [Show ROI data if unclear, validate if known] |
+| **Economic Buyer** | In room? Yes/No | [Adjust depth accordingly] |
+| **Decision Criteria** | [Known criteria] | [Which demo segments address each] |
+| **Champion** | [Name] | [Give them ammunition to sell internally] |
 
 ---
 
 ## 🎯 Demo Objectives
 
 ### Primary Goal (Must Achieve)
-One essential outcome required to meaningfully progress the opportunity.
+[One essential outcome — reaction, statement, or commitment]
 
-### Secondary Goals (Supportive)
-- [Secondary goal 1]
-- [Secondary goal 2]
-
-### Success Criteria
-How you know this demo truly succeeded:
-- [Criterion 1 — observable reaction or statement]
-- [Criterion 2 — next step commitment]
+### Success Signals to Watch For
+- [Positive reaction 1: leaning in, nodding, taking notes]
+- [Positive statement: "This would solve our problem with..."]
+- [Commitment: "Can we see this with our data?"]
 
 ---
 
-## 🔗 Connecting Discovery to Demo
+## 🔗 Discovery → Demo Connection
 
-### Key Insights from Discovery
+### Pain Points to Address
 
-| Discovery Finding | Demo Response |
-|-------------------|---------------|
-| [Pain point 1] | [Feature/capability to show] |
-| [Pain point 2] | [Feature/capability to show] |
-| [Desired outcome] | [How we deliver it] |
+| Their Pain (Their Words) | What to Show | Say This |
+|--------------------------|--------------|----------|
+| "[Quote from discovery about pain 1]" | [Feature/workflow] | "[Talking point connecting feature to pain]" |
+| "[Quote about pain 2]" | [Feature/workflow] | "[Talking point]" |
+| "[Quote about goal]" | [Outcome to demonstrate] | "[Talking point]" |
 
-### Their Words to Echo
-Direct quotes or paraphrased statements from discovery to reference during demo:
-- "[Quote about their challenge]"
-- "[Quote about their goal]"
+### Echo Their Words
+During the demo, reference these exact phrases they used:
+- "[Their phrase 1]" — use when showing [feature]
+- "[Their phrase 2]" — use when discussing [outcome]
 
 ---
 
-## 👤 Personal Relevance Per Attendee
+## 💡 Value Translation (So What?)
+
+| We Show | They Get | Quantified Impact |
+|---------|----------|-------------------|
+| [Feature 1] | [Outcome for them] | [X hours saved / €Y value / Z% improvement] |
+| [Feature 2] | [Outcome for them] | [Quantified impact] |
+| [Feature 3] | [Outcome for them] | [Quantified impact] |
+
+---
+
+## ⚔️ Competitive Positioning
+
+### If Competitor Comes Up
+
+| Competitor | Their Claim | Our Counter | Don't Say |
+|------------|-------------|-------------|-----------|
+| [Name] | "[Feature they'll mention]" | "[Our differentiation]" | [Avoid this] |
+| Status Quo | "We've always done it this way" | "[Cost of inaction]" | [Don't dismiss] |
+
+### Our Unfair Advantage to Highlight
+[The one thing to emphasize that competitors can't match]
+
+---
+
+## 👤 Audience-Specific Demo Strategy
 
 For each attendee:
 
@@ -606,150 +761,152 @@ For each attendee:
 
 | Aspect | Details |
 |--------|---------|
-| **Decision Authority** | 🟢 Decision Maker / 🔵 Influencer / 🟡 Gatekeeper / ⚪ User |
-| **Demo Interest** | [What they specifically want to see] |
-| **Communication Style** | [Technical depth / Executive summary / Hands-on] |
-| **Likely Questions** | [What they'll probably ask] |
+| **Authority** | 🟢 DM / 🔵 Inf / 🟡 GK / ⚪ User |
+| **What They Care About** | [Their specific priorities] |
+| **Demo Depth** | Technical / Strategic / Hands-on |
+| **Likely Question** | "[What they'll ask]" |
+| **Your Answer** | "[Prepared response]" |
 
-**Tailored Demo Moment**
-One specific feature or workflow to show that speaks directly to their priorities.
-
----
-
-## 👥 DMU Overview
-
-| Name | Role | Position | Focus | Stance |
-|------|------|----------|-------|--------|
-| [Name] | [Function] | 🟢 DM / 🔵 Inf / 🟡 GK | [Their focus] | [Champion / Neutral / Skeptic] |
-
-**Demo Dynamics**
-- **Who to impress most**: [Key person and why]
-- **Who might challenge**: [Skeptic and their likely objection]
-- **How to balance**: [Strategy for mixed audience]
+**Their Demo Moment**: When showing [feature], address [Name] directly: "[What to say]"
 
 ---
 
-## ⚠️ Warnings & Sensitivities
+## 👥 DMU Dynamics in the Room
 
-### Topics to Handle Carefully
+| Name | Role | Stance | How to Engage |
+|------|------|--------|---------------|
+| [Name] | [Function] | Champion / Neutral / Skeptic | [Strategy] |
 
-| Topic | Why Sensitive | How to Approach |
-|-------|---------------|-----------------|
-| ...   | ...           | ...             |
+### Demo Balance Strategy
+- **Impress first**: [Key person] — show [capability]
+- **Win over**: [Skeptic] — address [concern]
+- **Avoid**: [Action that could alienate someone]
 
-### Likely Technical Objections
+---
 
-| Objection | Root Cause | Recommended Response |
-|-----------|------------|----------------------|
-| ...       | ...        | ...                  |
+## ⚠️ Demo Pitfalls & Risk Mitigation
 
-### Demo Pitfalls to Avoid
-- [Feature that might confuse them]
-- [Workflow that doesn't match their process]
-- [Comparison trap with competitor]
+### Features to Handle Carefully
+
+| Feature/Topic | Why Risky | How to Navigate |
+|---------------|-----------|-----------------|
+| [Feature 1] | [May not match their process] | [Framing to use] |
+| [Feature 2] | [Competitor is stronger here] | [Redirect strategy] |
+
+### Anticipated Objections
+
+| Objection | Why They Might Say It | Your Response |
+|-----------|----------------------|---------------|
+| "[Objection 1]" | [Root cause] | "[Ready response]" |
+| "[Objection 2]" | [Root cause] | "[Ready response]" |
+
+### Technical Backup Plan
+- If [issue] happens: [What to do/say]
+- If they ask about [unsupported feature]: "[Response]"
 
 ---
 
 ## 🎬 Demo Flow
 
 ### Opening (5 Minutes)
-- Recap discovery insights (show you listened)
-- Confirm agenda and their priorities
-- Set expectation: "I'll show you X, Y, Z based on what you told me"
+- **Recap**: "Last time we discussed [pain point]. Today I'll show you how we solve that."
+- **Confirm priorities**: "You mentioned [X, Y, Z] were most important. Still accurate?"
+- **Set expectations**: "I'll focus on those three areas. Feel free to ask questions anytime."
 
 ### Core Demo (25–30 Minutes)
 
-#### Segment 1: [Pain Point / Use Case 1]
-- **What to show**: [Specific feature/workflow]
-- **Why it matters to them**: [Connect to their stated need]
+#### Segment 1: [Pain Point 1]
+- **Show**: [Specific feature/workflow]
+- **Connect**: "[Their words]" → "[Our solution]"
 - **Talking point**: "[Key message]"
-- **Check-in question**: "[Gauge resonance]"
+- **Check-in**: "Does this match how your team would use it?"
 
-#### Segment 2: [Pain Point / Use Case 2]
-- **What to show**: [Specific feature/workflow]
-- **Why it matters to them**: [Connect to their stated need]
+#### Segment 2: [Pain Point 2]
+- **Show**: [Specific feature/workflow]
+- **Connect**: "[Their words]" → "[Our solution]"
 - **Talking point**: "[Key message]"
-- **Check-in question**: "[Gauge resonance]"
+- **Check-in**: "Is this the kind of result you're looking for?"
 
-#### Segment 3: [Pain Point / Use Case 3]
-- **What to show**: [Specific feature/workflow]
-- **Why it matters to them**: [Connect to their stated need]
-- **Talking point**: "[Key message]"
-- **Check-in question**: "[Gauge resonance]"
+#### Segment 3: [Pain Point 3 / Wow Moment]
+- **Show**: [Differentiating capability]
+- **Connect**: "[Unique value]"
+- **Talking point**: "[Memorable statement]"
+- **Check-in**: "How does this compare to your current approach?"
 
 ### Q&A (10 Minutes)
-- Anticipated questions and prepared answers
-- Technical deep-dives if requested
-- Redirect off-topic questions gracefully
+- Anticipated questions: [Top 3 with prepared answers]
+- If stumped: "Great question. Let me get you a detailed answer after this call."
 
 ### Close (5 Minutes)
-- Summarise key value demonstrated
-- Propose concrete next step (trial, POC, proposal)
-- Confirm timeline and stakeholders
+- **Summarize value**: "Based on what I showed you, [key benefit 1, 2, 3]"
+- **Next step**: "[Specific proposal]"
+- **Ask**: "[Closing question to confirm interest]"
 
 ---
 
-## 💬 Key Messages
+## 💬 Key Messages & Proof Points
 
-### Value Statements (Use These Words)
-1. [Value statement tied to their specific situation]
-2. [Differentiator vs. their current approach]
-3. [ROI or outcome they can expect]
+### Value Statements (Say These)
+1. "[Statement connecting to their #1 priority]"
+2. "[Differentiation from current approach]"
+3. "[Quantified outcome or ROI]"
 
-### Proof Points
-- [Relevant case study or metric]
-- [Similar customer reference]
-
----
-
-## ❓ Questions to Ask During Demo
-
-### Validation Questions
-1. [Confirm understanding: "Does this match how you'd use it?"]
-2. [Gauge interest: "Is this the kind of result you're looking for?"]
-
-### Progression Questions
-1. [Identify blockers: "What would need to be true for this to work for you?"]
-2. [Next step: "Who else should see this?"]
+### Proof Points to Share
+- **Case study**: [Company similar to them] achieved [result]
+- **Metric**: [Specific number that resonates]
+- **Reference**: [Name/company they can contact if needed]
 
 ---
 
-## 🎯 Meeting Strategy
+## 🎯 Meeting Strategy & Next Steps
 
 ### If the Demo Goes Well
-- [Recommended next step: trial, POC, proposal]
-- [Who to involve]
-- [Suggested timing]
+
+| Next Step | Who to Involve | Timing | Say This |
+|-----------|----------------|--------|----------|
+| [Trial / POC / Proposal] | [Names + roles] | [Within X days] | "[Exact words]" |
 
 ### If They Have Concerns
-- [How to address]
-- [Fallback step]
+- **Acknowledge**: "[Response]"
+- **Fallback**: [Lower-commitment option]
 
-### If They Need More Time
-- [Nurture motion]
-- [What to send after]
+### If They're Not Ready
+- **Leave-behind**: [What to send]
+- **Re-engagement**: [When/how to follow up]
 
 ---
 
-## ✅ Before You Go (Checklist)
+## 🔔 Last-Minute Check (5 Minutes Before)
 
-- [ ] Discovery notes reviewed
-- [ ] Demo environment tested and ready
+- [ ] Demo environment tested — [Specific test to run]
+- [ ] [Contact Name(s)] LinkedIn scanned for recent posts
+- [ ] Opening line ready: "[First thing you'll say]"
+- [ ] Calendar open for next step dates
+- [ ] Backup plan if tech fails: [What to do]
+
+---
+
+## ✅ Full Preparation Checklist
+
+- [ ] Discovery notes reviewed — know their pain points
+- [ ] Demo environment tested and clean
 - [ ] Attendee priorities confirmed
-- [ ] Three key messages prepared
-- [ ] One proof point ready to share
-- [ ] Calendar open for next steps
-- [ ] Backup plan if technical issues arise
+- [ ] Pain → Feature mapping prepared
+- [ ] Three key messages ready
+- [ ] Proof point/case study selected
+- [ ] Objection responses prepared
+- [ ] Next step options ready (Plan A, B, C)
+- [ ] Calendar open for follow-up
 
 ---
 
 RULES:
-- Be specific to this prospect and these contacts – no generic demo scripts.
-- Always connect features to their stated needs.
-- Keep tone professional, calm and confident.
-- Write for a senior sales professional who values clarity and strategic depth.
-- If context is missing or unclear, note it rather than guessing.
-- Keep total brief under 1000 words (excluding tables).
+- Be specific to this prospect — no generic demo scripts.
+- ALWAYS connect features to THEIR stated needs using THEIR words.
+- Quantify value wherever possible (time, money, risk).
+- Write for a senior B2B sales professional who values clarity and impact.
+- If context is missing, note it as "[CONFIRM WITH PROSPECT]".
+- Keep total brief under 1200 words (excluding tables).
 
 {lang_instruction}
 
@@ -770,14 +927,40 @@ This brief should enable the sales rep to close with confidence in 5 minutes of 
 
 ---
 
+## ⚡ 3-MINUTE EXECUTIVE SUMMARY
+
+**Read this if you only have 3 minutes before the closing call.**
+
+### 🎯 The ONE Thing
+If you remember nothing else from this brief, remember this:
+> [The single most critical action or insight that will determine whether this deal closes]
+
+### Deal Snapshot
+| Element | Details |
+|---------|---------|
+| **Deal Value** | [€ amount] |
+| **Close Probability** | 🟢 High / 🟡 Medium / 🔴 Low |
+| **Decision Maker** | [Name] — [Their stance: Champion/Neutral/Skeptic] |
+| **Biggest Blocker** | [The one thing that could kill this deal] |
+| **Your Ask Today** | [Specific commitment you're seeking] |
+
+### Your 3 Must-Do's
+1. **Confirm**: [Validate final decision criteria are met]
+2. **Overcome**: [Address the #1 remaining objection]
+3. **Close**: "[Exact words to ask for the business]"
+
+### If They Push Back
+> **They say**: "[Most likely objection]"
+> **You say**: "[Your prepared response]"
+
+### The Close Line (Say This)
+> "[Direct, confident closing statement tailored to this deal]"
+
+---
+
 ## 📋 In One Sentence
 
-A precise sentence capturing:
-- the deal at stake
-- what's required to close
-- the single biggest factor that will determine success or failure
-
-Keep it specific and outcome-oriented.
+[The deal at stake] + [What's required to close today] + [The biggest factor that will determine success]
 
 ---
 
@@ -787,27 +970,36 @@ Keep it specific and outcome-oriented.
 |--------|------------|
 | **Close Probability** | 🟢 High (>70%) / 🟡 Medium (40-70%) / 🔴 Low (<40%) — [rationale] |
 | **Decision Stage** | Final Approval / Negotiation / Stalled — [where they are] |
-| **Deal Value** | [Amount or range] |
-| **Timeline** | [Expected close date] |
+| **Deal Value** | [€ amount] |
+| **Expected Close Date** | [Date] |
 | **Key Risk** | [The single factor most likely to derail this deal] |
 
-Use this section as the rep's snapshot before entering the room.
+---
+
+## 📊 MEDDIC Final Status
+
+| Element | Status | Evidence | Action if Incomplete |
+|---------|--------|----------|---------------------|
+| **Metrics** | 🟢 Quantified | [Their expected ROI/outcome] | [Validate numbers] |
+| **Economic Buyer** | 🟢 Confirmed | [Name + proof of authority] | [Ensure they're aligned] |
+| **Decision Criteria** | 🟢 Met | [How we satisfy each criterion] | [Confirm we're chosen] |
+| **Decision Process** | 🟢 Clear | [Remaining steps to signature] | [Clarify timeline] |
+| **Identified Pain** | 🟢 Urgent | [Pain + cost of inaction] | [Reinforce urgency] |
+| **Champion** | 🟢 Active | [Name + their role in closing] | [Give them ammunition] |
+
+**MEDDIC Gap to Close Today**: [Element] — ask: "[Question to fill gap]"
 
 ---
 
 ## 🎯 Closing Objectives
 
 ### Primary Goal (Must Achieve)
-One essential outcome: verbal commitment, signed contract, or clear next step to signature.
+[Specific outcome: verbal yes, signed contract, start date confirmed, or clear path to signature]
 
-### Secondary Goals (Supportive)
-- [Secondary goal 1]
-- [Secondary goal 2]
-
-### Success Criteria
-How you know this meeting truly succeeded:
-- [Criterion 1 — observable commitment]
-- [Criterion 2 — timeline locked]
+### Success Signals
+- **Verbal commitment**: "[What they would say]"
+- **Action commitment**: "[What they would do]"
+- **Timeline commitment**: "[Specific date locked]"
 
 ---
 
@@ -815,134 +1007,134 @@ How you know this meeting truly succeeded:
 
 | Element | Details |
 |---------|---------|
-| **Deal Value** | [Amount] |
-| **Contract Term** | [Duration] |
+| **Deal Value** | [€ amount] |
+| **Contract Term** | [Duration: 1 year, 3 years, etc.] |
 | **Products/Services** | [What's included] |
-| **Implementation Timeline** | [Start date, milestones] |
+| **Start Date** | [Expected go-live] |
 | **Key Terms Agreed** | [Pricing, payment terms, SLAs] |
-| **Outstanding Items** | [What's still open] |
+| **Outstanding Items** | [What's still open — be specific] |
+
+### Value Already Agreed
+They've acknowledged these benefits:
+- "[Benefit 1 they confirmed]"
+- "[Benefit 2 they confirmed]"
+- "[Outcome they're excited about]"
 
 ---
 
-## 👤 Stakeholder Readiness
+## 💎 Value Reinforcement (Use If Needed)
+
+### ROI to Echo
+| Investment | Return | Timeframe |
+|------------|--------|-----------|
+| [Their cost] | [Quantified benefit] | [When they'll see it] |
+
+### Their Words to Use
+Quote them back to reinforce their own reasoning:
+- "[Quote about their pain]"
+- "[Quote about why they chose us]"
+- "[Quote about expected outcome]"
+
+### Cost of Inaction
+If they delay, they lose: [Specific cost of waiting — time, money, competitive position]
+
+---
+
+## ⚔️ Competitive Final Check
+
+| Competitor | Status | Our Counter | Don't Say |
+|------------|--------|-------------|-----------|
+| [Name / Status Quo] | [In play / Eliminated / Unknown] | [Our advantage to emphasize] | [Avoid this] |
+
+**If Competitor Is Mentioned Today**: "[Prepared response]"
+
+---
+
+## 👤 Stakeholder Closing Status
 
 For each decision maker:
 
 ### [Name] — [Role]
 
-| Aspect | Details |
-|--------|---------|
-| **Decision Authority** | 🟢 Final Sign-off / 🔵 Recommender / 🟡 Approver |
+| Aspect | Status |
+|--------|--------|
+| **Authority** | 🟢 Final Sign-off / 🔵 Recommender / 🟡 Approver |
 | **Current Stance** | Champion / Supportive / Neutral / Skeptical |
-| **Personal Stake** | [What they gain from this deal closing] |
-| **Concerns** | [What might make them hesitate] |
+| **What Closes Them** | [The one thing that tips them to yes] |
+| **Remaining Concern** | [What might still make them hesitate] |
+| **Your Approach** | [How to engage them in this meeting] |
 
-**How to Secure Their Yes**
-- [Specific action or message that will convince them]
-- [What they need to hear or see]
+**To Secure Their Yes, Say**: "[Specific statement or question for this person]"
 
 ---
 
 ## 👥 DMU Final Check
 
-| Name | Role | Authority | Stance | Required Action |
-|------|------|-----------|--------|-----------------|
-| [Name] | [Function] | 🟢 Final / 🔵 Rec / 🟡 Approve | [Stance] | [What they must do] |
+| Name | Role | Authority | Stance | What They Must Do |
+|------|------|-----------|--------|-------------------|
+| [Name] | [Function] | 🟢 Final / 🔵 Rec / 🟡 Approve | [Stance] | [Action required] |
 
-**Decision Dynamics**
-- **Who signs**: [Name and what triggers signature]
-- **Who can block**: [Name and their potential objection]
-- **Consensus required**: Yes / No — [process]
-
----
-
-## ⚠️ Risks & Blockers
-
-### Deal-Killers to Watch
-
-| Risk | Likelihood | Mitigation |
-|------|------------|------------|
-| [Risk 1] | High / Medium / Low | [How to address] |
-| [Risk 2] | High / Medium / Low | [How to address] |
-
-### Competitive Threat
-- [Competitor status]
-- [Their likely counter-move]
-- [Our differentiation to emphasize]
-
-### Internal Blockers
-- [Procurement, legal, budget holder concerns]
-- [How to navigate]
+### Decision Dynamics
+- **Who signs**: [Name] — trigger: [What prompts signature]
+- **Who can block**: [Name] — risk: [Their potential objection]
+- **Process remaining**: [Steps from today to signed contract]
 
 ---
 
-## 💎 Value Reinforcement
+## ⚠️ Risk Mitigation
 
-### ROI Summary
-| Investment | Return | Timeframe |
-|------------|--------|-----------|
-| [Cost] | [Benefit / savings] | [When realized] |
+### Deal-Killers & Countermeasures
 
-### Why Us (vs. Alternatives)
-1. [Key differentiator relevant to their priorities]
-2. [Proof point or reference]
-3. [Risk reduction we offer]
+| Risk | Likelihood | Your Mitigation |
+|------|------------|-----------------|
+| [Risk 1] | High / Medium / Low | "[Proactive statement to neutralize]" |
+| [Risk 2] | High / Medium / Low | "[Response if it comes up]" |
 
-### Their Words to Echo
-Direct quotes from the process to reinforce their own reasoning:
-- "[Quote about their pain]"
-- "[Quote about desired outcome]"
-- "[Quote about why they chose us]"
+### Last-Minute Objections & Responses
+
+| Objection | Why They Might Say It | Your Response |
+|-----------|----------------------|---------------|
+| "We need more time" | [Reason] | "[Response that creates urgency without pressure]" |
+| "We need to compare with [competitor]" | [Reason] | "[Response]" |
+| "The price is too high" | [Reason] | "[Value-based response]" |
+| "We need approval from [person]" | [Reason] | "[Response to keep momentum]" |
 
 ---
 
 ## 🗣️ Closing Conversation Flow
 
 ### Opening (5 Minutes)
-- Thank them for the journey
-- Confirm understanding of where we are
-- State purpose: "Today I'd like to finalize our agreement"
+- **Acknowledge the journey**: "We've covered a lot of ground together..."
+- **Confirm current position**: "Last we spoke, you mentioned [readiness signal]. Is that still the case?"
+- **State purpose directly**: "Today I'd like to finalize our agreement and discuss next steps."
 
-### Value Recap (10 Minutes)
-- Summarise the business case
-- Reference their stated needs and how we address them
-- Share one final proof point
+### Value Recap (5 Minutes)
+- Summarize their key pain: "[Pain they expressed]"
+- Connect to solution: "[How we solve it]"
+- Quantify value: "[ROI or benefit they'll see]"
+- Use their words: "As you said, [their quote]"
 
-### Address Remaining Concerns (10 Minutes)
-- Proactively surface any lingering doubts
-- Handle objections with prepared responses
-- Confirm all decision criteria are met
+### Address Final Concerns (10 Minutes)
+- **Proactively surface**: "Before we proceed, is there anything we haven't addressed?"
+- **Handle objections**: Use prepared responses
+- **Confirm criteria met**: "Does this meet all your requirements?"
 
 ### The Ask (5 Minutes)
-- Direct, confident close
-- Propose specific next step (signature, contract review, start date)
-- Confirm timeline and stakeholders
+- **Direct close**: "[Confident closing statement]"
+- **Specific proposal**: "Here's what I suggest as next steps..."
+- **Timeline lock**: "Can we start implementation on [date]?"
 
-### If They Say Yes
-- Express appreciation (not surprise)
-- Confirm immediate next steps
-- Introduce implementation/onboarding
+### If They Say YES
+- Express genuine appreciation (not surprise)
+- Confirm immediate next steps: "Great. Here's what happens now..."
+- Introduce implementation: "[Next person/process]"
+- Lock specific dates: "[Onboarding call, kickoff meeting]"
 
 ### If They Hesitate
-- Diagnose the blocker
-- Propose path to resolution
-- Agree on follow-up action and date
-
----
-
-## ❓ Closing Questions
-
-### Confirmation Questions
-1. [Have we addressed all your requirements?]
-2. [Is there anything else you need to make a decision?]
-
-### Commitment Questions
-1. [Are you ready to move forward?]
-2. [What would you need to see to sign this week?]
-
-### Blocker Questions
-1. [Is there anyone else who needs to weigh in?]
-2. [Are there any concerns we haven't discussed?]
+- **Diagnose**: "Help me understand what's holding you back."
+- **Isolate**: "If we solve [concern], are you ready to move forward?"
+- **Resolve or defer**: "[Solution or fallback step]"
+- **Lock next action**: "Let's schedule [follow-up] for [date]."
 
 ---
 
@@ -951,60 +1143,75 @@ Direct quotes from the process to reinforce their own reasoning:
 ### Our Position
 | Element | Ideal | Acceptable | Walk-Away |
 |---------|-------|------------|-----------|
-| Price | [Amount] | [Amount] | [Amount] |
-| Terms | [Preferred] | [Acceptable] | [Minimum] |
-| Timeline | [Ideal] | [Acceptable] | [Latest] |
+| Price | [€ amount] | [€ amount] | [€ minimum] |
+| Payment Terms | [Preferred] | [Acceptable] | [Minimum] |
+| Contract Length | [Ideal] | [Acceptable] | [Minimum] |
+| Start Date | [Ideal] | [Acceptable] | [Latest] |
 
 ### Concessions We Can Offer
-- [Concession 1 — value and cost to us]
-- [Concession 2 — value and cost to us]
+| Concession | Value to Them | Cost to Us | Ask in Return |
+|------------|---------------|------------|---------------|
+| [Concession 1] | [Value] | [Cost] | "[What to ask for]" |
+| [Concession 2] | [Value] | [Cost] | "[What to ask for]" |
 
-### Concessions to Request in Return
-- [If we give X, ask for Y]
-
-### Red Lines
-- [What we cannot compromise on]
+### Red Lines (Do Not Cross)
+- [What we cannot compromise on — price floor, terms, etc.]
 
 ---
 
-## 🎯 Meeting Strategy
+## 🎯 Meeting Strategy & Post-Meeting
 
-### If They Close
-- [Immediate next steps]
-- [Who to introduce: implementation, CS]
-- [Celebration message to send]
+### If They Close Today
+- **Immediate**: [Confirm contract signing process]
+- **This week**: [Kickoff call, implementation start]
+- **Introduce**: [CS, Implementation, Onboarding team]
+- **Send**: [Welcome email, next steps document]
 
 ### If They Need More Time
-- [Acceptable delay]
-- [What must happen in that time]
-- [Deadline to set]
+- **Acceptable delay**: [Maximum X days]
+- **Requirements**: "For me to hold this [pricing/terms], I need [commitment] by [date]"
+- **Next action**: [Specific follow-up locked]
 
 ### If They Go Cold
-- [Re-engagement strategy]
-- [Trigger to try]
-- [When to walk away]
+- **Final attempt**: "[Last-resort statement to create urgency]"
+- **Walk-away criteria**: [When to stop pursuing]
+- **Re-engagement trigger**: "[Future event that might restart conversation]"
 
 ---
 
-## ✅ Before You Go (Checklist)
+## 🔔 Last-Minute Check (5 Minutes Before)
 
-- [ ] Full deal terms understood
-- [ ] All decision makers' positions confirmed
-- [ ] Contract/proposal ready to share
-- [ ] Objection responses prepared
-- [ ] Negotiation boundaries clear
+- [ ] Contract/proposal ready to share or sign
+- [ ] [Decision Maker] confirmed to attend
+- [ ] Negotiation boundaries clear in your mind
+- [ ] Closing line rehearsed: "[Your exact words]"
+- [ ] Calendar open for implementation kickoff
+- [ ] Backup plan if they stall: "[Your fallback]"
+
+---
+
+## ✅ Full Preparation Checklist
+
+- [ ] Full deal terms understood and ready to confirm
+- [ ] All decision makers' positions known
+- [ ] Contract/proposal finalized and ready
+- [ ] Objection responses prepared and rehearsed
+- [ ] Negotiation boundaries approved internally
 - [ ] Implementation timeline ready to discuss
-- [ ] Calendar open for immediate next steps
+- [ ] Champion prepped and aligned
+- [ ] Closing statement prepared
+- [ ] Next steps mapped out for all scenarios
 
 ---
 
 RULES:
-- Be specific to this deal and these stakeholders – no generic closing scripts.
-- Always reinforce customer value, not our urgency.
-- Keep tone professional, confident and assertive without pressure.
-- Write for a senior sales professional who values strategic closure.
-- If context is missing or unclear, note it rather than guessing.
-- Keep total brief under 1000 words (excluding tables).
+- Be specific to THIS deal and THESE stakeholders – no generic closing scripts.
+- Reinforce THEIR value, not our urgency.
+- Be confident and direct without being pushy.
+- Quantify everything: time, money, risk, opportunity cost.
+- Write for a senior B2B sales professional closing significant deals.
+- If context is missing, note it as "[MUST CONFIRM]".
+- Keep total brief under 1200 words (excluding tables).
 
 {lang_instruction}
 
@@ -1025,14 +1232,39 @@ This brief should enable the sales rep to re-engage with confidence in 5 minutes
 
 ---
 
+## ⚡ 3-MINUTE EXECUTIVE SUMMARY
+
+**Read this if you only have 3 minutes before the meeting.**
+
+### 🎯 The ONE Thing
+If you remember nothing else from this brief, remember this:
+> [The single most critical insight or action to re-establish momentum and advance the deal]
+
+### Quick Status
+| Element | Details |
+|---------|---------|
+| **Last Contact** | [Date + what was discussed] |
+| **Momentum** | 🟢 Hot / 🟡 Warm / 🔴 Cold |
+| **Open Items** | [X items — most critical: Y] |
+| **Their Current Priority** | [What's on their mind now] |
+| **Risk** | [What could stall this deal] |
+
+### Your 3 Must-Do's
+1. **Reconnect**: Reference [specific point from last meeting] to show continuity
+2. **Update**: Share [relevant news/insight/case study]
+3. **Advance**: Lock [specific next step] before ending the call
+
+### Opening Line (Use This)
+> "[Personalized opener that shows you remember and care]"
+
+### The Ask
+> "[Specific commitment or next step to propose]"
+
+---
+
 ## 📋 In One Sentence
 
-A precise sentence capturing:
-- what was previously discussed
-- what has changed since
-- what must happen in this meeting to progress the opportunity
-
-Keep it specific and outcome-oriented.
+[What was previously discussed] + [What has changed since] + [What must happen today to progress]
 
 ---
 
@@ -1041,52 +1273,65 @@ Keep it specific and outcome-oriented.
 | Aspect | Assessment |
 |--------|------------|
 | **Momentum** | 🟢 Hot / 🟡 Warm / 🔴 Cold — [rationale] |
-| **Last Contact** | [Date and type of interaction] |
-| **Open Items** | [Number and nature of unresolved items] |
+| **Last Contact** | [Date + type of interaction] |
+| **Days Since Contact** | [X days] |
+| **Open Items** | [Number + most critical item] |
 | **Risk Level** | Low / Medium / High — [key risk] |
-| **Recommended Approach** | Push / Nurture / Re-qualify |
+| **Approach** | Push / Nurture / Re-qualify |
 
-Use this section as the rep's snapshot before entering the room.
+---
+
+## 📊 MEDDIC Progress Check
+
+| Element | Last Status | Current Status | Action Needed |
+|---------|-------------|----------------|---------------|
+| **Metrics** | [Previous] | [Now] | [What to confirm/discover] |
+| **Economic Buyer** | [Previous] | [Now] | [Action] |
+| **Decision Process** | [Previous] | [Now] | [Action] |
+| **Champion** | [Previous] | [Now] | [Action] |
+
+**MEDDIC Gap to Address**: [Which element needs attention this meeting]
 
 ---
 
 ## 🎯 Meeting Objectives
 
 ### Primary Goal (Must Achieve)
-One essential outcome required to meaningfully progress the opportunity.
+[One essential outcome to meaningfully progress the opportunity]
 
-### Secondary Goals (Supportive)
+### Secondary Goals
 - [Secondary goal 1]
 - [Secondary goal 2]
 
-### Success Criteria
-How you know this meeting truly succeeded:
-- [Criterion 1 — observable outcome]
-- [Criterion 2 — next step locked]
+### Success Signals
+- [Observable outcome: what they say or do]
+- [Commitment: specific next step locked]
 
 ---
 
 ## 🔙 Previous Meeting Recap
 
-### What Was Discussed
-| Topic | Their Position | Our Response |
-|-------|----------------|--------------|
-| [Topic 1] | [What they said] | [What we committed] |
-| [Topic 2] | [What they said] | [What we committed] |
+### What We Discussed
 
-### Agreements Made
-- [Agreement 1]
-- [Agreement 2]
+| Topic | Their Position | What We Committed | Status |
+|-------|----------------|-------------------|--------|
+| [Topic 1] | "[What they said]" | [Our commitment] | ✅ / ⏳ / ❌ |
+| [Topic 2] | "[What they said]" | [Our commitment] | ✅ / ⏳ / ❌ |
 
-### Open Items / Action Points
+### Key Takeaways to Reference
+- They said: "[Important quote to echo back]"
+- They wanted: [Outcome or action]
+- We promised: [What we committed to deliver]
 
-| Item | Owner | Status | Due |
-|------|-------|--------|-----|
-| [Item 1] | [Us / Them] | ✅ Done / ⏳ Pending / ❌ Overdue | [Date] |
-| [Item 2] | [Us / Them] | ✅ Done / ⏳ Pending / ❌ Overdue | [Date] |
+### Open Action Items
+
+| Item | Owner | Status | Impact |
+|------|-------|--------|--------|
+| [Item 1] | Us / Them | ✅ Done / ⏳ Pending / ❌ Overdue | [Why it matters] |
+| [Item 2] | Us / Them | ✅ Done / ⏳ Pending / ❌ Overdue | [Why it matters] |
 
 ### Unresolved Questions
-- [Question they had that we need to address]
+- [Question they asked that we need to address]
 - [Concern that wasn't fully resolved]
 
 ---
@@ -1095,18 +1340,44 @@ How you know this meeting truly succeeded:
 
 ### At the Prospect
 
-| Development | Impact on Opportunity |
-|-------------|----------------------|
-| [News, announcement, change] | [How it affects our deal] |
-| [Personnel change, restructure] | [How it affects our deal] |
+| Development | Impact on Our Deal | Your Response |
+|-------------|-------------------|---------------|
+| [News/announcement/change] | [How it affects opportunity] | [How to acknowledge or leverage] |
+| [Personnel/restructure] | [Impact] | [Response] |
 
 ### At Our End
-- [Relevant update: new feature, case study, pricing]
-- [Resource availability, timing change]
+- [New feature, case study, pricing] — use to add value
+- [Resource update] — if relevant
 
-### Market Context
-- [Industry development that's relevant]
-- [Competitive movement to be aware of]
+### Market/Competitive
+- [Industry development] — if relevant to them
+- [Competitor movement] — if we need to address
+
+---
+
+## 💡 Value to Bring Today
+
+### Relevant Update to Share
+
+| What | Why It Matters to Them | How to Present |
+|------|------------------------|----------------|
+| [New case study / feature / insight] | [Connects to their priority] | "[Talking point]" |
+
+### Value Translation
+
+| Their Situation | Our Value | Quantified Impact |
+|-----------------|-----------|-------------------|
+| [Pain they mentioned] | [How we help] | [Time/money/risk saved] |
+
+---
+
+## ⚔️ Competitive Status
+
+| Competitor | Current Status | Our Counter |
+|------------|----------------|-------------|
+| [Name / Status Quo] | [In play / Eliminated / Unknown] | [How to position] |
+
+**If Competitor Comes Up**: "[Prepared response]"
 
 ---
 
@@ -1116,16 +1387,19 @@ For each attendee:
 
 ### [Name] — [Role]
 
-| Aspect | Current Status |
-|--------|----------------|
-| **Engagement Level** | 🟢 Active / 🟡 Passive / 🔴 Disengaged |
-| **Recent Activity** | [LinkedIn post, news mention, company change] |
-| **Likely Priorities Now** | [What's on their mind] |
-| **Stance Shift** | [More positive / Same / More cautious] |
+| Aspect | Status |
+|--------|--------|
+| **Engagement** | 🟢 Active / 🟡 Passive / 🔴 Disengaged |
+| **Recent Activity** | [LinkedIn posts, news, company updates] |
+| **Current Priorities** | [What's likely on their mind now] |
+| **Stance Shift** | More positive / Same / More cautious |
 
 **Re-engagement Approach**
-- [How to reconnect based on their current situation]
-- [Topic or insight to lead with]
+- Lead with: [Topic or insight that will resonate now]
+- Avoid: [Topic that could derail]
+
+**Personalized Opening for [Name]**
+> "[Opener based on their recent activity or previous conversation]"
 
 ---
 
@@ -1134,28 +1408,30 @@ For each attendee:
 **Momentum Score**: 🟢 / 🟡 / 🔴
 
 ### Positive Signals
-- [Signal 1 — engagement, response, internal advocacy]
-- [Signal 2 — timeline confirmation, budget movement]
+- [Signal 1 — engagement, response time, internal advocacy]
+- [Signal 2 — budget confirmation, timeline movement]
 
 ### Warning Signs
-- [Signal 1 — delayed response, stakeholder change]
+- [Signal 1 — delayed responses, stakeholder changes]
 - [Signal 2 — competitor activity, priority shift]
 
-### What Must Happen to Advance
-- [Action 1 — on their side]
-- [Action 2 — on our side]
+### Cost of Waiting
+If we don't advance today: [What's at risk — timing, competitive, budget cycle]
 
 ---
 
-## ⚠️ Warnings & Sensitivities
+## ⚠️ Sensitivities & Risk Mitigation
 
-### Changed Circumstances
-- [What's different that we must acknowledge]
+### Changed Circumstances to Acknowledge
+- [What's different that we must recognize]
 - [Sensitivity to handle carefully]
 
-### Potential Obstacles
-- [Blocker that may have emerged]
-- [Stakeholder who may have concerns]
+### Potential Objections
+
+| Objection | Why They Might Say It | Your Response |
+|-----------|----------------------|---------------|
+| "Things have changed internally" | [Reason] | "[Response]" |
+| "We need to revisit priorities" | [Reason] | "[Response]" |
 
 ### Topics to Avoid
 - [Subject that could derail the conversation]
@@ -1165,82 +1441,105 @@ For each attendee:
 ## 🗣️ Conversation Flow
 
 ### Opening (5 Minutes)
-- Acknowledge time since last contact
-- Reference specific point from previous meeting (show continuity)
-- Confirm agenda and time available
+- **Acknowledge gap**: "It's been [X weeks] since we last spoke. How have things been?"
+- **Show continuity**: "Last time, you mentioned [specific point]. I wanted to follow up on that."
+- **Confirm agenda**: "I have about [X] minutes. Here's what I thought we could cover..."
 
 ### Status Update (10 Minutes)
-- Summarise where we left off
-- Address any open items we owed them
-- Ask about progress on their side
+- **Their side**: "What's happened since we last spoke?"
+- **Our side**: "[Update on open items we owed them]"
+- **Reality check**: "Are your priorities or timeline still the same?"
 
 ### Value Reinforcement (10 Minutes)
-- Share relevant update (case study, feature, insight)
-- Connect to their priorities
-- Gauge continued resonance
+- **Share update**: "[Case study, feature, or insight]"
+- **Connect to them**: "I thought of you because [connection to their priority]"
+- **Check resonance**: "Does this still align with what you're trying to achieve?"
 
 ### Path Forward (10 Minutes)
-- Identify remaining steps
-- Confirm timeline and stakeholders
-- Propose concrete next action
+- **Remaining steps**: "Based on what we've discussed, here's what I see as next steps..."
+- **Timeline**: "What's a realistic timeline on your end?"
+- **Stakeholders**: "Is there anyone else we should involve?"
 
 ### Close (5 Minutes)
-- Summarise agreements
-- Lock next step
-- Express continued commitment
+- **Summarize**: "So we've agreed that [key points]..."
+- **Lock next step**: "[Specific action with date]"
+- **Express commitment**: "I'm here to help you succeed with this."
 
 ---
 
 ## ❓ Questions to Ask
 
 ### Progress Check
-1. [What's happened since we last spoke?]
-2. [Have your priorities or timeline changed?]
+- "What's happened since we last spoke?"
+- "Have your priorities or timeline changed?"
+- "Where does this sit in your current focus areas?"
 
 ### Blocker Discovery
-1. [Is there anything holding this up internally?]
-2. [Are there new stakeholders we should include?]
+- "Is there anything holding this up internally?"
+- "Are there new stakeholders we should involve?"
+- "What would need to happen for you to move forward?"
 
 ### Commitment
-1. [What would help you move forward?]
-2. [Can we lock in our next step now?]
+- "What would help you make a decision?"
+- "Can we lock in [specific next step] for [date]?"
+
+### Power Question
+- "If nothing changes in the next 6 months, what's the cost to your team?"
 
 ---
 
-## 🎯 Meeting Strategy
+## 🎯 Meeting Strategy & Next Steps
 
 ### If Momentum Is Strong
-- [Push for next concrete step]
-- [Propose accelerated timeline]
+
+| Next Step | Who to Involve | Timing | Say This |
+|-----------|----------------|--------|----------|
+| [Specific action] | [Names] | [Within X days] | "[Exact words]" |
 
 ### If They've Gone Quiet
-- [Re-qualify interest]
-- [Offer value without pressure]
+- **Re-qualify gently**: "I want to make sure I'm not wasting your time. Is this still a priority?"
+- **Offer value**: "[Insight or help without pressure]"
+- **Lower commitment option**: "[Smaller next step]"
 
 ### If Circumstances Have Changed
-- [Adapt approach]
-- [Reframe value proposition]
+- **Acknowledge**: "Things change. Help me understand where things stand now."
+- **Adapt**: "[New value proposition or approach]"
+- **Reset expectations**: "[Adjusted timeline or scope]"
 
 ---
 
-## ✅ Before You Go (Checklist)
+## 🔔 Last-Minute Check (5 Minutes Before)
 
-- [ ] Previous meeting notes reviewed
-- [ ] Open items status confirmed
-- [ ] New developments researched
-- [ ] Contact LinkedIn profiles checked
-- [ ] Relevant update to share prepared
+- [ ] [Contact Name(s)] LinkedIn checked for recent activity
+- [ ] [Company] news last 7 days scanned
+- [ ] Open items status clear in your mind
+- [ ] Value update ready to share
+- [ ] Opening line rehearsed
 - [ ] Calendar open for next steps
 
 ---
 
+## ✅ Full Preparation Checklist
+
+- [ ] Previous meeting notes reviewed — know what was discussed
+- [ ] Open items status confirmed — what you delivered, what's pending
+- [ ] New developments researched — their news, industry changes
+- [ ] Contact LinkedIn profiles checked for recent activity
+- [ ] Relevant update to share prepared — case study, insight, feature
+- [ ] MEDDIC gaps identified — what to uncover
+- [ ] Next step options prepared (Plan A, B, C)
+- [ ] Calendar open for follow-up
+
+---
+
 RULES:
-- Be specific to this prospect and the previous conversation – no generic follow-up templates.
-- Always show continuity and attentiveness.
-- Keep tone professional, warm and persistent without desperation.
-- Write for a senior sales professional who values relationship continuity.
-- If context is missing or unclear, note it rather than guessing.
-- Keep total brief under 900 words (excluding tables).
+- Be specific to this prospect and the previous conversation – show continuity.
+- Always reference what was discussed before — never start cold.
+- Be warm and persistent without desperation.
+- Bring value every time — never just "checking in".
+- Write for a senior B2B sales professional who values relationship continuity.
+- If context is missing, note it as "[TO CONFIRM]".
+- Keep total brief under 1100 words (excluding tables).
 
 {lang_instruction}
 
@@ -1261,14 +1560,39 @@ This brief should enable the sales rep to engage with confidence in 5 minutes of
 
 ---
 
+## ⚡ 3-MINUTE EXECUTIVE SUMMARY
+
+**Read this if you only have 3 minutes before the meeting.**
+
+### 🎯 The ONE Thing
+If you remember nothing else from this brief, remember this:
+> [The single most critical insight or action for this meeting]
+
+### Quick Facts
+| Element | Details |
+|---------|---------|
+| **Company** | [Name] — [Context] |
+| **Contacts** | [Name(s) + Role(s)] |
+| **Meeting Purpose** | [Why this meeting is happening] |
+| **Their Priority** | [What matters most to them right now] |
+| **Key Risk** | [What could go wrong] |
+
+### Your 3 Must-Do's
+1. **Understand**: [What to discover or confirm]
+2. **Deliver**: [Value to provide]
+3. **Advance**: [Next step to lock]
+
+### Opening Line (Use This)
+> "[Ready-to-use opener personalized to the contact and situation]"
+
+### Top Question to Ask
+> "[Most important question for this meeting]"
+
+---
+
 ## 📋 In One Sentence
 
-A precise sentence capturing:
-- who you are meeting
-- why this conversation matters
-- what you must achieve
-
-Keep it specific and outcome-oriented.
+[Who you're meeting] + [Why this matters] + [What you must achieve]
 
 ---
 
@@ -1276,10 +1600,10 @@ Keep it specific and outcome-oriented.
 
 | Aspect | Assessment |
 |--------|------------|
-| **Meeting Type** | [Relationship / Technical / Strategic / Operational] |
+| **Meeting Type** | Relationship / Technical / Strategic / Operational |
 | **Priority** | High / Medium / Low — [rationale] |
-| **Stakeholder Level** | [Executive / Manager / Practitioner] |
-| **Recommended Duration** | [30 / 45 / 60 min] |
+| **Stakeholder Level** | Executive / Manager / Practitioner |
+| **Duration** | [30 / 45 / 60 min] |
 | **Key Risk** | [The single factor most likely to derail this meeting] |
 
 ---
@@ -1287,16 +1611,15 @@ Keep it specific and outcome-oriented.
 ## 🎯 Meeting Objectives
 
 ### Primary Goal (Must Achieve)
-One essential outcome required from this meeting.
+[One essential outcome required from this meeting]
 
-### Secondary Goals (Supportive)
+### Secondary Goals
 - [Secondary goal 1]
 - [Secondary goal 2]
 
-### Success Criteria
-How you know this meeting truly succeeded:
-- [Criterion 1 — observable outcome]
-- [Criterion 2]
+### Success Signals
+- [Observable outcome: what they say or do]
+- [Commitment: action or next step]
 
 ---
 
@@ -1304,13 +1627,21 @@ How you know this meeting truly succeeded:
 
 ### What's Happening in Their World
 
-| Development | Impact | Relevance to Us |
-|-------------|--------|-----------------|
-| [Trend / change 1] | [Effect on them] | [How we connect] |
-| [Trend / change 2] | [Effect on them] | [How we connect] |
+| Development | Impact on Them | Relevance to Us |
+|-------------|----------------|-----------------|
+| [Trend/change 1] | [Effect] | [How we connect] |
+| [Trend/change 2] | [Effect] | [How we connect] |
 
 ### Why This Matters Now
-2–3 sentences on timing and situational relevance.
+[2-3 sentences on timing and situational relevance for THEM]
+
+---
+
+## 💡 Value Translation
+
+| Our Offering | Their Need | Concrete Benefit |
+|--------------|------------|------------------|
+| [What we provide] | [Their pain/goal] | [Quantified outcome] |
 
 ---
 
@@ -1323,15 +1654,19 @@ For each attendee:
 | Aspect | Details |
 |--------|---------|
 | **Authority** | 🟢 Decision Maker / 🔵 Influencer / 🟡 Gatekeeper / ⚪ User |
-| **Communication Style** | [Formal / Informal / Technical / Strategic] |
+| **Communication Style** | Formal / Informal / Technical / Strategic |
 | **Likely Priorities** | [What matters most to this person] |
-| **Personal Stake** | [What they gain or avoid] |
+| **Personal Stake** | [What they personally gain or avoid] |
 
-**How We Can Help Them**
+**How We Help Them**
 - [Specific value for their situation]
 
-**Recommended Approach**
-How to engage them based on their style.
+**Tailored Opening**
+> "[Personalized opener for this person]"
+
+**Approach Strategy**
+- Engage via: [Technical depth / Business outcomes / Relationship]
+- Avoid: [Topic or approach that won't resonate]
 
 ---
 
@@ -1339,9 +1674,15 @@ How to engage them based on their style.
 
 ### Topics to Handle Carefully
 
-| Topic | Why Sensitive | How to Approach |
+| Topic | Why Sensitive | How to Navigate |
 |-------|---------------|-----------------|
-| ...   | ...           | ...             |
+| [Topic 1] | [Reason] | [Approach] |
+
+### Potential Objections
+
+| Objection | Your Response |
+|-----------|---------------|
+| "[Objection 1]" | "[Prepared response]" |
 
 ### Points of Attention
 - [Anything unusual to be aware of]
@@ -1349,58 +1690,94 @@ How to engage them based on their style.
 
 ---
 
-## 🗣️ Talking Points
+## 🗣️ Conversation Flow
 
-### Key Messages
-1. [Message 1 — tied to their priorities]
-2. [Message 2 — our value proposition]
-3. [Message 3 — differentiator or proof point]
+### Opening (5 Minutes)
+- [Personalized opener]
+- Confirm agenda and time
+- Set expectations
 
-### Conversation Flow
-- **Opening**: [How to start]
-- **Core discussion**: [Main topics to cover]
-- **Close**: [How to wrap up and next steps]
+### Core Discussion (20-40 Minutes)
+- **Topic 1**: [What to cover + key message]
+- **Topic 2**: [What to cover + key message]
+- **Topic 3**: [What to cover + key message]
+
+### Close (5 Minutes)
+- Summarize key points
+- Propose specific next step
+- Confirm timeline
+
+---
+
+## 💬 Key Messages
+
+1. [Message tied to their priorities]
+2. [Our value proposition in their context]
+3. [Differentiator or proof point]
 
 ---
 
 ## ❓ Questions to Ask
 
-1. [Discovery or validation question]
-2. [Understanding their priorities]
-3. [Identifying blockers or concerns]
-4. [Next step confirmation]
+### Discovery
+1. [Understanding their situation]
+2. [Uncovering priorities or pain]
+
+### Validation
+3. [Confirming understanding]
+4. [Testing resonance]
+
+### Advancement
+5. [Moving toward next step]
+
+### Power Question
+- "[Question that accelerates the conversation]"
 
 ---
 
 ## 🎯 Meeting Strategy
 
 ### If It Goes Well
-- [Recommended next step]
-- [Who to involve]
+
+| Next Step | Who to Involve | Timing |
+|-----------|----------------|--------|
+| [Specific action] | [Names] | [Timeline] |
 
 ### If They Are Hesitant
-- [Fallback approach]
-- [How to keep momentum]
+- **Diagnose**: "[Question to understand]"
+- **Fallback**: [Lower-commitment option]
 
 ---
 
-## ✅ Before You Go (Checklist)
+## 🔔 Last-Minute Check
+
+- [ ] [Contact Name(s)] LinkedIn checked
+- [ ] [Company] recent news scanned
+- [ ] Opening line ready
+- [ ] Top question prepared
+- [ ] Calendar open for next steps
+
+---
+
+## ✅ Preparation Checklist
 
 - [ ] Research reviewed
 - [ ] Contact profiles understood
 - [ ] Key messages prepared
 - [ ] Questions ready
-- [ ] Calendar open for next steps
+- [ ] Value to bring identified
+- [ ] Next step options prepared
+- [ ] Calendar open
 
 ---
 
 RULES:
 - Be specific to this prospect and these contacts – no generic templates.
-- Always anchor in customer value.
+- Always anchor in THEIR value, not our features.
 - Keep tone professional and adaptable.
-- Write for a senior sales professional who values clarity.
-- If context is missing or unclear, note it rather than guessing.
-- Keep total brief under 700 words (excluding tables).
+- Write for a senior B2B sales professional who values clarity and strategic insight.
+- If context is missing, note it as "[TO CONFIRM]".
+- Keep total brief under 900 words (excluding tables).
 
 {lang_instruction}
 
