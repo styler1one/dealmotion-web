@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,6 +20,13 @@ import { useToast } from '@/components/ui/use-toast'
 import { api } from '@/lib/api'
 
 type ModalStep = 'search' | 'loading' | 'results' | 'enrich' | 'confirm'
+
+interface ResearchExecutive {
+  name: string
+  title?: string
+  linkedin_url?: string
+  background?: string
+}
 
 interface Contact {
   id: string
@@ -61,6 +68,10 @@ export function ContactSearchModal({
   const [selectedMatch, setSelectedMatch] = useState<ContactMatch | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  // Research executives suggestions
+  const [executives, setExecutives] = useState<ResearchExecutive[]>([])
+  const [loadingExecutives, setLoadingExecutives] = useState(false)
+
   // Enrich step - user-provided LinkedIn info
   const [linkedinAbout, setLinkedinAbout] = useState('')
   const [linkedinExperience, setLinkedinExperience] = useState('')
@@ -71,6 +82,57 @@ export function ContactSearchModal({
   const [phone, setPhone] = useState('')
   const [isPrimary, setIsPrimary] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
+
+  // Load executives from research when modal opens
+  useEffect(() => {
+    if (isOpen && researchId) {
+      loadExecutives()
+    }
+  }, [isOpen, researchId])
+
+  const loadExecutives = async () => {
+    setLoadingExecutives(true)
+    try {
+      const { data, error } = await api.get<{
+        executives: ResearchExecutive[]
+        company_name: string
+      }>(`/api/v1/research/${researchId}/executives`)
+
+      if (!error && data?.executives) {
+        setExecutives(data.executives)
+      }
+    } catch (err) {
+      // Silently fail - executives are optional suggestions
+      console.log('Could not load executives:', err)
+    } finally {
+      setLoadingExecutives(false)
+    }
+  }
+
+  // Select an executive as the contact
+  const handleSelectExecutive = (exec: ResearchExecutive) => {
+    setSearchName(exec.name)
+    setSearchRole(exec.title || '')
+    
+    // If executive has LinkedIn URL, create a match and go to enrich
+    if (exec.linkedin_url) {
+      const match: ContactMatch = {
+        name: exec.name,
+        title: exec.title,
+        company: companyName,
+        linkedin_url: exec.linkedin_url,
+        headline: exec.background?.slice(0, 100),
+        confidence: 0.95,
+        match_reason: 'From research data',
+        from_research: true
+      }
+      setSelectedMatch(match)
+      setStep('enrich')
+    } else {
+      // No LinkedIn URL - do a search with pre-filled name
+      handleSearch()
+    }
+  }
 
   // Reset state when modal closes
   const handleClose = () => {
@@ -86,6 +148,7 @@ export function ContactSearchModal({
     setEmail('')
     setPhone('')
     setIsPrimary(false)
+    // Don't reset executives - they persist for the research
     onClose()
   }
 
@@ -112,7 +175,8 @@ export function ContactSearchModal({
         name: searchName.trim(),
         role: searchRole.trim() || undefined,
         company_name: companyName,
-        company_linkedin_url: companyLinkedInUrl
+        company_linkedin_url: companyLinkedInUrl,
+        research_id: researchId  // Include research_id for executive matching
       })
 
       if (error || data?.error) {
@@ -252,6 +316,63 @@ export function ContactSearchModal({
         {/* Step 1: Search */}
         {step === 'search' && (
           <div className="space-y-4 mt-4">
+            {/* Executives from Research - Quick Suggestions */}
+            {executives.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-green-700 dark:text-green-400 flex items-center gap-1.5">
+                  <Icons.users className="h-4 w-4" />
+                  {t('contacts.search.suggestionsTitle') || 'Found in Research'}
+                </Label>
+                <div className="space-y-2 max-h-[180px] overflow-y-auto">
+                  {executives.slice(0, 5).map((exec, index) => (
+                    <button
+                      key={`${exec.name}-${index}`}
+                      onClick={() => handleSelectExecutive(exec)}
+                      className="w-full text-left p-3 rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-green-900 dark:text-green-100 truncate">
+                            {exec.name}
+                          </p>
+                          {exec.title && (
+                            <p className="text-xs text-green-700 dark:text-green-400 truncate">
+                              {exec.title}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1 ml-2">
+                          {exec.linkedin_url && (
+                            <span className="text-xs bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 px-1.5 py-0.5 rounded">
+                              LinkedIn
+                            </span>
+                          )}
+                          <Icons.arrowRight className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+                <div className="relative py-2">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-slate-200 dark:border-slate-700" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white dark:bg-slate-950 px-2 text-slate-500">
+                      {t('contacts.search.orSearchManually') || 'or search manually'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {loadingExecutives && (
+              <div className="flex items-center gap-2 text-sm text-slate-500">
+                <Icons.spinner className="h-4 w-4 animate-spin" />
+                {t('contacts.search.loadingSuggestions') || 'Loading suggestions...'}
+              </div>
+            )}
+
             <div className="space-y-3">
               <div>
                 <Label htmlFor="search-name">{t('contacts.search.nameLabel')} *</Label>

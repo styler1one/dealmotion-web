@@ -4,10 +4,12 @@ Contacts Router - API endpoints for contact person management and analysis.
 Endpoints:
 - POST /research/{research_id}/contacts - Add and analyze contact for research
 - GET /research/{research_id}/contacts - List contacts for research
+- GET /research/{research_id}/executives - Get executives found in research
 - GET /prospects/{prospect_id}/contacts - List contacts for prospect
 - GET /contacts/{contact_id} - Get single contact
 - DELETE /contacts/{contact_id} - Delete contact
 - POST /contacts/lookup - Lookup contact LinkedIn and role online
+- POST /contacts/search - Search for LinkedIn profiles (uses research executives for matching)
 """
 
 import logging
@@ -106,6 +108,7 @@ class ContactSearchRequest(BaseModel):
     role: Optional[str] = None
     company_name: Optional[str] = None
     company_linkedin_url: Optional[str] = None
+    research_id: Optional[str] = None  # If provided, uses executives from research for matching
 
 
 class ContactMatch(BaseModel):
@@ -118,14 +121,30 @@ class ContactMatch(BaseModel):
     headline: Optional[str] = None
     confidence: float = 0.5
     match_reason: str = "Name match"
+    from_research: bool = False  # True if this match came from research data
 
 
 class ContactSearchResponse(BaseModel):
     """Response model for contact search."""
     matches: List[ContactMatch] = []
     search_query_used: str = ""
-    search_source: str = "claude"
+    search_source: str = "gemini"  # "gemini", "claude", "research", or combinations
     error: Optional[str] = None
+
+
+class ResearchExecutive(BaseModel):
+    """An executive found in research data."""
+    name: str
+    title: Optional[str] = None
+    linkedin_url: Optional[str] = None
+    background: Optional[str] = None
+
+
+class ResearchExecutivesResponse(BaseModel):
+    """Response model for research executives."""
+    executives: List[ResearchExecutive] = []
+    company_name: Optional[str] = None
+    source: str = "research_brief"
 
 
 # ==================== Helper Functions ====================
@@ -461,10 +480,28 @@ async def search_contact_profiles(
     Returns up to 5 possible matches with confidence scores.
     User can then select the correct profile before adding the contact.
     
-    This is the recommended approach for adding contacts as it ensures
-    the correct person is identified before analysis.
+    If research_id is provided, the search will also match against
+    executives found in the research data (instant, free matching).
+    
+    Uses Gemini with Google Search (primary, cheap) with Claude as fallback.
     """
+    user_id = current_user.get("sub")
+    organization_id = get_organization_id(user_id)
+    
     logger.info(f"Searching contacts: {request.name} at {request.company_name}")
+    
+    # Extract research executives if research_id is provided
+    research_executives = None
+    if request.research_id:
+        try:
+            research_executives = await _get_research_executives(
+                request.research_id, 
+                organization_id
+            )
+            if research_executives:
+                logger.info(f"Found {len(research_executives)} executives from research")
+        except Exception as e:
+            logger.warning(f"Could not load research executives: {e}")
     
     search_service = get_contact_search_service()
     
@@ -472,7 +509,8 @@ async def search_contact_profiles(
         name=request.name,
         role=request.role,
         company_name=request.company_name,
-        company_linkedin_url=request.company_linkedin_url
+        company_linkedin_url=request.company_linkedin_url,
+        research_executives=research_executives
     )
     
     # Convert internal models to response models
@@ -485,7 +523,8 @@ async def search_contact_profiles(
             linkedin_url=m.linkedin_url,
             headline=m.headline,
             confidence=m.confidence,
-            match_reason=m.match_reason
+            match_reason=m.match_reason,
+            from_research=m.from_research
         )
         for m in result.matches
     ]
@@ -496,6 +535,109 @@ async def search_contact_profiles(
         search_source=result.search_source,
         error=result.error
     )
+
+
+async def _get_research_executives(
+    research_id: str, 
+    organization_id: str
+) -> List[dict]:
+    """
+    Extract executives from research data.
+    
+    Parses both structured research_data and brief_content markdown.
+    """
+    try:
+        response = supabase_service.table("research_briefs")\
+            .select("research_data, brief_content, company_name")\
+            .eq("id", research_id)\
+            .eq("organization_id", organization_id)\
+            .single()\
+            .execute()
+        
+        if not response.data:
+            return []
+        
+        research_data = response.data.get("research_data", {}) or {}
+        brief_content = response.data.get("brief_content", "") or ""
+        
+        search_service = get_contact_search_service()
+        executives = search_service.extract_executives_from_research(
+            research_data, 
+            brief_content
+        )
+        
+        # Convert to dict format expected by search_contact
+        return [
+            {
+                "name": e.name,
+                "title": e.title,
+                "linkedin_url": e.linkedin_url,
+                "background": e.background,
+                "relevance": e.relevance
+            }
+            for e in executives
+        ]
+    except Exception as e:
+        logger.error(f"Error extracting research executives: {e}")
+        return []
+
+
+@router.get("/research/{research_id}/executives", response_model=ResearchExecutivesResponse)
+async def get_research_executives(
+    research_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get executives found in research data.
+    
+    Extracts leadership information from the research brief, including:
+    - Names and titles from structured data
+    - Names and LinkedIn URLs parsed from markdown tables/lists
+    
+    Use this to pre-populate contact suggestions in the UI.
+    """
+    user_id = current_user.get("sub")
+    organization_id = get_organization_id(user_id)
+    
+    try:
+        response = supabase_service.table("research_briefs")\
+            .select("research_data, brief_content, company_name")\
+            .eq("id", research_id)\
+            .eq("organization_id", organization_id)\
+            .single()\
+            .execute()
+        
+        if not response.data:
+            raise HTTPException(status_code=404, detail="Research not found")
+        
+        research_data = response.data.get("research_data", {}) or {}
+        brief_content = response.data.get("brief_content", "") or ""
+        company_name = response.data.get("company_name", "")
+        
+        search_service = get_contact_search_service()
+        executives = search_service.extract_executives_from_research(
+            research_data, 
+            brief_content
+        )
+        
+        return ResearchExecutivesResponse(
+            executives=[
+                ResearchExecutive(
+                    name=e.name,
+                    title=e.title,
+                    linkedin_url=e.linkedin_url,
+                    background=e.background
+                )
+                for e in executives
+            ],
+            company_name=company_name,
+            source="research_brief"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting research executives: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/research/{research_id}/contacts", response_model=ContactResponse)

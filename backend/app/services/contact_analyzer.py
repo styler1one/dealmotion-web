@@ -151,11 +151,35 @@ class ContactAnalyzer:
             industry = company_context.get("industry", "")
             brief = company_context.get("brief_content", "")[:2500] if company_context.get("brief_content") else ""
             
+            # Build leadership context from research to reduce web searches
+            leadership_context = ""
+            leadership = company_context.get("leadership", [])
+            if leadership:
+                leadership_lines = []
+                for leader in leadership[:8]:  # Max 8 leaders
+                    name = leader.get("name", "")
+                    title = leader.get("title", "")
+                    linkedin = leader.get("linkedin_url", "")
+                    if name:
+                        line = f"- **{name}**"
+                        if title:
+                            line += f" - {title}"
+                        if linkedin:
+                            line += f" ({linkedin})"
+                        leadership_lines.append(line)
+                
+                if leadership_lines:
+                    leadership_context = f"""
+
+**Known Leadership** (from research - use if analyzing one of these people):
+{chr(10).join(leadership_lines)}
+"""
+            
             company_section = f"""
 ## COMPANY CONTEXT (from our research)
 **Company**: {company_name}
 **Industry**: {industry}
-
+{leadership_context}
 **Research Insights** (use these to personalize your analysis):
 {brief}
 """
@@ -205,8 +229,44 @@ class ContactAnalyzer:
 {user_provided_context.get('notes')}
 """
         
-        # Research instruction - improved search strategies
-        research_instruction = f"""
+        # Research instruction - optimized based on available context
+        # Check if this contact matches someone from leadership
+        leadership = company_context.get("leadership", []) if company_context else []
+        matching_leader = None
+        contact_name_lower = contact_name.lower()
+        for leader in leadership:
+            leader_name = leader.get("name", "").lower()
+            if leader_name and (
+                leader_name in contact_name_lower or 
+                contact_name_lower in leader_name or
+                set(contact_name_lower.split()) & set(leader_name.split())
+            ):
+                matching_leader = leader
+                break
+        
+        # If we found matching leader data, reduce search needs
+        if matching_leader:
+            research_instruction = f"""
+## RESEARCH TASK
+
+Analyze **{contact_name}** at **{company_name}**.
+
+**PRE-RESEARCHED DATA** (from company research - use this as primary source):
+- **Name**: {matching_leader.get('name')}
+- **Title**: {matching_leader.get('title') or 'See above'}
+- **LinkedIn**: {matching_leader.get('linkedin_url') or linkedin_url or 'Not available'}
+- **Background**: {matching_leader.get('background') or 'See company research insights'}
+
+**ADDITIONAL SEARCH** (only if needed for communication style or recent activity):
+Search for: "{contact_name}" "{company_name}" to find:
+- Recent news, interviews, or speaking engagements
+- Communication style indicators from public content
+- Recent quotes or public statements
+
+**LinkedIn URL** (for reference): {linkedin_url or matching_leader.get('linkedin_url') or 'Not provided'}
+"""
+        else:
+            research_instruction = f"""
 ## RESEARCH TASK
 
 Search for information about **{contact_name}** at **{company_name}**.
@@ -490,7 +550,12 @@ Based on available information:
         return items
     
     async def get_company_context(self, research_id: str) -> Dict[str, Any]:
-        """Get company context from a research brief."""
+        """
+        Get company context from a research brief.
+        
+        Includes leadership data extracted from the research to reduce
+        the need for additional web searches during contact analysis.
+        """
         try:
             response = self.supabase.table("research_briefs")\
                 .select("company_name, country, city, brief_content, research_data")\
@@ -500,17 +565,116 @@ Based on available information:
             
             if response.data:
                 data = response.data
+                research_data = data.get("research_data", {}) or {}
+                brief_content = data.get("brief_content", "") or ""
+                
+                # Extract leadership info from research for context
+                leadership_info = self._extract_leadership_from_research(
+                    research_data, 
+                    brief_content
+                )
+                
                 return {
                     "company_name": data.get("company_name"),
                     "country": data.get("country"),
                     "city": data.get("city"),
-                    "brief_content": data.get("brief_content"),
-                    "industry": data.get("research_data", {}).get("industry")
+                    "brief_content": brief_content,
+                    "industry": research_data.get("industry"),
+                    "leadership": leadership_info  # Add leadership context
                 }
             return {}
         except Exception as e:
             logger.error(f"Error getting company context: {e}")
             return {}
+    
+    def _extract_leadership_from_research(
+        self,
+        research_data: Dict[str, Any],
+        brief_content: str
+    ) -> List[Dict[str, str]]:
+        """
+        Extract leadership information from research data and brief content.
+        
+        This provides pre-researched context about company leaders to reduce
+        the need for web searches during contact analysis.
+        """
+        import re
+        
+        leaders = []
+        seen_names = set()
+        
+        # Method 1: Extract from structured research_data
+        for key in ["executives", "leadership", "team", "people"]:
+            if key in research_data and isinstance(research_data[key], list):
+                for person in research_data[key]:
+                    if isinstance(person, dict) and person.get("name"):
+                        name = person["name"]
+                        if name.lower() not in seen_names:
+                            seen_names.add(name.lower())
+                            leaders.append({
+                                "name": name,
+                                "title": person.get("title") or person.get("role"),
+                                "linkedin_url": person.get("linkedin_url"),
+                                "background": person.get("background")
+                            })
+        
+        # Method 2: Parse leadership section from brief_content markdown
+        if brief_content and len(leaders) < 3:
+            # Look for leadership tables in the brief
+            # Pattern: | Name | Title | LinkedIn | ...
+            table_pattern = r'\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|'
+            
+            in_leadership_section = False
+            for line in brief_content.split('\n'):
+                # Check if we're entering a leadership section
+                if any(marker in line.lower() for marker in [
+                    'leadership', 'executive', 'c-suite', 'mensen & macht',
+                    'people & power', 'leiderschap'
+                ]):
+                    in_leadership_section = True
+                    continue
+                
+                # Check if we're leaving the section
+                if in_leadership_section and line.startswith('##'):
+                    if not any(marker in line.lower() for marker in [
+                        'leadership', 'executive', 'mensen', 'people'
+                    ]):
+                        in_leadership_section = False
+                        continue
+                
+                # Parse table rows in leadership section
+                if in_leadership_section:
+                    match = re.match(table_pattern, line)
+                    if match:
+                        col1, col2, col3 = [c.strip() for c in match.groups()]
+                        
+                        # Skip headers
+                        if any(h in col1.lower() for h in ['naam', 'name', '---', 'titel']):
+                            continue
+                        
+                        # Determine name, title, linkedin
+                        name = None
+                        title = None
+                        linkedin = None
+                        
+                        for col in [col1, col2, col3]:
+                            if 'linkedin.com/in/' in col.lower():
+                                linkedin = col
+                            elif not name and len(col) > 2 and not col.startswith('http'):
+                                name = col.strip('*')
+                            elif name and not title and len(col) > 2:
+                                title = col.strip('*')
+                        
+                        if name and name.lower() not in seen_names:
+                            seen_names.add(name.lower())
+                            leaders.append({
+                                "name": name,
+                                "title": title,
+                                "linkedin_url": linkedin
+                            })
+        
+        logger.info(f"Extracted {len(leaders)} leaders from research for contact context")
+        return leaders[:10]  # Limit to top 10
     
     async def get_seller_context(
         self,

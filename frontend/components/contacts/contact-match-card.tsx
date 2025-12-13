@@ -12,6 +12,7 @@ export interface ContactMatch {
   headline?: string | null
   confidence: number
   match_reason: string
+  from_research?: boolean  // True if this match came from research data
 }
 
 interface ContactMatchCardProps {
@@ -51,7 +52,7 @@ export function ContactMatchCard({ match, isSelected, onSelect }: ContactMatchCa
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           {/* Name and confidence badge */}
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="font-medium text-slate-900 dark:text-white truncate">
               👤 {match.name}
             </span>
@@ -61,6 +62,11 @@ export function ContactMatchCard({ match, isSelected, onSelect }: ContactMatchCa
             )}>
               {getConfidenceEmoji(match.confidence)} {confidencePercent}%
             </span>
+            {match.from_research && (
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
+                📋 Research
+              </span>
+            )}
           </div>
 
           {/* Title and company */}
