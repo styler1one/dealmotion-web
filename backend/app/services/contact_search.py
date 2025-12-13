@@ -221,32 +221,39 @@ class ContactSearchService:
             
             client = genai.Client(api_key=self.gemini_api_key)
             
-            # Build a specific Google-style search query with name, company, AND role
-            search_parts = [f'"{name}"']
-            if company_name:
-                search_parts.append(f'"{company_name}"')
-            if role:
-                search_parts.append(f'"{role}"')
-            search_parts.append('site:linkedin.com/in')
-            search_query = ' '.join(search_parts)
+            # Build search context
+            role_text = f" ({role})" if role else ""
+            company_text = company_name or "unknown company"
             
-            # Short, focused prompt for speed
-            prompt = f"""Find LinkedIn profile: {search_query}
+            # Focused prompt with specific search instructions (proven to work in research)
+            prompt = f"""**TASK**: Find LinkedIn profile for: {name}{role_text} at {company_text}
 
-Return JSON array (max 3):
-[{{"name":"Full Name","title":"Job Title","company":"Company","linkedin_url":"https://linkedin.com/in/username","confidence":0.9}}]
+Execute these Google searches:
+1. site:linkedin.com/in "{name}" "{company_text}"
+2. site:nl.linkedin.com/in "{name}" "{company_text}"
+3. "{name}" "{company_text}" linkedin
 
-Only real URLs from search. Empty [] if none found."""
+**OUTPUT FORMAT** - Return ONLY a JSON array:
+```json
+[
+  {{"name": "Full Name", "title": "Job Title", "company": "Company", "linkedin_url": "https://linkedin.com/in/username", "confidence": 0.9}}
+]
+```
 
-            logger.info(f"[CONTACT_SEARCH] Gemini searching: {search_query}")
+Rules:
+- Only include profiles you FOUND in search results
+- LinkedIn URL must be real (linkedin.com/in/...)
+- Max 3 results, highest confidence first
+- Return [] if nothing found"""
+
+            logger.info(f"[CONTACT_SEARCH] Gemini searching: {name} at {company_text}")
             
             response = await client.aio.models.generate_content(
                 model="gemini-2.0-flash",
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     tools=[types.Tool(google_search=types.GoogleSearch())],
-                    temperature=0.0,
-                    max_output_tokens=500  # Reduced for speed
+                    temperature=0.1  # Same as working research queries
                 )
             )
             
