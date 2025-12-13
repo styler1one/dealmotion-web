@@ -10,7 +10,7 @@ ARCHITECTURE (Cost-Optimized + Maximum Quality):
 Gemini 2.0 Flash pricing: $0.10/1M input, $0.40/1M output
 Claude Sonnet 4 pricing: $3.00/1M input, $15.00/1M output
 
-30 parallel calls × ~$0.002 = ~$0.06 total (still 94% cheaper than Claude web search)
+31 parallel calls × ~$0.002 = ~$0.062 total (still 94% cheaper than Claude web search)
 Parallel execution = FASTER than fewer sequential calls!
 """
 import os
@@ -30,7 +30,7 @@ class GeminiResearcher:
     """
     Comprehensive B2B research using Gemini with Google Search grounding.
     
-    Uses 30 PARALLEL CALLS for STATE-OF-THE-ART coverage:
+    Uses 31 PARALLEL CALLS for STATE-OF-THE-ART coverage:
     
     COMPANY INFORMATION (4):
     1. company_basics - Identity, founding, locations
@@ -71,6 +71,9 @@ class GeminiResearcher:
     28. social_media_activity - Twitter, LinkedIn, Instagram presence
     29. patents_innovation - R&D, intellectual property
     30. vendor_ecosystem - Current suppliers, technology partners
+    
+    DUTCH MARKET (1):
+    31. dutch_business_media - FD, MT500, Sprout, BNR, Dutch rankings
     """
     
     def __init__(self):
@@ -1508,6 +1511,62 @@ Search for vendor and partner relationships of "{company_name}":
 {seller_hint}
 """
 
+        # 31. DUTCH BUSINESS MEDIA - Dutch-specific sources (for NL companies)
+        prompts["dutch_business_media"] = base_context + f"""
+**RESEARCH FOCUS**: Dutch Business Media & Rankings
+
+Search for Dutch business coverage of "{company_name}":
+1. "{company_name}" site:fd.nl (Financieele Dagblad)
+2. "{company_name}" site:mt.nl (Management Team)
+3. "{company_name}" site:sprout.nl (Startups)
+4. "{company_name}" site:computable.nl (IT)
+5. "{company_name}" site:emerce.nl (E-commerce/Digital)
+6. "{company_name}" site:bnr.nl (BNR Nieuwsradio)
+7. "{company_name}" FD Gazellen
+8. "{company_name}" MT500
+9. "{company_name}" MSc Best Managed Companies
+10. "{company_name}" site:quotenet.nl (Quote)
+
+**REQUIRED OUTPUT**:
+
+## Dutch Business Rankings
+
+| Year | Ranking | Position | Source |
+|------|---------|----------|--------|
+| [Year] | FD Gazellen (fastest growing) | #[X] | [URL] |
+| [Year] | MT500 (largest companies) | #[X] | [URL] |
+| [Year] | Best Managed Companies | Winner/Finalist | [URL] |
+| [Year] | EY Entrepreneur of the Year | | [URL] |
+| [Year] | MSc Best Workplaces | #[X] | [URL] |
+
+## Dutch Media Coverage
+
+| Date | Publication | Headline | Type | URL |
+|------|-------------|----------|------|-----|
+| [Date] | FD | [Title] | Interview/News/Analysis | [URL] |
+| [Date] | MT | [Title] | | [URL] |
+| [Date] | BNR | [Title] | Podcast/Interview | [URL] |
+
+## Executive Interviews (Dutch Media)
+
+| Date | Publication | Person | Topic | URL |
+|------|-------------|--------|-------|-----|
+| [Date] | [Media] | [CEO/CFO] | [Subject] | [URL] |
+
+## Key Quotes from Dutch Media
+
+| Quote | Person | Publication | Date |
+|-------|--------|-------------|------|
+| "[Quote]" | [Name] | [Media] | [Date] |
+
+## Dutch Business Insights
+- **Media Profile**: 🔥 High / ➡️ Moderate / ❄️ Low
+- **Key Themes in Dutch Media**: [What Dutch media writes about them]
+- **Perception**: [How are they perceived in Dutch business community]
+
+If no Dutch coverage found: "No significant coverage found in major Dutch business publications"
+"""
+
         return prompts
 
     async def search_company(
@@ -1520,9 +1579,9 @@ Search for vendor and partner relationships of "{company_name}":
         language: str = DEFAULT_LANGUAGE
     ) -> Dict[str, Any]:
         """
-        Comprehensive company research using 30 PARALLEL Gemini calls.
+        Comprehensive company research using 31 PARALLEL Gemini calls.
         
-        Executes 30 focused research topics in parallel for STATE-OF-THE-ART coverage:
+        Executes 31 focused research topics in parallel for STATE-OF-THE-ART coverage:
         
         COMPANY (4):
         1. company_basics - Identity, structure
@@ -1564,8 +1623,11 @@ Search for vendor and partner relationships of "{company_name}":
         29. patents_innovation - R&D, intellectual property
         30. vendor_ecosystem - Suppliers, technology partners
         
+        DUTCH MARKET (1):
+        31. dutch_business_media - FD, MT500, Sprout, Dutch rankings
+        
         Returns:
-            Dictionary with comprehensive research data from all 30 topics
+            Dictionary with comprehensive research data from all 31 topics
         """
         current_date = datetime.now().strftime("%d %B %Y")
         current_year = datetime.now().year

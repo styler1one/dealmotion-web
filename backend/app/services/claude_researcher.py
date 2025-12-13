@@ -257,6 +257,18 @@ Generate the report in this EXACT structure:
 ### 1.3 Why This Company Matters
 [2-3 sentences connecting their situation to what the seller offers]
 
+### 1.4 ⚡ Quick Actions (Top 3)
+
+Based on the research, these are the 3 most important immediate actions:
+
+| Priority | Action | Why Now | Contact |
+|----------|--------|---------|---------|
+| 1️⃣ | [Specific action: Call/Email/Connect with X] | [Trigger that creates urgency] | [Name + best contact method] |
+| 2️⃣ | [Second priority action] | [Supporting reason] | [Name if applicable] |
+| 3️⃣ | [Third priority action] | [Context for action] | [Resource/preparation needed] |
+
+**Recommended Opening**: [One compelling sentence to start the conversation based on their current situation]
+
 ---
 
 ## Section 2: Company Deep Dive

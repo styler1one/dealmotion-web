@@ -365,7 +365,102 @@ class WebsiteScraper:
             lines = [l.strip() for l in text.split('\n') if 20 < len(l.strip()) < 200]
             data["products_services"] = lines[:10]
         
+        # Extract team members from team/leadership pages
+        for page_type in ["team", "about"]:
+            if page_type in content:
+                html = content[page_type].get("html", "")
+                text = content[page_type].get("text", "")
+                team_members = self._extract_team_members(html, text)
+                if team_members:
+                    data["team_members"] = team_members
+                    break
+        
         return data
+    
+    def _extract_team_members(
+        self,
+        html: str,
+        text: str
+    ) -> List[Dict[str, str]]:
+        """
+        Extract team member names and titles from team/about pages.
+        
+        Looks for common patterns:
+        - Name + Title in close proximity
+        - Structured team sections
+        - LinkedIn URLs associated with names
+        """
+        team_members = []
+        soup = BeautifulSoup(html, "html.parser")
+        
+        # Common title patterns (Dutch and English)
+        title_patterns = [
+            r"CEO", r"CFO", r"CTO", r"COO", r"CMO", r"CHRO", r"CIO",
+            r"Chief\s+\w+\s+Officer", r"Managing\s+Director", r"General\s+Manager",
+            r"Founder", r"Co-?[Ff]ounder", r"Owner", r"Partner",
+            r"Director", r"VP", r"Vice\s+President", r"Head\s+of",
+            r"Manager", r"Lead", r"Senior", 
+            r"Directeur", r"Eigenaar", r"Oprichter", r"Mede-?oprichter",
+            r"Algemeen\s+Directeur", r"Commercieel\s+Directeur",
+        ]
+        title_regex = re.compile("|".join(title_patterns), re.IGNORECASE)
+        
+        # Method 1: Look for team cards (common website pattern)
+        team_cards = soup.find_all(class_=re.compile(
+            r'team|member|person|employee|staff|leadership|executive|director',
+            re.IGNORECASE
+        ))
+        
+        for card in team_cards[:20]:  # Limit to prevent too many
+            # Look for name (usually in h2, h3, h4, or strong tag)
+            name_elem = card.find(['h2', 'h3', 'h4', 'h5', 'strong', 'b'])
+            if name_elem:
+                name = name_elem.get_text(strip=True)
+                # Validate it looks like a name (2-4 words, each capitalized)
+                if 2 <= len(name.split()) <= 5 and name[0].isupper():
+                    member = {"name": name}
+                    
+                    # Look for title nearby
+                    title_elem = card.find(string=title_regex)
+                    if title_elem:
+                        member["title"] = title_elem.strip()
+                    else:
+                        # Try next sibling or parent's text
+                        card_text = card.get_text(separator=" ", strip=True)
+                        title_match = title_regex.search(card_text)
+                        if title_match:
+                            # Get surrounding context for title
+                            start = max(0, title_match.start() - 5)
+                            end = min(len(card_text), title_match.end() + 30)
+                            member["title"] = card_text[start:end].strip()
+                    
+                    # Look for LinkedIn URL
+                    linkedin_link = card.find('a', href=re.compile(r'linkedin\.com/in/', re.IGNORECASE))
+                    if linkedin_link:
+                        member["linkedin"] = linkedin_link.get('href')
+                    
+                    if member not in team_members:
+                        team_members.append(member)
+        
+        # Method 2: If no cards found, look for name + title patterns in text
+        if not team_members:
+            # Pattern: "Name Name - Title" or "Name Name, Title"
+            name_title_pattern = re.compile(
+                r'([A-Z][a-z]+(?:\s+(?:van|de|der|den|het|[A-Z][a-z]+))+)\s*[-–,]\s*(' + 
+                '|'.join(title_patterns) + r'[^.]*)',
+                re.IGNORECASE
+            )
+            
+            for match in name_title_pattern.finditer(text):
+                name = match.group(1).strip()
+                title = match.group(2).strip()
+                if 2 <= len(name.split()) <= 5:
+                    member = {"name": name, "title": title}
+                    if member not in team_members:
+                        team_members.append(member)
+        
+        # Limit results and clean up
+        return team_members[:15]  # Max 15 team members
     
     def _generate_summary(self, result: Dict[str, Any]) -> str:
         """Generate a text summary of scraped content."""
