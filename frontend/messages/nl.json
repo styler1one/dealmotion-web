@@ -363,6 +363,7 @@
         "enrichTip": "Help de AI deze persoon beter te begrijpen",
         "enrichDescription": "LinkedIn blokkeert automatische toegang tot profielen. Kopieer relevante info van hun LinkedIn profiel voor een rijkere analyse.",
         "openLinkedIn": "Open LinkedIn Profiel",
+        "searchLinkedIn": "Zoek op LinkedIn",
         "aboutLabel": "Over / Samenvatting",
         "aboutHint": "Kopieer uit hun LinkedIn 'Over' sectie",
         "aboutPlaceholder": "Plak hun LinkedIn samenvatting hier...",

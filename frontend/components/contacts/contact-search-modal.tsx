@@ -530,7 +530,7 @@ export function ContactSearchModal({
                 <div className="text-sm text-amber-800 dark:text-amber-200 flex-1">
                   <p className="font-medium mb-1">{t('contacts.search.enrichTip')}</p>
                   <p className="text-amber-700 dark:text-amber-300 mb-3">{t('contacts.search.enrichDescription')}</p>
-                  {selectedMatch.linkedin_url && (
+                  {selectedMatch.linkedin_url ? (
                     <Button
                       variant="outline"
                       size="sm"
@@ -539,6 +539,19 @@ export function ContactSearchModal({
                     >
                       <Icons.link className="h-4 w-4 mr-2" />
                       {t('contacts.search.openLinkedIn')}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-white dark:bg-slate-900 border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/40"
+                      onClick={() => {
+                        const query = encodeURIComponent(`"${selectedMatch.name}" "${companyName}" linkedin`)
+                        window.open(`https://www.google.com/search?q=${query}`, '_blank')
+                      }}
+                    >
+                      <Icons.search className="h-4 w-4 mr-2" />
+                      {t('contacts.search.searchLinkedIn') || 'Search on LinkedIn'}
                     </Button>
                   )}
                 </div>

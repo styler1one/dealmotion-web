@@ -507,6 +507,15 @@ IMPORTANT:
             # Check for duplicate by name
             name_lower = new_match.name.lower()
             if name_lower in existing_names:
+                # ENRICH existing match with LinkedIn URL if it doesn't have one
+                for existing_match in merged:
+                    if existing_match.name.lower() == name_lower:
+                        if not existing_match.linkedin_url and new_match.linkedin_url:
+                            existing_match.linkedin_url = new_match.linkedin_url
+                            existing_match.match_reason += " + LinkedIn found"
+                            if existing_match.from_research:
+                                existing_match.confidence = min(1.0, existing_match.confidence + 0.05)
+                        break
                 continue
             existing_names.add(name_lower)
             

@@ -363,6 +363,7 @@
         "enrichTip": "Hilf der KI, diese Person besser zu verstehen",
         "enrichDescription": "LinkedIn blockiert automatischen Zugriff auf Profile. Kopiere relevante Infos von ihrem LinkedIn-Profil für eine reichhaltigere Analyse.",
         "openLinkedIn": "LinkedIn-Profil öffnen",
+        "searchLinkedIn": "Auf LinkedIn suchen",
         "aboutLabel": "Über / Zusammenfassung",
         "aboutHint": "Kopiere aus dem LinkedIn 'Über'-Bereich",
         "aboutPlaceholder": "LinkedIn-Zusammenfassung hier einfügen...",

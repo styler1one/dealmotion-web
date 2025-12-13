@@ -363,6 +363,7 @@
         "enrichTip": "Aidez l'IA à mieux comprendre cette personne",
         "enrichDescription": "LinkedIn bloque l'accès automatique aux profils. Copiez-collez les informations pertinentes de leur profil LinkedIn pour une analyse plus riche.",
         "openLinkedIn": "Ouvrir le profil LinkedIn",
+        "searchLinkedIn": "Rechercher sur LinkedIn",
         "aboutLabel": "À propos / Résumé",
         "aboutHint": "Copiez depuis la section 'À propos' de LinkedIn",
         "aboutPlaceholder": "Collez leur résumé LinkedIn ici...",
