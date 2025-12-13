@@ -422,17 +422,32 @@ If no profiles found, return: []"""
             
             # If no JSON found, try to extract info from text
             if not matches:
-                logger.warning("[CONTACT_SEARCH] No JSON found, parsing text response")
-                # Look for LinkedIn URLs in text
-                url_pattern = r'https?://(?:www\.)?linkedin\.com/in/[\w-]+'
-                urls = re.findall(url_pattern, response_text, re.IGNORECASE)
+                logger.info("[CONTACT_SEARCH] No JSON array found, extracting URLs from text")
+                # Look for LinkedIn URLs in text - multiple patterns
+                url_patterns = [
+                    r'https?://(?:www\.)?linkedin\.com/in/[\w-]+/?',
+                    r'https?://(?:\w+\.)?linkedin\.com/in/[\w-]+/?',
+                    r'linkedin\.com/in/[\w-]+',
+                ]
                 
-                for url in urls[:5]:
+                found_urls = set()
+                for pattern in url_patterns:
+                    urls = re.findall(pattern, response_text, re.IGNORECASE)
+                    for url in urls:
+                        # Normalize URL
+                        if not url.startswith('http'):
+                            url = 'https://' + url
+                        url = url.rstrip('/')
+                        found_urls.add(url)
+                
+                logger.info(f"[CONTACT_SEARCH] Found {len(found_urls)} URLs in text: {list(found_urls)[:3]}")
+                
+                for url in list(found_urls)[:5]:
                     matches.append(ContactMatch(
                         name=search_name,
                         linkedin_url=url,
-                        confidence=0.5,
-                        match_reason="URL found in search results",
+                        confidence=0.7,
+                        match_reason="LinkedIn profile found",
                         from_research=False
                     ))
         
