@@ -224,29 +224,25 @@ class ContactSearchService:
             # Build search context
             company_text = company_name or "unknown company"
             role_search = f' "{role}"' if role else ""
-            role_text = f" ({role})" if role else ""
+            role_text = f" as {role}" if role else ""
             
-            # Focused prompt with specific search instructions (proven to work in research)
-            prompt = f"""**TASK**: Find LinkedIn profile for: {name}{role_text} at {company_text}
+            # Simple, direct prompt - just find LinkedIn profiles
+            prompt = f"""Search for the LinkedIn profile of {name}{role_text} who works at {company_text}.
 
-Execute these Google searches:
-1. site:linkedin.com/in "{name}" "{company_text}"{role_search}
-2. site:nl.linkedin.com/in "{name}" "{company_text}"
-3. "{name}" "{company_text}"{role_search} linkedin
-4. site:linkedin.com/in "{name}"{role_search}
+Search queries to use:
+- "{name}" "{company_text}" site:linkedin.com/in
+- "{name}"{role_search} linkedin profile
 
-**OUTPUT FORMAT** - Return ONLY a JSON array:
-```json
-[
-  {{"name": "Full Name", "title": "Job Title", "company": "Company", "linkedin_url": "https://linkedin.com/in/username", "confidence": 0.9}}
-]
-```
+For each LinkedIn profile found, provide:
+- Full name
+- Job title  
+- Company
+- LinkedIn URL (must be linkedin.com/in/...)
 
-Rules:
-- Only include profiles you FOUND in search results
-- LinkedIn URL must be real (linkedin.com/in/...)
-- Max 3 results, highest confidence first
-- Return [] if nothing found"""
+Format as JSON array:
+[{{"name":"...","title":"...","company":"...","linkedin_url":"https://linkedin.com/in/..."}}]
+
+If no profiles found, return: []"""
 
             logger.info(f"[CONTACT_SEARCH] Gemini searching: {name} at {company_text}")
             
@@ -263,8 +259,13 @@ Rules:
                 logger.warning("[CONTACT_SEARCH] Gemini returned empty response")
                 return []
             
-            logger.debug(f"[CONTACT_SEARCH] Gemini raw response: {response.text[:500]}")
-            return self._parse_matches(response.text, name, company_name)
+            # Log the full response for debugging
+            response_text = response.text
+            logger.info(f"[CONTACT_SEARCH] Gemini response ({len(response_text)} chars): {response_text[:800]}")
+            
+            matches = self._parse_matches(response_text, name, company_name)
+            logger.info(f"[CONTACT_SEARCH] Parsed {len(matches)} matches from response")
+            return matches
             
         except Exception as e:
             logger.error(f"[CONTACT_SEARCH] Gemini search error: {e}")
