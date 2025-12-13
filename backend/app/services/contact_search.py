@@ -222,16 +222,18 @@ class ContactSearchService:
             client = genai.Client(api_key=self.gemini_api_key)
             
             # Build search context
-            role_text = f" ({role})" if role else ""
             company_text = company_name or "unknown company"
+            role_search = f' "{role}"' if role else ""
+            role_text = f" ({role})" if role else ""
             
             # Focused prompt with specific search instructions (proven to work in research)
             prompt = f"""**TASK**: Find LinkedIn profile for: {name}{role_text} at {company_text}
 
 Execute these Google searches:
-1. site:linkedin.com/in "{name}" "{company_text}"
+1. site:linkedin.com/in "{name}" "{company_text}"{role_search}
 2. site:nl.linkedin.com/in "{name}" "{company_text}"
-3. "{name}" "{company_text}" linkedin
+3. "{name}" "{company_text}"{role_search} linkedin
+4. site:linkedin.com/in "{name}"{role_search}
 
 **OUTPUT FORMAT** - Return ONLY a JSON array:
 ```json
