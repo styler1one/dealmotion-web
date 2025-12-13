@@ -226,7 +226,7 @@ class ContactSearchService:
         """
         Search for LinkedIn profiles using Gemini with Google Search grounding.
         
-        Much cheaper than Claude (~10x) with similar quality for this task.
+        Uses a specific search query format that Google understands well.
         """
         try:
             from google import genai
@@ -234,52 +234,60 @@ class ContactSearchService:
             
             client = genai.Client(api_key=self.gemini_api_key)
             
-            # Build context
-            role_context = f", {role}" if role else ""
-            company_context = f" at {company_name}" if company_name else ""
-            linkedin_context = f"\nCompany LinkedIn: {company_linkedin_url}" if company_linkedin_url else ""
+            # Build a specific Google-style search query
+            search_parts = [f'"{name}"']
+            if company_name:
+                search_parts.append(f'"{company_name}"')
+            search_parts.append('site:linkedin.com/in')
+            search_query = ' '.join(search_parts)
             
-            prompt = f"""Find LinkedIn profiles for: {name}{role_context}{company_context}
-{linkedin_context}
+            role_hint = f" (looking for someone with role: {role})" if role else ""
+            
+            prompt = f"""Search Google for LinkedIn profiles using this exact query:
+{search_query}
 
-Search for this person's LinkedIn profile and any other people with similar names at the same company.
+I'm looking for the LinkedIn profile of {name} who works at {company_name or 'unknown company'}{role_hint}.
 
-Return a JSON array with up to 5 matches:
+INSTRUCTIONS:
+1. Use Google Search to find LinkedIn profiles matching this person
+2. For EACH LinkedIn profile you find in the search results, extract:
+   - The exact LinkedIn URL (must be linkedin.com/in/...)
+   - The person's name as shown on LinkedIn
+   - Their current job title
+   - Their company
+   - Their location if visible
+
+3. Return the results as a JSON array:
 ```json
 [
   {{
-    "name": "Full Name on LinkedIn",
-    "title": "Current Job Title",
-    "company": "Company Name",
-    "location": "City, Country",
-    "linkedin_url": "https://linkedin.com/in/username",
-    "headline": "Profile headline (first 100 chars)",
-    "confidence": 0.95,
+    "name": "Exact name from LinkedIn",
+    "title": "Job title from LinkedIn",
+    "company": "Company from LinkedIn",
+    "location": "Location",
+    "linkedin_url": "https://www.linkedin.com/in/actual-username",
+    "headline": "Their headline",
+    "confidence": 0.90,
     "match_reason": "Name + Company match"
   }}
 ]
 ```
 
-Confidence scoring:
-- 0.90-1.00: Name + Company + Role all match
-- 0.75-0.89: Name + Company match
-- 0.60-0.74: Name matches, similar company
-- 0.40-0.59: Name matches, different company
-- Below 0.40: Partial match
+CRITICAL RULES:
+- ONLY include profiles you actually found in search results
+- NEVER invent or guess LinkedIn URLs
+- LinkedIn URLs must be real URLs from search results (linkedin.com/in/...)
+- If you find nothing, return: []
+- Include up to 5 most relevant matches"""
 
-IMPORTANT:
-- Always include LinkedIn URL (https://linkedin.com/in/...)
-- Return empty array [] if nothing found
-- Be thorough - include all plausible matches"""
-
-            logger.info(f"[CONTACT_SEARCH] Gemini searching for: {name} at {company_name}")
+            logger.info(f"[CONTACT_SEARCH] Gemini searching: {search_query}")
             
             response = await client.aio.models.generate_content(
                 model="gemini-2.0-flash",
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     tools=[types.Tool(google_search=types.GoogleSearch())],
-                    temperature=0.1,
+                    temperature=0.0,  # Zero temperature for factual results
                     max_output_tokens=2000
                 )
             )
@@ -288,6 +296,7 @@ IMPORTANT:
                 logger.warning("[CONTACT_SEARCH] Gemini returned empty response")
                 return []
             
+            logger.debug(f"[CONTACT_SEARCH] Gemini raw response: {response.text[:500]}")
             return self._parse_matches(response.text, name, company_name)
             
         except Exception as e:
