@@ -391,7 +391,10 @@
           "nameOnly": "Nur Name-Übereinstimmung"
         },
         "errorTitle": "Fehler",
-        "errorAddFailed": "Kontakt konnte nicht hinzugefügt werden"
+        "errorAddFailed": "Kontakt konnte nicht hinzugefügt werden",
+        "suggestionsTitle": "In Research gefunden",
+        "orSearchManually": "oder manuell suchen",
+        "loadingSuggestions": "Vorschläge werden geladen..."
       }
     },
     "context": {

@@ -391,7 +391,10 @@
           "nameOnly": "Correspondance du nom uniquement"
         },
         "errorTitle": "Erreur",
-        "errorAddFailed": "Échec de l'ajout du contact"
+        "errorAddFailed": "Échec de l'ajout du contact",
+        "suggestionsTitle": "Trouvé dans la recherche",
+        "orSearchManually": "ou rechercher manuellement",
+        "loadingSuggestions": "Chargement des suggestions..."
       }
     },
     "context": {

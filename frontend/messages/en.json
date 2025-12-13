@@ -391,7 +391,10 @@
           "nameOnly": "Name match only"
         },
         "errorTitle": "Error",
-        "errorAddFailed": "Failed to add contact"
+        "errorAddFailed": "Failed to add contact",
+        "suggestionsTitle": "Found in Research",
+        "orSearchManually": "or search manually",
+        "loadingSuggestions": "Loading suggestions..."
       }
     },
     "context": {

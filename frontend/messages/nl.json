@@ -391,7 +391,10 @@
           "nameOnly": "Alleen naam match"
         },
         "errorTitle": "Fout",
-        "errorAddFailed": "Kon contact niet toevoegen"
+        "errorAddFailed": "Kon contact niet toevoegen",
+        "suggestionsTitle": "Gevonden in Research",
+        "orSearchManually": "of zoek handmatig",
+        "loadingSuggestions": "Suggesties laden..."
       }
     },
     "context": {

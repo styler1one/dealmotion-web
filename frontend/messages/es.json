@@ -391,7 +391,10 @@
           "nameOnly": "Solo coincidencia de nombre"
         },
         "errorTitle": "Error",
-        "errorAddFailed": "Error al añadir contacto"
+        "errorAddFailed": "Error al añadir contacto",
+        "suggestionsTitle": "Encontrado en la investigación",
+        "orSearchManually": "o buscar manualmente",
+        "loadingSuggestions": "Cargando sugerencias..."
       }
     },
     "context": {

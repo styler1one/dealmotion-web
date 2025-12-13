@@ -573,6 +573,9 @@ IMPORTANT:
         """
         Parse executives from markdown content (tables and lists).
         
+        IMPORTANT: Only looks in leadership-related sections to avoid
+        parsing other tables (like Executive Summary metrics).
+        
         Looks for patterns like:
         - Leadership tables with Name | Title | LinkedIn columns
         - Bullet lists with "Name - Title" or "Name (Title)" patterns
@@ -582,15 +585,31 @@ IMPORTANT:
         if not content:
             return executives
         
+        # First, find the leadership section(s) in the content
+        # Look for Section 3 (People & Power) or similar headers
+        leadership_section = self._extract_leadership_section(content)
+        
+        if not leadership_section:
+            logger.debug("[CONTACT_SEARCH] No leadership section found in brief")
+            return executives
+        
         # Pattern 1: Markdown table rows with name, title, linkedin
         # | Harris Khan | CEO | https://linkedin.com/in/hykhan |
         table_pattern = r'\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|'
         
-        for match in re.finditer(table_pattern, content):
+        for match in re.finditer(table_pattern, leadership_section):
             col1, col2, col3 = match.groups()
             
-            # Skip header rows
-            if any(h in col1.lower() for h in ["naam", "name", "---", "titel", "title"]):
+            # Skip header rows and separator rows
+            if any(h in col1.lower() for h in ["naam", "name", "---", "titel", "title", "background", "linkedin", "notes"]):
+                continue
+            
+            # Skip metric-like values (not person names)
+            if any(metric in col1.lower() for metric in [
+                "opportunity", "timing", "company stage", "financial", "industry", 
+                "decision", "primary", "dimension", "assessment", "evidence",
+                "high", "medium", "low", "startup", "unknown", "adjacent"
+            ]):
                 continue
             
             # Try to determine which column is what
@@ -604,27 +623,37 @@ IMPORTANT:
                     linkedin_url = col
                 elif not name and not any(c.isdigit() for c in col) and len(col) > 2:
                     # First non-URL, non-numeric column is likely name
-                    name = col
-                elif name and not title:
+                    # Skip if it looks like a title instead of name
+                    if not any(t in col.lower() for t in ["ceo", "cto", "cfo", "director", "manager", "founder", "president"]):
+                        name = col.strip('*').strip()
+                    elif not title:
+                        title = col.strip('*').strip()
+                elif name and not title and len(col) > 2:
                     # Second column after name is likely title
-                    title = col
+                    title = col.strip('*').strip()
             
-            if name:
-                executives.append({
-                    "name": name,
-                    "title": title,
-                    "linkedin_url": linkedin_url
-                })
+            # Validate: name should look like a person name (has space or is single word)
+            if name and len(name) > 2 and not name.startswith('**'):
+                # Additional validation: real names usually have capital letters
+                if any(c.isupper() for c in name):
+                    executives.append({
+                        "name": name,
+                        "title": title,
+                        "linkedin_url": linkedin_url
+                    })
         
         # Pattern 2: Bullet points with "Name - Title" or "Name, Title"
-        bullet_pattern = r'[-•*]\s*\*?\*?([A-Z][^-–,\n]+?)[-–,]\s*([^|\n]+?)(?:\||$|\n)'
+        bullet_pattern = r'[-•*]\s*\*?\*?([A-Z][a-zA-Z\s\.]+?)[-–,]\s*([^|\n]+?)(?:\||$|\n)'
         
-        for match in re.finditer(bullet_pattern, content):
+        for match in re.finditer(bullet_pattern, leadership_section):
             name = match.group(1).strip().strip('*')
             title = match.group(2).strip().strip('*')
             
-            # Skip if name looks like a label
-            if any(label in name.lower() for label in ["naam", "name", "contact", "email"]):
+            # Skip if name looks like a label or metric
+            if any(label in name.lower() for label in [
+                "naam", "name", "contact", "email", "opportunity", "timing", 
+                "dimension", "aspect", "assessment"
+            ]):
                 continue
             
             if name and len(name) > 2:
@@ -633,10 +662,10 @@ IMPORTANT:
                     "title": title
                 })
         
-        # Pattern 3: Look for LinkedIn URLs with context
+        # Pattern 3: Look for LinkedIn URLs with context (in leadership section only)
         linkedin_pattern = r'(?:([A-Z][a-zA-Z\s]+?)(?:\s*[-–:]\s*|\s+))?(https?://(?:www\.)?linkedin\.com/in/[^\s)>\]]+)'
         
-        for match in re.finditer(linkedin_pattern, content):
+        for match in re.finditer(linkedin_pattern, leadership_section):
             name = match.group(1)
             url = match.group(2)
             
@@ -659,6 +688,76 @@ IMPORTANT:
                 unique.append(exec_data)
         
         return unique
+    
+    def _extract_leadership_section(self, content: str) -> str:
+        """
+        Extract only the leadership/people section from the research brief.
+        
+        This prevents parsing other tables (like Executive Summary metrics)
+        as executives.
+        
+        Looks for:
+        - Section 3: People & Power
+        - Section 3: Mensen & Macht
+        - Executive Leadership sections
+        """
+        if not content:
+            return ""
+        
+        lines = content.split('\n')
+        leadership_content = []
+        in_leadership_section = False
+        section_depth = 0
+        
+        for i, line in enumerate(lines):
+            line_lower = line.lower()
+            
+            # Check for start of leadership section
+            # Look for "Section 3" or "People & Power" or "Mensen & Macht" or "Executive Leadership"
+            is_leadership_header = any([
+                'section 3' in line_lower and ('people' in line_lower or 'mensen' in line_lower or 'macht' in line_lower or 'power' in line_lower),
+                'people & power' in line_lower,
+                'mensen & macht' in line_lower,
+                'executive leadership' in line_lower and line.strip().startswith('#'),
+                '3.1' in line_lower and ('leadership' in line_lower or 'leiderschap' in line_lower),
+                '3.2' in line_lower and ('leadership' in line_lower or 'leiderschap' in line_lower),
+            ])
+            
+            if is_leadership_header:
+                in_leadership_section = True
+                # Determine section depth (number of #)
+                section_depth = len(line) - len(line.lstrip('#'))
+                leadership_content.append(line)
+                continue
+            
+            # Check for end of leadership section (next major section)
+            if in_leadership_section:
+                # A new section at same or higher level ends our section
+                is_new_major_section = (
+                    line.strip().startswith('#') and
+                    not any(sub in line_lower for sub in ['3.1', '3.2', '3.3', '3.4', '3.5', '3.6', '3.7']) and
+                    ('section 4' in line_lower or 
+                     'section 5' in line_lower or
+                     'sectie 4' in line_lower or
+                     'sectie 5' in line_lower or
+                     'wat er nu gebeurt' in line_lower or
+                     'what\'s happening' in line_lower or
+                     'recent developments' in line_lower or
+                     'recente ontwikkelingen' in line_lower)
+                )
+                
+                if is_new_major_section:
+                    in_leadership_section = False
+                    break
+                
+                leadership_content.append(line)
+        
+        result = '\n'.join(leadership_content)
+        
+        if result:
+            logger.debug(f"[CONTACT_SEARCH] Extracted leadership section: {len(result)} chars")
+        
+        return result
 
 
 # Singleton instance
