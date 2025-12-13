@@ -95,23 +95,23 @@ class ContactSearchService:
         search_source = "gemini"
         search_query = f'"{name}" "{company_name or ""}" linkedin'
         
-        # Search for LinkedIn profiles using Gemini ONLY (cheap, fast)
-        if self.gemini_api_key:
+        # Use Claude for contact search - it can extract URLs from web search results
+        # Gemini's grounding doesn't return URLs reliably
+        if self.anthropic_api_key:
             try:
-                gemini_matches = await self._search_with_gemini(
+                claude_matches = await self._search_with_claude(
                     name, role, company_name, company_linkedin_url
                 )
-                if gemini_matches:
-                    matches = gemini_matches
-                    search_source = "gemini"
-                    logger.info(f"[CONTACT_SEARCH] Gemini found {len(gemini_matches)} LinkedIn profiles")
+                if claude_matches:
+                    matches = claude_matches
+                    search_source = "claude"
+                    print(f"[CONTACT_SEARCH] Claude found {len(claude_matches)} LinkedIn profiles", flush=True)
                 else:
-                    logger.info(f"[CONTACT_SEARCH] Gemini found no profiles")
+                    print("[CONTACT_SEARCH] Claude found no profiles", flush=True)
             except Exception as e:
-                logger.error(f"[CONTACT_SEARCH] Gemini failed: {e}")
-                # No fallback to Claude - just return empty
+                print(f"[CONTACT_SEARCH] Claude failed: {e}", flush=True)
         else:
-            logger.error("[CONTACT_SEARCH] No Gemini API key configured")
+            print("[CONTACT_SEARCH] No Anthropic API key configured", flush=True)
         
         # FILTER: Only keep matches that have LinkedIn URLs (the whole point!)
         matches = [m for m in matches if m.linkedin_url]
