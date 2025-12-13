@@ -50,7 +50,7 @@ class ActionGeneratorService:
             ActionType.SALES_COACHING: 5000,
             ActionType.CUSTOMER_REPORT: 4000,
             ActionType.ACTION_ITEMS: 4000,
-            ActionType.INTERNAL_REPORT: 2500,
+            ActionType.INTERNAL_REPORT: 3500,  # Increased for MEDDIC + CRM sections
             ActionType.SHARE_EMAIL: 1500,
         }
         max_tokens = max_tokens_map.get(action_type, 4000)
@@ -1429,8 +1429,9 @@ Generate the complete action item list now:"""
         company_name = context.get("followup", {}).get("prospect_company_name", "the customer")
         deal = context.get("deal", {})
         current_stage = deal.get("stage", "Unknown")
+        current_value = deal.get("value", "Unknown")
         
-        return f"""You are writing an internal sales report for CRM notes and team updates.
+        return f"""You are writing an internal sales report optimized for CRM notes and team updates.
 
 Write in clear, factual and highly scannable language.
 Assume the reader has 30 seconds and needs to understand what happened, what changed, and what matters next.
@@ -1443,106 +1444,191 @@ Avoid narrative storytelling – prioritise clarity, signals and implications.
 {context_text}
 
 PURPOSE:
-Create a concise internal update that a sales manager or colleague can absorb quickly.
-Highlight the essential developments, commercial relevance, risks, momentum shifts and tactical next steps.
+Create a concise internal update that a sales manager or colleague can absorb in under 60 seconds.
+The CRM Quick Copy section should be directly copy-pasteable into any CRM system.
 Be honest about uncertainties or gaps in information.
 
 LENGTH GUIDELINE:
-- Light check-in → 100–150 words
-- Substantive meeting → 150–250 words
-- Complex stakeholder discussion → up to 300 words
+- Light check-in → 80–120 words (excluding tables)
+- Substantive meeting → 120–180 words (excluding tables)
+- Complex stakeholder discussion → up to 220 words (excluding tables)
 
 STRUCTURE:
 
 # Internal Update: {company_name}
 
-**Date**: [meeting date]
-**Attendees**: [names and roles if identifiable]
-**Meeting Type**: [discovery / demo / negotiation / check-in / multi-stakeholder / etc.]
+---
+
+## 📋 CRM QUICK COPY
+
+Copy these fields directly into your CRM:
+
+| Field | Value |
+|-------|-------|
+| **Activity Type** | Call / Meeting / Video Call / Demo / Negotiation / Check-in |
+| **Subject** | [One-line meeting subject - max 60 chars] |
+| **Outcome** | ✅ Positive / ⚡ Neutral / ⚠️ Negative |
+| **Next Step** | [Concrete action] |
+| **Next Step Owner** | [Name] |
+| **Next Step Date** | [Specific date or "Within X days"] |
+| **Follow-up Date** | [When to check in again] |
 
 ---
 
-## 📌 TL;DR (One Sentence)
-A single sentence capturing the real outcome, momentum and key implication for the deal.
+## 📌 TL;DR
+
+> [One sentence capturing the real outcome, momentum and key implication for the deal. Make it count.]
+
+---
+
+## 📊 Deal Updates
+
+Only include fields that CHANGED. If nothing changed, write "No deal updates."
+
+| Field | Was | Is Now | Reason |
+|-------|-----|--------|--------|
+| **Stage** | {current_stage} | [New stage or "No change"] | [One-line reason] |
+| **Close Date** | [Previous] | [New date] | [Why it changed] |
+| **Probability** | [X]% | [Y]% | [Evidence-based reason] |
+| **Deal Value** | {current_value} | [New value or "No change"] | [If upsell/downsell discussed] |
+
+**Forecast Confidence**: 🟢 Increased / 🟡 Stable / 🔴 Decreased — [One-line reason]
+
+---
+
+## 🎯 MEDDIC Quick Status
+
+One-line status per element. Use 🟢 Confirmed / 🟡 Partial / 🔴 Unknown.
+
+| Element | Status | One-Line Note |
+|---------|--------|---------------|
+| **M**etrics | 🟢/🟡/🔴 | [What success metrics were discussed?] |
+| **E**conomic Buyer | 🟢/🟡/🔴 | [Do we have access to budget holder?] |
+| **D**ecision Criteria | 🟢/🟡/🔴 | [Do we know how they'll decide?] |
+| **D**ecision Process | 🟢/🟡/🔴 | [Do we know the steps to signature?] |
+| **I**dentified Pain | 🟢/🟡/🔴 | [Is the pain quantified and urgent?] |
+| **C**hampion | 🟢/🟡/🔴 | [Do we have an internal advocate?] |
+
+**MEDDIC Score**: X/6 elements confirmed
+
+---
+
+## 🏆 Champion Status
+
+| Aspect | Status |
+|--------|--------|
+| **Champion** | [Name + Role] or "Not yet identified" |
+| **Activity Level** | 🟢 Active / 🟡 Passive / 🔴 Silent / ❓ Unknown |
+| **Last Advocacy** | [What did they do for us recently?] |
+| **Risk** | [Any concern about champion engagement?] |
 
 ---
 
 ## 🎯 Key Takeaways
-List 3–5 essential points in order of strategic importance.
-Include items such as: new information, validated assumptions, changed priorities, emerging risks, or opportunity expansion.
 
-- [Takeaway 1 – most impactful]
-- [Takeaway 2]
-- [Takeaway 3]
-- [Takeaway 4 if relevant]
+3-5 essential points in order of strategic importance:
 
----
-
-## 👥 Stakeholder & Political Dynamics
-Capture not just roles but **stance, influence and behaviour**.
-
-| Person | Role | Influence Level | Stance | Notes |
-|--------|------|-----------------|--------|-------|
-[Supportive / Neutral / Resistant; decision-maker / influencer; political relationships if relevant]
+1. [Most impactful insight or development]
+2. [Second takeaway]
+3. [Third takeaway]
+4. [Fourth if relevant]
 
 ---
 
-## 📝 Decisions & Agreements
-- [Decision or agreement 1]
-- [Decision or agreement 2]
-If none: "No formal decisions – exploratory conversation."
+## 👥 Stakeholders Present
+
+| Person | Role | Stance | Engagement | Note |
+|--------|------|--------|------------|------|
+| [Name] | [Title] | 👍/😐/👎/❓ | High/Med/Low | [Key observation] |
+
+**New contacts identified**: [Names] or "None"
+**Missing stakeholders**: [Who should have been there but wasn't?]
 
 ---
 
-## ➡️ Required Next Steps
+## ➡️ Next Steps
 
-| Action | Owner | Deadline | Commercial Relevance |
-|--------|-------|----------|----------------------|
-[Link each item to its effect on momentum or risk mitigation.]
+| # | Action | Owner | Deadline | Priority |
+|---|--------|-------|----------|----------|
+| 1 | [Specific action] | [Name] | [Date] | 🔴/🟡/🟢 |
+| 2 | [Action] | [Name] | [Date] | 🔴/🟡/🟢 |
 
----
-
-## 📊 Deal Status & Forecast Implications
-
-| Aspect | Current | Recommended | Rationale |
-|--------|---------|-------------|-----------|
-| Stage | {current_stage} | [stage if update needed] | [why] |
-| Probability | [X]% | [new probability if needed] | [evidence] |
-| Timeline | [current expectation] | [updated if discussed] | [reason] |
-
-Include a one-sentence note on whether forecast confidence should increase, remain stable or be reduced.
+**Blockers**: [What could prevent these from happening?] or "None identified"
 
 ---
 
-## 🚦 Momentum, Risks & Signals
+## 🚦 Momentum & Risks
 
-### Momentum
-Classify: 🟢 Forward / 🟡 Neutral-Stalled / 🔴 Backwards
-Explain why in one concise sentence.
+**Momentum**: 🟢 Forward / 🟡 Stalled / 🔴 Backwards
+> [One sentence explaining why]
 
-### Risks
-- 🔴 Critical risk: [if any]
-- 🟡 Emerging concern: [if relevant]
+**Risks**:
+- 🔴 Critical: [If any — requires immediate attention]
+- 🟡 Watch: [Emerging concern to monitor]
 
-### Positive Signals
-- 🟢 [Concrete evidence-based signal]
-
-If none: "No significant signals."
+**Positive Signals**:
+- 🟢 [Concrete evidence-based buying signal]
 
 ---
 
-## 💬 Notable Quote (Optional)
-> "[A direct quote that captures the customer's intent, concern or direction]"
+## ⚔️ Competitor Intel
+
+| Competitor | Status | Evidence | Our Counter |
+|------------|--------|----------|-------------|
+| [Name or "None mentioned"] | In play / Eliminated / Unknown | "[Quote if mentioned]" | [How to position] |
+
+If none mentioned: "No competitors discussed in this meeting."
+
+---
+
+## 🆘 Help Needed
+
+Does the rep need manager or team support?
+
+| Type | Request | Urgency |
+|------|---------|---------|
+| [Escalation / Resources / Expertise / Air Cover / None] | [Specific ask] | 🔴/🟡/🟢 |
+
+If none: "No assistance needed at this time."
+
+---
+
+## 🚨 Escalation Flag
+
+**Requires Management Attention?** Yes / No
+
+If Yes:
+- **Issue**: [What needs attention]
+- **Why Now**: [Urgency reason]
+- **Suggested Action**: [What should manager do]
+
+---
+
+## 💬 Notable Quote
+
+> "[A direct quote that captures the customer's intent, concern or direction — if memorable, include it]"
+
+---
+
+## 🏷️ Tags
+
+Select all that apply:
+
+`[discovery]` `[demo]` `[negotiation]` `[closing]` `[check-in]` `[multi-stakeholder]`
+`[budget-discussed]` `[timeline-confirmed]` `[competitor-mentioned]` `[objection-raised]`
+`[champion-identified]` `[decision-maker-present]` `[next-step-committed]` `[at-risk]`
 
 ---
 
 RULES:
 - Lead with what matters commercially.
-- Keep bullets short and informative.
+- CRM Quick Copy section MUST be directly pasteable.
+- Keep everything scannable — bullets over paragraphs.
 - Do not speculate without labelling it explicitly.
 - Exclude noise, minor admin or irrelevant content.
-- Write for a busy reader who needs clarity, not prose.
-- Prioritise momentum, risks and decision-driving information.
+- Write for a busy manager who needs clarity in 60 seconds.
+- If a section has no content, write "None" or "N/A" — don't skip sections.
+- Be honest about unknowns — "Unknown" is better than guessing.
 
 Generate the complete internal report now:"""
     
