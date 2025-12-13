@@ -3,14 +3,14 @@ Gemini Google Search integration for comprehensive B2B prospect research.
 
 ARCHITECTURE (Cost-Optimized + Maximum Quality):
 - Gemini does ALL web searching (30x cheaper than Claude)
-- Uses 22 PARALLEL calls for MAXIMUM coverage
+- Uses 30 PARALLEL calls for STATE-OF-THE-ART coverage
 - Each call focuses on ONE specific research area
 - Output: Comprehensive structured raw data for Claude to analyze
 
 Gemini 2.0 Flash pricing: $0.10/1M input, $0.40/1M output
 Claude Sonnet 4 pricing: $3.00/1M input, $15.00/1M output
 
-22 parallel calls × ~$0.002 = ~$0.045 total (still 96% cheaper than Claude web search)
+30 parallel calls × ~$0.002 = ~$0.06 total (still 94% cheaper than Claude web search)
 Parallel execution = FASTER than fewer sequential calls!
 """
 import os
@@ -30,7 +30,7 @@ class GeminiResearcher:
     """
     Comprehensive B2B research using Gemini with Google Search grounding.
     
-    Uses 22 PARALLEL CALLS for MAXIMUM coverage:
+    Uses 30 PARALLEL CALLS for STATE-OF-THE-ART coverage:
     
     COMPANY INFORMATION (4):
     1. company_basics - Identity, founding, locations
@@ -61,6 +61,16 @@ class GeminiResearcher:
     20. customer_reviews - G2, Capterra, product reviews
     21. challenges_priorities - Public challenges, strategic priorities
     22. certifications_compliance - Regulatory, security, standards
+    
+    STRATEGIC INTELLIGENCE (8):
+    23. sustainability_esg - ESG scores, sustainability reports, CSR
+    24. risk_signals - Lawsuits, controversies, red flags
+    25. key_accounts_clients - Named customers, case studies
+    26. company_history_milestones - Timeline, pivots, evolution
+    27. future_plans_roadmap - Announced strategies, direction
+    28. social_media_activity - Twitter, LinkedIn, Instagram presence
+    29. patents_innovation - R&D, intellectual property
+    30. vendor_ecosystem - Current suppliers, technology partners
     """
     
     def __init__(self):
@@ -1035,6 +1045,469 @@ Search for certifications and compliance of "{company_name}":
 - **Data Processing Agreement**: [Available/Not found]
 """
 
+        # ═══════════════════════════════════════════════════════════════════════
+        # SECTION 5: STRATEGIC INTELLIGENCE (8 new queries for state-of-the-art)
+        # ═══════════════════════════════════════════════════════════════════════
+
+        # 23. SUSTAINABILITY & ESG - Environmental, Social, Governance
+        prompts["sustainability_esg"] = base_context + f"""
+**RESEARCH FOCUS**: Sustainability, ESG & Corporate Responsibility
+
+Search for sustainability and ESG information about "{company_name}":
+1. "{company_name}" sustainability report
+2. "{company_name}" ESG score rating
+3. "{company_name}" carbon footprint emissions
+4. "{company_name}" CSR corporate social responsibility
+5. "{company_name}" duurzaamheid sustainability
+6. "{company_name}" climate goals net zero
+7. "{company_name}" CSRD report
+8. "{company_name}" environmental impact
+
+**REQUIRED OUTPUT**:
+
+## ESG Ratings & Scores
+
+| Rating Agency | Score | Date | Source |
+|---------------|-------|------|--------|
+| [Agency] | [Score] | [Date] | [URL] |
+
+## Environmental Commitments
+
+| Commitment | Target | Timeline | Status |
+|------------|--------|----------|--------|
+| Carbon Neutrality | [Target] | [Year] | On Track/Behind/Achieved |
+| Renewable Energy | [%] | [Year] | |
+| Waste Reduction | [Target] | [Year] | |
+
+## Sustainability Reports
+
+| Year | Title | Key Highlights | URL |
+|------|-------|----------------|-----|
+| [Year] | [Report Name] | [Key points] | [URL] |
+
+## Social Responsibility
+
+| Initiative | Focus | Impact |
+|------------|-------|--------|
+| [Initiative] | Community/Diversity/Education | [Description] |
+
+## Governance
+
+| Aspect | Details |
+|--------|---------|
+| **Board Diversity** | [Observations] |
+| **Ethics Policy** | [Available/Not found] |
+| **Whistleblower Policy** | [Available/Not found] |
+
+## CSRD/Regulatory Compliance
+- **CSRD Status**: Required/Voluntary/Not Applicable
+- **Sustainability Report**: [URL if available]
+- **Key ESG Challenges**: [Identified challenges]
+"""
+
+        # 24. RISK SIGNALS - Negative news, legal issues, red flags
+        prompts["risk_signals"] = base_context + f"""
+**RESEARCH FOCUS**: Risk Signals, Red Flags & Negative News
+
+Search for potential risk indicators about "{company_name}":
+1. "{company_name}" lawsuit legal case
+2. "{company_name}" controversy scandal
+3. "{company_name}" layoffs restructuring
+4. "{company_name}" bankruptcy financial trouble
+5. "{company_name}" fine penalty regulatory
+6. "{company_name}" data breach security incident
+7. "{company_name}" negative reviews complaints
+8. "{company_name}" CEO fired resigned controversy
+9. "{company_name}" fraud investigation
+
+**CRITICAL**: Report factually what you find, don't speculate.
+
+**REQUIRED OUTPUT**:
+
+## Legal Issues & Lawsuits
+
+| Date | Case | Type | Status | Source |
+|------|------|------|--------|--------|
+| [Date] | [Description] | Civil/Criminal/Regulatory | Ongoing/Settled/Dismissed | [URL] |
+
+## Regulatory Issues
+
+| Date | Issue | Regulator | Fine/Penalty | Source |
+|------|-------|-----------|--------------|--------|
+| [Date] | [Description] | [Agency] | [Amount] | [URL] |
+
+## Workforce Issues
+
+| Date | Event | Scale | Source |
+|------|-------|-------|--------|
+| [Date] | Layoffs/Restructuring | [# employees] | [URL] |
+
+## Financial Red Flags
+
+| Signal | Evidence | Severity |
+|--------|----------|----------|
+| [Signal] | [Description] | 🔴 High / 🟡 Medium / 🟢 Low |
+
+## Reputation Issues
+
+| Date | Issue | Impact | Source |
+|------|-------|--------|--------|
+| [Date] | [Description] | [Business impact] | [URL] |
+
+## Risk Summary
+- **Overall Risk Level**: 🟢 Low / 🟡 Medium / 🔴 High
+- **Key Risk Areas**: [List main concerns]
+- **Mitigating Factors**: [Positive counter-signals]
+
+If no significant risks found: "No significant risk signals identified in public sources"
+"""
+
+        # 25. KEY ACCOUNTS & CLIENTS - Customer logos, references
+        prompts["key_accounts_clients"] = base_context + f"""
+**RESEARCH FOCUS**: Key Accounts, Named Clients & Customer References
+
+Search for customer information about "{company_name}":
+1. "{company_name}" customers clients
+2. "{company_name}" case study success story
+3. "{company_name}" testimonial reference
+4. "{company_name}" trusted by used by
+5. "{company_name}" customer logos
+6. "{company_name}" partnership with [industry leader]
+7. site:{company_name} case study OR customers
+8. "{company_name}" klanten referenties
+
+**REQUIRED OUTPUT**:
+
+## Named Customers
+
+| Customer | Industry | Relationship | Source |
+|----------|----------|--------------|--------|
+| [Company Name] | [Industry] | Customer/Partner/Case Study | [URL] |
+| [Company Name] | [Industry] | | |
+| [Company Name] | [Industry] | | |
+
+## Case Studies
+
+| Customer | Challenge | Solution | Results | URL |
+|----------|-----------|----------|---------|-----|
+| [Name] | [Problem] | [What they did] | [Outcomes] | [URL] |
+
+## Testimonials & Quotes
+
+| Quote | Person | Company | Role | Source |
+|-------|--------|---------|------|--------|
+| "[Quote]" | [Name] | [Company] | [Title] | [URL] |
+
+## Customer Segments
+
+| Segment | Examples | Estimated % |
+|---------|----------|-------------|
+| Enterprise | [Names] | |
+| Mid-Market | [Names] | |
+| SMB | [Names] | |
+
+## Industry Verticals Served
+
+| Industry | Notable Customers | Strength |
+|----------|-------------------|----------|
+| [Industry] | [Names] | 🟢 Strong / 🟡 Moderate / 🔴 Weak |
+
+## Customer Concentration Risk
+- **Largest Customer**: [If known]
+- **Revenue Concentration**: [Observations]
+"""
+
+        # 26. COMPANY HISTORY & MILESTONES - Timeline, pivots, evolution
+        prompts["company_history_milestones"] = base_context + f"""
+**RESEARCH FOCUS**: Company History, Milestones & Evolution
+
+Search for historical information about "{company_name}":
+1. "{company_name}" history founded
+2. "{company_name}" timeline milestones
+3. "{company_name}" anniversary years
+4. "{company_name}" growth story journey
+5. "{company_name}" evolution pivot
+6. "{company_name}" acquisition history
+7. "{company_name}" original product first
+8. who founded "{company_name}" story
+
+**REQUIRED OUTPUT**:
+
+## Founding Story
+
+| Element | Details |
+|---------|---------|
+| **Founded** | [Year] |
+| **Founder(s)** | [Names] |
+| **Original Location** | [City, Country] |
+| **Original Mission** | [Why they started] |
+| **Initial Product/Service** | [What they first offered] |
+
+## Key Milestones Timeline
+
+| Year | Milestone | Significance |
+|------|-----------|--------------|
+| [Year] | Company founded | Origin |
+| [Year] | [Event] | [Why it matters] |
+| [Year] | [Event] | |
+| [Year] | [Event] | |
+| [Year] | [Event] | |
+
+## Major Pivots & Evolutions
+
+| Period | From | To | Trigger |
+|--------|------|-----|---------|
+| [Year] | [Old focus] | [New focus] | [Why they changed] |
+
+## Acquisition History
+
+| Year | Acquired | Purpose | Source |
+|------|----------|---------|--------|
+| [Year] | [Company] | [Strategic reason] | [URL] |
+
+## Leadership Evolution
+
+| Period | CEO/Leader | Major Changes |
+|--------|------------|---------------|
+| [Years] | [Name] | [What happened under their leadership] |
+
+## Company Culture Evolution
+[How has the company culture changed over time?]
+"""
+
+        # 27. FUTURE PLANS & ROADMAP - Announced strategies, direction
+        prompts["future_plans_roadmap"] = base_context + f"""
+**RESEARCH FOCUS**: Future Plans, Strategy & Roadmap
+
+Search for future direction of "{company_name}":
+1. "{company_name}" roadmap plans {current_year + 1}
+2. "{company_name}" strategy vision future
+3. "{company_name}" expansion plans
+4. "{company_name}" new markets products
+5. "{company_name}" investment plans
+6. "{company_name}" CEO vision interview future
+7. "{company_name}" annual report outlook
+8. "{company_name}" investor presentation strategy
+
+**REQUIRED OUTPUT**:
+
+## Announced Strategic Priorities
+
+| Priority | Timeline | Investment | Source |
+|----------|----------|------------|--------|
+| [Priority] | [Timeframe] | [Amount if known] | [URL] |
+
+## Expansion Plans
+
+| Type | Target | Timeline | Status |
+|------|--------|----------|--------|
+| Geographic | [Countries/Regions] | [When] | Announced/In Progress |
+| Product | [New offerings] | [When] | |
+| Market Segment | [New segments] | [When] | |
+
+## Technology Roadmap
+
+| Initiative | Description | Timeline |
+|------------|-------------|----------|
+| [Initiative] | [What they plan to do] | [When] |
+
+## M&A Appetite
+
+| Signal | Evidence |
+|--------|----------|
+| **Acquisition Interest** | Active/Moderate/No signals |
+| **Target Types** | [What they might acquire] |
+| **Recent Statements** | [Quotes about M&A] |
+
+## Investment Priorities
+
+| Area | Level | Evidence |
+|------|-------|----------|
+| Technology | 🔥 High / ➡️ Medium / ❄️ Low | [Quote/source] |
+| People | 🔥 High / ➡️ Medium / ❄️ Low | |
+| Geographic Expansion | 🔥 High / ➡️ Medium / ❄️ Low | |
+| Sustainability | 🔥 High / ➡️ Medium / ❄️ Low | |
+
+## CEO/Leadership Quotes on Future
+| Quote | Person | Context | Source |
+|-------|--------|---------|--------|
+| "[Quote about future]" | [Name] | [Context] | [URL] |
+"""
+
+        # 28. SOCIAL MEDIA ACTIVITY - Twitter, LinkedIn, Instagram presence
+        prompts["social_media_activity"] = base_context + f"""
+**RESEARCH FOCUS**: Social Media Presence & Activity
+
+Search for social media presence of "{company_name}":
+1. "{company_name}" Twitter OR X.com
+2. "{company_name}" Instagram
+3. "{company_name}" YouTube channel
+4. "{company_name}" Facebook page
+5. "{company_name}" TikTok
+6. site:twitter.com "{company_name}"
+7. site:instagram.com "{company_name}"
+
+**REQUIRED OUTPUT**:
+
+## Social Media Accounts
+
+| Platform | Handle/URL | Followers | Activity Level |
+|----------|------------|-----------|----------------|
+| LinkedIn | [URL] | [Number] | 🔥 Active / ➡️ Moderate / ❄️ Inactive |
+| Twitter/X | [URL] | [Number] | |
+| Instagram | [URL] | [Number] | |
+| YouTube | [URL] | [Subscribers] | |
+| Facebook | [URL] | [Followers] | |
+| TikTok | [URL] | [Followers] | |
+
+## Content Analysis
+
+| Platform | Content Type | Posting Frequency | Engagement |
+|----------|--------------|-------------------|------------|
+| LinkedIn | [What they post] | [How often] | High/Medium/Low |
+| Twitter | [Topics] | [Frequency] | |
+| Instagram | [Visual style] | [Frequency] | |
+
+## Key Themes & Messaging
+
+| Theme | Frequency | Example |
+|-------|-----------|---------|
+| [Topic 1] | Often/Sometimes/Rarely | [Example post] |
+| [Topic 2] | | |
+
+## Executive Social Presence
+
+| Name | Platform | Handle | Activity |
+|------|----------|--------|----------|
+| CEO | LinkedIn/Twitter | [Handle] | Active/Moderate/Low |
+| [Other exec] | | | |
+
+## Social Media Insights
+- **Brand Voice**: Professional/Casual/Technical/Friendly
+- **Visual Style**: Corporate/Creative/Minimal/Bold
+- **Engagement Level**: High/Medium/Low
+- **Key Hashtags Used**: [List]
+"""
+
+        # 29. PATENTS & INNOVATION - R&D, intellectual property
+        prompts["patents_innovation"] = base_context + f"""
+**RESEARCH FOCUS**: Patents, Innovation & R&D
+
+Search for innovation indicators about "{company_name}":
+1. "{company_name}" patent
+2. "{company_name}" innovation R&D
+3. "{company_name}" research development
+4. "{company_name}" intellectual property
+5. site:patents.google.com "{company_name}"
+6. "{company_name}" technology breakthrough
+7. "{company_name}" innovation lab
+8. "{company_name}" patent application
+
+**REQUIRED OUTPUT**:
+
+## Patent Portfolio
+
+| Patent | Title | Date | Category | Source |
+|--------|-------|------|----------|--------|
+| [Number] | [Title] | [Year] | [Technology area] | [URL] |
+
+## Patent Statistics
+
+| Metric | Value |
+|--------|-------|
+| **Total Patents** | [Number if found] |
+| **Recent Patents (3 years)** | [Number] |
+| **Key Technology Areas** | [List] |
+| **Geographic Coverage** | [Countries] |
+
+## R&D Investment
+
+| Year | Investment | % of Revenue | Source |
+|------|------------|--------------|--------|
+| [Year] | [Amount] | [%] | [URL] |
+
+## Innovation Initiatives
+
+| Initiative | Focus | Status | Source |
+|------------|-------|--------|--------|
+| Innovation Lab | [What they're working on] | Active/Planned | [URL] |
+| Research Partnership | [Partner] | | |
+| Accelerator/Incubator | [Program name] | | |
+
+## Technology Focus Areas
+
+| Area | Investment Level | Evidence |
+|------|------------------|----------|
+| AI/ML | 🔥 High / ➡️ Medium / ❄️ Low | [Patents/initiatives] |
+| IoT | | |
+| Cloud | | |
+| [Industry-specific] | | |
+
+## Innovation Culture
+- **R&D Team Size**: [If known]
+- **Innovation Awards**: [List any]
+- **Open Innovation**: Yes/No (collaborations, hackathons, etc.)
+"""
+
+        # 30. VENDOR ECOSYSTEM - Current suppliers, technology partners
+        prompts["vendor_ecosystem"] = base_context + f"""
+**RESEARCH FOCUS**: Vendor Ecosystem & Technology Partners
+
+Search for vendor and partner relationships of "{company_name}":
+1. "{company_name}" partners technology
+2. "{company_name}" powered by uses
+3. "{company_name}" integration with
+4. "{company_name}" certified partner
+5. "{company_name}" vendor supplier
+6. "{company_name}" platform built on
+7. site:partner.* "{company_name}"
+8. "{company_name}" technology alliance
+
+**REQUIRED OUTPUT**:
+
+## Technology Partners
+
+| Partner | Type | Relationship | Source |
+|---------|------|--------------|--------|
+| [Company] | Cloud/CRM/ERP/etc | Certified Partner/Customer/Integration | [URL] |
+| [Company] | | | |
+
+## Consulting & Services Partners
+
+| Partner | Focus | Relationship | Source |
+|---------|-------|--------------|--------|
+| [Company] | Implementation/Strategy | Partner/Vendor | [URL] |
+
+## Current Vendor Stack (Known)
+
+| Category | Vendor | Evidence |
+|----------|--------|----------|
+| Cloud | AWS/Azure/GCP | [Source] |
+| CRM | Salesforce/HubSpot/etc | |
+| ERP | SAP/Oracle/etc | |
+| BI/Analytics | [Vendor] | |
+| HR | [Vendor] | |
+
+## Integration Ecosystem
+
+| Integration | Type | Source |
+|-------------|------|--------|
+| [Platform] | Native/API/iPaaS | [URL] |
+
+## Partner Program Participation
+
+| Program | Level | Benefits |
+|---------|-------|----------|
+| [Vendor] Partner Program | Gold/Silver/Certified | [Benefits received] |
+
+## Vendor Relationship Signals
+- **Technology Loyalty**: Single-vendor/Multi-vendor/Best-of-breed
+- **Partnership Depth**: Strategic/Tactical/Transactional
+- **Potential Displacement Opportunities**: [Areas where current vendor may be weak]
+
+{seller_hint}
+"""
+
         return prompts
 
     async def search_company(
@@ -1047,9 +1520,9 @@ Search for certifications and compliance of "{company_name}":
         language: str = DEFAULT_LANGUAGE
     ) -> Dict[str, Any]:
         """
-        Comprehensive company research using 22 PARALLEL Gemini calls.
+        Comprehensive company research using 30 PARALLEL Gemini calls.
         
-        Executes 22 focused research topics in parallel for MAXIMUM coverage:
+        Executes 30 focused research topics in parallel for STATE-OF-THE-ART coverage:
         
         COMPANY (4):
         1. company_basics - Identity, structure
@@ -1081,8 +1554,18 @@ Search for certifications and compliance of "{company_name}":
         21. challenges_priorities - Public challenges, strategic priorities
         22. certifications_compliance - Regulatory, security, standards
         
+        STRATEGIC INTELLIGENCE (8):
+        23. sustainability_esg - ESG, sustainability, CSR
+        24. risk_signals - Lawsuits, controversies, red flags
+        25. key_accounts_clients - Named customers, case studies
+        26. company_history_milestones - Timeline, pivots
+        27. future_plans_roadmap - Announced strategies
+        28. social_media_activity - Twitter, LinkedIn, Instagram
+        29. patents_innovation - R&D, intellectual property
+        30. vendor_ecosystem - Suppliers, technology partners
+        
         Returns:
-            Dictionary with comprehensive research data from all 22 topics
+            Dictionary with comprehensive research data from all 30 topics
         """
         current_date = datetime.now().strftime("%d %B %Y")
         current_year = datetime.now().year
