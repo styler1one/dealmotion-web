@@ -43,8 +43,20 @@ class ActionGeneratorService:
         # Get the appropriate prompt
         prompt = self._build_prompt(action_type, context, language)
         
+        # Determine max_tokens based on action type
+        # Commercial Analysis and Sales Coaching need more tokens due to comprehensive output
+        max_tokens_map = {
+            ActionType.COMMERCIAL_ANALYSIS: 6000,
+            ActionType.SALES_COACHING: 5000,
+            ActionType.CUSTOMER_REPORT: 4000,
+            ActionType.ACTION_ITEMS: 4000,
+            ActionType.INTERNAL_REPORT: 2500,
+            ActionType.SHARE_EMAIL: 1500,
+        }
+        max_tokens = max_tokens_map.get(action_type, 4000)
+        
         # Generate content
-        content = await self._generate_with_claude(prompt)
+        content = await self._generate_with_claude(prompt, max_tokens=max_tokens)
         
         # Build metadata
         metadata = self._build_metadata(action_type, content, context)
@@ -493,19 +505,25 @@ Generate the complete email now:"""
         """Prompt for commercial analysis generation - INTERNAL, professional/objective style"""
         company_name = context.get("followup", {}).get("prospect_company_name", "the company")
         
-        return f"""You are a seasoned commercial strategist analyzing a sales conversation.
+        # Get deal info if available
+        deal = context.get("deal", {})
+        deal_value = deal.get("value", "Unknown")
+        current_stage = deal.get("stage", "Unknown")
+        
+        return f"""You are a seasoned commercial strategist analyzing a sales conversation using enterprise-grade qualification frameworks.
 
 Write in clear, direct and strategic language.
-Be honest, pragmatic and psychologically sharp.
+Be brutally honest, pragmatic and psychologically sharp.
 Your analysis is for internal use only.
-It should reveal what is really going on in this deal.
-Not the optimistic version, but the evidence-based one.
+It should reveal what is REALLY going on in this deal.
+Not the optimistic version, but the evidence-based truth.
 
 {lang_instruction}
 
-Purpose: Provide actionable commercial intelligence that clarifies the true state of this opportunity, the political dynamics inside the customer organisation, and what the sales team should do next.
+Purpose: Provide actionable commercial intelligence that clarifies the true state of this opportunity, the political dynamics inside the customer organisation, and what the sales team must do next to win.
 
 Every insight must be supported by concrete evidence from the conversation.
+Distinguish clearly between FACTS (what was said), INFERENCES (what we deduce), and UNKNOWNS (gaps to fill).
 
 {context_text}
 
@@ -513,144 +531,356 @@ STRUCTURE & INSTRUCTIONS:
 
 # Commercial Analysis – {company_name}
 
-## Executive Summary
-In 2-3 sentences, summarise the real situation:
-Is this opportunity viable, fragile or misaligned?
-What single factor will determine whether this deal moves forward or stalls?
+---
 
-## Momentum Assessment
-Describe the current momentum of the deal.
-Classify as: 🟢 Forward Momentum, 🟡 Neutral / Stalled, 🔴 Regressive.
-Explain *why*, using evidence and behavioural signals from the prospect.
+## ⚡ Executive Summary
+
+In exactly 3 sentences:
+1. The real situation (viable / fragile / misaligned)
+2. The single factor that will determine if this deal moves forward or stalls
+3. The recommended strategic posture (push / nurture / requalify / deprioritise)
 
 ---
 
-## BANT Analysis
+## 📊 Deal Snapshot
 
-Analyse each dimension using the structure below. Always separate:
-- What the customer *explicitly said*
-- What we *infer*
-- What is still *unknown*
-
-### Budget
-- **Evidence**: [Direct quotes or statements]
-- **Assessment**: 🟢 Confirmed / 🟡 Unclear / 🔴 Concern
-- **Interpretation**: [What this means for deal viability]
-- **Unknowns**: [What remains unverified]
-
-### Authority
-- **Decision Makers Identified**: [Names and roles]
-- **Decision Process**: [How decisions are made, formal vs informal]
-- **Assessment**: 🟢 Full access / 🟡 Partial access / 🔴 Missing key personas
-- **Political Dynamics**: [Who influences whom]
-- **Gap**: [Who we still need access to]
-
-### Need
-- **Stated Needs**: [Verbatim customer statements]
-- **Underlying Drivers**: [Motivations, pain, pressure, risk avoidance]
-- **Urgency Level**: 🔴 Urgent / 🟡 Important / 🟢 Nice-to-have
-- **Strategic Fit**: [How well our solution aligns to their core goals]
-
-### Timeline
-- **Stated Timeline**: [Any explicit deadlines]
-- **Trigger Events**: [Renewals, compliance deadlines, growth plans]
-- **Assessment**: 🟢 Clear / 🟡 Vague / 🔴 No urgency
-- **Implications**: [What accelerates or delays this deal]
+| Metric | Value | Assessment |
+|--------|-------|------------|
+| **Deal Value** | {deal_value} | [Is this validated or assumed?] |
+| **Current Stage** | {current_stage} | [Is this accurate based on evidence?] |
+| **Momentum** | 🟢 Forward / 🟡 Stalled / 🔴 Regressive | [One-line evidence] |
+| **Win Probability** | X% | [Confidence: High/Med/Low] |
+| **Forecast Category** | Commit / Best Case / Pipeline / Omit | [Based on evidence] |
+| **Recommended Stage** | [CRM stage that matches reality] | [Why] |
 
 ---
 
-## Buying Signals & Interest Indicators
+## 🎯 MEDDIC Qualification
+
+Analyse each element. For each: Evidence → Assessment → Gap to Fill.
+
+### M — Metrics
+What quantifiable outcomes does the customer expect?
+
+| Aspect | Details |
+|--------|---------|
+| **Stated Success Metrics** | [What numbers did they mention? ROI, time saved, revenue, etc.] |
+| **Evidence** | "[Exact quote if available]" |
+| **Assessment** | 🟢 Quantified / 🟡 Vague / 🔴 Unknown |
+| **Gap** | [What metrics do we need to establish?] |
+
+### E — Economic Buyer
+Who has the final budget authority?
+
+| Aspect | Details |
+|--------|---------|
+| **Identified** | [Name + Role] or "Not yet identified" |
+| **Access Level** | 🟢 Direct / 🟡 Indirect / 🔴 None |
+| **Evidence** | [How do we know this person decides?] |
+| **Gap** | [Do we need to reach higher?] |
+
+### D — Decision Criteria
+What criteria will they use to choose?
+
+| Criterion | Priority | Our Fit | Evidence |
+|-----------|----------|---------|----------|
+| [Criterion 1] | Must-have / Nice-to-have | 🟢/🟡/🔴 | "[quote]" |
+| [Criterion 2] | Must-have / Nice-to-have | 🟢/🟡/🔴 | "[quote]" |
+
+**Assessment**: 🟢 We match all must-haves / 🟡 Gaps exist / 🔴 Critical misalignment
+
+### D — Decision Process
+How will they make this decision?
+
+| Aspect | Details |
+|--------|---------|
+| **Process Steps** | [What steps from interest to signature?] |
+| **Who's Involved** | [Names/roles in the buying committee] |
+| **Timeline** | [Stated or inferred decision date] |
+| **Evidence** | "[Quote about their process]" |
+| **Assessment** | 🟢 Clear / 🟡 Vague / 🔴 Unknown |
+
+### I — Identified Pain
+What pain is driving this initiative?
+
+| Aspect | Details |
+|--------|---------|
+| **Stated Pain** | "[Verbatim customer statement]" |
+| **Business Impact** | [Quantified if possible: €, time, risk] |
+| **Emotional Impact** | [Fear, frustration, career risk, excitement?] |
+| **Urgency** | 🔴 Burning / 🟡 Important / 🟢 Nice-to-solve |
+| **Cost of Inaction** | [What happens if they do nothing?] |
+
+### C — Champion
+Who is actively selling for us internally?
+
+| Aspect | Details |
+|--------|---------|
+| **Champion Identified** | [Name + Role] or "No clear champion yet" |
+| **Champion Strength** | 🟢 Strong (influence + motivation) / 🟡 Moderate / 🔴 Weak or None |
+| **Evidence of Advocacy** | [What have they done to advance the deal?] |
+| **What They Need** | [How can we arm them for internal conversations?] |
+| **Risk if Champion Leaves** | [Single point of failure?] |
+
+**MEDDIC Score**: X/6 elements confirmed
+
+---
+
+## 🏆 Champion Deep Dive
+
+This section determines 80% of deal outcomes.
+
+### Champion Profile
+| Aspect | Assessment |
+|--------|------------|
+| **Name** | [Name] |
+| **Role** | [Title] |
+| **Influence Level** | High / Medium / Low |
+| **Personal Win** | [What do THEY gain if this succeeds?] |
+| **Personal Risk** | [What do THEY lose if this fails?] |
+| **Trust in Us** | 🟢 High / 🟡 Developing / 🔴 Uncertain |
+
+### Champion Test
+Answer these honestly:
+- [ ] Would they return our call on a weekend? 
+- [ ] Have they shared internal information with us?
+- [ ] Have they introduced us to other stakeholders?
+- [ ] Have they coached us on how to win?
+- [ ] Would they fight for us if challenged?
+
+**Champion Verdict**: Real Champion / Potential Champion / Friendly Contact Only / No Champion
+
+### If No Champion
+**Action Required**: [Specific steps to develop or identify a champion]
+
+---
+
+## 🧵 Multi-Threading Status
+
+Single-threaded deals are 40% less likely to close.
+
+| Contact | Role | Engagement | Relationship Depth | Last Contact |
+|---------|------|------------|-------------------|--------------|
+| [Name 1] | [Role] | 🟢 Active / 🟡 Passive / 🔴 Cold | Strong / Developing / New | [Date] |
+| [Name 2] | [Role] | 🟢/🟡/🔴 | [Depth] | [Date] |
+
+**Multi-threading Score**: X contacts engaged
+**Risk Assessment**: 🟢 Well-threaded / 🟡 Limited / 🔴 Single-threaded (HIGH RISK)
+
+### Threading Action
+[What relationships do we need to develop?]
+
+---
+
+## 📋 Path to Close (Paper Process)
+
+What must happen between "yes" and signature?
+
+| Step | Owner | Status | Estimated Time | Blocker Risk |
+|------|-------|--------|----------------|--------------|
+| Verbal Agreement | [Prospect name] | ✅ Done / ⏳ Pending | — | — |
+| Proposal Review | [Who] | ✅/⏳ | [X days] | [Risk] |
+| Legal Review | [Who] | ✅/⏳ | [X days] | [Risk] |
+| Procurement | [Who] | ✅/⏳ | [X days] | [Risk] |
+| Security Review | [Who] | ✅/⏳ | [X days] | [Risk] |
+| Budget Approval | [Who] | ✅/⏳ | [X days] | [Risk] |
+| Contract Signature | [Who] | ✅/⏳ | [X days] | [Risk] |
+
+**Path to Close Clarity**: 🟢 Clear / 🟡 Partial / 🔴 Unknown
+**Estimated Days to Close**: [X days]
+**Biggest Blocker**: [The step most likely to delay or kill the deal]
+
+---
+
+## 💰 BANT Validation (Quick Check)
+
+| Element | Status | One-Line Evidence |
+|---------|--------|-------------------|
+| **Budget** | 🟢 Confirmed / 🟡 Unclear / 🔴 Concern | [Evidence] |
+| **Authority** | 🟢 Full access / 🟡 Partial / 🔴 Missing | [Evidence] |
+| **Need** | 🟢 Urgent / 🟡 Important / 🔴 Unclear | [Evidence] |
+| **Timeline** | 🟢 Clear / 🟡 Vague / 🔴 None | [Evidence] |
+
+---
+
+## 🎭 Buying Committee Dynamics
+
+### Stakeholder Map
+
+| Person | Role | Stance | Influence | Priority to Engage |
+|--------|------|--------|-----------|-------------------|
+| [Name] | [Title] | 👍 Champion / 😐 Neutral / 👎 Skeptic / ❓ Unknown | High/Med/Low | 🔴/🟡/🟢 |
+
+### Political Dynamics
+- **Power Center**: [Who really decides?]
+- **Alliances**: [Who influences whom?]
+- **Conflicts**: [Any internal disagreements we can leverage or must navigate?]
+- **Blocker Risk**: [Who could kill this deal and why?]
+
+### Alignment Assessment
+Are the stakeholders aligned on:
+- [ ] The problem to solve?
+- [ ] The priority/urgency?
+- [ ] The budget?
+- [ ] The vendor selection criteria?
+
+**Alignment Score**: 🟢 Aligned / 🟡 Partially Aligned / 🔴 Misaligned (RISK)
+
+---
+
+## 📈 Engagement Score
+
+Objective measurement of prospect activity.
+
+| Signal | Evidence | Score |
+|--------|----------|-------|
+| Response time to emails | [Fast/Normal/Slow] | +2/+1/0 |
+| Meeting attendance | [Always/Sometimes/Cancels] | +2/+1/-1 |
+| Questions asked | [Many/Some/Few] | +2/+1/0 |
+| Information shared | [Detailed/Basic/Minimal] | +2/+1/0 |
+| Internal introductions | [Yes/Promised/No] | +3/+1/0 |
+| Proactive outreach | [Yes/No] | +3/0 |
+
+**Engagement Score**: X/14
+**Interpretation**: Highly Engaged / Moderately Engaged / Passive / Disengaging
+
+---
+
+## 🎯 Buying Signals & Interest Indicators
+
 List only signals grounded in evidence, not hope.
 
-| Signal | Quote / Evidence | Strength |
-|--------|------------------|----------|
-| [type] | "[exact quote]" | 🟢 / 🟡 / 🔴 |
+| Signal Type | Quote / Evidence | Strength |
+|-------------|------------------|----------|
+| [Verbal commitment] | "[exact quote]" | 🟢 Strong |
+| [Process question] | "[quote]" | 🟢/🟡 |
+| [Timeline mention] | "[quote]" | 🟢/🟡 |
+| [Budget discussion] | "[quote]" | 🟢/🟡/🔴 |
 
 ---
 
-## Objections & Concerns
-Identify both explicit and implicit objections.
+## ⚠️ Objections & Concerns
 
-| Concern | Quote / Evidence | Recommended Approach |
-|---------|------------------|----------------------|
-| [concern] | "[quote]" | [How to neutralise or reframe] |
+| Concern | Type | Quote / Evidence | Neutralisation Strategy |
+|---------|------|------------------|------------------------|
+| [Concern 1] | Explicit / Implicit | "[quote]" | [How to address] |
+| [Concern 2] | Explicit / Implicit | "[quote]" | [How to address] |
 
----
-
-## Competitive Landscape
-- **Competitors Mentioned**: [Names or "None mentioned"]
-- **Prospect's Comparison Criteria**: [What matters to them]
-- **Our Position**: [Where we stand based on evidence]
-- **Differentiation Angle**: [The sharpest lever we can use]
+### Unspoken Concerns
+[What objections might they have but haven't voiced?]
 
 ---
 
-## Risk Assessment
-Provide a sober view of actual deal risks.
+## ⚔️ Competitive Landscape
 
-| Risk | Probability | Impact | Mitigation Strategy |
-|------|-------------|--------|---------------------|
-| [risk] | High/Med/Low | High/Med/Low | [action] |
+### Named Competitors
+| Competitor | Mentioned By | Their Strength | Our Counter |
+|------------|--------------|----------------|-------------|
+| [Name] | [Who said it] | [Perceived advantage] | [Our differentiation] |
+
+### The Real Competitor: "Do Nothing"
+- **Cost of Inaction**: [What happens if they don't act?]
+- **Status Quo Comfort Level**: 🟢 Uncomfortable / 🟡 Tolerable / 🔴 Comfortable (RISK)
+- **Burning Platform**: [Is there urgency to change?]
 
 ---
 
-## Deal Health Score
-Score each dimension 1-5 based strictly on evidence.
+## 🚨 Risk Assessment
+
+| Risk | Probability | Impact | Mitigation | Owner |
+|------|-------------|--------|------------|-------|
+| No clear champion | High/Med/Low | High/Med/Low | [Action] | [Who] |
+| Budget not confirmed | High/Med/Low | High/Med/Low | [Action] | [Who] |
+| Competitor threat | High/Med/Low | High/Med/Low | [Action] | [Who] |
+| Timeline slippage | High/Med/Low | High/Med/Low | [Action] | [Who] |
+| Champion departure | High/Med/Low | High/Med/Low | [Action] | [Who] |
+
+**Top Risk**: [The single biggest threat to this deal]
+
+---
+
+## 📊 Deal Health Dashboard
 
 | Dimension | Score | Evidence |
 |-----------|-------|----------|
-| Need Fit | /5 | [why] |
-| Stakeholder Access | /5 | [why] |
-| Budget Alignment | /5 | [why] |
-| Timeline Clarity | /5 | [why] |
-| Competitive Position | /5 | [why] |
+| MEDDIC Complete | /6 | [X of 6 elements confirmed] |
+| Champion Strength | /5 | [Reasoning] |
+| Multi-threading | /5 | [X contacts, depth assessment] |
+| Engagement Level | /5 | [Based on engagement score] |
+| Path to Close Clear | /5 | [Process visibility] |
+| Competitive Position | /5 | [Our standing] |
 
-**Overall Deal Score**: X/25 → Strong / Moderate / At Risk
+**Overall Deal Score**: X/31
+
+| Score Range | Classification | Typical Action |
+|-------------|----------------|----------------|
+| 25-31 | 🟢 Strong | Push to close |
+| 18-24 | 🟡 Moderate | Address gaps urgently |
+| 11-17 | 🟠 At Risk | Requalify or escalate |
+| 0-10 | 🔴 Critical | Consider deprioritising |
 
 ---
 
-## Information Gaps
-Consolidate all unknowns from the analysis above:
+## 🎯 Win Probability & Forecast
+
+| Metric | Assessment |
+|--------|------------|
+| **Win Probability** | X% |
+| **Confidence Level** | High / Medium / Low |
+| **Forecast Category** | Commit / Best Case / Pipeline / Omit |
+| **Recommended CRM Stage** | [Stage name] |
+| **Close Date Confidence** | 🟢 Realistic / 🟡 Optimistic / 🔴 Unrealistic |
+
+**Probability Reasoning**:
+[2-3 sentences: What drives this probability up or down? What would change it?]
+
+---
+
+## 🎬 THE ONE ACTION
+
+If you do ONLY ONE THING this week, do this:
+
+> **[Specific, concrete action]**
+> 
+> **Owner**: [Who]
+> **Deadline**: [When]
+> **Why**: [Direct impact on deal progression]
+> **Success Looks Like**: [Observable outcome]
+
+---
+
+## 📋 Recommended Actions
+
+### Immediate (Within 48 Hours)
+1. [Most critical action] — [Owner]
+2. [Second action] — [Owner]
+
+### Before Next Meeting
+1. [Preparation needed]
+2. [Information to gather]
+3. [Stakeholders to involve]
+
+### Deal Strategy (One Paragraph)
+[Concise strategic guidance: Should we push forward, nurture, requalify, escalate internally, or deprioritise? What's the playbook for the next 30 days?]
+
+---
+
+## 📝 Information Gaps
 
 | Area | What We Don't Know | How to Find Out | Priority |
 |------|-------------------|-----------------|----------|
-| [BANT area] | [the unknown] | [discovery action] | 🔴 / 🟡 / 🟢 |
-
----
-
-## Win Probability & Strategic Recommendation
-
-- **Win Probability**: X%
-- **Confidence Level**: High / Medium / Low
-- **Reasoning**: In 2-3 sentences: what drives this probability? What could change it?
-
-### Overall Strategy Guidance
-Provide one sharp paragraph:
-Should we push forward, nurture, requalify, escalate internally, or deprioritise?
-Base this advice strictly on evidence, political dynamics and deal momentum.
-
----
-
-## Recommended Actions
-
-### Immediate (This Week)
-The 1-3 most critical actions that influence deal momentum.
-
-### Before Next Meeting
-Information we need, stakeholders to involve, preparation needed.
-
-### Deal Strategy
-A concise advisory paragraph outlining the strategic playbook for this opportunity.
+| [MEDDIC element] | [The unknown] | [Discovery question/action] | 🔴/🟡/🟢 |
 
 ---
 
 RULES:
-- Every insight must be evidence-based.
-- Distinguish facts from interpretation.
-- Flag assumptions explicitly.
-- Be concise but deep.
-- Prioritise clarity over completeness.
-- Deliver commercial intelligence that can change action, not just document reality.
+- Every insight MUST be evidence-based — quote the transcript where possible.
+- Clearly distinguish FACTS from INFERENCES from UNKNOWNS.
+- Be brutally honest — this is internal, not for the customer.
+- Prioritise actionability over completeness.
+- The goal is to change behaviour, not just document reality.
+- Score conservatively — optimism kills forecasts.
+- If evidence is missing, say so explicitly.
 
 Generate the complete Commercial Analysis now:"""
     
@@ -1088,13 +1318,13 @@ RULES:
 
 Generate the complete internal report now:"""
     
-    async def _generate_with_claude(self, prompt: str) -> str:
+    async def _generate_with_claude(self, prompt: str, max_tokens: int = 4000) -> str:
         """Call Claude API to generate content (async to not block event loop)"""
         try:
             # Use await with AsyncAnthropic - this is non-blocking!
             response = await self.client.messages.create(
                 model=self.model,
-                max_tokens=4000,
+                max_tokens=max_tokens,
                 messages=[
                     {"role": "user", "content": prompt}
                 ]
