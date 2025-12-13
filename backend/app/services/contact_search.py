@@ -59,11 +59,11 @@ class ContactSearchService:
     """
     
     def __init__(self):
-        self.gemini_api_key = os.getenv("GOOGLE_AI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+        self.brave_api_key = os.getenv("BRAVE_API_KEY")
         self.anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
         
-        if not self.gemini_api_key and not self.anthropic_api_key:
-            logger.warning("No API keys set - contact search will fail")
+        if not self.brave_api_key:
+            logger.warning("No BRAVE_API_KEY set - contact search will use Claude fallback")
     
     async def search_contact(
         self,
@@ -92,26 +92,32 @@ class ContactSearchService:
             ContactSearchResult with up to 5 matches sorted by confidence
         """
         matches: List[ContactMatch] = []
-        search_source = "gemini"
-        search_query = f'"{name}" "{company_name or ""}" linkedin'
+        search_source = "brave"
+        search_query = f'"{name}" "{company_name or ""}" site:linkedin.com/in'
         
-        # Use Claude for contact search - it can extract URLs from web search results
-        # Gemini's grounding doesn't return URLs reliably
-        if self.anthropic_api_key:
+        # Use Brave Search API - $0.003 per search (50x cheaper than Claude)
+        if self.brave_api_key:
             try:
-                claude_matches = await self._search_with_claude(
-                    name, role, company_name, company_linkedin_url
-                )
+                brave_matches = await self._search_with_brave(name, role, company_name)
+                if brave_matches:
+                    matches = brave_matches
+                    search_source = "brave"
+                    print(f"[CONTACT_SEARCH] Brave found {len(brave_matches)} LinkedIn profiles", flush=True)
+                else:
+                    print("[CONTACT_SEARCH] Brave found no profiles", flush=True)
+            except Exception as e:
+                print(f"[CONTACT_SEARCH] Brave failed: {e}", flush=True)
+        
+        # Fallback to Claude if Brave didn't find anything
+        if not matches and self.anthropic_api_key:
+            try:
+                claude_matches = await self._search_with_claude(name, role, company_name, None)
                 if claude_matches:
                     matches = claude_matches
                     search_source = "claude"
                     print(f"[CONTACT_SEARCH] Claude found {len(claude_matches)} LinkedIn profiles", flush=True)
-                else:
-                    print("[CONTACT_SEARCH] Claude found no profiles", flush=True)
             except Exception as e:
-                print(f"[CONTACT_SEARCH] Claude failed: {e}", flush=True)
-        else:
-            print("[CONTACT_SEARCH] No Anthropic API key configured", flush=True)
+                print(f"[CONTACT_SEARCH] Claude also failed: {e}", flush=True)
         
         # FILTER: Only keep matches that have LinkedIn URLs (the whole point!)
         matches = [m for m in matches if m.linkedin_url]
@@ -203,68 +209,110 @@ class ContactSearchService:
         
         return matches
     
-    async def _search_with_gemini(
+    async def _search_with_brave(
         self,
         name: str,
         role: Optional[str],
-        company_name: Optional[str],
-        company_linkedin_url: Optional[str]
+        company_name: Optional[str]
     ) -> List[ContactMatch]:
         """
-        Search for LinkedIn profiles using Gemini with Google Search grounding.
+        Search for LinkedIn profiles using Brave Search API.
         
-        Uses a specific search query format that Google understands well.
+        Much cheaper than Claude (~$0.003 per search vs $0.05+)
+        Returns actual URLs from search results.
         """
+        import aiohttp
+        
         try:
-            from google import genai
-            from google.genai import types
+            # Build search query
+            query_parts = [f'"{name}"']
+            if company_name:
+                query_parts.append(f'"{company_name}"')
+            query_parts.append('site:linkedin.com/in')
+            query = ' '.join(query_parts)
             
-            client = genai.Client(api_key=self.gemini_api_key)
+            print(f"[CONTACT_SEARCH] Brave searching: {query}", flush=True)
             
-            # Build search context
-            company_text = company_name or "unknown company"
-            role_text = f" ({role})" if role else ""
+            async with aiohttp.ClientSession() as session:
+                headers = {
+                    "Accept": "application/json",
+                    "X-Subscription-Token": self.brave_api_key
+                }
+                params = {
+                    "q": query,
+                    "count": 5
+                }
+                
+                async with session.get(
+                    "https://api.search.brave.com/res/v1/web/search",
+                    headers=headers,
+                    params=params
+                ) as response:
+                    if response.status != 200:
+                        error_text = await response.text()
+                        print(f"[CONTACT_SEARCH] Brave API error {response.status}: {error_text}", flush=True)
+                        return []
+                    
+                    data = await response.json()
             
-            # Direct prompt asking for the URL from search results
-            prompt = f"""Search Google for: {name} {company_text} LinkedIn
-
-Look at the search results. Find the LinkedIn profile URL (linkedin.com/in/...) from the search results.
-
-The LinkedIn URL format is: https://linkedin.com/in/username or https://www.linkedin.com/in/username
-
-IMPORTANT: Copy the EXACT LinkedIn URL from the Google search results. Do not say "unknown" - either provide the real URL or return empty array.
-
-Return JSON:
-[{{"name":"{name}","title":"...","company":"{company_text}","linkedin_url":"https://linkedin.com/in/EXACT-USERNAME-FROM-SEARCH"}}]
-
-If you cannot find a LinkedIn URL in the search results, return: []"""
-
-            logger.info(f"[CONTACT_SEARCH] Gemini searching: {name} at {company_text}")
+            # Parse Brave search results
+            matches = []
+            web_results = data.get("web", {}).get("results", [])
             
-            response = await client.aio.models.generate_content(
-                model="gemini-2.0-flash",
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    tools=[types.Tool(google_search=types.GoogleSearch())],
-                    temperature=0.1  # Same as working research queries
-                )
-            )
+            print(f"[CONTACT_SEARCH] Brave returned {len(web_results)} results", flush=True)
             
-            if not response or not response.text:
-                print("[CONTACT_SEARCH] Gemini returned empty response", flush=True)
-                return []
+            for result in web_results:
+                url = result.get("url", "")
+                title = result.get("title", "")
+                description = result.get("description", "")
+                
+                # Only include LinkedIn profile URLs
+                if "linkedin.com/in/" not in url.lower():
+                    continue
+                
+                # Extract name from title (usually "Name - Title | LinkedIn")
+                result_name = title.split(" - ")[0].strip() if " - " in title else title.split(" | ")[0].strip()
+                result_title = ""
+                if " - " in title:
+                    parts = title.split(" - ")
+                    if len(parts) > 1:
+                        result_title = parts[1].split(" | ")[0].strip()
+                
+                # Calculate confidence based on name match
+                name_lower = name.lower()
+                result_name_lower = result_name.lower()
+                
+                if name_lower == result_name_lower:
+                    confidence = 0.95
+                    match_reason = "Exact name match"
+                elif name_lower in result_name_lower or result_name_lower in name_lower:
+                    confidence = 0.85
+                    match_reason = "Name match"
+                else:
+                    confidence = 0.6
+                    match_reason = "Possible match"
+                
+                # Boost confidence if company is mentioned
+                if company_name and company_name.lower() in (description + title).lower():
+                    confidence = min(1.0, confidence + 0.05)
+                    match_reason += " + Company match"
+                
+                matches.append(ContactMatch(
+                    name=result_name,
+                    title=result_title,
+                    company=company_name,
+                    linkedin_url=url,
+                    headline=description[:100] if description else None,
+                    confidence=confidence,
+                    match_reason=match_reason,
+                    from_research=False
+                ))
             
-            # Log the full response for debugging (print for Railway visibility)
-            response_text = response.text
-            print(f"[CONTACT_SEARCH] Gemini response ({len(response_text)} chars):", flush=True)
-            print(response_text[:1000], flush=True)
-            
-            matches = self._parse_matches(response_text, name, company_name)
-            print(f"[CONTACT_SEARCH] Parsed {len(matches)} matches", flush=True)
+            print(f"[CONTACT_SEARCH] Parsed {len(matches)} LinkedIn profiles from Brave", flush=True)
             return matches
             
         except Exception as e:
-            print(f"[CONTACT_SEARCH] Gemini search error: {e}", flush=True)
+            print(f"[CONTACT_SEARCH] Brave search error: {e}", flush=True)
             raise
     
     async def _search_with_claude(
