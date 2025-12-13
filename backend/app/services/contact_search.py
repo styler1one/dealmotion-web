@@ -303,18 +303,37 @@ class ContactSearchService:
                         result_title = parts[1].split(" | ")[0].strip()
                 
                 # Calculate confidence based on name match
-                name_lower = name.lower()
+                # Extract first and last name parts for comparison
+                search_name_lower = name.lower()
                 result_name_lower = result_name.lower()
                 
-                if name_lower == result_name_lower:
+                # Get name parts (first name, last name)
+                search_parts = set(search_name_lower.split())
+                result_parts = set(result_name_lower.split())
+                
+                # Remove common words that aren't names
+                skip_words = {'rc', 're', 'van', 'de', 'der', 'den', 'het', 'dr', 'mr', 'msc', 'bsc', 'mba'}
+                search_parts = search_parts - skip_words
+                result_parts = result_parts - skip_words
+                
+                # Count matching name parts
+                matching_parts = search_parts & result_parts
+                
+                if search_name_lower == result_name_lower:
                     confidence = 0.95
                     match_reason = "Exact name match"
-                elif name_lower in result_name_lower or result_name_lower in name_lower:
-                    confidence = 0.85
-                    match_reason = "Name match"
+                elif len(matching_parts) >= 2:
+                    # At least 2 name parts match (e.g., first and last name)
+                    confidence = 0.90
+                    match_reason = "Strong name match"
+                elif len(matching_parts) == 1:
+                    # Only 1 name part matches (e.g., just first name)
+                    confidence = 0.70
+                    match_reason = "Partial name match"
                 else:
-                    confidence = 0.6
-                    match_reason = "Possible match"
+                    # No name parts match - this is likely a wrong result
+                    confidence = 0.30
+                    match_reason = "Weak match - verify manually"
                 
                 # Boost confidence if company is mentioned
                 if company_name and company_name.lower() in (description + title).lower():
