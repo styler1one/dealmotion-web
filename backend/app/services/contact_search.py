@@ -95,7 +95,7 @@ class ContactSearchService:
         search_source = "gemini"
         search_query = f'"{name}" "{company_name or ""}" linkedin'
         
-        # ALWAYS search for LinkedIn profiles using Gemini (cheap, fast)
+        # Search for LinkedIn profiles using Gemini ONLY (cheap, fast)
         if self.gemini_api_key:
             try:
                 gemini_matches = await self._search_with_gemini(
@@ -105,26 +105,13 @@ class ContactSearchService:
                     matches = gemini_matches
                     search_source = "gemini"
                     logger.info(f"[CONTACT_SEARCH] Gemini found {len(gemini_matches)} LinkedIn profiles")
+                else:
+                    logger.info(f"[CONTACT_SEARCH] Gemini found no profiles")
             except Exception as e:
-                logger.warning(f"[CONTACT_SEARCH] Gemini failed: {e}, trying Claude")
-        
-        # Fall back to Claude ONLY if Gemini failed completely
-        if len(matches) == 0 and self.anthropic_api_key:
-            try:
-                claude_matches = await self._search_with_claude(
-                    name, role, company_name, company_linkedin_url
-                )
-                if claude_matches:
-                    matches = claude_matches
-                    search_source = "claude"
-                    logger.info(f"[CONTACT_SEARCH] Claude found {len(claude_matches)} LinkedIn profiles")
-            except Exception as e:
-                logger.error(f"[CONTACT_SEARCH] Claude also failed: {e}")
-                return ContactSearchResult(
-                    matches=[],
-                    search_query_used=search_query,
-                    error=str(e)
-                )
+                logger.error(f"[CONTACT_SEARCH] Gemini failed: {e}")
+                # No fallback to Claude - just return empty
+        else:
+            logger.error("[CONTACT_SEARCH] No Gemini API key configured")
         
         # FILTER: Only keep matches that have LinkedIn URLs (the whole point!)
         matches = [m for m in matches if m.linkedin_url]
@@ -243,44 +230,13 @@ class ContactSearchService:
             search_parts.append('site:linkedin.com/in')
             search_query = ' '.join(search_parts)
             
-            role_context = f" as {role}" if role else ""
-            
-            prompt = f"""Search Google for LinkedIn profiles using this exact query:
-{search_query}
+            # Short, focused prompt for speed
+            prompt = f"""Find LinkedIn profile: {search_query}
 
-I'm looking for the LinkedIn profile of {name} who works at {company_name or 'unknown company'}{role_context}.
+Return JSON array (max 3):
+[{{"name":"Full Name","title":"Job Title","company":"Company","linkedin_url":"https://linkedin.com/in/username","confidence":0.9}}]
 
-INSTRUCTIONS:
-1. Use Google Search to find LinkedIn profiles matching this person
-2. For EACH LinkedIn profile you find in the search results, extract:
-   - The exact LinkedIn URL (must be linkedin.com/in/...)
-   - The person's name as shown on LinkedIn
-   - Their current job title
-   - Their company
-   - Their location if visible
-
-3. Return the results as a JSON array:
-```json
-[
-  {{
-    "name": "Exact name from LinkedIn",
-    "title": "Job title from LinkedIn",
-    "company": "Company from LinkedIn",
-    "location": "Location",
-    "linkedin_url": "https://www.linkedin.com/in/actual-username",
-    "headline": "Their headline",
-    "confidence": 0.90,
-    "match_reason": "Name + Company match"
-  }}
-]
-```
-
-CRITICAL RULES:
-- ONLY include profiles you actually found in search results
-- NEVER invent or guess LinkedIn URLs
-- LinkedIn URLs must be real URLs from search results (linkedin.com/in/...)
-- If you find nothing, return: []
-- Include up to 5 most relevant matches"""
+Only real URLs from search. Empty [] if none found."""
 
             logger.info(f"[CONTACT_SEARCH] Gemini searching: {search_query}")
             
@@ -289,8 +245,8 @@ CRITICAL RULES:
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     tools=[types.Tool(google_search=types.GoogleSearch())],
-                    temperature=0.0,  # Zero temperature for factual results
-                    max_output_tokens=2000
+                    temperature=0.0,
+                    max_output_tokens=500  # Reduced for speed
                 )
             )
             
