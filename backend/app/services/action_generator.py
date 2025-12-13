@@ -48,9 +48,9 @@ class ActionGeneratorService:
         max_tokens_map = {
             ActionType.COMMERCIAL_ANALYSIS: 6000,
             ActionType.SALES_COACHING: 5000,
+            ActionType.ACTION_ITEMS: 5000,  # Increased for Calendar Blocks + Ready-to-Send
             ActionType.CUSTOMER_REPORT: 4000,
-            ActionType.ACTION_ITEMS: 4000,
-            ActionType.INTERNAL_REPORT: 3500,  # Increased for MEDDIC + CRM sections
+            ActionType.INTERNAL_REPORT: 3500,
             ActionType.SHARE_EMAIL: 1500,
         }
         max_tokens = max_tokens_map.get(action_type, 4000)
@@ -1307,8 +1307,9 @@ Generate the complete Sales Coaching feedback now:"""
     def _prompt_action_items(self, context_text: str, lang_instruction: str, context: Dict) -> str:
         """Prompt for action items extraction - INTERNAL, standardized task format"""
         company_name = context.get("followup", {}).get("prospect_company_name", "the customer")
+        meeting_date = context.get("followup", {}).get("meeting_date", "today")
         
-        return f"""You are extracting action items from a sales conversation.
+        return f"""You are extracting action items from a sales conversation and creating a highly actionable task list.
 
 Write in clear, direct and strategic language.
 Be thorough but pragmatic.
@@ -1331,8 +1332,9 @@ Distinguish sharply between:
 
 PURPOSE:
 Create a precise, actionable task list that the salesperson can immediately execute.
-Every action must be concrete, owned by someone, and tied to a realistic timeframe.
-Always explain *why* the action matters when not obvious.
+Every action must be SMART: Specific, Measurable, with clear deadline.
+Include time estimates so the rep can plan their day.
+Provide ready-to-use templates for emails and calls.
 
 IDENTIFYING ACTION ITEMS:
 
@@ -1354,73 +1356,189 @@ STRUCTURE:
 
 # Action Items – {company_name}
 
-## 🎯 Quick Wins (Do Today or Tomorrow)
+---
 
-| Task | Why It Matters | Time Needed |
-|------|----------------|-------------|
-[List small, high-impact steps that stabilise momentum or remove friction immediately.
-Each task must be specific and start with a verb.]
+## 📋 CRM QUICK COPY
+
+Copy these tasks directly into your CRM/task manager:
+
+| Task | Owner | Due Date | Priority | Status |
+|------|-------|----------|----------|--------|
+| [Task 1 - starts with verb] | You / Customer / Shared | [Specific date] | 🔴/🟡/🟢 | ⬜ Open |
+| [Task 2] | ... | ... | ... | ⬜ Open |
+| [Task 3] | ... | ... | ... | ⬜ Open |
 
 ---
 
-## 📋 Your Tasks (Sales Rep)
+## ⚡ DO NOW (Within 2 Hours)
 
-| # | Task | Deadline | Priority | Context / Evidence |
-|---|------|----------|----------|---------------------|
-[Include explicit promises, implicit responsibilities, and proactive actions that change deal trajectory.
-Priority scale: 🔴 High (deal-critical), 🟡 Medium (important), 🟢 Low (optional).]
+**Highest impact, lowest effort tasks to do immediately after this meeting.**
 
----
+| # | Task | Time Needed | Deal Impact | Why Now |
+|---|------|-------------|-------------|---------|
+| 1 | [Specific action starting with verb] | X min | 🔴 High / 🟡 Medium | [Why this can't wait] |
 
-## 👤 Customer Tasks
-
-| # | Task | Expected By | Follow-up Strategy | Why It Matters |
-|---|------|-------------|-------------------|----------------|
-[Tasks the customer committed to or needs to do to move forward.
-Include a light-touch, respectful follow-up strategy that fits their communication style.]
+If no urgent tasks: "No immediate actions required. First priority task is [X] by [date]."
 
 ---
 
-## 🤝 Shared Tasks / Next Meeting Preparation
+## 📅 CALENDAR BLOCKS
 
-| # | Task or Topic | Owner | Target Date | Purpose |
-|---|---------------|-------|-------------|---------|
-[Items that require coordination, joint preparation, or alignment before the next interaction.]
+**Block these times in your calendar:**
 
----
+| Task | Suggested Day | Time Block | Duration | Energy Level |
+|------|---------------|------------|----------|--------------|
+| [Task description] | [Day of week] | [Morning/Afternoon/End of day] | [X min] | 🧠 High Focus / ☕ Low Energy |
 
-## ⏳ Waiting On / Blockers
-
-| Item | Waiting For | Impact if Delayed | Recommended Nudge Date |
-|------|-------------|-------------------|-------------------------|
-[Capture anything that could stall or derail momentum.
-Be explicit about potential impact and how to gently re-activate stalled items.]
+**Total time investment this week**: X hours
 
 ---
 
-## 📊 Summary Metrics
+## 🎯 YOUR TASKS (Sales Rep)
 
-| Metric | Count |
-|--------|-------|
-| Total action items | X |
-| High priority actions | X |
-| Quick wins | X |
-| Customer-owned items | X |
-| Blocked items | X |
+| # | Task (SMART) | Deadline | Time Est. | Priority | Deal Impact | Evidence |
+|---|--------------|----------|-----------|----------|-------------|----------|
+| 1 | [Specific, measurable task starting with verb] | [Date] | [X min] | 🔴 | [How this advances deal] | "[Quote or reference]" |
 
-**Recommended next touchpoint**: [Suggested date + reason based on momentum]
-**Key risk if follow-up slips**: [One sentence explaining what could deteriorate]
+**Priority Legend**: 🔴 Deal-critical (do first) | 🟡 Important (this week) | 🟢 Nice-to-have
+
+---
+
+## 🔗 DEPENDENCIES (Do In This Order)
+
+If tasks have dependencies, list the correct sequence:
+
+```
+1. [First task] ──► 2. [Second task] ──► 3. [Third task]
+         │
+         └──► Enables: [What this unlocks]
+```
+
+If no dependencies: "All tasks can be done in parallel."
+
+---
+
+## 👤 CUSTOMER TASKS
+
+| # | Task | Owner | Expected By | Follow-up Trigger | Reminder Date |
+|---|------|-------|-------------|-------------------|---------------|
+| 1 | [What they committed to] | [Name] | [Date] | [What to do if no response by X] | [When to set reminder] |
+
+**Follow-up approach**: [Recommended tone and channel based on their communication style]
+
+---
+
+## 📧 READY-TO-SEND (Copy/Paste)
+
+### Follow-up Email Template
+
+**Subject**: [Suggested subject line]
+
+```
+Hi [Name],
+
+[2-3 sentences thanking them, summarizing key points, and stating next steps]
+
+[Specific ask or attached items]
+
+[Closing with clear next step and date]
+
+Best regards,
+[Your name]
+```
+
+### Follow-up Call Script (if needed)
+
+```
+Opening: "[Personalized opener based on conversation]"
+
+Purpose: "[Why you're calling]"
+
+Ask: "[Specific question or request]"
+
+Close: "[Suggested next step]"
+```
+
+---
+
+## 🤝 SHARED / MEETING PREP TASKS
+
+| # | Task | Owner | Target Date | Purpose | Prep Needed |
+|---|------|-------|-------------|---------|-------------|
+| 1 | [Joint task or meeting prep item] | [Who leads] | [Date] | [Why this matters] | [What to prepare] |
+
+---
+
+## ⏳ WAITING ON / BLOCKERS
+
+| Item | Waiting For | Impact if Delayed | Escalation Trigger | Nudge Script |
+|------|-------------|-------------------|-------------------|--------------|
+| [What's blocked] | [Who/what] | [Business impact] | [When to escalate] | "[What to say]" |
+
+**Escalation path**: If blocked for more than [X days], contact [internal resource/manager].
+
+---
+
+## ⏰ REMINDER SCHEDULE
+
+Set these reminders in your calendar/CRM:
+
+| Reminder | Date | Time | Purpose |
+|----------|------|------|---------|
+| Follow up on [X] | [Date] | [Time] | [Why] |
+| Check if [Y] received | [Date] | [Time] | [Why] |
+| Prep for next meeting | [Date] | [Time] | [Why] |
+
+---
+
+## 📊 SUMMARY DASHBOARD
+
+| Metric | Count | Time |
+|--------|-------|------|
+| **Total action items** | X | |
+| **🔴 High priority** | X | X hrs total |
+| **⚡ Do Now items** | X | X min |
+| **👤 Customer-owned** | X | |
+| **⏳ Blocked items** | X | |
+| **📅 Calendar blocks needed** | X | X hrs this week |
+
+---
+
+## 🎯 THE ONE THING
+
+If you do nothing else, do THIS:
+
+> **[Single most important action that will have the biggest impact on this deal]**
+
+**Do it by**: [Specific date/time]
+**Because**: [Why this matters most]
+
+---
+
+## 🚨 RISK IF NO ACTION
+
+What happens if follow-up slips:
+
+| Days Without Action | Risk | Likelihood |
+|---------------------|------|------------|
+| 2 days | [Momentum loss description] | Medium |
+| 5 days | [Relationship/deal risk] | High |
+| 7+ days | [What could go wrong] | Critical |
+
+**Recommended next touchpoint**: [Date] — [Reason based on buying cycle and urgency]
 
 ---
 
 RULES:
-- Every task starts with a verb.
-- Every item must be tied to a real piece of evidence from the conversation.
-- If something is uncertain, flag it rather than guessing.
-- If a section has no items, write "None identified".
-- Remove noise. Keep only commercially meaningful actions.
-- Prioritise tasks that influence the deal, not administrative housekeeping.
-- Maintain a professional, calm and strategic tone.
+- Every task MUST start with a verb (Send, Schedule, Prepare, Call, Review, etc.)
+- Every task MUST have a specific deadline (not "soon" or "next week")
+- Every task MUST have a time estimate
+- Include ready-to-use email/call templates when follow-up is needed
+- If something is uncertain, flag it rather than guessing
+- If a section has no items, write "None identified"
+- Remove noise. Keep only commercially meaningful actions
+- Prioritise tasks that influence the deal, not administrative housekeeping
+- Calendar blocks should match the rep's energy levels (complex = morning, routine = afternoon)
 
 Generate the complete action item list now:"""
     
