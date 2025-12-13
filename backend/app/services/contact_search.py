@@ -96,6 +96,7 @@ class ContactSearchService:
         search_query = f'"{name}" "{company_name or ""}" site:linkedin.com/in'
         
         # Use Brave Search API - $0.003 per search (50x cheaper than Claude)
+        # NO Claude fallback - Brave only
         if self.brave_api_key:
             try:
                 brave_matches = await self._search_with_brave(name, role, company_name)
@@ -107,17 +108,8 @@ class ContactSearchService:
                     print("[CONTACT_SEARCH] Brave found no profiles", flush=True)
             except Exception as e:
                 print(f"[CONTACT_SEARCH] Brave failed: {e}", flush=True)
-        
-        # Fallback to Claude if Brave didn't find anything
-        if not matches and self.anthropic_api_key:
-            try:
-                claude_matches = await self._search_with_claude(name, role, company_name, None)
-                if claude_matches:
-                    matches = claude_matches
-                    search_source = "claude"
-                    print(f"[CONTACT_SEARCH] Claude found {len(claude_matches)} LinkedIn profiles", flush=True)
-            except Exception as e:
-                print(f"[CONTACT_SEARCH] Claude also failed: {e}", flush=True)
+        else:
+            print("[CONTACT_SEARCH] No BRAVE_API_KEY configured", flush=True)
         
         # FILTER: Only keep matches that have LinkedIn URLs (the whole point!)
         matches = [m for m in matches if m.linkedin_url]
@@ -224,51 +216,68 @@ class ContactSearchService:
         import aiohttp
         
         try:
-            # Build search query
-            query_parts = [f'"{name}"']
-            if company_name:
-                query_parts.append(f'"{company_name}"')
-            query_parts.append('site:linkedin.com/in')
-            query = ' '.join(query_parts)
+            # Build multiple search queries to try (Brave doesn't support site: well)
+            queries = []
             
-            print(f"[CONTACT_SEARCH] Brave searching: {query}", flush=True)
+            # Query 1: Name + Company + LinkedIn (most specific)
+            if company_name:
+                queries.append(f'{name} {company_name} LinkedIn')
+            
+            # Query 2: Name + LinkedIn profile
+            queries.append(f'{name} LinkedIn profile')
+            
+            # Query 3: Just name + LinkedIn (broadest)
+            queries.append(f'{name} LinkedIn')
+            
+            print(f"[CONTACT_SEARCH] Brave will try {len(queries)} queries", flush=True)
+            
+            matches = []
+            web_results = []
             
             async with aiohttp.ClientSession() as session:
                 headers = {
                     "Accept": "application/json",
                     "X-Subscription-Token": self.brave_api_key
                 }
-                params = {
-                    "q": query,
-                    "count": 5
-                }
                 
-                async with session.get(
-                    "https://api.search.brave.com/res/v1/web/search",
-                    headers=headers,
-                    params=params
-                ) as response:
-                    if response.status != 200:
-                        error_text = await response.text()
-                        print(f"[CONTACT_SEARCH] Brave API error {response.status}: {error_text}", flush=True)
-                        return []
+                # Try each query until we find LinkedIn results
+                for query in queries:
+                    print(f"[CONTACT_SEARCH] Brave trying: {query}", flush=True)
                     
-                    data = await response.json()
+                    params = {
+                        "q": query,
+                        "count": 10  # Get more results
+                    }
+                    
+                    async with session.get(
+                        "https://api.search.brave.com/res/v1/web/search",
+                        headers=headers,
+                        params=params
+                    ) as response:
+                        if response.status != 200:
+                            error_text = await response.text()
+                            print(f"[CONTACT_SEARCH] Brave API error {response.status}: {error_text}", flush=True)
+                            continue
+                        
+                        data = await response.json()
+                    
+                    results = data.get("web", {}).get("results", [])
+                    
+                    # Filter for LinkedIn profile URLs
+                    linkedin_results = [r for r in results if "linkedin.com/in/" in r.get("url", "").lower()]
+                    
+                    print(f"[CONTACT_SEARCH] Query returned {len(results)} results, {len(linkedin_results)} LinkedIn", flush=True)
+                    
+                    if linkedin_results:
+                        web_results = linkedin_results
+                        break  # Found LinkedIn results, stop trying
             
-            # Parse Brave search results
-            matches = []
-            web_results = data.get("web", {}).get("results", [])
-            
-            print(f"[CONTACT_SEARCH] Brave returned {len(web_results)} results", flush=True)
+            print(f"[CONTACT_SEARCH] Final: {len(web_results)} LinkedIn results", flush=True)
             
             for result in web_results:
                 url = result.get("url", "")
                 title = result.get("title", "")
                 description = result.get("description", "")
-                
-                # Only include LinkedIn profile URLs
-                if "linkedin.com/in/" not in url.lower():
-                    continue
                 
                 # Extract name from title (usually "Name - Title | LinkedIn")
                 result_name = title.split(" - ")[0].strip() if " - " in title else title.split(" | ")[0].strip()
