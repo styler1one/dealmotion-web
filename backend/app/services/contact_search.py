@@ -48,6 +48,59 @@ class ResearchExecutive(BaseModel):
     relevance: Optional[str] = None
 
 
+def _clean_name_for_search(name: str) -> str:
+    """
+    Clean a name for search by removing common suffixes/prefixes that aren't part of the name.
+    
+    Examples:
+    - "Simon Hansen Rc Re" -> "Simon Hansen"
+    - "Dr. John Smith MBA" -> "John Smith"
+    - "Jan van der Berg" -> "Jan van der Berg" (kept as-is, these are valid Dutch name parts)
+    """
+    if not name:
+        return name
+    
+    # Common suffixes/prefixes to remove (case-insensitive)
+    # These are typically degree abbreviations, titles, or garbage from parsing
+    remove_patterns = [
+        r'\bRc\s*Re\b',           # "Rc Re" (Dutch accounting qualification)
+        r'\bRC\s*RE\b',           # "RC RE"
+        r'\bRA\b',                # "RA" (registeraccountant)
+        r'\bAA\b',                # "AA" (accountant-administratieconsulent)
+        r'\bMBA\b',               # "MBA"
+        r'\bMSc\b',               # "MSc"
+        r'\bBSc\b',               # "BSc"
+        r'\bPhD\b',               # "PhD"
+        r'\bDr\.?\b',             # "Dr" or "Dr."
+        r'\bMr\.?\b',             # "Mr" or "Mr."
+        r'\bMrs\.?\b',            # "Mrs" or "Mrs."
+        r'\bDrs\.?\b',            # "Drs" or "Drs."
+        r'\bIr\.?\b',             # "Ir" or "Ir."
+        r'\bProf\.?\b',           # "Prof" or "Prof."
+        r'\bCPA\b',               # "CPA"
+        r'\bCFA\b',               # "CFA"
+        r'\bCFO\b',               # Sometimes role is appended
+        r'\bCEO\b',
+        r'\bCOO\b',
+        r'\bCTO\b',
+        r'\bCIO\b',
+        r'\bCMO\b',
+        r'[\(\)]+',               # Parentheses
+        r'[\[\]]+',               # Brackets
+        r'\|.*$',                 # Everything after pipe
+        r'-\s*$',                 # Trailing dashes
+    ]
+    
+    cleaned = name
+    for pattern in remove_patterns:
+        cleaned = re.sub(pattern, '', cleaned, flags=re.IGNORECASE)
+    
+    # Clean up extra whitespace
+    cleaned = ' '.join(cleaned.split())
+    
+    return cleaned.strip()
+
+
 class ContactSearchService:
     """
     Service to search for LinkedIn profiles matching a contact person.
@@ -216,10 +269,14 @@ class ContactSearchService:
         import aiohttp
         
         try:
+            # Clean the name - remove degree abbreviations like "Rc Re", "MBA", etc.
+            clean_name = _clean_name_for_search(name)
+            print(f"[CONTACT_SEARCH] Cleaned name: '{name}' -> '{clean_name}'", flush=True)
+            
             # Build search queries optimized for Brave API
             # Brave supports: quotes for exact match, site: operator
             queries = []
-            quoted_name = f'"{name}"'
+            quoted_name = f'"{clean_name}"'
             company_text = f' "{company_name}"' if company_name else ''
             role_text = f' "{role}"' if role else ''
             
