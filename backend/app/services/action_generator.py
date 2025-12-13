@@ -48,8 +48,8 @@ class ActionGeneratorService:
         max_tokens_map = {
             ActionType.COMMERCIAL_ANALYSIS: 6000,
             ActionType.SALES_COACHING: 5000,
-            ActionType.ACTION_ITEMS: 5000,  # Increased for Calendar Blocks + Ready-to-Send
-            ActionType.CUSTOMER_REPORT: 4000,
+            ActionType.ACTION_ITEMS: 5000,
+            ActionType.CUSTOMER_REPORT: 4500,  # Increased for longer meetings (up to 1800 words)
             ActionType.INTERNAL_REPORT: 3500,
             ActionType.SHARE_EMAIL: 1500,
         }
@@ -268,9 +268,8 @@ class ActionGeneratorService:
         # Get sales rep info
         sales_profile = context.get("sales_profile", {})
         sales_name = sales_profile.get("full_name", "Sales Representative")
-        # Note: email/phone are not in sales_profiles, would need to come from users table
-        sales_email = ""  # Not available in sales_profiles
-        sales_phone = ""  # Not available in sales_profiles
+        sales_email = context.get("user_email", "")  # From user context if available
+        sales_phone = context.get("user_phone", "")  # From user context if available
         sales_title = sales_profile.get("role", "")
         
         # Get seller company info
@@ -279,84 +278,146 @@ class ActionGeneratorService:
         # Get attendees from contacts
         contacts = context.get("contacts", [])
         attendee_names = [c.get("name", "") for c in contacts if c.get("name")]
+        attendee_roles = [f"{c.get('name', '')} ({c.get('role', '')})" for c in contacts if c.get("name")]
         
         # Get style rules for customer-facing output
         style_guide = sales_profile.get("style_guide", {})
         style_rules = self._format_style_rules(style_guide) if style_guide else ""
         
-        return f"""You are creating a customer-facing meeting report.
+        return f"""You are creating a professional customer-facing meeting report that will be sent directly to the client as an email attachment.
+
 {style_rules}
 
 {lang_instruction}
 
-Write in clear, strategic and warm language.
-Use a diplomatic and psychologically sharp tone.
-Always write from the customer's perspective.
-Never use salesy language.
-Never emphasize what the seller did.
-Focus on the client's context, goals and momentum.
+CRITICAL GUIDELINES:
 
-Purpose: The report must feel as if written by a senior consultant who deeply understands the customer's world and supports them in gaining clarity and moving toward confident decision making.
+**Tone & Perspective:**
+- Write entirely from the CUSTOMER's perspective — this is THEIR document
+- Use warm, strategic, and mature language befitting a senior consultant
+- Be diplomatic yet insightful — advisory, never directive or salesy
+- Never emphasize what the seller did or offered — focus on the customer's world
+- Make the customer feel understood, supported, and empowered
 
-Length: Adapt the total number of words to the depth and length of the actual conversation (typically 500-800 words for a 30-min meeting, 800-1200 for 60-min).
-Style: Flowing prose, no bullet point lists unless explicitly requested.
+**Quality Standards:**
+- This document represents professional excellence — it should impress
+- Every sentence must add value for the customer
+- Be thorough but never verbose — quality over quantity
+- Use flowing prose with clear paragraph structure
+- Avoid bullet points in main sections (tables are fine for actions)
+
+**Length:**
+- Adapt length to match the depth and duration of the conversation
+- Short check-in (15-20 min): 400-600 words
+- Standard meeting (30 min): 600-900 words
+- Deep discussion (45-60 min): 900-1400 words
+- Complex multi-stakeholder (60+ min): 1200-1800 words
+- NEVER sacrifice quality for brevity — thoroughness is valued
 
 {context_text}
 
-STRUCTURE & INSTRUCTIONS:
-
-# Customer Report – {company_name}
-
-**Date:** {meeting_date}
-**Subject:** {meeting_subject}
-**Attendees:** {', '.join(attendee_names) if attendee_names else '[List the attendees from the transcript]'}
-**Location:** [Extract from context or write "Virtual meeting" if online]
+DOCUMENT STRUCTURE:
 
 ---
 
-## Introduction
-- Begin with a brief, warm and mature reflection on the conversation.
-- Acknowledge the customer's current situation and their ambitions.
-- Highlight the central thread of the discussion in a way that keeps their perspective at the center.
+# Gespreksverslag
 
-## Where the Organisation Stands Now
-- Describe the customer's context, challenges and priorities as they expressed them.
-- Keep it factual, empathetic and without judgement.
-- Subtly connect their current situation to what is strategically important for them going forward.
-
-## What We Discussed
-- Capture the essence of the meeting in logically structured themes.
-- For each theme, articulate what it means for the customer.
-- Use compact paragraphs. Avoid long enumerations.
-- Include only information that genuinely helps the customer make progress.
-
-## Implications for the Customer
-- Explain what the discussed themes imply for their direction, choices or risks.
-- Highlight opportunities, dependencies and considerations.
-- Keep the tone advisory rather than directive. Diplomatic yet sharp.
-
-## Agreements and Next Steps
-
-Use this exact table format:
-
-| Action | Owner | Timeline | Relevance for the Customer |
-|--------|-------|----------|----------------------------|
-| [action] | [owner] | [when] | [why this matters to them] |
-
-## Forward View
-- Outline a possible path forward that logically builds on the customer's own goals.
-- Avoid pushiness. Be guiding, professional and constructive.
-- End with an inviting, open sentence that reinforces trust and partnership.
+**{company_name}**
 
 ---
 
-**Report prepared by:**
-{sales_name}{f', {sales_title}' if sales_title else ''}
+| | |
+|---|---|
+| **Datum** | {meeting_date} |
+| **Onderwerp** | {meeting_subject} |
+| **Deelnemers** | {', '.join(attendee_roles) if attendee_roles else '[Names and roles from transcript]'} |
+| **Namens** | {seller_company} — {sales_name} |
+
+---
+
+## ⚡ In Één Oogopslag
+
+*Write 2-3 sentences that capture the essence of the conversation from the customer's perspective. What was the core theme? What is the most important takeaway? This should allow a busy executive to understand the meeting in 10 seconds.*
+
+---
+
+## 1. Inleiding
+
+*Begin with a warm, professional reflection on the conversation. Acknowledge their current situation and ambitions. Set the tone for a document that serves THEM. This paragraph should make the reader feel that you truly understood what matters to them.*
+
+---
+
+## 2. Uw Huidige Situatie
+
+*Describe the customer's context, challenges, and priorities exactly as they expressed them. Be factual and empathetic — no judgment, no spin. Subtly connect their current reality to what is strategically important for their future. Show that you listened deeply.*
+
+---
+
+## 3. Wat We Bespraken
+
+*Organize the discussion into 2-4 clear themes. For each theme:*
+
+### [Theme 1 Title — e.g., "Schaalbaarheid en Groei"]
+
+*Compact paragraph explaining this theme and what it means for the customer. What insights emerged? What became clearer?*
+
+### [Theme 2 Title — e.g., "Data-Infrastructuur en Integratie"]
+
+*Compact paragraph...*
+
+### [Theme 3 Title — if applicable]
+
+*Compact paragraph...*
+
+*Only include themes that genuinely help the customer make progress. Exclude small talk or tangential topics.*
+
+---
+
+## 4. Wat Dit Voor U Betekent
+
+*Explain the implications of what was discussed for their direction, choices, or risks. What opportunities emerge? What dependencies should they consider? What trade-offs might they face? Keep the tone advisory — you are a trusted consultant offering perspective, not a salesperson pushing an agenda.*
+
+---
+
+## 5. Afspraken en Vervolgstappen
+
+| Actie | Eigenaar | Wanneer | Waarom Dit Ertoe Doet |
+|-------|----------|---------|----------------------|
+| [Specific action] | [Name] | [Date/Week] | [Why this matters to the customer] |
+| [Action 2] | [Name] | [Timing] | [Customer relevance] |
+| [Action 3] | [Name] | [Timing] | [Customer relevance] |
+
+---
+
+## 6. Vooruitblik
+
+*Outline a possible path forward that logically builds on the customer's own goals. Do not push — guide. Be professional and constructive. Paint a picture of what success could look like and how they might get there. End with an inviting, open sentence that reinforces trust and the spirit of partnership.*
+
+---
+
+## 💭 Vragen Ter Overweging
+
+*Provide 2-3 thoughtful questions that help the customer organize their thinking before the next conversation. These should be genuinely useful strategic questions — not leading questions designed to sell.*
+
+- *[Strategic question 1 — e.g., "Welke data-initiatieven hebben voor u de hoogste prioriteit in het komende kwartaal?"]*
+
+- *[Strategic question 2 — e.g., "Wie binnen uw organisatie zou bij een vervolggesprek betrokken moeten worden?"]*
+
+- *[Strategic question 3 — optional, if relevant]*
+
+---
+
+**Dit verslag is opgesteld door:**
+
+{sales_name}
+{f'{sales_title}' if sales_title else ''}
 {seller_company}
-{f'Email: {sales_email}' if sales_email else ''}
-{f'Phone: {sales_phone}' if sales_phone else ''}
+{f'📧 {sales_email}' if sales_email else ''}
+{f'📞 {sales_phone}' if sales_phone else ''}
 
-**Report date:** [Today's date]
+---
+
+*Dit document is vertrouwelijk en uitsluitend bestemd voor de geadresseerde(n). Verspreiding of gebruik door anderen is niet toegestaan zonder voorafgaande toestemming.*
 
 ---
 
