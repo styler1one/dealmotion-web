@@ -46,7 +46,7 @@ class PrepGeneratorService:
             
             response = await self.anthropic.messages.create(
                 model=self.model,
-                max_tokens=6000,  # Increased for comprehensive state-of-the-art briefs
+                max_tokens=8000,  # Increased for complete state-of-the-art briefs with all sections
                 temperature=0.5,  # Balanced: creative but consistent business output
                 messages=[{
                     "role": "user",
