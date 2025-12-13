@@ -1,20 +1,28 @@
 """
 Contact Person Analyzer - LinkedIn profile analysis for personalized sales approach.
 
+OPTIMIZED ARCHITECTURE (v2):
+- Uses Brave Search for LinkedIn profile discovery (cheap: ~$0.003)
+- Uses Claude for analysis only (no web tools = ~$0.03)
+- Total cost: ~$0.035 per contact (85% reduction from $0.23)
+
 Analyzes contact persons in the context of:
 1. The company they work at (from research)
 2. What the seller offers (from profiles)
 
-Generates:
-- Communication style assessment
-- Decision authority classification
-- Role-specific pain points
-- Conversation suggestions
-- Relevance score (how relevant this contact is for what we sell)
+Generates (focused on what Preparation Brief needs):
+- Decision authority classification (DMU mapping)
+- Communication style assessment (tone adjustment)
+- Motivation drivers (hooks for engagement)
+- Role-specific challenges (pain points)
+- Professional profile summary
 """
 
 import os
+import re
+import json
 import logging
+import aiohttp
 from typing import Dict, Any, Optional, List
 from anthropic import AsyncAnthropic
 from supabase import Client
@@ -24,18 +32,38 @@ from app.i18n.config import DEFAULT_LANGUAGE
 
 logger = logging.getLogger(__name__)
 
+# Common name suffixes to clean before searching
+NAME_CLEAN_PATTERNS = [
+    r'\bRc\s*Re\b', r'\bRC\s*RE\b', r'\bRA\b', r'\bAA\b',
+    r'\bMBA\b', r'\bMSc\b', r'\bBSc\b', r'\bPhD\b',
+    r'\bDr\.?\b', r'\bMr\.?\b', r'\bMrs\.?\b', r'\bDrs\.?\b',
+    r'\bIr\.?\b', r'\bProf\.?\b', r'\bCPA\b', r'\bCFA\b',
+    r'[\(\)]+', r'[\[\]]+', r'\|.*$', r'-\s*$',
+]
+
+
+def _clean_name(name: str) -> str:
+    """Clean name by removing degree abbreviations and garbage."""
+    if not name:
+        return name
+    cleaned = name
+    for pattern in NAME_CLEAN_PATTERNS:
+        cleaned = re.sub(pattern, '', cleaned, flags=re.IGNORECASE)
+    return ' '.join(cleaned.split()).strip()
+
 
 class ContactAnalyzer:
     """Analyze contact persons using AI with company and seller context."""
     
     def __init__(self):
-        """Initialize Claude API and Supabase."""
+        """Initialize Claude API, Brave API, and Supabase."""
         api_key = os.getenv("ANTHROPIC_API_KEY")
         if not api_key:
             raise ValueError("ANTHROPIC_API_KEY not set")
         
         self.client = AsyncAnthropic(api_key=api_key)
         self.supabase: Client = get_supabase_service()
+        self.brave_api_key = os.getenv("BRAVE_API_KEY")
     
     async def analyze_contact(
         self,
@@ -50,6 +78,11 @@ class ContactAnalyzer:
         """
         Analyze a contact person with full context.
         
+        OPTIMIZED FLOW (v2):
+        1. Use Brave Search to find LinkedIn profile info (if no user-provided context)
+        2. Use Claude WITHOUT web tools for pure analysis
+        3. Return focused output for Preparation Brief
+        
         Args:
             contact_name: Name of the contact
             contact_role: Job title/function
@@ -62,53 +95,51 @@ class ContactAnalyzer:
         Returns:
             Analysis dict with all insights
         """
-        # Build the analysis prompt
+        company_name = company_context.get("company_name", "Unknown") if company_context else "Unknown"
+        
+        # STEP 1: Gather profile information
+        # Priority: user-provided > research leadership > Brave search
+        profile_info = await self._gather_profile_info(
+            contact_name=contact_name,
+            contact_role=contact_role,
+            linkedin_url=linkedin_url,
+            company_name=company_name,
+            company_context=company_context,
+            user_provided_context=user_provided_context
+        )
+        
+        has_user_info = bool(user_provided_context)
+        has_brave_info = profile_info.get("source") == "brave"
+        has_research_info = profile_info.get("source") == "research"
+        
+        logger.info(f"[CONTACT_ANALYZER] Analyzing {contact_name} at {company_name}")
+        logger.info(f"[CONTACT_ANALYZER] Info sources: user={has_user_info}, brave={has_brave_info}, research={has_research_info}")
+        
+        # STEP 2: Build optimized prompt (no web search needed)
         prompt = self._build_analysis_prompt(
-            contact_name,
-            contact_role,
-            linkedin_url,
-            company_context,
-            seller_context,
-            language,
-            user_provided_context
+            contact_name=contact_name,
+            contact_role=contact_role,
+            linkedin_url=linkedin_url,
+            company_context=company_context,
+            seller_context=seller_context,
+            language=language,
+            user_provided_context=user_provided_context,
+            profile_info=profile_info  # NEW: Include gathered profile info
         )
         
         try:
-            # Build web search tool config with location context
-            country = company_context.get("country") if company_context else None
-            user_location = None
-            if country:
-                iso_country = get_country_iso_code(country)
-                if iso_country:
-                    user_location = {
-                        "type": "approximate",
-                        "country": iso_country,
-                    }
-                    city = company_context.get("city") if company_context else None
-                    if city:
-                        user_location["city"] = city
-            
-            # Build tools list with web search (same format as claude_researcher)
-            tools = [{
-                "type": "web_search_20250305",
-                "name": "web_search",
-                "max_uses": 5,
-            }]
-            if user_location:
-                tools[0]["user_location"] = user_location
-            
-            has_user_info = bool(user_provided_context)
-            logger.info(f"[CONTACT_ANALYZER] Analyzing {contact_name} - user-provided info: {has_user_info}")
+            # STEP 3: Claude analysis WITHOUT web tools (85% cost reduction!)
+            logger.info(f"[CONTACT_ANALYZER] Starting Claude analysis (no web tools)")
             
             response = await self.client.messages.create(
                 model="claude-sonnet-4-20250514",
-                max_tokens=3500,
+                max_tokens=2500,  # Reduced from 3500 - focused output
                 temperature=0.3,
                 messages=[{
                     "role": "user",
                     "content": prompt
-                }],
-                tools=tools
+                }]
+                # NO tools parameter = no web search = much cheaper!
             )
             
             # Extract text from all text blocks
@@ -131,6 +162,160 @@ class ContactAnalyzer:
                 "analysis_failed": True
             }
     
+    async def _gather_profile_info(
+        self,
+        contact_name: str,
+        contact_role: Optional[str],
+        linkedin_url: Optional[str],
+        company_name: str,
+        company_context: Dict[str, Any],
+        user_provided_context: Optional[Dict[str, str]]
+    ) -> Dict[str, Any]:
+        """
+        Gather profile information from multiple sources.
+        
+        Priority:
+        1. User-provided context (most reliable)
+        2. Research leadership data (already researched)
+        3. Brave Search (cheap, real-time)
+        
+        Returns dict with: source, headline, about, experience, recent_activity
+        """
+        result = {
+            "source": "none",
+            "headline": None,
+            "about": None,
+            "experience": None,
+            "recent_activity": None,
+            "background": None
+        }
+        
+        # Priority 1: User-provided context
+        if user_provided_context:
+            result["source"] = "user_provided"
+            result["about"] = user_provided_context.get("about")
+            result["experience"] = user_provided_context.get("experience")
+            if result["about"] or result["experience"]:
+                logger.info(f"[CONTACT_ANALYZER] Using user-provided context for {contact_name}")
+                return result
+        
+        # Priority 2: Check if this person is in research leadership data
+        leadership = company_context.get("leadership", []) if company_context else []
+        clean_name = _clean_name(contact_name).lower()
+        
+        for leader in leadership:
+            leader_name = _clean_name(leader.get("name", "")).lower()
+            # Check for name match (at least 2 name parts overlap)
+            name_parts = set(clean_name.split())
+            leader_parts = set(leader_name.split())
+            common_parts = name_parts & leader_parts
+            
+            if len(common_parts) >= 2 or clean_name == leader_name:
+                result["source"] = "research"
+                result["headline"] = leader.get("title")
+                result["background"] = leader.get("background")
+                if leader.get("linkedin_url") and not linkedin_url:
+                    result["linkedin_url"] = leader.get("linkedin_url")
+                logger.info(f"[CONTACT_ANALYZER] Found {contact_name} in research leadership data")
+                return result
+        
+        # Priority 3: Brave Search for LinkedIn profile info
+        if self.brave_api_key:
+            brave_info = await self._search_linkedin_with_brave(
+                contact_name=contact_name,
+                contact_role=contact_role,
+                company_name=company_name
+            )
+            if brave_info.get("found"):
+                result["source"] = "brave"
+                result["headline"] = brave_info.get("headline")
+                result["about"] = brave_info.get("about")
+                result["recent_activity"] = brave_info.get("recent_activity")
+                logger.info(f"[CONTACT_ANALYZER] Found profile info via Brave for {contact_name}")
+                return result
+        
+        # No additional info found - will rely on role-based inference
+        result["source"] = "role_inference"
+        logger.info(f"[CONTACT_ANALYZER] No profile info found for {contact_name}, using role-based inference")
+        return result
+    
+    async def _search_linkedin_with_brave(
+        self,
+        contact_name: str,
+        contact_role: Optional[str],
+        company_name: str
+    ) -> Dict[str, Any]:
+        """
+        Search for LinkedIn profile information using Brave Search API.
+        
+        Cost: ~$0.003 per search (vs $0.20+ for Claude web search)
+        
+        Returns: dict with found, headline, about, recent_activity
+        """
+        result = {"found": False}
+        
+        if not self.brave_api_key:
+            return result
+        
+        try:
+            clean_name = _clean_name(contact_name)
+            
+            # Build search queries - focus on finding profile snippets
+            queries = [
+                f'site:linkedin.com/in "{clean_name}" "{company_name}"',
+                f'"{clean_name}" "{company_name}" LinkedIn profile',
+            ]
+            
+            async with aiohttp.ClientSession() as session:
+                headers = {
+                    "Accept": "application/json",
+                    "X-Subscription-Token": self.brave_api_key
+                }
+                
+                for query in queries:
+                    params = {"q": query, "count": 5}
+                    
+                    async with session.get(
+                        "https://api.search.brave.com/res/v1/web/search",
+                        headers=headers,
+                        params=params
+                    ) as response:
+                        if response.status != 200:
+                            continue
+                        
+                        data = await response.json()
+                        web_results = data.get("web", {}).get("results", [])
+                        
+                        for web_result in web_results:
+                            url = web_result.get("url", "")
+                            if "linkedin.com/in/" not in url.lower():
+                                continue
+                            
+                            # Found a LinkedIn result - extract info
+                            title = web_result.get("title", "")
+                            description = web_result.get("description", "")
+                            
+                            # Parse headline from title (usually "Name - Title | LinkedIn")
+                            headline = None
+                            if " - " in title:
+                                parts = title.split(" - ")
+                                if len(parts) > 1:
+                                    headline = parts[1].split(" | ")[0].strip()
+                            
+                            result["found"] = True
+                            result["headline"] = headline
+                            result["about"] = description[:500] if description else None
+                            result["linkedin_url"] = url
+                            
+                            logger.info(f"[CONTACT_ANALYZER] Brave found: {clean_name} -> {headline}")
+                            return result
+            
+            return result
+            
+        except Exception as e:
+            logger.warning(f"[CONTACT_ANALYZER] Brave search error: {e}")
+            return result
+    
     def _build_analysis_prompt(
         self,
         contact_name: str,
@@ -139,282 +324,187 @@ class ContactAnalyzer:
         company_context: Dict[str, Any],
         seller_context: Dict[str, Any],
         language: str = DEFAULT_LANGUAGE,
-        user_provided_context: Optional[Dict[str, str]] = None
+        user_provided_context: Optional[Dict[str, str]] = None,
+        profile_info: Optional[Dict[str, Any]] = None
     ) -> str:
-        """Build the prompt for contact analysis."""
+        """
+        Build the OPTIMIZED prompt for contact analysis.
+        
+        FOCUSED on what Preparation Brief needs:
+        1. Decision Authority (DMU mapping)
+        2. Communication Style (tone adjustment)
+        3. Motivation Drivers (engagement hooks)
+        4. Role Challenges (pain points)
+        5. Professional Summary
+        
+        NO web search - all info is pre-gathered via Brave/research.
+        """
         lang_instruction = get_language_instruction(language)
         company_name = company_context.get("company_name", "Unknown") if company_context else "Unknown"
         
-        # Company context section - include research insights
+        # === COMPANY CONTEXT (compact) ===
         company_section = ""
         if company_context:
             industry = company_context.get("industry", "")
-            brief = company_context.get("brief_content", "")[:2500] if company_context.get("brief_content") else ""
+            # Use shorter brief excerpt - we don't need the full thing
+            brief = company_context.get("brief_content", "")[:1500] if company_context.get("brief_content") else ""
             
-            # Build leadership context from research to reduce web searches
-            leadership_context = ""
-            leadership = company_context.get("leadership", [])
-            if leadership:
-                leadership_lines = []
-                for leader in leadership[:8]:  # Max 8 leaders
-                    name = leader.get("name", "")
-                    title = leader.get("title", "")
-                    linkedin = leader.get("linkedin_url", "")
-                    if name:
-                        line = f"- **{name}**"
-                        if title:
-                            line += f" - {title}"
-                        if linkedin:
-                            line += f" ({linkedin})"
-                        leadership_lines.append(line)
-                
-                if leadership_lines:
-                    leadership_context = f"""
-
-**Known Leadership** (from research - use if analyzing one of these people):
-{chr(10).join(leadership_lines)}
-"""
-            
-            company_section = f"""
-## COMPANY CONTEXT (from our research)
+            company_section = f"""## COMPANY CONTEXT
 **Company**: {company_name}
 **Industry**: {industry}
-{leadership_context}
-**Research Insights** (use these to personalize your analysis):
+
+**Key Research Insights**:
 {brief}
 """
         
-        # Enhanced seller context section
+        # === SELLER CONTEXT (compact) ===
         seller_section = ""
-        products_list = ""
+        products_list = "Not specified"
         if seller_context and seller_context.get("has_context"):
             products_list = ", ".join(seller_context.get("products_services", [])[:5]) or "Not specified"
-            values = ", ".join(seller_context.get("value_propositions", [])[:3]) or "Not specified"
-            target = seller_context.get("target_market", "Not specified")
-            target_industries = ", ".join(seller_context.get("target_industries", [])[:3]) if seller_context.get("target_industries") else "Any"
             pain_points = ", ".join(seller_context.get("ideal_customer_pain_points", [])[:3]) if seller_context.get("ideal_customer_pain_points") else "Not specified"
             
-            seller_section = f"""
-## 🎯 SELLER CONTEXT (Use this to assess relevance!)
-
-| Aspect | Details |
-|--------|---------|
-| **My Company** | {seller_context.get('company_name', 'Unknown')} |
-| **Products/Services** | {products_list} |
-| **Value Propositions** | {values} |
-| **Target Market** | {target} |
-| **Target Industries** | {target_industries} |
-| **Ideal Customer Pain Points** | {pain_points} |
-
-**Use this to determine how relevant this contact is for what we sell.**
+            seller_section = f"""## SELLER CONTEXT
+**We Sell**: {products_list}
+**We Solve**: {pain_points}
+**Our Company**: {seller_context.get('company_name', 'Unknown')}
 """
         
-        # User-provided LinkedIn info section
+        # === PROFILE INFORMATION (from Brave/research/user) ===
+        profile_section = ""
+        if profile_info and profile_info.get("source") != "none":
+            source = profile_info.get("source", "unknown")
+            profile_section = f"\n## PROFILE INFORMATION (Source: {source})\n"
+            
+            if profile_info.get("headline"):
+                profile_section += f"**Headline**: {profile_info['headline']}\n"
+            if profile_info.get("about"):
+                profile_section += f"**About**: {profile_info['about'][:500]}\n"
+            if profile_info.get("experience"):
+                profile_section += f"**Experience**: {profile_info['experience'][:500]}\n"
+            if profile_info.get("background"):
+                profile_section += f"**Background**: {profile_info['background']}\n"
+            if profile_info.get("recent_activity"):
+                profile_section += f"**Recent Activity**: {profile_info['recent_activity']}\n"
+        
+        # === USER-PROVIDED INFO (highest priority) ===
         user_info_section = ""
         if user_provided_context:
-            user_info_section = "\n## USER-PROVIDED PROFILE INFORMATION (VERIFIED - USE AS PRIMARY SOURCE)\n"
+            user_info_section = "\n## USER-PROVIDED INFORMATION (USE AS PRIMARY SOURCE)\n"
             if user_provided_context.get("about"):
-                user_info_section += f"""
-### LinkedIn About/Summary:
-{user_provided_context.get('about')}
-"""
+                user_info_section += f"**LinkedIn About**: {user_provided_context['about']}\n"
             if user_provided_context.get("experience"):
-                user_info_section += f"""
-### Experience/Background:
-{user_provided_context.get('experience')}
-"""
+                user_info_section += f"**Experience**: {user_provided_context['experience']}\n"
             if user_provided_context.get("notes"):
-                user_info_section += f"""
-### Additional Notes from Sales Rep:
-{user_provided_context.get('notes')}
-"""
+                user_info_section += f"**Sales Rep Notes**: {user_provided_context['notes']}\n"
         
-        # Research instruction - optimized based on available context
-        # Check if this contact matches someone from leadership
-        leadership = company_context.get("leadership", []) if company_context else []
-        matching_leader = None
-        contact_name_lower = contact_name.lower()
-        for leader in leadership:
-            leader_name = leader.get("name", "").lower()
-            if leader_name and (
-                leader_name in contact_name_lower or 
-                contact_name_lower in leader_name or
-                set(contact_name_lower.split()) & set(leader_name.split())
-            ):
-                matching_leader = leader
-                break
-        
-        # If we found matching leader data, reduce search needs
-        if matching_leader:
-            research_instruction = f"""
-## RESEARCH TASK
-
-Analyze **{contact_name}** at **{company_name}**.
-
-**PRE-RESEARCHED DATA** (from company research - use this as primary source):
-- **Name**: {matching_leader.get('name')}
-- **Title**: {matching_leader.get('title') or 'See above'}
-- **LinkedIn**: {matching_leader.get('linkedin_url') or linkedin_url or 'Not available'}
-- **Background**: {matching_leader.get('background') or 'See company research insights'}
-
-**ADDITIONAL SEARCH** (only if needed for communication style or recent activity):
-Search for: "{contact_name}" "{company_name}" to find:
-- Recent news, interviews, or speaking engagements
-- Communication style indicators from public content
-- Recent quotes or public statements
-
-**LinkedIn URL** (for reference): {linkedin_url or matching_leader.get('linkedin_url') or 'Not provided'}
-"""
-        else:
-            research_instruction = f"""
-## RESEARCH TASK
-
-Search for information about **{contact_name}** at **{company_name}**.
-
-**SEARCH STRATEGY** (LinkedIn is usually blocked, use alternatives):
-
-| Priority | Search Query | What to Find |
-|----------|--------------|--------------|
-| 1 | "{company_name} team" OR "{company_name} leadership" | Company about/team page |
-| 2 | "{contact_name}" "{company_name}" | News, press releases, interviews |
-| 3 | "{contact_name}" speaker OR conference OR webinar | Speaking engagements |
-| 4 | "{contact_name}" podcast OR interview | Podcast appearances |
-| 5 | site:twitter.com OR site:x.com "{contact_name}" | Social media presence |
-
-**What to extract:**
-- Career path and achievements
-- Communication style from public content (formal/casual/technical)
-- Areas of expertise and interests
-- Recent activities or announcements
-- Quotes that reveal priorities or concerns
-
-**LinkedIn URL** (for reference): {linkedin_url or 'Not provided'}
-"""
-        
-        prompt = f"""You are a senior sales intelligence analyst creating a contact research profile.
+        # === BUILD FINAL PROMPT ===
+        prompt = f"""You are a senior sales intelligence analyst. Analyze this contact person.
 
 {lang_instruction}
 
-**YOUR GOAL**: Help the sales rep truly UNDERSTAND this person - their background, motivations, 
-communication preferences, and role in decision-making. This is RESEARCH, not meeting preparation.
+**YOUR TASK**: Create a focused analysis to help prepare for meetings with this person.
+Focus on WHO they are, their decision-making role, and how to communicate with them.
 
-**CRITICAL OUTPUT RULES:**
-- Output ONLY the structured analysis below
-- Do NOT explain your search process
-- Do NOT include "I'll search...", "Let me...", "Based on..."
-- Start IMMEDIATELY with "## 1. RELEVANCE ASSESSMENT"
-- Focus on WHO this person is, not on WHAT TO SAY to them
-- Ground every insight in evidence or clearly mark as inference
-- Do NOT include opening lines, discovery questions, or scripts (those come later in meeting prep)
+**CRITICAL RULES**:
+- Use ONLY the information provided below (no web searches needed)
+- If information is missing, use role-based inference (clearly marked)
+- Output the structured format exactly as shown
+- Start IMMEDIATELY with "## 1. QUICK ASSESSMENT"
 
 {company_section}
 {seller_section}
+{profile_section}
 {user_info_section}
-{research_instruction}
 
 ## CONTACT TO ANALYZE
 **Name**: {contact_name}
 **Role**: {contact_role or 'Not specified'}
+**LinkedIn**: {linkedin_url or 'Not available'}
 
 ---
 
 # Contact Analysis: {contact_name}
-{contact_role or ''}
+*{contact_role or 'Role not specified'}*
 
 ---
 
-## 1. RELEVANCE ASSESSMENT
+## 1. QUICK ASSESSMENT
 
-| Dimension | Rating | Justification |
-|-----------|--------|---------------|
-| **Decision Power** | 🟢 High / 🟡 Medium / 🔴 Low | [Based on role and seniority] |
-| **Relevance to Our Solution** | 🟢 Direct Buyer / 🟡 Influencer / 🔴 Tangential | [Based on what we sell: {products_list}] |
-| **Engagement Priority** | 1-5 (1=contact first) | [Overall priority ranking] |
+| Dimension | Rating | Evidence |
+|-----------|--------|----------|
+| **Decision Power** | 🟢 High / 🟡 Medium / 🔴 Low | [Based on role title] |
+| **Relevance** | 🟢 Direct Buyer / 🟡 Influencer / 🔴 Tangential | [For: {products_list}] |
+| **Priority** | 1-5 | [1 = contact first] |
 
-**Bottom Line**: [One sentence: Should we prioritize this contact? Why?]
+**Bottom Line**: [One sentence verdict - prioritize this contact? Why?]
 
 ---
 
-## 2. PROFILE SUMMARY
-- **Background**: [Career path if found, otherwise role-based inference]
-- **Current Focus**: [What this person likely spends their day on]
-- **Expertise Areas**: [Key skills and knowledge domains]
-- **Recent Activity**: [Any news, posts, or appearances found]
+## 2. PROFESSIONAL PROFILE
+
+- **Background**: [Career trajectory based on role/info]
+- **Current Focus**: [What occupies their daily work]
+- **Expertise**: [Key domains and skills]
 
 ---
 
 ## 3. COMMUNICATION STYLE
 
-**Style**: Choose ONE and justify:
-- **Formal**: Prefers structured, professional communication
-- **Informal**: Direct, casual, relationship-focused  
-- **Technical**: Wants data, specs, proof points
-- **Strategic**: Big-picture, ROI-focused, business outcomes
+**Primary Style** (choose ONE):
+- **FORMAL**: Structured, professional, respects hierarchy
+- **INFORMAL**: Direct, casual, relationship-first
+- **TECHNICAL**: Data-driven, wants proof points
+- **STRATEGIC**: Big-picture, ROI-focused
 
-**Evidence**: [What signals led to this assessment?]
+**How to Adapt**: [Specific guidance for engaging this style]
 
 ---
 
 ## 4. DECISION AUTHORITY
 
-**Role**: Choose ONE and justify:
-- **Decision Maker**: Controls budget and final decision
-- **Influencer**: Shapes decision but doesn't finalize
-- **Gatekeeper**: Controls access to decision makers
-- **User/Champion**: Uses the solution, advocates internally
+**DMU Role** (choose ONE):
+- **DECISION MAKER**: Controls budget, signs off
+- **INFLUENCER**: Shapes decision, doesn't finalize
+- **GATEKEEPER**: Controls access
+- **CHAMPION**: Uses solution, advocates internally
 
-**Evidence**: [Based on title, company size, or research findings]
-
----
-
-## 5. PROBABLE DRIVERS
-
-What motivates this person? Choose 1-2:
-- **Making Progress**: Innovation, modernization, staying ahead
-- **Solving Problems**: Fixing what's broken
-- **Standing Out**: Recognition, career advancement
-- **Avoiding Risk**: Stability, proven solutions
-
-**Evidence**: [Concrete signals if available]
+**Implications**: [What this means for our approach]
 
 ---
 
-## 6. ROLE-SPECIFIC CHALLENGES
+## 5. MOTIVATION DRIVERS
 
-What challenges does someone in this role typically face?
+**What Drives Them** (choose 1-2):
+- **PROGRESS**: Innovation, modernization, staying ahead
+- **PROBLEM-SOLVING**: Fixing pain points
+- **RECOGNITION**: Standing out, career growth
+- **STABILITY**: Risk aversion, proven solutions
 
-| Challenge | Why It Matters | Connection to Our Solution |
-|-----------|----------------|---------------------------|
-| [Typical challenge for this role] | [Business impact] | [How we can help - if relevant] |
-| [Typical challenge for this role] | [Business impact] | [How we can help - if relevant] |
-| [Typical challenge for this role] | [Business impact] | [How we can help - if relevant] |
-
----
-
-## 7. PERSONALITY & WORKING STYLE
-
-Based on available information:
-
-- **Preferred Communication**: [Email / Phone / In-person / Video]
-- **Meeting Style**: [Prefers agendas / Likes to explore / Time-conscious / Detail-oriented]
-- **Decision Making**: [Data-driven / Relationship-driven / Consensus-builder / Quick decider]
-- **What They Value**: [Innovation / Stability / Efficiency / Relationships / Results]
-
-**Key Insight**: [One sentence about what makes this person tick]
+**Evidence**: [What suggests these drivers]
 
 ---
 
-## 8. RESEARCH CONFIDENCE
+## 6. ROLE CHALLENGES
 
-| Aspect | Status |
-|--------|--------|
-| **Information Found** | 🟢 Rich / 🟡 Basic / 🔴 Minimal |
-| **Primary Source** | [Where did info come from?] |
-| **Gaps to Validate** | [What should be confirmed in first conversation?] |
+| Challenge | Business Impact | Our Relevance |
+|-----------|----------------|---------------|
+| [Typical for this role] | [Why it matters] | [How we help] |
+| [Typical for this role] | [Why it matters] | [How we help] |
 
 ---
 
-**NOTE: This is a research profile to understand the contact. Specific talking points, opening lines, and discovery questions will be generated in the Meeting Preparation phase when there is a specific meeting context.**"""
+## 7. CONFIDENCE LEVEL
+
+| Information | Status |
+|-------------|--------|
+| **Quality** | 🟢 Rich / 🟡 Basic / 🔴 Minimal |
+| **Source** | {profile_info.get('source', 'Role inference') if profile_info else 'Role inference'} |
+| **Gaps** | [What to verify in first conversation] |
+
+---
+
+*This analysis feeds into Meeting Preparation where specific talking points and questions will be generated.*"""
 
         return prompt
     
@@ -425,7 +515,17 @@ Based on available information:
         contact_role: Optional[str],
         linkedin_url: Optional[str]
     ) -> Dict[str, Any]:
-        """Parse the AI analysis into structured data."""
+        """
+        Parse the AI analysis into structured data.
+        
+        Extracts key fields for Preparation Brief:
+        - communication_style
+        - decision_authority
+        - probable_drivers
+        - relevance_score
+        - priority
+        - research_confidence
+        """
         
         result = {
             "name": contact_name,
@@ -437,39 +537,43 @@ Based on available information:
         
         text_lower = analysis_text.lower()
         
-        # Extract communication style (English keywords)
-        if "**formal**" in text_lower or "formal:" in text_lower or "style**: formal" in text_lower:
+        # Extract communication style (matching new prompt format)
+        # Format: "**FORMAL**:", "**INFORMAL**:", etc.
+        if "**formal**" in text_lower or "formal:" in text_lower or "primary style**: formal" in text_lower:
             result["communication_style"] = "formal"
-        elif "**informal**" in text_lower or "informal:" in text_lower or "style**: informal" in text_lower:
+        elif "**informal**" in text_lower or "informal:" in text_lower or "primary style**: informal" in text_lower:
             result["communication_style"] = "informal"
-        elif "**technical**" in text_lower or "technical:" in text_lower or "style**: technical" in text_lower:
+        elif "**technical**" in text_lower or "technical:" in text_lower or "primary style**: technical" in text_lower:
             result["communication_style"] = "technical"
-        elif "**strategic**" in text_lower or "strategic:" in text_lower or "style**: strategic" in text_lower:
+        elif "**strategic**" in text_lower or "strategic:" in text_lower or "primary style**: strategic" in text_lower:
             result["communication_style"] = "strategic"
         
-        # Extract decision authority (English keywords)
-        if "**decision maker**" in text_lower or "role**: decision maker" in text_lower:
+        # Extract decision authority (matching new prompt format)
+        # Format: "**DECISION MAKER**:", "**INFLUENCER**:", etc.
+        if "**decision maker**" in text_lower or "dmu role**: decision maker" in text_lower:
             result["decision_authority"] = "decision_maker"
-        elif "**influencer**" in text_lower or "role**: influencer" in text_lower:
+        elif "**influencer**" in text_lower or "dmu role**: influencer" in text_lower:
             result["decision_authority"] = "influencer"
-        elif "**gatekeeper**" in text_lower or "role**: gatekeeper" in text_lower:
+        elif "**gatekeeper**" in text_lower or "dmu role**: gatekeeper" in text_lower:
             result["decision_authority"] = "gatekeeper"
-        elif "**user**" in text_lower or "**champion**" in text_lower or "role**: user" in text_lower:
+        elif "**champion**" in text_lower or "dmu role**: champion" in text_lower:
             result["decision_authority"] = "user"
         
-        # Extract drivers (English keywords)
+        # Extract drivers (matching new prompt format)
+        # Format: "**PROGRESS**:", "**PROBLEM-SOLVING**:", etc.
         drivers = []
-        if "making progress" in text_lower or "innovation" in text_lower or "modernization" in text_lower:
+        if "**progress**" in text_lower or "progress:" in text_lower or "innovation" in text_lower:
             drivers.append("progress")
-        if "solving problems" in text_lower or "fixing" in text_lower:
-            drivers.append("fixing")
-        if "standing out" in text_lower or "recognition" in text_lower or "career advancement" in text_lower:
-            drivers.append("standing_out")
-        if "avoiding risk" in text_lower or "stability" in text_lower or "proven solutions" in text_lower:
-            drivers.append("risk_averse")
+        if "**problem-solving**" in text_lower or "problem-solving:" in text_lower or "fixing pain" in text_lower:
+            drivers.append("problem_solving")
+        if "**recognition**" in text_lower or "recognition:" in text_lower or "standing out" in text_lower or "career growth" in text_lower:
+            drivers.append("recognition")
+        if "**stability**" in text_lower or "stability:" in text_lower or "risk aversion" in text_lower:
+            drivers.append("stability")
         result["probable_drivers"] = ", ".join(drivers) if drivers else None
         
         # Extract relevance score from the assessment table
+        # Format: "🟢 High", "🟡 Medium", "🔴 Low"
         if "🟢 high" in text_lower or "decision power** | 🟢" in text_lower:
             result["relevance_score"] = "high"
         elif "🟡 medium" in text_lower:
@@ -478,17 +582,17 @@ Based on available information:
             result["relevance_score"] = "low"
         
         # Extract priority (1-5)
-        import re
         priority_match = re.search(r'priority[^\d]*(\d)', text_lower)
         if priority_match:
             result["priority"] = int(priority_match.group(1))
         
-        # Extract research confidence
-        if "🟢 rich" in text_lower or "information found** | 🟢" in text_lower:
+        # Extract research confidence (matching new prompt format)
+        # Format: "**Quality** | 🟢 Rich", etc.
+        if "🟢 rich" in text_lower or "quality** | 🟢" in text_lower:
             result["research_confidence"] = "rich"
-        elif "🟡 basic" in text_lower:
+        elif "🟡 basic" in text_lower or "quality** | 🟡" in text_lower:
             result["research_confidence"] = "basic"
-        elif "🔴 minimal" in text_lower:
+        elif "🔴 minimal" in text_lower or "quality** | 🔴" in text_lower:
             result["research_confidence"] = "minimal"
         
         # Note: Opening lines, discovery questions, and things to avoid
@@ -496,6 +600,9 @@ Based on available information:
         result["opening_suggestions"] = None
         result["questions_to_ask"] = None
         result["topics_to_avoid"] = None
+        
+        logger.info(f"[CONTACT_ANALYZER] Parsed: style={result.get('communication_style')}, "
+                   f"authority={result.get('decision_authority')}, drivers={result.get('probable_drivers')}")
         
         return result
     
