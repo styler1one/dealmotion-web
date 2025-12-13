@@ -262,8 +262,6 @@ class ContactSearchService:
                     params = {
                         "q": query,
                         "count": 20,  # Maximum results
-                        "result_filter": "web",  # Only web results (no images/videos)
-                        "text_decorations": False,  # No HTML formatting
                     }
                     
                     async with session.get(
