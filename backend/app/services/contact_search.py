@@ -223,26 +223,21 @@ class ContactSearchService:
             
             # Build search context
             company_text = company_name or "unknown company"
-            role_search = f' "{role}"' if role else ""
-            role_text = f" as {role}" if role else ""
+            role_text = f" ({role})" if role else ""
             
-            # Simple, direct prompt - just find LinkedIn profiles
-            prompt = f"""Search for the LinkedIn profile of {name}{role_text} who works at {company_text}.
+            # Direct prompt asking for the URL from search results
+            prompt = f"""Search Google for: {name} {company_text} LinkedIn
 
-Search queries to use:
-- "{name}" "{company_text}" site:linkedin.com/in
-- "{name}"{role_search} linkedin profile
+Look at the search results. Find the LinkedIn profile URL (linkedin.com/in/...) from the search results.
 
-For each LinkedIn profile found, provide:
-- Full name
-- Job title  
-- Company
-- LinkedIn URL (must be linkedin.com/in/...)
+The LinkedIn URL format is: https://linkedin.com/in/username or https://www.linkedin.com/in/username
 
-Format as JSON array:
-[{{"name":"...","title":"...","company":"...","linkedin_url":"https://linkedin.com/in/..."}}]
+IMPORTANT: Copy the EXACT LinkedIn URL from the Google search results. Do not say "unknown" - either provide the real URL or return empty array.
 
-If no profiles found, return: []"""
+Return JSON:
+[{{"name":"{name}","title":"...","company":"{company_text}","linkedin_url":"https://linkedin.com/in/EXACT-USERNAME-FROM-SEARCH"}}]
+
+If you cannot find a LinkedIn URL in the search results, return: []"""
 
             logger.info(f"[CONTACT_SEARCH] Gemini searching: {name} at {company_text}")
             
