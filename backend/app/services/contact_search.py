@@ -221,22 +221,28 @@ class ContactSearchService:
             queries = []
             quoted_name = f'"{name}"'
             company_text = f' "{company_name}"' if company_name else ''
+            role_text = f' "{role}"' if role else ''
             
             # Strategy: Try with site:linkedin.com first (most precise), then broader
             
-            # Query 1: site:linkedin.com/in "Name" "Company" (best for LinkedIn)
+            # Query 1: site:linkedin.com/in "Name" "Company" "Role" (most specific)
+            if company_name and role:
+                queries.append(f'site:linkedin.com/in {quoted_name}{company_text}{role_text}')
+            
+            # Query 2: site:linkedin.com/in "Name" "Company"
             if company_name:
                 queries.append(f'site:linkedin.com/in {quoted_name}{company_text}')
             
-            # Query 2: site:linkedin.com/in "Name" (LinkedIn only)
+            # Query 3: site:linkedin.com/in "Name" "Role"
+            if role:
+                queries.append(f'site:linkedin.com/in {quoted_name}{role_text}')
+            
+            # Query 4: site:linkedin.com/in "Name" (LinkedIn only)
             queries.append(f'site:linkedin.com/in {quoted_name}')
             
-            # Query 3: "Name" "Company" LinkedIn (broader, in case site: fails)
+            # Query 5: "Name" "Company" LinkedIn (broader, in case site: fails)
             if company_name:
                 queries.append(f'{quoted_name}{company_text} LinkedIn')
-            
-            # Query 4: "Name" LinkedIn profile (broadest)
-            queries.append(f'{quoted_name} LinkedIn profile')
             
             print(f"[CONTACT_SEARCH] Brave will try {len(queries)} queries", flush=True)
             
