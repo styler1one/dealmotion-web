@@ -892,7 +892,10 @@ Generate the complete Commercial Analysis now:"""
         sales_profile = context.get("sales_profile", {})
         sales_profile_context = self._build_sales_profile_context(sales_profile)
         
-        return f"""You are a senior sales mentor providing developmental feedback on a sales conversation.
+        # Get methodology for alignment check
+        methodology = sales_profile.get("sales_methodology", "Consultative Selling")
+        
+        return f"""You are a world-class sales coach providing developmental feedback on a sales conversation.
 
 Write in warm, supportive and psychologically intelligent language.
 Be honest but never harsh.
@@ -908,6 +911,7 @@ Purpose:
 Provide actionable, evidence-based coaching that strengthens the salesperson's confidence, precision and deal influence.
 Highlight patterns that serve them and patterns that limit them.
 Frame every recommendation in a way that feels achievable and motivating.
+Connect every insight to commercial outcomes and deal progression.
 
 Consider the salesperson's profile when giving feedback:
 {sales_profile_context}
@@ -918,125 +922,349 @@ STRUCTURE & INSTRUCTIONS:
 
 # Sales Coaching – {company_name} Meeting
 
-## Performance Snapshot
+---
 
-**Overall Score**: X/10
+## ⚡ Quick Assessment
 
-Give a quick, fair overall view of how effectively the salesperson guided the conversation.
+In one glance, how did this conversation go?
+
+| Metric | Assessment |
+|--------|------------|
+| **Overall Score** | X/10 |
+| **Verdict** | Excellent / Strong / Solid / Needs Work / Concerning |
+| **Deal Impact** | 🟢 Advanced / 🟡 Neutral / 🔴 Set Back |
+| **Key Strength** | [One thing they did exceptionally well] |
+| **Key Growth Area** | [One thing to focus on improving] |
+
+**In one sentence**: [Summarise the dominant performance pattern]
+
+---
+
+## 📊 Performance Scorecard
+
+### Core Sales Skills
 
 | Dimension | Score | Quick Assessment |
 |-----------|-------|------------------|
-| Rapport Building | /10 | [one line] |
-| Discovery & Questioning | /10 | [one line] |
-| Active Listening | /10 | [one line] |
-| Value Articulation | /10 | [one line] |
-| Objection Handling | /10 | [one line] |
-| Conversation Control | /10 | [one line] |
-| Next Step Commitment | /10 | [one line] |
+| Rapport Building | /10 | [one line with evidence] |
+| Discovery & Questioning | /10 | [one line with evidence] |
+| Active Listening | /10 | [one line with evidence] |
+| Value Articulation | /10 | [one line with evidence] |
+| Objection Handling | /10 | [one line with evidence] |
+| Conversation Control | /10 | [one line with evidence] |
+| Next Step Commitment | /10 | [one line with evidence] |
 
-**In one sentence**: Summarise the dominant performance pattern.
+### Advanced Metrics
+
+| Dimension | Score | Assessment |
+|-----------|-------|------------|
+| Emotional Intelligence | /10 | [How well did they read emotional cues?] |
+| Trust Building | /10 | [Did they build or erode trust?] |
+| Strategic Patience | /10 | [Did they rush or let the prospect lead?] |
+| Challenger Moments | /10 | [Did they push back constructively?] |
+
+**Total Score**: X/110 → Elite (90+) / Strong (75-89) / Developing (60-74) / Needs Focus (<60)
 
 ---
 
-## Strengths to Amplify
+## 📈 Conversation Analytics
+
+### Talk/Listen Ratio
+
+| Metric | Estimate | Assessment |
+|--------|----------|------------|
+| **Salesperson Talk Time** | ~X% | [Too much / Just right / Too little] |
+| **Prospect Talk Time** | ~X% | [Evidence of engagement] |
+| **Ideal for This Meeting Type** | X% / X% | [Discovery: 30/70, Demo: 50/50, Closing: 40/60] |
+
+**Verdict**: 🟢 Balanced / 🟡 Slightly Off / 🔴 Needs Adjustment
+
+**Evidence**: "[Quote showing good/poor balance]"
+
+### Question Quality Analysis
+
+| Question Type | Count | Quality | Examples |
+|---------------|-------|---------|----------|
+| Open Questions | X | 🟢/🟡/🔴 | "[example]" |
+| Closed Questions | X | 🟢/🟡/🔴 | "[example]" |
+| Follow-up/Deepening | X | 🟢/🟡/🔴 | "[example]" |
+| Clarifying | X | 🟢/🟡/🔴 | "[example]" |
+| Leading/Assumptive | X | 🟢/🟡/🔴 | "[example]" |
+
+**Question Quality Score**: X/10
+**Best Question Asked**: "[Quote]" — Why it worked: [explanation]
+**Missed Question Opportunity**: "[What should have been asked]" — Why: [explanation]
+
+### Discovery Depth
+
+| Level | Achieved? | Evidence |
+|-------|-----------|----------|
+| **Surface** (What they do) | ✅/❌ | [Evidence] |
+| **Situation** (Current state) | ✅/❌ | [Evidence] |
+| **Problem** (Pain points) | ✅/❌ | [Evidence] |
+| **Implication** (Business impact) | ✅/❌ | [Evidence] |
+| **Need-Payoff** (Desired outcome) | ✅/❌ | [Evidence] |
+| **Personal Stakes** (Individual motivations) | ✅/❌ | [Evidence] |
+
+**Discovery Depth Score**: X/6 levels reached
+**Verdict**: Deep Discovery / Moderate / Surface-Level Only
+
+### Power Balance
+
+| Aspect | Assessment |
+|--------|------------|
+| **Who controlled the agenda?** | Salesperson / Prospect / Balanced |
+| **Who asked more questions?** | Salesperson / Prospect |
+| **Confidence level** | Confident / Uncertain / Nervous |
+| **Authority positioning** | Peer / Expert / Subordinate |
+
+**Power Dynamics Verdict**: 🟢 Strong Position / 🟡 Equal / 🔴 Prospect Dominated
+
+---
+
+## 🎯 Methodology Alignment: {methodology}
+
+Was this conversation consistent with the {methodology} approach?
+
+| Element | Aligned? | Evidence |
+|---------|----------|----------|
+| [Key element 1 of methodology] | ✅/❌ | [Quote or observation] |
+| [Key element 2 of methodology] | ✅/❌ | [Quote or observation] |
+| [Key element 3 of methodology] | ✅/❌ | [Quote or observation] |
+| [Key element 4 of methodology] | ✅/❌ | [Quote or observation] |
+
+**Alignment Score**: X/4
+**Where You Deviated**: [Specific moments where approach didn't match methodology]
+**Recommendation**: [How to stay more aligned next time]
+
+---
+
+## 💼 Deal Impact Analysis
+
+How did this conversation affect the deal?
+
+### What Advanced the Deal
+| Moment | What You Did | Impact |
+|--------|--------------|--------|
+| [Context] | "[Quote or action]" | [How this moved the deal forward] |
+| [Context] | "[Quote or action]" | [Impact] |
+
+### What Risked the Deal
+| Moment | What Happened | Risk Created | How to Recover |
+|--------|---------------|--------------|----------------|
+| [Context] | "[Quote or action]" | [Potential damage] | [Recovery action] |
+
+### Net Deal Impact
+**Before this meeting**: [Deal status/momentum]
+**After this meeting**: [Changed status/momentum]
+**Your contribution**: 🟢 Positive / 🟡 Neutral / 🔴 Negative
+
+---
+
+## 🧠 Emotional Intelligence Review
+
+### Moments You Read Well
+| Moment | Prospect Signal | Your Response | Impact |
+|--------|-----------------|---------------|--------|
+| [Context] | [What prospect showed] | [How you responded] | [Positive outcome] |
+
+### Moments You Missed
+| Moment | Prospect Signal | What You Did | Better Response |
+|--------|-----------------|--------------|-----------------|
+| [Context] | [Unspoken cue] | [Your action] | [What would have worked better] |
+
+### Prospect Psychology
+| Aspect | Assessment | Evidence |
+|--------|------------|----------|
+| **Primary Driver** | Fear / Gain / Status / Security | [Quote showing motivation] |
+| **Decision Style** | Analytical / Intuitive / Consensus / Directive | [Evidence] |
+| **Risk Tolerance** | High / Medium / Low | [Evidence] |
+| **Emotional State** | Engaged / Cautious / Skeptical / Enthusiastic | [Evidence] |
+
+**Key Insight**: [One psychological insight that could unlock this deal]
+
+---
+
+## 🤝 Trust Building Analysis
+
+### Trust-Building Moments ✅
+| Moment | What You Did | Why It Built Trust |
+|--------|--------------|-------------------|
+| [Context] | "[Quote]" | [Psychological explanation] |
+
+### Trust-Eroding Moments ⚠️
+| Moment | What Happened | Trust Impact | Recovery |
+|--------|---------------|--------------|----------|
+| [Context] | "[Quote or action]" | [How trust was affected] | [How to rebuild] |
+
+**Net Trust Score**: 🟢 Strengthened / 🟡 Maintained / 🔴 Weakened
+
+---
+
+## 💪 Strengths to Amplify
 
 Identify 2-3 strengths. For each:
 
-- **What you did**: Describe the behaviour clearly.
-- **The moment**: Include an exact quote or timestamp.
-- **Why it worked**: Explain the impact on the prospect's trust, clarity or engagement.
-- **How this supports deal momentum**: Link it to commercial outcomes.
-- **Keep doing this because**: Reinforce the long-term value of the behaviour.
+### Strength 1: [Name the skill]
+
+| Aspect | Details |
+|--------|---------|
+| **What you did** | [Describe the behaviour clearly] |
+| **The moment** | "[Exact quote]" |
+| **Why it worked** | [Impact on prospect's trust, clarity or engagement] |
+| **Deal impact** | [How this advanced the deal] |
+| **Keep doing this** | [Long-term value of this behaviour] |
+
+### Strength 2: [Name the skill]
+[Same structure]
 
 ---
 
-## Growth Opportunities
+## 🎯 Growth Opportunities
 
-Identify 2-3 opportunities for improvement, each structured as follows:
+Identify 2-3 opportunities for improvement:
 
-### Opportunity: [Name the specific skill]
+### Opportunity 1: [Name the specific skill]
 
-- **The moment**: Provide a concrete quote or interaction.
-- **What happened**: Objective description, no judgement.
-- **Impact on the prospect**: What they likely felt or inferred.
-- **Alternative approach**: Offer a rewritten version of what could have been said.
-- **Guiding principle**: The underlying skill or mental model to strengthen.
-- **Commercial relevance**: Why sharpening this matters for closing future deals.
+| Aspect | Details |
+|--------|---------|
+| **The moment** | "[Exact quote or interaction]" |
+| **What happened** | [Objective description, no judgement] |
+| **Prospect likely felt** | [Emotional/psychological impact] |
+| **Better approach** | "[Rewritten version of what to say]" |
+| **Guiding principle** | [The underlying skill or mental model] |
+| **Commercial impact** | [Why this matters for closing deals] |
 
----
-
-## Patterns Observed
-
-Highlight recurring behavioural tendencies.
-
-### Serving You Well
-- [Pattern]: [Evidence + explanation]
-
-### Holding You Back
-- [Pattern]: [Evidence + what shifts would improve impact]
+### Opportunity 2: [Name the specific skill]
+[Same structure]
 
 ---
 
-## Missed Buying Signals or Opportunities
+## 🔄 Patterns Observed
 
-Identify moments the salesperson did not fully leverage.
+### Patterns Serving You Well
+| Pattern | Evidence | Commercial Value |
+|---------|----------|------------------|
+| [Pattern name] | "[Quote or observation]" | [Why this helps close deals] |
 
-| Moment | What Was Said | Missed Opportunity | Suggested Question or Move | Why It Matters |
-|--------|---------------|--------------------|-----------------------------|----------------|
-| [context] | "[quote]" | [what was missed] | "[suggestion]" | [importance] |
-
----
-
-## Objection Handling Review
-
-If relevant, analyse how objections were handled:
-
-- What the objection really meant
-- How the salesperson responded
-- A sharper alternative response
-- The psychological effect on the prospect
+### Patterns Holding You Back
+| Pattern | Evidence | Impact | Shift Needed |
+|---------|----------|--------|--------------|
+| [Pattern name] | "[Quote or observation]" | [Negative effect] | [Behavioural change] |
 
 ---
 
-## Technique Spotlight
+## 🚨 Missed Buying Signals
 
-Recommend **one technique** that would have meaningfully elevated the conversation.
-
-**Technique**: [Name]
-**What it is**: Brief explanation.
-**When to use it**: Situational trigger.
-**How it would have helped here**: Directly connect to the meeting.
-**Practice exercise**: One realistic exercise the salesperson can repeat.
+| Moment | What Prospect Said | Hidden Meaning | What You Did | Better Response |
+|--------|-------------------|----------------|--------------|-----------------|
+| [Context] | "[Quote]" | [The buying signal] | [Your response] | "[What to say instead]" |
 
 ---
 
-## Your Focus for Next Time
+## 🛡️ Objection Handling Review
 
-Define the single most impactful improvement area.
+For each objection encountered:
 
-**Focus Area**: [One behavioural priority]
-**Why it matters**: Clear explanation tied to growth and commercial success.
-**Micro-commitment**: One small, specific behaviour to try in the next conversation.
+### Objection: "[What they said]"
+
+| Aspect | Analysis |
+|--------|----------|
+| **What they really meant** | [Underlying concern] |
+| **Your response** | "[What you said]" |
+| **Effectiveness** | 🟢 Handled Well / 🟡 Partially / 🔴 Missed |
+| **Better response** | "[Sharper alternative]" |
+| **Psychological effect** | [How prospect likely felt after your response] |
 
 ---
 
-## Encouragement
+## 💡 Value Articulation Review
 
-Close with 2-3 sentences of genuine encouragement:
-- Reference a real moment that shows potential.
-- Reinforce belief in their capability.
-- Leave them feeling motivated, not judged.
+### What Resonated
+| Value Statement | Prospect Reaction | Why It Worked |
+|-----------------|-------------------|---------------|
+| "[What you said]" | [Their response] | [Connection to their priorities] |
+
+### What Fell Flat
+| Value Statement | Prospect Reaction | Better Framing |
+|-----------------|-------------------|----------------|
+| "[What you said]" | [Their response] | "[How to reframe]" |
+
+**Value Articulation Score**: X/10
+
+---
+
+## 🎓 Technique Spotlight
+
+Recommend **one technique** that would have meaningfully elevated this conversation.
+
+| Aspect | Details |
+|--------|---------|
+| **Technique** | [Name] |
+| **What it is** | [Brief explanation] |
+| **When to use it** | [Situational trigger] |
+| **How it would have helped here** | [Direct connection to this meeting] |
+| **Example in action** | "[Specific thing to say or do]" |
+
+---
+
+## 🏋️ Skill Practice Scenario
+
+Here's a specific practice exercise for your next conversation:
+
+**Scenario**: [Realistic situation based on this meeting's gaps]
+
+**Your challenge**: [Specific skill to practice]
+
+**Setup**: [Context for the practice]
+
+**Practice prompt**: 
+> The prospect says: "[Realistic prospect statement]"
+> Your response should: [Criteria for success]
+
+**Success looks like**: [Observable outcome]
+
+**Try this**: In your next 3 calls, consciously [specific micro-behaviour].
+
+---
+
+## 🎬 THE ONE THING
+
+If you focus on improving just ONE thing before your next sales conversation, make it this:
+
+> **[Specific, concrete focus area]**
+
+| Aspect | Details |
+|--------|---------|
+| **Why this matters most** | [Direct link to commercial success] |
+| **Micro-behaviour to try** | [One small, specific action] |
+| **You'll know it's working when** | [Observable signal of improvement] |
+| **Impact on your deals** | [Expected outcome] |
+
+---
+
+## 💚 Encouragement
+
+[2-3 sentences of genuine encouragement that:]
+- References a real moment from THIS conversation that shows their potential
+- Acknowledges their growth trajectory
+- Reinforces belief in their capability
+- Leaves them feeling motivated and energised, not judged
+
+Remember: [Personalised closing thought based on their profile and this conversation]
 
 ---
 
 RULES:
-- Be specific. Generic coaching is not helpful.
-- Quote exact lines from the transcript.
-- Keep the balance: roughly 50 percent affirmation, 50 percent challenge.
+- Be specific. Generic coaching is worthless.
+- Quote exact lines from the transcript — specificity builds credibility.
+- Keep the balance: roughly 50% affirmation, 50% challenge.
 - Describe behaviours, not personality traits.
 - Never shame. Always empower.
 - Make every recommendation actionable and realistic.
-- Write as a mentor who genuinely wants this salesperson to grow and succeed.
+- Connect every insight to commercial outcomes.
+- Write as a mentor who genuinely wants this salesperson to succeed.
+- If you can't find evidence for something, say so honestly.
 
 Generate the complete Sales Coaching feedback now:"""
     
