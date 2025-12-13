@@ -256,19 +256,20 @@ If no profiles found, return: []"""
             )
             
             if not response or not response.text:
-                logger.warning("[CONTACT_SEARCH] Gemini returned empty response")
+                print("[CONTACT_SEARCH] Gemini returned empty response", flush=True)
                 return []
             
-            # Log the full response for debugging
+            # Log the full response for debugging (print for Railway visibility)
             response_text = response.text
-            logger.info(f"[CONTACT_SEARCH] Gemini response ({len(response_text)} chars): {response_text[:800]}")
+            print(f"[CONTACT_SEARCH] Gemini response ({len(response_text)} chars):", flush=True)
+            print(response_text[:1000], flush=True)
             
             matches = self._parse_matches(response_text, name, company_name)
-            logger.info(f"[CONTACT_SEARCH] Parsed {len(matches)} matches from response")
+            print(f"[CONTACT_SEARCH] Parsed {len(matches)} matches", flush=True)
             return matches
             
         except Exception as e:
-            logger.error(f"[CONTACT_SEARCH] Gemini search error: {e}")
+            print(f"[CONTACT_SEARCH] Gemini search error: {e}", flush=True)
             raise
     
     async def _search_with_claude(
@@ -422,7 +423,7 @@ If no profiles found, return: []"""
             
             # If no JSON found, try to extract info from text
             if not matches:
-                logger.info("[CONTACT_SEARCH] No JSON array found, extracting URLs from text")
+                print("[CONTACT_SEARCH] No JSON array found, extracting URLs from text", flush=True)
                 # Look for LinkedIn URLs in text - multiple patterns
                 url_patterns = [
                     r'https?://(?:www\.)?linkedin\.com/in/[\w-]+/?',
@@ -440,7 +441,7 @@ If no profiles found, return: []"""
                         url = url.rstrip('/')
                         found_urls.add(url)
                 
-                logger.info(f"[CONTACT_SEARCH] Found {len(found_urls)} URLs in text: {list(found_urls)[:3]}")
+                print(f"[CONTACT_SEARCH] Found {len(found_urls)} URLs in text: {list(found_urls)[:3]}", flush=True)
                 
                 for url in list(found_urls)[:5]:
                     matches.append(ContactMatch(
