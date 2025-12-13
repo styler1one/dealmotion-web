@@ -216,27 +216,27 @@ class ContactSearchService:
         import aiohttp
         
         try:
-            # Build multiple search queries to try
-            # Use quotes around name for exact match
+            # Build search queries optimized for Brave API
+            # Brave supports: quotes for exact match, site: operator
             queries = []
             quoted_name = f'"{name}"'
-            role_text = f' "{role}"' if role else ''
             company_text = f' "{company_name}"' if company_name else ''
             
-            # Query 1: "Name" "Company" "Role" LinkedIn (most specific)
-            if company_name and role:
-                queries.append(f'{quoted_name}{company_text}{role_text} LinkedIn')
+            # Strategy: Try with site:linkedin.com first (most precise), then broader
             
-            # Query 2: "Name" "Company" LinkedIn
+            # Query 1: site:linkedin.com/in "Name" "Company" (best for LinkedIn)
+            if company_name:
+                queries.append(f'site:linkedin.com/in {quoted_name}{company_text}')
+            
+            # Query 2: site:linkedin.com/in "Name" (LinkedIn only)
+            queries.append(f'site:linkedin.com/in {quoted_name}')
+            
+            # Query 3: "Name" "Company" LinkedIn (broader, in case site: fails)
             if company_name:
                 queries.append(f'{quoted_name}{company_text} LinkedIn')
             
-            # Query 3: "Name" "Role" LinkedIn
-            if role:
-                queries.append(f'{quoted_name}{role_text} LinkedIn')
-            
-            # Query 4: "Name" LinkedIn (broadest)
-            queries.append(f'{quoted_name} LinkedIn')
+            # Query 4: "Name" LinkedIn profile (broadest)
+            queries.append(f'{quoted_name} LinkedIn profile')
             
             print(f"[CONTACT_SEARCH] Brave will try {len(queries)} queries", flush=True)
             
@@ -255,7 +255,9 @@ class ContactSearchService:
                     
                     params = {
                         "q": query,
-                        "count": 10  # Get more results
+                        "count": 20,  # Maximum results
+                        "result_filter": "web",  # Only web results (no images/videos)
+                        "text_decorations": False,  # No HTML formatting
                     }
                     
                     async with session.get(
