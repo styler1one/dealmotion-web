@@ -190,17 +190,20 @@ class ContactAnalyzer:
             "background": None
         }
         
+        print(f"[CONTACT_ANALYZER] Gathering profile info for: {contact_name} at {company_name}", flush=True)
+        
         # Priority 1: User-provided context
         if user_provided_context:
             result["source"] = "user_provided"
             result["about"] = user_provided_context.get("about")
             result["experience"] = user_provided_context.get("experience")
             if result["about"] or result["experience"]:
-                logger.info(f"[CONTACT_ANALYZER] Using user-provided context for {contact_name}")
+                print(f"[CONTACT_ANALYZER] ✅ Using user-provided context for {contact_name}", flush=True)
                 return result
         
         # Priority 2: Check if this person is in research leadership data
         leadership = company_context.get("leadership", []) if company_context else []
+        print(f"[CONTACT_ANALYZER] Research leadership has {len(leadership)} entries", flush=True)
         clean_name = _clean_name(contact_name).lower()
         
         for leader in leadership:
@@ -216,27 +219,32 @@ class ContactAnalyzer:
                 result["background"] = leader.get("background")
                 if leader.get("linkedin_url") and not linkedin_url:
                     result["linkedin_url"] = leader.get("linkedin_url")
-                logger.info(f"[CONTACT_ANALYZER] Found {contact_name} in research leadership data")
+                print(f"[CONTACT_ANALYZER] ✅ Found {contact_name} in research leadership", flush=True)
                 return result
         
         # Priority 3: Brave Search for LinkedIn profile info
+        print(f"[CONTACT_ANALYZER] Brave API key available: {bool(self.brave_api_key)}", flush=True)
         if self.brave_api_key:
+            print(f"[CONTACT_ANALYZER] 🔍 Starting Brave search for {contact_name}...", flush=True)
             brave_info = await self._search_linkedin_with_brave(
                 contact_name=contact_name,
                 contact_role=contact_role,
                 company_name=company_name
             )
+            print(f"[CONTACT_ANALYZER] Brave result: found={brave_info.get('found')}", flush=True)
             if brave_info.get("found"):
                 result["source"] = "brave"
                 result["headline"] = brave_info.get("headline")
                 result["about"] = brave_info.get("about")
                 result["recent_activity"] = brave_info.get("recent_activity")
-                logger.info(f"[CONTACT_ANALYZER] Found profile info via Brave for {contact_name}")
+                print(f"[CONTACT_ANALYZER] ✅ Found profile info via Brave: {brave_info.get('headline')}", flush=True)
                 return result
+        else:
+            print(f"[CONTACT_ANALYZER] ⚠️ No Brave API key - skipping web search", flush=True)
         
         # No additional info found - will rely on role-based inference
         result["source"] = "role_inference"
-        logger.info(f"[CONTACT_ANALYZER] No profile info found for {contact_name}, using role-based inference")
+        print(f"[CONTACT_ANALYZER] ⚠️ No profile info found for {contact_name}, using role-based inference", flush=True)
         return result
     
     async def _search_linkedin_with_brave(
@@ -255,16 +263,24 @@ class ContactAnalyzer:
         result = {"found": False}
         
         if not self.brave_api_key:
+            print(f"[CONTACT_ANALYZER] Brave: No API key configured", flush=True)
             return result
         
         try:
             clean_name = _clean_name(contact_name)
             
             # Build search queries - focus on finding profile snippets
-            queries = [
-                f'site:linkedin.com/in "{clean_name}" "{company_name}"',
-                f'"{clean_name}" "{company_name}" LinkedIn profile',
-            ]
+            # Include role for more specific results
+            queries = []
+            if company_name and company_name != "Unknown":
+                queries.append(f'site:linkedin.com/in "{clean_name}" "{company_name}"')
+                if contact_role:
+                    queries.append(f'site:linkedin.com/in "{clean_name}" "{contact_role}"')
+                queries.append(f'"{clean_name}" "{company_name}" LinkedIn profile')
+            # Fallback: just the name
+            queries.append(f'site:linkedin.com/in "{clean_name}"')
+            
+            print(f"[CONTACT_ANALYZER] Brave: Trying {len(queries)} queries for {clean_name}", flush=True)
             
             async with aiohttp.ClientSession() as session:
                 headers = {
@@ -273,6 +289,7 @@ class ContactAnalyzer:
                 }
                 
                 for query in queries:
+                    print(f"[CONTACT_ANALYZER] Brave query: {query}", flush=True)
                     params = {"q": query, "count": 5}
                     
                     async with session.get(
@@ -281,10 +298,12 @@ class ContactAnalyzer:
                         params=params
                     ) as response:
                         if response.status != 200:
+                            print(f"[CONTACT_ANALYZER] Brave: HTTP {response.status}", flush=True)
                             continue
                         
                         data = await response.json()
                         web_results = data.get("web", {}).get("results", [])
+                        print(f"[CONTACT_ANALYZER] Brave: {len(web_results)} results", flush=True)
                         
                         for web_result in web_results:
                             url = web_result.get("url", "")
@@ -307,13 +326,15 @@ class ContactAnalyzer:
                             result["about"] = description[:500] if description else None
                             result["linkedin_url"] = url
                             
-                            logger.info(f"[CONTACT_ANALYZER] Brave found: {clean_name} -> {headline}")
+                            print(f"[CONTACT_ANALYZER] ✅ Brave found: {clean_name} -> {headline}", flush=True)
                             return result
+                
+                print(f"[CONTACT_ANALYZER] Brave: No LinkedIn results found", flush=True)
             
             return result
             
         except Exception as e:
-            logger.warning(f"[CONTACT_ANALYZER] Brave search error: {e}")
+            print(f"[CONTACT_ANALYZER] ❌ Brave search error: {e}", flush=True)
             return result
     
     def _build_analysis_prompt(
