@@ -110,7 +110,8 @@ export function ContactSearchModal({
   }
 
   // Select an executive as the contact
-  const handleSelectExecutive = (exec: ResearchExecutive) => {
+  const handleSelectExecutive = async (exec: ResearchExecutive) => {
+    // Set the search fields
     setSearchName(exec.name)
     setSearchRole(exec.title || '')
     
@@ -129,8 +130,37 @@ export function ContactSearchModal({
       setSelectedMatch(match)
       setStep('enrich')
     } else {
-      // No LinkedIn URL - do a search with pre-filled name
-      handleSearch()
+      // No LinkedIn URL - do a search with the executive's name
+      // Can't use handleSearch() directly because React state is async
+      // So we perform the search inline with the exec data
+      setStep('loading')
+      setError(null)
+
+      try {
+        const { data, error: searchError } = await api.post<{
+          matches: ContactMatch[]
+          search_query_used: string
+          error?: string
+        }>('/api/v1/contacts/search', {
+          name: exec.name,
+          role: exec.title || undefined,
+          company_name: companyName,
+          company_linkedin_url: companyLinkedInUrl,
+          research_id: researchId
+        })
+
+        if (searchError || data?.error) {
+          setError(searchError?.message || data?.error || 'Search failed')
+          setStep('search')
+          return
+        }
+
+        setMatches(data?.matches || [])
+        setStep('results')
+      } catch (err) {
+        setError('Search failed. Please try again.')
+        setStep('search')
+      }
     }
   }
 

@@ -649,6 +649,10 @@ IMPORTANT:
                     
                     # Validate name - should look like a person name
                     if name and len(name) > 2:
+                        # Skip exact header placeholders
+                        if name.strip() in ['Name', 'Naam', 'Title', 'Titel']:
+                            continue
+                        
                         # Skip if it looks like a metric or header value
                         if any(skip in name.lower() for skip in [
                             'niet gevonden', 'not found', '---', 'n/a', 'unknown',
