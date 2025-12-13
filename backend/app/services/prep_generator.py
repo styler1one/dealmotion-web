@@ -475,16 +475,47 @@ For each attendee:
 | [Topic 1] | [Reason] | [Recommended framing] |
 | [Topic 2] | [Reason] | [Recommended framing] |
 
-### Likely Objections & Responses
+### Likely Objections — Deep Dive
 
-| Objection | Root Cause | Your Response |
-|-----------|------------|---------------|
-| "[Objection 1]" | [Why they might say this] | "[Ready-to-use response]" |
-| "[Objection 2]" | [Why] | "[Response]" |
+For the top 2-3 objections, provide complete rebuttals using Feel-Felt-Found:
+
+**Objection 1**: "[Most likely objection]"
+
+| Element | What to Say |
+|---------|-------------|
+| **Feel** | "I completely understand. [Acknowledge their concern genuinely]" |
+| **Felt** | "Many of our clients felt the same way initially. [Normalize the concern]" |
+| **Found** | "What they found was [specific outcome or realization]. [Share the transformation]" |
+| **Proof** | "[Specific client or data point that proves this]" |
+| **Bridge** | "[Question to move forward]: Would you be open to exploring...?" |
+
+**Objection 2**: "[Second most likely objection]"
+
+| Element | What to Say |
+|---------|-------------|
+| **Feel** | "[Acknowledgment]" |
+| **Felt** | "[Normalization]" |
+| **Found** | "[Transformation]" |
+| **Proof** | "[Evidence]" |
+| **Bridge** | "[Transition question]" |
 
 ### Red Flags to Watch
 - [Behavioral sign 1 that indicates hidden blockers]
 - [Behavioral sign 2]
+
+---
+
+## 🤔 What If They Ask...
+
+Prepare for awkward or difficult questions:
+
+| Question | Why They Ask | Your Response |
+|----------|--------------|---------------|
+| "What does this cost?" | Testing budget fit early | "That depends on scope. Let's first understand what you need, then I can give you a realistic indication. What's your budget thinking?" |
+| "Can't you do this internally?" | Validating need for external help | "Absolutely you could. The question is whether that's the best use of your team's time and focus. Your core business is [their focus], not [our expertise]." |
+| "Why you vs. [competitor]?" | Benchmarking | "Good question. Where we're unique is [unfair advantage]. But more importantly: what are YOUR criteria for choosing a partner?" |
+| "How long does this take?" | Timeline planning | "A typical [first step] takes [X weeks]. Full implementation depends on scope, usually [Y-Z months] for significant impact." |
+| "What if it doesn't work?" | Risk mitigation | "We structure our engagements with clear milestones and success criteria. If we're not seeing results by [checkpoint], we adjust or stop." |
 
 ---
 
@@ -541,6 +572,14 @@ For each attendee:
 - Confirm agenda and time
 - Set expectation: "I'd like to ask questions to understand your situation first"
 
+**Suggested Agenda (Share at Start)**:
+> "[Contact name], I was thinking we could structure our conversation like this:
+> 1. (5 min) Quick introductions and understanding your current situation
+> 2. (20 min) Dive deeper into your challenges and priorities
+> 3. (10 min) Share how we've helped similar organizations
+> 4. (10 min) Discuss if and how we might work together
+> Does that work for you, or would you like to adjust?"
+
 ### Discovery Phase (20–25 Minutes)
 
 #### Theme 1: Current Situation
@@ -587,15 +626,63 @@ For each attendee:
 
 ---
 
+## 👂 Buying Signals to Listen For
+
+During the meeting, watch for these signals:
+
+### 🟢 Strong Buying Signals (Push for Next Step)
+These indicate high interest — ask for commitment:
+- "When could you start?" / "What's your availability?"
+- "Who else should be involved in this?"
+- "How does your pricing work?"
+- "Can you do [specific capability]?"
+- They take notes, lean forward, ask detailed follow-up questions
+- They share internal challenges openly
+- They mention budget or timeline specifics
+
+### 🟡 Interest Signals (Keep Nurturing)
+These show engagement — provide more value:
+- "That's interesting, tell me more"
+- "How do others handle this?"
+- They ask for case studies or references
+- They compare you to alternatives
+- They share some challenges but stay guarded
+
+### 🔴 Warning Signals (Diagnose & Adjust)
+These suggest obstacles — address directly:
+- Short, closed answers without elaboration
+- Frequent "yes, but..." responses
+- Looking at phone, checking time, distracted
+- "We've tried something like this before"
+- Avoiding commitment to any next step
+- Suddenly involving new stakeholders
+
+**If You See Warning Signals**: Pause and ask: "I want to make sure I'm being helpful. Is there something specific on your mind, or should we adjust our focus?"
+
+---
+
 ## 🔔 Last-Minute Check (5 Minutes Before)
 
-Do a quick check on these before you enter the meeting:
+### Quick Digital Scans
+Open these links and scan for 30 seconds each:
 
-- [ ] **LinkedIn scan**: Any recent posts from [Contact Name(s)]?
-- [ ] **Company news**: Google "[Company Name]" news last 7 days
-- [ ] **Competitor check**: Any [Competitor] announcements this week?
-- [ ] **Your opening line**: Say it out loud once
-- [ ] **Calendar open**: Ready to propose specific next step dates
+| Check | Link/Search | What to Look For |
+|-------|-------------|------------------|
+| **LinkedIn** | [Contact's LinkedIn profile URL] | Recent posts, job changes, shared connections |
+| **Company News** | Google: "[Company Name]" news | Last 7 days announcements, press releases |
+| **Google Alert** | "[Contact Name]" "[Company Name]" | Recent mentions, interviews, quotes |
+
+### Mental Prep (Say Out Loud)
+- [ ] **Opening line**: "[Your prepared opener]"
+- [ ] **Top 3 questions**: [Q1], [Q2], [Q3]
+- [ ] **The ONE Thing**: [Single most important insight to remember]
+- [ ] **Proposed next step**: "[Exact words for next step]"
+
+### Final Checks
+- [ ] Camera/audio tested (if video call)
+- [ ] Notes app open for capturing insights
+- [ ] Calendar visible for scheduling next step
+- [ ] Water nearby, phone on silent
 
 ---
 
@@ -619,7 +706,7 @@ RULES:
 - Quantify impact wherever possible (time, money, risk).
 - Write for a senior B2B sales professional who values clarity, depth, and strategic insight.
 - If context is missing, note it as "[TO DISCOVER]" rather than guessing.
-- Keep total brief under 1500 words (excluding tables).
+- Keep total brief under 1800 words (excluding tables).
 
 {lang_instruction}
 
@@ -793,16 +880,42 @@ For each attendee:
 | [Feature 1] | [May not match their process] | [Framing to use] |
 | [Feature 2] | [Competitor is stronger here] | [Redirect strategy] |
 
-### Anticipated Objections
+### Anticipated Objections — Deep Dive
 
-| Objection | Why They Might Say It | Your Response |
-|-----------|----------------------|---------------|
-| "[Objection 1]" | [Root cause] | "[Ready response]" |
-| "[Objection 2]" | [Root cause] | "[Ready response]" |
+**Objection 1**: "[Most likely demo objection]"
+
+| Element | What to Say |
+|---------|-------------|
+| **Feel** | "I understand that concern completely." |
+| **Felt** | "Other [similar role] felt the same when they first saw this." |
+| **Found** | "What they found after [timeframe] was [specific outcome]." |
+| **Proof** | "[Client example or data point]" |
+| **Bridge** | "Would you like to see how [feature] handles that?" |
+
+**Objection 2**: "[Second likely objection]"
+
+| Element | What to Say |
+|---------|-------------|
+| **Feel** | "[Acknowledgment]" |
+| **Felt** | "[Normalization]" |
+| **Found** | "[Transformation]" |
+| **Proof** | "[Evidence]" |
+| **Bridge** | "[Transition to next demo segment]" |
 
 ### Technical Backup Plan
 - If [issue] happens: [What to do/say]
 - If they ask about [unsupported feature]: "[Response]"
+
+---
+
+## 🤔 What If They Ask...
+
+| Question | Why They Ask | Your Response |
+|----------|--------------|---------------|
+| "Can we customize this?" | Fit concerns | "Absolutely. Let me show you the configuration options, and we can discuss specific customizations in a follow-up." |
+| "How does this integrate with [system]?" | Technical feasibility | "We have [native/API] integration with [system]. I can show you that, or arrange a technical deep-dive." |
+| "What's the implementation timeline?" | Planning | "Typical implementation is [X-Y weeks]. For your scope, I'd estimate [specific timeframe]." |
+| "Who else uses this?" | Social proof | "[Similar company] in [their industry] uses this for [use case]. I can connect you with them if helpful." |
 
 ---
 
@@ -812,6 +925,14 @@ For each attendee:
 - **Recap**: "Last time we discussed [pain point]. Today I'll show you how we solve that."
 - **Confirm priorities**: "You mentioned [X, Y, Z] were most important. Still accurate?"
 - **Set expectations**: "I'll focus on those three areas. Feel free to ask questions anytime."
+
+**Suggested Agenda (Share at Start)**:
+> "I was thinking we could structure this demo as follows:
+> 1. (5 min) Quick recap of what we discussed and confirm your priorities
+> 2. (25 min) Show you the three areas most relevant to your situation
+> 3. (10 min) Q&A and address any concerns
+> 4. (5 min) Discuss next steps if this looks like a fit
+> Does that work, or would you prefer a different focus?"
 
 ### Core Demo (25–30 Minutes)
 
@@ -876,13 +997,51 @@ For each attendee:
 
 ---
 
+## 👂 Buying Signals During Demo
+
+### 🟢 Strong Buying Signals (Push for Trial/POC)
+- "Can we try this with our data?"
+- "When could we get started?"
+- "Who else should see this?"
+- They take screenshots or notes
+- They ask detailed "how would we..." questions
+- They share specific use cases from their work
+
+### 🟡 Interest Signals (Provide More Proof)
+- "That's impressive" / Nodding and leaning in
+- "How did [other company] implement this?"
+- Comparing features to current solution
+- Asking about training and support
+
+### 🔴 Warning Signals (Pause and Diagnose)
+- Looking at phone, multitasking
+- Short responses, no follow-up questions
+- "We tried something similar before"
+- Focus only on limitations or edge cases
+
+**If Warning Signals Appear**: "I want to make sure I'm showing you what's most valuable. Should we adjust our focus, or is there a concern I should address?"
+
+---
+
 ## 🔔 Last-Minute Check (5 Minutes Before)
 
-- [ ] Demo environment tested — [Specific test to run]
-- [ ] [Contact Name(s)] LinkedIn scanned for recent posts
-- [ ] Opening line ready: "[First thing you'll say]"
-- [ ] Calendar open for next step dates
-- [ ] Backup plan if tech fails: [What to do]
+### Technical Prep
+- [ ] Demo environment tested and loaded
+- [ ] Sample data/scenarios ready
+- [ ] Backup browser/device available
+- [ ] Screen sharing tested
+
+### Quick Digital Scans
+
+| Check | What to Look For |
+|-------|------------------|
+| **LinkedIn** | [Contact Name(s)] — any recent posts about [topic]? |
+| **Company News** | Any announcements since discovery call? |
+
+### Mental Prep
+- [ ] Opening recap: "Last time we discussed [pain point]..."
+- [ ] Top 3 demo moments mapped to their pain
+- [ ] Proposed next step ready: "[Trial/POC proposal]"
 
 ---
 
@@ -1090,14 +1249,38 @@ For each decision maker:
 | [Risk 1] | High / Medium / Low | "[Proactive statement to neutralize]" |
 | [Risk 2] | High / Medium / Low | "[Response if it comes up]" |
 
-### Last-Minute Objections & Responses
+### Last-Minute Objections — Deep Dive
 
-| Objection | Why They Might Say It | Your Response |
-|-----------|----------------------|---------------|
-| "We need more time" | [Reason] | "[Response that creates urgency without pressure]" |
-| "We need to compare with [competitor]" | [Reason] | "[Response]" |
-| "The price is too high" | [Reason] | "[Value-based response]" |
-| "We need approval from [person]" | [Reason] | "[Response to keep momentum]" |
+**Objection: "We need more time"**
+
+| Element | What to Say |
+|---------|-------------|
+| **Feel** | "I completely understand. This is a significant decision." |
+| **Felt** | "Many clients felt the same way at this stage." |
+| **Found** | "What they found was that waiting [cost them X / delayed Y]." |
+| **Proof** | "[Client] initially wanted to wait, but by starting in [month], they achieved [result] by [date]." |
+| **Bridge** | "What specifically would you need to feel confident moving forward today?" |
+
+**Objection: "The price is too high"**
+
+| Element | What to Say |
+|---------|-------------|
+| **Feel** | "I appreciate you being direct about that." |
+| **Felt** | "Other [similar companies] initially felt the same way." |
+| **Found** | "What they found was that the ROI of [X] justified the investment within [timeframe]." |
+| **Proof** | "[Client] saw [specific ROI metric] within [months]." |
+| **Bridge** | "If we could demonstrate that same ROI for you, would the investment make sense?" |
+
+---
+
+## 🤔 What If They Ask...
+
+| Question | Why They Ask | Your Response |
+|----------|--------------|---------------|
+| "Can we get a discount?" | Budget pressure | "Let's discuss value first. What specific outcomes would make this investment worthwhile? Then we can explore options." |
+| "What if we need to cancel?" | Risk mitigation | "Our contract includes [exit terms]. We're confident you won't need them because [reason]." |
+| "Can we start smaller?" | Risk reduction | "Absolutely. We can begin with [smaller scope] and expand as you see results. Here's what that would look like..." |
+| "What happens after we sign?" | Implementation concerns | "Great question. [Name] from our implementation team will contact you within [X days]. Here's the typical timeline..." |
 
 ---
 
@@ -1107,6 +1290,14 @@ For each decision maker:
 - **Acknowledge the journey**: "We've covered a lot of ground together..."
 - **Confirm current position**: "Last we spoke, you mentioned [readiness signal]. Is that still the case?"
 - **State purpose directly**: "Today I'd like to finalize our agreement and discuss next steps."
+
+**Suggested Agenda (Share at Start)**:
+> "I thought we could structure our conversation as follows:
+> 1. (5 min) Confirm where we stand and any changes since we last spoke
+> 2. (5 min) Recap the value and ROI we've discussed
+> 3. (10 min) Address any remaining questions or concerns
+> 4. (10 min) Finalize the agreement and discuss next steps
+> Does that work for you?"
 
 ### Value Recap (5 Minutes)
 - Summarize their key pain: "[Pain they expressed]"
@@ -1179,14 +1370,53 @@ For each decision maker:
 
 ---
 
+## 👂 Closing Signals to Listen For
+
+### 🟢 Ready to Close (Ask for Signature)
+- "When can we start?"
+- "What's the next step to formalize this?"
+- "Let me get [approver] on a call"
+- They're discussing implementation details
+- They ask about onboarding timeline
+- They mention internal communication about the decision
+
+### 🟡 Almost Ready (Address Final Concern)
+- "I just need to confirm one thing..."
+- "If we could [adjust X], we'd be ready"
+- They're comparing final terms
+- They want one more reference or proof point
+
+### 🔴 Not Ready (Diagnose & Decide)
+- "We need to revisit internally"
+- "The timing isn't right"
+- They avoid committing to any date
+- New objections emerge that weren't raised before
+- Key stakeholder suddenly unavailable
+
+**If Red Signals Appear**: "I sense some hesitation. Can we talk openly about what's holding this back? I'd rather understand now than miss something important."
+
+---
+
 ## 🔔 Last-Minute Check (5 Minutes Before)
 
-- [ ] Contract/proposal ready to share or sign
-- [ ] [Decision Maker] confirmed to attend
-- [ ] Negotiation boundaries clear in your mind
-- [ ] Closing line rehearsed: "[Your exact words]"
-- [ ] Calendar open for implementation kickoff
-- [ ] Backup plan if they stall: "[Your fallback]"
+### Documents Ready
+- [ ] Contract/proposal loaded and ready to share
+- [ ] Pricing summary accessible
+- [ ] Implementation timeline document ready
+
+### Quick Digital Scans
+
+| Check | What to Look For |
+|-------|------------------|
+| **LinkedIn** | Any posts from [Decision Maker] about priorities or changes? |
+| **Company News** | Any announcements that might affect timing? |
+| **Competitor** | Any [Competitor] news that might be raised? |
+
+### Mental Prep
+- [ ] Closing statement rehearsed: "[Your exact words]"
+- [ ] Negotiation boundaries clear (ideal / acceptable / walk-away)
+- [ ] Fallback plan ready if they hesitate
+- [ ] Calendar open for implementation kickoff date
 
 ---
 
@@ -1426,15 +1656,41 @@ If we don't advance today: [What's at risk — timing, competitive, budget cycle
 - [What's different that we must recognize]
 - [Sensitivity to handle carefully]
 
-### Potential Objections
+### Potential Objections — Deep Dive
 
-| Objection | Why They Might Say It | Your Response |
-|-----------|----------------------|---------------|
-| "Things have changed internally" | [Reason] | "[Response]" |
-| "We need to revisit priorities" | [Reason] | "[Response]" |
+**Objection: "Things have changed internally"**
+
+| Element | What to Say |
+|---------|-------------|
+| **Feel** | "I appreciate you sharing that. Change is constant in organizations." |
+| **Felt** | "Other clients have experienced similar shifts mid-process." |
+| **Found** | "What they found was that [our solution] actually helped them navigate the change more effectively." |
+| **Proof** | "[Client example] went through a restructure and still saw [result]." |
+| **Bridge** | "What specifically has changed, and how might that affect what we discussed?" |
+
+**Objection: "We need to revisit priorities"**
+
+| Element | What to Say |
+|---------|-------------|
+| **Feel** | "That makes complete sense." |
+| **Felt** | "Many organizations go through priority reviews." |
+| **Found** | "What we've found is that our solution often supports multiple priorities because [reason]." |
+| **Proof** | "[Evidence from similar client]" |
+| **Bridge** | "Which priorities are rising in importance? Let me see if we can support those." |
 
 ### Topics to Avoid
 - [Subject that could derail the conversation]
+
+---
+
+## 🤔 What If They Ask...
+
+| Question | Why They Ask | Your Response |
+|----------|--------------|---------------|
+| "Why are you following up now?" | Testing your intentions | "I wanted to check in on [specific item we discussed] and share a relevant update I thought you'd find valuable." |
+| "Has anything changed on your end?" | Exploring new leverage | "Yes, [relevant update]. I thought it might be interesting for your situation because..." |
+| "We're talking to others now" | Creating competition | "That's smart. What criteria are most important as you evaluate? I want to make sure I'm helping you compare fairly." |
+| "Can you send me a summary?" | Delaying or genuinely useful | "Absolutely. I'll send that today. When would be a good time to discuss it together?" |
 
 ---
 
@@ -1444,6 +1700,14 @@ If we don't advance today: [What's at risk — timing, competitive, budget cycle
 - **Acknowledge gap**: "It's been [X weeks] since we last spoke. How have things been?"
 - **Show continuity**: "Last time, you mentioned [specific point]. I wanted to follow up on that."
 - **Confirm agenda**: "I have about [X] minutes. Here's what I thought we could cover..."
+
+**Suggested Agenda (Share at Start)**:
+> "I thought we could use our time as follows:
+> 1. (5 min) Quick check-in on what's happened since we last spoke
+> 2. (10 min) Status update on the items we discussed
+> 3. (10 min) Share something relevant I've come across
+> 4. (10 min) Discuss next steps and timeline
+> Does that work, or is there something more pressing?"
 
 ### Status Update (10 Minutes)
 - **Their side**: "What's happened since we last spoke?"
@@ -1508,14 +1772,47 @@ If we don't advance today: [What's at risk — timing, competitive, budget cycle
 
 ---
 
+## 👂 Re-engagement Signals to Listen For
+
+### 🟢 Momentum Restored (Push Forward)
+- They share new developments or internal changes
+- They ask about timeline or next steps
+- They mention speaking with colleagues about our solution
+- Higher engagement than before (longer responses, more questions)
+- They apologize for the delay and explain why
+
+### 🟡 Interested but Stuck (Diagnose Blockers)
+- "We're still figuring things out internally"
+- They want to meet but can't commit to action
+- Positive tone but vague on specifics
+- They ask for updated materials or proposals
+
+### 🔴 Dead or Dying (Qualify Out or Reset)
+- Short, delayed responses
+- Avoiding meetings or rescheduling repeatedly
+- "Not a priority right now" without alternative timing
+- Key champion has left or changed role
+
+**If Red Signals Appear**: "I want to be respectful of your time. Would it make more sense to reconnect in [timeframe], or has this moved off the table?"
+
+---
+
 ## 🔔 Last-Minute Check (5 Minutes Before)
 
-- [ ] [Contact Name(s)] LinkedIn checked for recent activity
-- [ ] [Company] news last 7 days scanned
-- [ ] Open items status clear in your mind
+### Quick Digital Scans
+
+| Check | What to Look For |
+|-------|------------------|
+| **LinkedIn** | [Contact Name(s)] — any posts, job changes, or activity since last contact? |
+| **Company News** | [Company] news last 7 days — announcements, press releases, leadership changes? |
+| **Previous Notes** | Review what was discussed and promised last time |
+
+### Mental Prep
+- [ ] Opening line: "It's been [X] since we last spoke. Last time, you mentioned..."
+- [ ] Open items status clear (what you delivered, what's pending)
 - [ ] Value update ready to share
-- [ ] Opening line rehearsed
-- [ ] Calendar open for next steps
+- [ ] Next step proposal ready
+- [ ] Calendar open for follow-up dates
 
 ---
 
@@ -1678,15 +1975,31 @@ For each attendee:
 |-------|---------------|-----------------|
 | [Topic 1] | [Reason] | [Approach] |
 
-### Potential Objections
+### Potential Objections — Deep Dive
 
-| Objection | Your Response |
-|-----------|---------------|
-| "[Objection 1]" | "[Prepared response]" |
+**Objection 1**: "[Most likely objection]"
+
+| Element | What to Say |
+|---------|-------------|
+| **Feel** | "I completely understand that concern." |
+| **Felt** | "Others in your position have felt similarly." |
+| **Found** | "What they found was [specific outcome that resolved the concern]." |
+| **Proof** | "[Client example or data point]" |
+| **Bridge** | "Would it help if [offer to address]?" |
 
 ### Points of Attention
 - [Anything unusual to be aware of]
 - [Recent changes that might affect the conversation]
+
+---
+
+## 🤔 What If They Ask...
+
+| Question | Why They Ask | Your Response |
+|----------|--------------|---------------|
+| "What are you looking to achieve today?" | Testing your preparation | "I wanted to [specific goal] and understand [their priority]. What would make this meeting valuable for you?" |
+| "Who else is involved on your side?" | Evaluating our commitment | "Depending on what we discuss, I can involve [relevant expert]. For now, I wanted to have an initial conversation to understand your needs." |
+| "What's different about your approach?" | Benchmarking | "[Concise differentiator] — but more importantly, I'd like to understand what you're looking for in a partner." |
 
 ---
 
@@ -1696,6 +2009,13 @@ For each attendee:
 - [Personalized opener]
 - Confirm agenda and time
 - Set expectations
+
+**Suggested Agenda (Share at Start)**:
+> "I was thinking we could structure our time as follows:
+> 1. (5 min) Quick introductions and confirm what you'd like to cover
+> 2. (20-30 min) [Main topic based on meeting purpose]
+> 3. (5-10 min) Discuss next steps if relevant
+> Does that work for you, or would you prefer a different focus?"
 
 ### Core Discussion (20-40 Minutes)
 - **Topic 1**: [What to cover + key message]
@@ -1749,13 +2069,46 @@ For each attendee:
 
 ---
 
-## 🔔 Last-Minute Check
+## 👂 Signals to Listen For
 
-- [ ] [Contact Name(s)] LinkedIn checked
-- [ ] [Company] recent news scanned
-- [ ] Opening line ready
-- [ ] Top question prepared
-- [ ] Calendar open for next steps
+### 🟢 Positive Signals (Advance the Conversation)
+- Open, detailed answers with elaboration
+- They share challenges or internal context freely
+- They ask about your approach or capabilities
+- They mention other stakeholders to involve
+- They lean forward, take notes, ask follow-ups
+
+### 🟡 Neutral Signals (Probe Deeper)
+- Polite but surface-level responses
+- Interest without commitment
+- "That's interesting, I'll think about it"
+- Comparing to other options
+
+### 🔴 Warning Signals (Adjust Approach)
+- Short, closed answers
+- Checking phone or clock frequently
+- "We're not really looking at this right now"
+- Avoiding specifics about next steps
+
+**If Warning Signals Appear**: "I want to make sure this is valuable for you. Is there a different angle we should explore, or a more pressing topic?"
+
+---
+
+## 🔔 Last-Minute Check (5 Minutes Before)
+
+### Quick Digital Scans
+
+| Check | What to Look For |
+|-------|------------------|
+| **LinkedIn** | [Contact Name(s)] — recent posts, job changes, shared connections? |
+| **Company News** | [Company] news last 7 days — any relevant announcements? |
+
+### Mental Prep
+- [ ] Opening line ready: "[Personalized opener]"
+- [ ] Top 2-3 questions prepared
+- [ ] Key message clear in your mind
+- [ ] Next step proposal ready
+- [ ] Calendar open for scheduling
 
 ---
 
