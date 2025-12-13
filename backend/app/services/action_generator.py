@@ -49,9 +49,9 @@ class ActionGeneratorService:
             ActionType.COMMERCIAL_ANALYSIS: 6000,
             ActionType.SALES_COACHING: 5000,
             ActionType.ACTION_ITEMS: 5000,
-            ActionType.CUSTOMER_REPORT: 4500,  # Increased for longer meetings (up to 1800 words)
+            ActionType.CUSTOMER_REPORT: 4500,
             ActionType.INTERNAL_REPORT: 3500,
-            ActionType.SHARE_EMAIL: 1500,
+            ActionType.SHARE_EMAIL: 2000,  # Increased for 3 subject lines + personalization notes
         }
         max_tokens = max_tokens_map.get(action_type, 4000)
         
@@ -434,15 +434,19 @@ Generate the complete Customer Report now:"""
         """Prompt for share email generation - CUSTOMER-FACING, uses style rules"""
         # Get primary contact
         contacts = context.get("contacts", [])
-        contact_name = contacts[0].get("name", "there") if contacts else "there"
+        primary_contact = contacts[0] if contacts else {}
+        contact_name = primary_contact.get("name", "there")
+        contact_role = primary_contact.get("role", "")
+        contact_style = primary_contact.get("communication_style", "professional")
         
         # Get sales rep info for signature
         sales_profile = context.get("sales_profile", {})
         rep_name = sales_profile.get("full_name", "")
         rep_title = sales_profile.get("role", "")
-        # Note: email/phone are not in sales_profiles, would need to come from users table
-        rep_email = ""  # Not available in sales_profiles
-        rep_phone = ""  # Not available in sales_profiles
+        rep_email = context.get("user_email", "")
+        rep_phone = context.get("user_phone", "")
+        rep_linkedin = context.get("user_linkedin", "")
+        rep_calendly = context.get("user_calendly", "")
         
         # Get company info
         company_profile = context.get("company_profile", {})
@@ -451,116 +455,148 @@ Generate the complete Customer Report now:"""
         # Get prospect company
         followup = context.get("followup", {})
         prospect_company = followup.get("prospect_company_name", "your organisation")
+        meeting_subject = followup.get("meeting_subject", "our conversation")
         
-        # Build signature (only include non-empty fields)
-        signature_parts = []
+        # Build rich signature
+        signature_lines = []
         if rep_name:
-            signature_parts.append(rep_name)
-        if rep_title:
-            signature_parts.append(rep_title)
-        if company_name:
-            signature_parts.append(company_name)
+            signature_lines.append(rep_name)
+        if rep_title and company_name:
+            signature_lines.append(f"{rep_title} | {company_name}")
+        elif rep_title:
+            signature_lines.append(rep_title)
+        elif company_name:
+            signature_lines.append(company_name)
         if rep_email:
-            signature_parts.append(rep_email)
+            signature_lines.append(f"📧 {rep_email}")
         if rep_phone:
-            signature_parts.append(rep_phone)
-        signature = "\n".join(signature_parts) if signature_parts else "[Your signature]"
+            signature_lines.append(f"📞 {rep_phone}")
+        if rep_linkedin:
+            signature_lines.append(f"🔗 {rep_linkedin}")
+        if rep_calendly:
+            signature_lines.append(f"📅 {rep_calendly}")
+        signature = "\n".join(signature_lines) if signature_lines else "[Your signature]"
         
         # Get style rules for customer-facing output
         style_guide = sales_profile.get("style_guide", {})
         style_rules = self._format_style_rules(style_guide) if style_guide else ""
         
-        # Get specific style preferences for email
-        email_signoff = style_guide.get("signoff", "Best regards") if style_guide else "Best regards"
-        uses_emoji = style_guide.get("emoji_usage", False) if style_guide else False
-        
-        return f"""You are writing a short follow-up email to share a meeting summary with a customer.
+        return f"""You are writing a follow-up email to share a meeting summary (Customer Report) with a customer.
+
 {style_rules}
 
 Write as if you are the salesperson who just had the conversation.
 Write in clear, warm and professional language.
 Use a human, personal tone. Never sound templated, robotic or salesy.
-Always write from the customer's perspective and focus on what is relevant for them.
+Always write from the CUSTOMER's perspective — this email is about THEM, not you.
+
+The Customer Report is attached to this email. Make this explicit and inviting.
 
 {lang_instruction}
 
 {context_text}
 
+CONTACT CONTEXT:
+- Name: {contact_name}
+- Role: {contact_role if contact_role else 'Unknown'}
+- Communication Style: {contact_style}
+- Company: {prospect_company}
+
 PURPOSE:
 Send the customer a thoughtful follow-up email together with the meeting summary (Customer Report).
+Make the attachment explicit and valuable — tell them what's in it and why it helps them.
 Reinforce the connection built in the conversation.
-Subtly echo the value discussed without pushing.
+Enable them to share it internally with their team.
 Confirm next steps in a natural and low-pressure way.
 
 LENGTH:
 Keep the email concise and scannable.
-Adapt the length to the conversation:
-- Simple meeting with one clear next step → ~80-100 words
-- Multiple topics discussed → ~120-150 words
-- Complex next steps or several action items → up to ~180 words
+- Simple meeting: 80-120 words
+- Standard meeting: 120-160 words  
+- Complex meeting: 160-200 words max
 
-Never exceed 200 words for the email body (excluding signature).
-Shorter is almost always better for email.
+STRUCTURE:
 
-STRUCTURE & INSTRUCTIONS:
+---
 
-**Subject line**
-Create a subject line that:
-- Refers to a concrete topic, outcome or theme from the meeting.
-- Feels personal, not generic.
-- Example patterns:
-  - "Our conversation on [topic] at {prospect_company}"
-  - "[topic] – as discussed"
-  - "{prospect_company} · next steps on [topic]"
+## 📬 SUBJECT LINE OPTIONS
 
-**Greeting**
-Use: "Hi {contact_name},".
+Provide exactly 3 subject line options. The sales rep will choose the best one.
 
-**Opening (1–2 sentences)**
-- Do NOT use generic phrases like "I hope this email finds you well" or "Per our conversation".
-- Acknowledge the conversation in a way that reflects their situation or focus.
-- You may thank them, but keep it natural and specific, not formulaic.
-- Reference ONE specific moment, topic or insight from the meeting that mattered to them.
+**Option 1** (Topic-focused):
+[Subject line referring to main topic discussed]
 
-**The summary (1–2 sentences)**
-- Mention that you are sharing the meeting summary.
-- Frame it as useful for them, for example to align internally or keep an overview of decisions and next steps.
-- Example pattern:
-  - "I have captured the main points and agreements in a short summary so you can easily share this with your colleagues."
+**Option 2** (Next step focused):
+[Subject line referring to agreed next step]
 
-**Value echo (1 sentence, optional)**
-- If appropriate, briefly restate one key insight or benefit that connects to their priorities.
-- Keep it subtle and customer-centric, not feature-driven.
+**Option 3** (Value focused):
+[Subject line referring to key insight or outcome]
 
-**Next steps (1–2 sentences)**
-- Confirm the agreed next step clearly and concretely.
-- If there is a follow-up meeting, mention date and time if known.
-- If there are action items, refer to them briefly.
-- Use a soft call to action, such as:
-  - asking for confirmation
-  - inviting questions or additions
-  - checking if the proposed next step still fits.
+---
 
-**Closing**
-- End with a warm, genuine closing that fits a senior, professional tone.
-- Avoid overly formal or stiff wording.
-- Example patterns:
-  - "Looking forward to hearing your thoughts."
-  - "Happy to adjust if something has shifted on your side."
+## ✉️ EMAIL
 
-**Signature**
-Use exactly this signature:
+**Greeting:**
+Adapt to their communication style:
+- If formal/professional: "Beste {contact_name}," or "Geachte {contact_name},"
+- If direct/casual: "Hoi {contact_name}," or "Hi {contact_name},"
 
+**Opening (1-2 sentences):**
+- Do NOT use: "I hope this email finds you well", "Per our conversation", "As discussed"
+- DO: Reference ONE specific moment, insight, or topic that mattered to THEM
+- Show you truly listened — mention something they said that stuck with you
+
+**The Attachment (2-3 sentences) — MAKE THIS EXPLICIT:**
+- Clearly state: "In de bijlage vind je het gespreksverslag" (or similar)
+- Tell them what's IN the report (topics covered, agreements, next steps)
+- Frame it as useful for THEM: internal alignment, sharing with colleagues, reference for decisions
+- Example: "Hierin vind je een overzicht van wat we bespraken, de afspraken die we maakten, en een paar vragen die kunnen helpen bij jullie interne afstemming."
+
+**Next Steps (1-2 sentences):**
+- Confirm the agreed next step clearly
+- Include timing if known
+- Add a soft CTA that invites engagement:
+  - "Laat gerust weten als het verslag aanvullingen nodig heeft"
+  - "Ik hoor graag of dit past bij jullie planning"
+  - "Voel je vrij om vragen of aanvullingen te delen"
+
+**Closing:**
+- Warm, genuine, professional
+- Match their communication style
+- Examples:
+  - Formal: "Met vriendelijke groet,"
+  - Direct: "Groet," or "Hartelijke groet,"
+  - Casual: "Groetjes," or "Tot snel,"
+
+**Signature:**
 {signature}
 
-RULES:
-- Sound human, not corporate.
-- Reference at least one specific topic or moment from the conversation.
-- Avoid hype or salesy phrases like "game-changing", "exciting opportunity" or similar.
-- Do not use placeholder brackets like [topic] in the final email.
-- The email should make the recipient feel understood and supported in moving forward.
+---
 
-Generate the complete email now:"""
+## 💡 PERSONALIZATION NOTES
+
+Provide brief notes for the sales rep:
+
+| Aspect | Note |
+|--------|------|
+| **Contact's Style** | [Direct/Formal/Analytical/Relational] — adjust tone accordingly |
+| **Their Primary Concern** | [The main thing on their mind from the conversation] |
+| **Best Follow-up Timing** | [Suggested days to wait before following up] |
+| **Internal Stakeholders** | [Who they might share this with — helps frame the report] |
+
+---
+
+RULES:
+- Sound human, not corporate — write like a trusted advisor, not a vendor
+- The attachment (Customer Report) must be explicitly mentioned and made valuable
+- Reference at least one specific moment from the conversation
+- Avoid ALL salesy phrases: "exciting", "game-changing", "great opportunity", "synergy"
+- Do NOT use placeholder brackets in the final email — fill everything in
+- Match the contact's communication style (formal/casual/direct/analytical)
+- The email should make them WANT to open the attachment
+- Enable internal sharing — frame the report as useful for their team
+
+Generate the complete email with all sections now:"""
     
     def _prompt_commercial_analysis(self, context_text: str, lang_instruction: str, context: Dict) -> str:
         """Prompt for commercial analysis generation - INTERNAL, professional/objective style"""
