@@ -119,8 +119,9 @@ class ContactSearchService:
                 logger.warning(f"[CONTACT_SEARCH] Gemini failed: {e}, trying Claude")
                 # Fall through to Claude
         
-        # Step 3: Fall back to Claude if needed and Gemini didn't find enough
-        if len(matches) < 2 and self.anthropic_api_key:
+        # Step 3: Fall back to Claude ONLY if Gemini failed completely (not just few results)
+        # We don't want to use Claude just because Gemini found 1 result - that's fine
+        if len(matches) == 0 and self.anthropic_api_key:
             try:
                 claude_matches = await self._search_with_claude(
                     name, role, company_name, company_linkedin_url
@@ -593,54 +594,78 @@ IMPORTANT:
             logger.debug("[CONTACT_SEARCH] No leadership section found in brief")
             return executives
         
-        # Pattern 1: Markdown table rows with name, title, linkedin
-        # | Harris Khan | CEO | https://linkedin.com/in/hykhan |
-        table_pattern = r'\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|'
+        # Pattern 1: Parse markdown tables intelligently
+        # Tables can have varying columns: | NAME | TITLE | LINKEDIN | BACKGROUND | NOTES |
+        # We need to find the header row first, then parse data rows based on column positions
         
-        for match in re.finditer(table_pattern, leadership_section):
-            col1, col2, col3 = match.groups()
-            
-            # Skip header rows and separator rows
-            if any(h in col1.lower() for h in ["naam", "name", "---", "titel", "title", "background", "linkedin", "notes"]):
-                continue
-            
-            # Skip metric-like values (not person names)
-            if any(metric in col1.lower() for metric in [
-                "opportunity", "timing", "company stage", "financial", "industry", 
-                "decision", "primary", "dimension", "assessment", "evidence",
-                "high", "medium", "low", "startup", "unknown", "adjacent"
-            ]):
-                continue
-            
-            # Try to determine which column is what
-            linkedin_url = None
-            name = None
-            title = None
-            
-            for col in [col1, col2, col3]:
-                col = col.strip()
-                if "linkedin.com/in/" in col.lower():
-                    linkedin_url = col
-                elif not name and not any(c.isdigit() for c in col) and len(col) > 2:
-                    # First non-URL, non-numeric column is likely name
-                    # Skip if it looks like a title instead of name
-                    if not any(t in col.lower() for t in ["ceo", "cto", "cfo", "director", "manager", "founder", "president"]):
-                        name = col.strip('*').strip()
-                    elif not title:
-                        title = col.strip('*').strip()
-                elif name and not title and len(col) > 2:
-                    # Second column after name is likely title
-                    title = col.strip('*').strip()
-            
-            # Validate: name should look like a person name (has space or is single word)
-            if name and len(name) > 2 and not name.startswith('**'):
-                # Additional validation: real names usually have capital letters
-                if any(c.isupper() for c in name):
-                    executives.append({
-                        "name": name,
-                        "title": title,
-                        "linkedin_url": linkedin_url
-                    })
+        lines = leadership_section.split('\n')
+        header_indices = {}  # Maps column type to column index
+        
+        for i, line in enumerate(lines):
+            # Look for header row (contains "name" or "naam")
+            if '|' in line and any(h in line.lower() for h in ['name', 'naam']):
+                cols = [c.strip().lower() for c in line.split('|')]
+                for idx, col in enumerate(cols):
+                    if 'name' in col or 'naam' in col:
+                        header_indices['name'] = idx
+                    elif 'title' in col or 'titel' in col or 'role' in col or 'rol' in col:
+                        header_indices['title'] = idx
+                    elif 'linkedin' in col:
+                        header_indices['linkedin'] = idx
+                    elif 'background' in col or 'achtergrond' in col:
+                        header_indices['background'] = idx
+                
+                # Now parse subsequent rows
+                for data_line in lines[i+1:]:
+                    # Skip separator rows
+                    if '---' in data_line or not '|' in data_line:
+                        continue
+                    
+                    # Stop at next section
+                    if data_line.strip().startswith('#'):
+                        break
+                    
+                    cols = [c.strip() for c in data_line.split('|')]
+                    
+                    # Extract name from the identified column
+                    name = None
+                    title = None
+                    linkedin_url = None
+                    background = None
+                    
+                    if 'name' in header_indices and header_indices['name'] < len(cols):
+                        name = cols[header_indices['name']].strip('*').strip()
+                    
+                    if 'title' in header_indices and header_indices['title'] < len(cols):
+                        title = cols[header_indices['title']].strip('*').strip()
+                    
+                    if 'linkedin' in header_indices and header_indices['linkedin'] < len(cols):
+                        linkedin_val = cols[header_indices['linkedin']].strip()
+                        if 'linkedin.com/in/' in linkedin_val.lower():
+                            linkedin_url = linkedin_val
+                    
+                    if 'background' in header_indices and header_indices['background'] < len(cols):
+                        background = cols[header_indices['background']].strip('*').strip()
+                    
+                    # Validate name - should look like a person name
+                    if name and len(name) > 2:
+                        # Skip if it looks like a metric or header value
+                        if any(skip in name.lower() for skip in [
+                            'niet gevonden', 'not found', '---', 'n/a', 'unknown',
+                            'opportunity', 'timing', 'financial', 'dimension'
+                        ]):
+                            continue
+                        
+                        # Real names have capital letters and typically 2+ words or are single proper nouns
+                        if any(c.isupper() for c in name):
+                            executives.append({
+                                "name": name,
+                                "title": title,
+                                "linkedin_url": linkedin_url,
+                                "background": background
+                            })
+                
+                break  # Found and processed the table
         
         # Pattern 2: Bullet points with "Name - Title" or "Name, Title"
         bullet_pattern = r'[-•*]\s*\*?\*?([A-Z][a-zA-Z\s\.]+?)[-–,]\s*([^|\n]+?)(?:\||$|\n)'
