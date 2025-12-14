@@ -35,7 +35,7 @@ supabase = get_supabase_service()
     # Throttle: Max 5 preparations per minute per user
     # Preparation uses Claude for comprehensive brief generation
     throttle=Throttle(
-        count=5,
+        limit=5,
         period=timedelta(minutes=1),
         key="event.data.user_id",
     ),

@@ -48,7 +48,7 @@ supabase = get_supabase_service()
     # Throttle: Max 5 researches per minute per user
     # Research is heavy (Gemini + Claude), so we limit more strictly
     throttle=Throttle(
-        count=5,
+        limit=5,
         period=timedelta(minutes=1),
         key="event.data.user_id",
     ),

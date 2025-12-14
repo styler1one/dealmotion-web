@@ -44,7 +44,7 @@ supabase = get_supabase_service()
     # This prevents a single user from overwhelming the system
     # while still allowing normal usage (6 action types x 3 followups = 18 actions)
     throttle=Throttle(
-        count=20,
+        limit=20,
         period=timedelta(minutes=1),
         key="event.data.user_id",
     ),

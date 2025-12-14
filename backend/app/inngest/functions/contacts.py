@@ -34,7 +34,7 @@ supabase = get_supabase_service()
     # Throttle: Max 10 contact analyses per minute per user
     # Contact analysis is lighter than research/prep, allows more throughput
     throttle=Throttle(
-        count=10,
+        limit=10,
         period=timedelta(minutes=1),
         key="event.data.user_id",
     ),

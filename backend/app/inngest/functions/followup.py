@@ -43,7 +43,7 @@ supabase = get_supabase_service()
     # Throttle: Max 5 audio followups per minute per user
     # Audio processing is heavy (Deepgram + Claude)
     throttle=Throttle(
-        count=5,
+        limit=5,
         period=timedelta(minutes=1),
         key="event.data.user_id",
     ),
@@ -168,7 +168,7 @@ async def process_followup_audio_fn(ctx, step):
     # Throttle: Max 5 transcript followups per minute per user
     # Transcript processing is lighter (no Deepgram) but still uses Claude
     throttle=Throttle(
-        count=5,
+        limit=5,
         period=timedelta(minutes=1),
         key="event.data.user_id",
     ),
