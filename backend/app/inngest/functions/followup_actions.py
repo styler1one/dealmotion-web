@@ -14,12 +14,17 @@ Action Types:
 - sales_coaching: Feedback on sales performance
 - action_items: Structured tasks with owners/deadlines
 - internal_report: Short summary for CRM/team
+
+Throttling:
+- Per-user: Max 20 actions per minute per user (prevents single user overload)
+- This protects Claude API limits and ensures fair resource distribution
 """
 
 import logging
+from datetime import timedelta
 from typing import Optional, Dict, Any
 import inngest
-from inngest import NonRetriableError, TriggerEvent
+from inngest import NonRetriableError, TriggerEvent, Throttle
 
 from app.inngest.client import inngest_client
 from app.database import get_supabase_service
@@ -35,6 +40,14 @@ supabase = get_supabase_service()
     fn_id="followup-action-generate",
     trigger=TriggerEvent(event="dealmotion/followup.action.requested"),
     retries=2,
+    # Throttle: Max 20 actions per minute per user
+    # This prevents a single user from overwhelming the system
+    # while still allowing normal usage (6 action types x 3 followups = 18 actions)
+    throttle=Throttle(
+        count=20,
+        period=timedelta(minutes=1),
+        key="event.data.user_id",
+    ),
 )
 async def generate_followup_action_fn(ctx, step):
     """
