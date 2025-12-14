@@ -6,13 +6,16 @@ Handles contact person analysis with full observability and automatic retries.
 Events:
 - dealmotion/contact.added: Triggers contact analysis
 - dealmotion/contact.analyzed: Emitted when analysis is complete
+
+Throttling:
+- Per-user: Max 10 contact analyses per minute (lighter AI operation)
 """
 
 import logging
 from typing import Optional, List, Dict, Any
-from datetime import datetime
+from datetime import datetime, timedelta
 import inngest
-from inngest import NonRetriableError, TriggerEvent
+from inngest import NonRetriableError, TriggerEvent, Throttle
 
 from app.inngest.client import inngest_client
 from app.database import get_supabase_service
@@ -28,6 +31,13 @@ supabase = get_supabase_service()
     fn_id="contact-analyze",
     trigger=TriggerEvent(event="dealmotion/contact.added"),
     retries=2,
+    # Throttle: Max 10 contact analyses per minute per user
+    # Contact analysis is lighter than research/prep, allows more throughput
+    throttle=Throttle(
+        count=10,
+        period=timedelta(minutes=1),
+        key="event.data.user_id",
+    ),
 )
 async def analyze_contact_fn(ctx, step):
     """

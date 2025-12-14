@@ -9,13 +9,16 @@ Events:
 - dealmotion/followup.completed: Emitted when follow-up is done
 
 Note: Email generation is handled separately via Follow-up Actions system.
+
+Throttling:
+- Per-user: Max 5 followups per minute (heavy AI + transcription)
 """
 
 import logging
 from typing import Optional, List, Dict, Any
-from datetime import datetime
+from datetime import datetime, timedelta
 import inngest
-from inngest import NonRetriableError, TriggerEvent
+from inngest import NonRetriableError, TriggerEvent, Throttle
 
 from app.inngest.client import inngest_client
 from app.database import get_supabase_service
@@ -37,6 +40,13 @@ supabase = get_supabase_service()
     fn_id="followup-process-audio",
     trigger=TriggerEvent(event="dealmotion/followup.audio.uploaded"),
     retries=2,
+    # Throttle: Max 5 audio followups per minute per user
+    # Audio processing is heavy (Deepgram + Claude)
+    throttle=Throttle(
+        count=5,
+        period=timedelta(minutes=1),
+        key="event.data.user_id",
+    ),
 )
 async def process_followup_audio_fn(ctx, step):
     """
@@ -155,6 +165,13 @@ async def process_followup_audio_fn(ctx, step):
     fn_id="followup-process-transcript",
     trigger=TriggerEvent(event="dealmotion/followup.transcript.uploaded"),
     retries=2,
+    # Throttle: Max 5 transcript followups per minute per user
+    # Transcript processing is lighter (no Deepgram) but still uses Claude
+    throttle=Throttle(
+        count=5,
+        period=timedelta(minutes=1),
+        key="event.data.user_id",
+    ),
 )
 async def process_followup_transcript_fn(ctx, step):
     """

@@ -10,12 +10,16 @@ Savings: ~85% reduction in token costs.
 Events:
 - dealmotion/research.requested: Triggers new research
 - dealmotion/research.completed: Emitted when research is done
+
+Throttling:
+- Per-user: Max 5 researches per minute (heavy AI operation)
 """
 
 import logging
+from datetime import timedelta
 from typing import Optional
 import inngest
-from inngest import NonRetriableError, TriggerEvent
+from inngest import NonRetriableError, TriggerEvent, Throttle
 
 from app.inngest.client import inngest_client
 from app.database import get_supabase_service
@@ -41,6 +45,13 @@ supabase = get_supabase_service()
     fn_id="research-company",
     trigger=TriggerEvent(event="dealmotion/research.requested"),
     retries=2,
+    # Throttle: Max 5 researches per minute per user
+    # Research is heavy (Gemini + Claude), so we limit more strictly
+    throttle=Throttle(
+        count=5,
+        period=timedelta(minutes=1),
+        key="event.data.user_id",
+    ),
 )
 async def research_company_fn(ctx, step):
     """
