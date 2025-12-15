@@ -17,7 +17,12 @@ import {
   TextRun,
   HeadingLevel,
   AlignmentType,
-  convertInchesToTwip
+  convertInchesToTwip,
+  Table,
+  TableRow,
+  TableCell,
+  WidthType,
+  BorderStyle
 } from 'docx'
 
 /**
@@ -94,11 +99,11 @@ export async function exportAsDocx(
   companyName: string,
   title: string
 ): Promise<void> {
-  // Create paragraphs array
-  const paragraphs: Paragraph[] = []
+  // Document children (can be Paragraph or Table)
+  const children: (Paragraph | Table)[] = []
   
   // Title - large blue header
-  paragraphs.push(
+  children.push(
     new Paragraph({
       children: [
         new TextRun({
@@ -114,7 +119,7 @@ export async function exportAsDocx(
   )
   
   // Subtitle - gray text
-  paragraphs.push(
+  children.push(
     new Paragraph({
       children: [
         new TextRun({
@@ -127,37 +132,43 @@ export async function exportAsDocx(
     })
   )
   
-  // Content - split into paragraphs
+  // Parse content
   const lines = content.split('\n')
-  let inTable = false
+  let i = 0
   
-  for (let idx = 0; idx < lines.length; idx++) {
-    const line = lines[idx]
+  while (i < lines.length) {
+    const line = lines[i]
     const trimmedLine = line.trim()
     
     // Empty line
     if (!trimmedLine) {
-      if (!inTable) {
-        paragraphs.push(new Paragraph({ spacing: { after: 200 } }))
+      children.push(new Paragraph({ spacing: { after: 200 } }))
+      i++
+      continue
+    }
+    
+    // Check if this is the start of a table
+    if (trimmedLine.includes('|') && i + 1 < lines.length && lines[i + 1].includes('|') && lines[i + 1].includes('-')) {
+      // Collect all table lines
+      const tableLines: string[] = []
+      while (i < lines.length && lines[i].includes('|')) {
+        tableLines.push(lines[i])
+        i++
+      }
+      
+      // Create Word table
+      const table = createWordTable(tableLines)
+      if (table) {
+        children.push(new Paragraph({ spacing: { after: 100 } })) // Space before
+        children.push(table)
+        children.push(new Paragraph({ spacing: { after: 200 } })) // Space after
       }
       continue
     }
     
-    // Skip table separator lines (|---|---|)
-    if (/^[\s\-|:]+$/.test(trimmedLine) && trimmedLine.includes('|')) {
-      inTable = true
-      continue
-    }
-    
-    // Detect table start
-    if (trimmedLine.includes('|') && idx + 1 < lines.length && lines[idx + 1].includes('-')) {
-      inTable = true
-    }
-    
     // H1
     if (trimmedLine.startsWith('# ') && !trimmedLine.startsWith('## ')) {
-      inTable = false
-      paragraphs.push(
+      children.push(
         new Paragraph({
           children: [
             new TextRun({
@@ -174,8 +185,7 @@ export async function exportAsDocx(
     }
     // H2
     else if (trimmedLine.startsWith('## ') && !trimmedLine.startsWith('### ')) {
-      inTable = false
-      paragraphs.push(
+      children.push(
         new Paragraph({
           children: [
             new TextRun({
@@ -192,8 +202,7 @@ export async function exportAsDocx(
     }
     // H3
     else if (trimmedLine.startsWith('### ')) {
-      inTable = false
-      paragraphs.push(
+      children.push(
         new Paragraph({
           children: [
             new TextRun({
@@ -210,8 +219,7 @@ export async function exportAsDocx(
     }
     // Bullet point
     else if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ')) {
-      inTable = false
-      paragraphs.push(
+      children.push(
         new Paragraph({
           children: parseFormattedText(trimmedLine.slice(2)),
           bullet: { level: 0 },
@@ -222,10 +230,9 @@ export async function exportAsDocx(
     }
     // Numbered list
     else if (/^\d+\.\s/.test(trimmedLine)) {
-      inTable = false
       const num = trimmedLine.match(/^\d+/)?.[0] || '1'
       const text = trimmedLine.replace(/^\d+\.\s/, '')
-      paragraphs.push(
+      children.push(
         new Paragraph({
           children: [
             new TextRun({ text: num + '. ', bold: true, size: 24 }),
@@ -236,53 +243,24 @@ export async function exportAsDocx(
         })
       )
     }
-    // Table row
-    else if (trimmedLine.includes('|')) {
-      const cells = trimmedLine
-        .split('|')
-        .map(cell => cell.trim())
-        .filter(cell => cell.length > 0)
-      
-      // Check if this is a header row (first row of table)
-      const isHeader = !inTable || idx === 0 || (idx > 0 && !lines[idx - 1].includes('|'))
-      
-      const children: TextRun[] = []
-      cells.forEach((cell, i) => {
-        if (i > 0) {
-          children.push(new TextRun({ text: '   │   ', size: 22, color: 'cbd5e1' }))
-        }
-        children.push(new TextRun({
-          text: cell.replace(/\*\*/g, '').replace(/\*/g, ''),
-          size: 22,
-          bold: isHeader && !inTable,
-        }))
-      })
-      
-      paragraphs.push(
-        new Paragraph({
-          children: children,
-          spacing: { after: 60 },
-        })
-      )
-      inTable = true
-    }
     // Regular paragraph
     else {
-      inTable = false
-      paragraphs.push(
+      children.push(
         new Paragraph({
           children: parseFormattedText(trimmedLine),
           spacing: { after: 160 },
         })
       )
     }
+    
+    i++
   }
   
   // Spacer before footer
-  paragraphs.push(new Paragraph({ spacing: { before: 400 } }))
+  children.push(new Paragraph({ spacing: { before: 400 } }))
   
   // Footer - centered, gray, italic
-  paragraphs.push(
+  children.push(
     new Paragraph({
       children: [
         new TextRun({
@@ -310,7 +288,7 @@ export async function exportAsDocx(
     },
     sections: [
       {
-        children: paragraphs,
+        children: children,
       },
     ],
   })
@@ -319,6 +297,100 @@ export async function exportAsDocx(
   const buffer = await Packer.toBlob(doc)
   const filename = `${sanitizeFilename(companyName)}_brief.docx`
   saveAs(buffer, filename)
+}
+
+/**
+ * Create a Word Table from markdown table lines
+ */
+function createWordTable(tableLines: string[]): Table | null {
+  if (tableLines.length < 2) return null
+  
+  // Parse header row
+  const headerLine = tableLines[0]
+  const headers = headerLine
+    .split('|')
+    .map(cell => cell.trim())
+    .filter(cell => cell.length > 0)
+  
+  if (headers.length === 0) return null
+  
+  // Parse data rows (skip separator line at index 1)
+  const dataRows: string[][] = []
+  for (let i = 2; i < tableLines.length; i++) {
+    const line = tableLines[i]
+    if (!line.includes('|')) break
+    if (/^[\s\-|:]+$/.test(line.trim())) continue // Skip separator lines
+    
+    const cells = line
+      .split('|')
+      .map(cell => cell.trim())
+      .filter(cell => cell !== '')
+    
+    if (cells.length > 0) {
+      dataRows.push(cells)
+    }
+  }
+  
+  // Calculate column width
+  const colWidth = Math.floor(9000 / headers.length) // ~100% width divided by columns
+  
+  // Create table rows
+  const rows: TableRow[] = []
+  
+  // Header row
+  rows.push(
+    new TableRow({
+      tableHeader: true,
+      children: headers.map(header => 
+        new TableCell({
+          width: { size: colWidth, type: WidthType.DXA },
+          children: [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: header.replace(/\*\*/g, '').replace(/\*/g, ''),
+                  bold: true,
+                  size: 22,
+                }),
+              ],
+            }),
+          ],
+        })
+      ),
+    })
+  )
+  
+  // Data rows
+  for (const row of dataRows) {
+    rows.push(
+      new TableRow({
+        children: row.map(cell =>
+          new TableCell({
+            width: { size: colWidth, type: WidthType.DXA },
+            children: [
+              new Paragraph({
+                children: parseFormattedText(cell),
+              }),
+            ],
+          })
+        ),
+      })
+    )
+  }
+  
+  // Create table with borders
+  return new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: rows,
+    borders: {
+      top: { style: BorderStyle.SINGLE, size: 8, color: 'e2e8f0' },
+      bottom: { style: BorderStyle.SINGLE, size: 8, color: 'e2e8f0' },
+      left: { style: BorderStyle.SINGLE, size: 8, color: 'e2e8f0' },
+      right: { style: BorderStyle.SINGLE, size: 8, color: 'e2e8f0' },
+      insideHorizontal: { style: BorderStyle.SINGLE, size: 8, color: 'e2e8f0' },
+      insideVertical: { style: BorderStyle.SINGLE, size: 8, color: 'e2e8f0' },
+    },
+  })
 }
 
 /**
