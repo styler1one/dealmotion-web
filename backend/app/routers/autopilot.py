@@ -387,19 +387,20 @@ async def trigger_detection(
     current_user: dict = Depends(get_current_user)
 ):
     """
-    Manually trigger proposal detection for existing prospects.
+    Manually trigger proposal detection for existing prospects/researches.
     
-    This is useful for:
-    - Prospects that existed before Autopilot was implemented
-    - Testing Autopilot detection logic
-    - Forcing a re-scan after data changes
+    Checks the FULL sales flow and creates proposals for incomplete steps:
+    1. Research ✓, Contacts ✗ → "Add contacts"
+    2. Research ✓, Contacts ✓, Prep ✗ → "Create prep"
+    3. Prep ✓, Meeting Analysis ✗ → "Upload recording"
+    4. Meeting Analysis ✓, Actions ✗ → "Generate actions"
     
     If prospect_id is provided, checks only that prospect.
     If not provided, scans all prospects for the user.
     """
     from app.models.autopilot import (
         ProposalType, TriggerType, AutopilotProposalCreate,
-        SuggestedAction, LUNA_TEMPLATES
+        SuggestedAction,
     )
     
     user_id = current_user["sub"]
@@ -424,101 +425,256 @@ async def trigger_detection(
         
         organization_id = org_result.data[0]["organization_id"]
         
-        # Build query for prospects
-        query = supabase.table("prospects") \
-            .select("id, company_name") \
-            .eq("organization_id", organization_id)
+        created_count = 0
+        checked_count = 0
+        proposals_created = []
+        
+        # =====================================================================
+        # STRATEGY 1: Check prospects with research
+        # =====================================================================
+        
+        # Get completed researches
+        research_query = supabase.table("research_briefs") \
+            .select("id, company_name, prospect_id") \
+            .eq("organization_id", organization_id) \
+            .eq("status", "completed")
         
         if prospect_id:
-            query = query.eq("id", prospect_id)
+            research_query = research_query.eq("prospect_id", prospect_id)
         else:
-            query = query.limit(20)  # Limit to 20 prospects per scan
+            research_query = research_query.limit(30)
         
-        prospects_result = query.execute()
+        research_result = research_query.execute()
+        researches = research_result.data or []
         
-        if not prospects_result.data:
-            return {"success": True, "reason": "no_prospects", "created": 0}
-        
-        created_count = 0
-        
-        for prospect in prospects_result.data:
-            p_id = prospect["id"]
-            company = prospect["company_name"]
+        for research in researches:
+            checked_count += 1
+            r_id = research["id"]
+            p_id = research.get("prospect_id")
+            company = research.get("company_name", "Onbekend")
             
-            # Check if prospect has research
-            research_result = supabase.table("research_briefs") \
-                .select("id") \
+            if not p_id:
+                continue
+            
+            # Check contacts
+            contacts_result = supabase.table("prospect_contacts") \
+                .select("id, name") \
+                .eq("prospect_id", p_id) \
+                .limit(5) \
+                .execute()
+            
+            has_contacts = len(contacts_result.data or []) > 0
+            contact_count = len(contacts_result.data or [])
+            
+            # Check prep
+            prep_result = supabase.table("meeting_preps") \
+                .select("id, status") \
                 .eq("prospect_id", p_id) \
                 .eq("status", "completed") \
                 .limit(1) \
                 .execute()
             
-            has_research = len(research_result.data or []) > 0
+            has_completed_prep = len(prep_result.data or []) > 0
+            prep_id = prep_result.data[0]["id"] if prep_result.data else None
             
-            # Check if prospect has contacts
-            contacts_result = supabase.table("prospect_contacts") \
-                .select("id") \
-                .eq("prospect_id", p_id) \
-                .limit(1) \
-                .execute()
-            
-            has_contacts = len(contacts_result.data or []) > 0
-            
-            # Check if prospect has prep
-            prep_result = supabase.table("meeting_preps") \
-                .select("id") \
-                .eq("prospect_id", p_id) \
-                .limit(1) \
-                .execute()
-            
-            has_prep = len(prep_result.data or []) > 0
-            
-            # Determine if we should create a proposal
-            if has_research and has_contacts and not has_prep:
-                # Create "complete_flow" proposal
-                research_id = research_result.data[0]["id"] if research_result.data else None
-                
+            # -----------------------------------------------------------------
+            # FLOW STEP 1: Research ✓, Contacts ✗ → Suggest adding contacts
+            # -----------------------------------------------------------------
+            if not has_contacts:
                 try:
                     proposal = AutopilotProposalCreate(
                         organization_id=organization_id,
                         user_id=user_id,
                         proposal_type=ProposalType.COMPLETE_FLOW,
                         trigger_type=TriggerType.MANUAL,
-                        trigger_entity_id=p_id,
-                        trigger_entity_type="prospect",
-                        title=f"Volgende stap voor {company}",
-                        description="Research en contacten klaar, geen prep",
-                        luna_message=f"Je hebt research gedaan over {company} en contacten toegevoegd. Wil je een prep maken voor het eerste gesprek?",
+                        trigger_entity_id=r_id,
+                        trigger_entity_type="research",
+                        title=f"Voeg contacten toe aan {company}",
+                        description="Research klaar, contacten ontbreken",
+                        luna_message=f"Je research over {company} is klaar! Voeg nu contactpersonen toe om je prep te personaliseren.",
                         suggested_actions=[
-                            SuggestedAction(action="prep", params={
+                            SuggestedAction(action="add_contacts", params={
                                 "prospect_id": p_id,
-                                "research_id": research_id,
-                                "meeting_type": "discovery",
+                                "research_id": r_id,
                             }),
                         ],
-                        priority=60,
+                        priority=80,
                         expires_at=datetime.now() + timedelta(days=7),
                         context_data={
                             "prospect_id": p_id,
                             "company_name": company,
-                            "research_id": research_id,
-                            "trigger": "manual_detection",
+                            "research_id": r_id,
+                            "flow_step": "add_contacts",
+                            "action_route": f"/dashboard/research/{r_id}",
                         },
                     )
                     
                     result = await orchestrator.create_proposal(proposal)
                     if result:
                         created_count += 1
-                        logger.info(f"Created manual proposal for {company}")
+                        proposals_created.append({"type": "add_contacts", "company": company})
                         
                 except Exception as e:
                     if "duplicate" not in str(e).lower() and "unique" not in str(e).lower():
-                        logger.warning(f"Failed to create proposal for {company}: {e}")
+                        logger.warning(f"Failed to create add_contacts proposal for {company}: {e}")
+                
+                continue  # Don't check further steps if contacts missing
+            
+            # -----------------------------------------------------------------
+            # FLOW STEP 2: Research ✓, Contacts ✓, Prep ✗ → Suggest creating prep
+            # -----------------------------------------------------------------
+            if not has_completed_prep:
+                try:
+                    proposal = AutopilotProposalCreate(
+                        organization_id=organization_id,
+                        user_id=user_id,
+                        proposal_type=ProposalType.PREP_ONLY,
+                        trigger_type=TriggerType.MANUAL,
+                        trigger_entity_id=p_id,
+                        trigger_entity_type="prospect",
+                        title=f"Maak prep voor {company}",
+                        description=f"Research en {contact_count} contacten klaar",
+                        luna_message=f"Je hebt research over {company} en {contact_count} contacten toegevoegd. Wil je een prep maken voor het eerste gesprek?",
+                        suggested_actions=[
+                            SuggestedAction(action="prep", params={
+                                "prospect_id": p_id,
+                                "research_id": r_id,
+                                "meeting_type": "discovery",
+                            }),
+                        ],
+                        priority=75,
+                        expires_at=datetime.now() + timedelta(days=7),
+                        context_data={
+                            "prospect_id": p_id,
+                            "company_name": company,
+                            "research_id": r_id,
+                            "contact_count": contact_count,
+                            "flow_step": "create_prep",
+                        },
+                    )
+                    
+                    result = await orchestrator.create_proposal(proposal)
+                    if result:
+                        created_count += 1
+                        proposals_created.append({"type": "create_prep", "company": company})
+                        
+                except Exception as e:
+                    if "duplicate" not in str(e).lower() and "unique" not in str(e).lower():
+                        logger.warning(f"Failed to create prep proposal for {company}: {e}")
+                
+                continue  # Don't check further steps if prep missing
+            
+            # -----------------------------------------------------------------
+            # FLOW STEP 3: Prep ✓, Meeting Analysis ✗ → Suggest uploading recording
+            # -----------------------------------------------------------------
+            if prep_id:
+                # Check for follow-up (meeting analysis)
+                followup_result = supabase.table("followups") \
+                    .select("id, status") \
+                    .eq("prospect_id", p_id) \
+                    .eq("status", "completed") \
+                    .limit(1) \
+                    .execute()
+                
+                has_completed_followup = len(followup_result.data or []) > 0
+                followup_id = followup_result.data[0]["id"] if followup_result.data else None
+                
+                if not has_completed_followup:
+                    try:
+                        proposal = AutopilotProposalCreate(
+                            organization_id=organization_id,
+                            user_id=user_id,
+                            proposal_type=ProposalType.FOLLOWUP_PACK,
+                            trigger_type=TriggerType.MANUAL,
+                            trigger_entity_id=prep_id,
+                            trigger_entity_type="prep",
+                            title=f"Analyseer meeting met {company}",
+                            description="Prep klaar, upload je meeting recording",
+                            luna_message=f"Je prep voor {company} is klaar. Na je meeting, upload de recording voor een analyse en follow-up acties.",
+                            suggested_actions=[
+                                SuggestedAction(action="meeting_analysis", params={
+                                    "prospect_id": p_id,
+                                    "prep_id": prep_id,
+                                }),
+                            ],
+                            priority=70,
+                            expires_at=datetime.now() + timedelta(days=14),
+                            context_data={
+                                "prospect_id": p_id,
+                                "company_name": company,
+                                "prep_id": prep_id,
+                                "flow_step": "meeting_analysis",
+                                "action_route": "/dashboard/followup",
+                            },
+                        )
+                        
+                        result = await orchestrator.create_proposal(proposal)
+                        if result:
+                            created_count += 1
+                            proposals_created.append({"type": "meeting_analysis", "company": company})
+                            
+                    except Exception as e:
+                        if "duplicate" not in str(e).lower() and "unique" not in str(e).lower():
+                            logger.warning(f"Failed to create meeting_analysis proposal for {company}: {e}")
+                    
+                    continue
+                
+                # -----------------------------------------------------------------
+                # FLOW STEP 4: Meeting Analysis ✓, Actions ✗ → Suggest generating actions
+                # -----------------------------------------------------------------
+                if followup_id:
+                    # Check for actions
+                    actions_result = supabase.table("followup_actions") \
+                        .select("id") \
+                        .eq("followup_id", followup_id) \
+                        .limit(1) \
+                        .execute()
+                    
+                    has_actions = len(actions_result.data or []) > 0
+                    
+                    if not has_actions:
+                        try:
+                            proposal = AutopilotProposalCreate(
+                                organization_id=organization_id,
+                                user_id=user_id,
+                                proposal_type=ProposalType.COMPLETE_FLOW,
+                                trigger_type=TriggerType.MANUAL,
+                                trigger_entity_id=followup_id,
+                                trigger_entity_type="followup",
+                                title=f"Genereer acties voor {company}",
+                                description="Meeting analyse klaar, acties ontbreken",
+                                luna_message=f"Je meeting analyse voor {company} is klaar. Wil je een customer report of andere acties genereren?",
+                                suggested_actions=[
+                                    SuggestedAction(action="generate_actions", params={
+                                        "followup_id": followup_id,
+                                        "prospect_id": p_id,
+                                    }),
+                                ],
+                                priority=65,
+                                expires_at=datetime.now() + timedelta(days=7),
+                                context_data={
+                                    "prospect_id": p_id,
+                                    "company_name": company,
+                                    "followup_id": followup_id,
+                                    "flow_step": "generate_actions",
+                                    "action_route": f"/dashboard/followup/{followup_id}",
+                                },
+                            )
+                            
+                            result = await orchestrator.create_proposal(proposal)
+                            if result:
+                                created_count += 1
+                                proposals_created.append({"type": "generate_actions", "company": company})
+                                
+                        except Exception as e:
+                            if "duplicate" not in str(e).lower() and "unique" not in str(e).lower():
+                                logger.warning(f"Failed to create generate_actions proposal for {company}: {e}")
         
         return {
             "success": True,
-            "checked": len(prospects_result.data),
-            "created": created_count
+            "checked": checked_count,
+            "created": created_count,
+            "proposals": proposals_created
         }
         
     except Exception as e:
