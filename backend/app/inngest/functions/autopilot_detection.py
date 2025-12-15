@@ -412,18 +412,60 @@ async def detect_incomplete_flow_fn(ctx, step):
     
     flow_state = await step.run("check-flow-state", check_flow_state)
     
-    # Only create proposal if: contacts exist, no prep, no meeting scheduled
-    if not flow_state["has_contacts"]:
-        return {"created": False, "reason": "no_contacts"}
+    # Step 3: Determine what proposal to create based on flow state
     
+    # CASE 1: No contacts yet → Suggest adding contacts
+    if not flow_state["has_contacts"]:
+        async def create_add_contacts_proposal():
+            orchestrator = AutopilotOrchestrator()
+            
+            proposal = AutopilotProposalCreate(
+                organization_id=organization_id,
+                user_id=user_id,
+                proposal_type=ProposalType.COMPLETE_FLOW,
+                trigger_type=TriggerType.FLOW_INCOMPLETE,
+                trigger_entity_id=research_id,
+                trigger_entity_type="research",
+                title=f"Voeg contacten toe aan {company_name}",
+                description="Research klaar, contacten ontbreken",
+                luna_message=f"Je research over {company_name} is klaar! Voeg nu contactpersonen toe om je prep te personaliseren.",
+                suggested_actions=[
+                    SuggestedAction(action="add_contacts", params={
+                        "prospect_id": prospect_id,
+                        "research_id": research_id,
+                    }),
+                ],
+                priority=80,
+                expires_at=datetime.now() + timedelta(days=7),
+                context_data={
+                    "research_id": research_id,
+                    "prospect_id": prospect_id,
+                    "company_name": company_name,
+                    "flow_step": "add_contacts",
+                    "action_route": f"/dashboard/research/{research_id}",
+                },
+            )
+            
+            result = await orchestrator.create_proposal(proposal)
+            return result.id if result else None
+        
+        proposal_id = await step.run("create-add-contacts-proposal", create_add_contacts_proposal)
+        
+        if proposal_id:
+            logger.info(f"Created add_contacts proposal {proposal_id} for {company_name}")
+            return {"created": True, "proposal_id": proposal_id, "type": "add_contacts"}
+        else:
+            return {"created": False, "reason": "duplicate_or_error"}
+    
+    # CASE 2: Has contacts but already has prep → Nothing to do
     if flow_state["has_prep"]:
         return {"created": False, "reason": "prep_exists"}
     
+    # CASE 3: Has contacts but meeting scheduled → Calendar detection handles this
     if flow_state["has_meeting"]:
-        # Meeting scheduled - calendar detection will handle this
         return {"created": False, "reason": "meeting_scheduled"}
     
-    # Step 3: Get contact name for personalized message
+    # CASE 4: Has contacts, no prep, no meeting → Suggest creating prep
     async def get_contact_name():
         if not prospect_id:
             return None
@@ -439,28 +481,23 @@ async def detect_incomplete_flow_fn(ctx, step):
     
     contact_name = await step.run("get-contact-name", get_contact_name)
     
-    # Step 4: Create proposal
-    async def create_proposal():
+    async def create_prep_proposal():
         orchestrator = AutopilotOrchestrator()
-        
-        luna_message = LUNA_TEMPLATES.get("complete_flow", 
-            "Je hebt research gedaan over {company}. Wil je een prep maken voor het eerste gesprek?"
-        )
         
         if contact_name:
             luna_message = f"Je hebt {contact_name} toegevoegd aan {company_name}. Wil je een prep maken voor het eerste gesprek?"
         else:
-            luna_message = luna_message.format(company=company_name, contact=contact_name or "een contact")
+            luna_message = f"Je research over {company_name} is klaar en je hebt contacten toegevoegd. Wil je een prep maken?"
         
         proposal = AutopilotProposalCreate(
             organization_id=organization_id,
             user_id=user_id,
-            proposal_type=ProposalType.COMPLETE_FLOW,
+            proposal_type=ProposalType.PREP_ONLY,
             trigger_type=TriggerType.FLOW_INCOMPLETE,
             trigger_entity_id=research_id,
             trigger_entity_type="research",
-            title=f"Volgende stap voor {company_name}",
-            description="Research + contact klaar",
+            title=f"Maak prep voor {company_name}",
+            description="Research + contacten klaar",
             luna_message=luna_message,
             suggested_actions=[
                 SuggestedAction(action="prep", params={
@@ -469,24 +506,25 @@ async def detect_incomplete_flow_fn(ctx, step):
                     "meeting_type": "discovery",
                 }),
             ],
-            priority=60,
+            priority=75,
             expires_at=datetime.now() + timedelta(days=7),
             context_data={
                 "research_id": research_id,
                 "prospect_id": prospect_id,
                 "company_name": company_name,
                 "contact_name": contact_name,
+                "flow_step": "create_prep",
             },
         )
         
         result = await orchestrator.create_proposal(proposal)
         return result.id if result else None
     
-    proposal_id = await step.run("create-proposal", create_proposal)
+    proposal_id = await step.run("create-prep-proposal", create_prep_proposal)
     
     if proposal_id:
-        logger.info(f"Created incomplete flow proposal {proposal_id} for {company_name}")
-        return {"created": True, "proposal_id": proposal_id}
+        logger.info(f"Created prep proposal {proposal_id} for {company_name}")
+        return {"created": True, "proposal_id": proposal_id, "type": "create_prep"}
     else:
         return {"created": False, "reason": "duplicate_or_error"}
 
