@@ -295,9 +295,12 @@ async def start_research(
             "company_linkedin_url": body.company_linkedin_url,
             "country": body.country,
             "city": body.city,
-            "custom_notes": body.custom_intel,  # User's own intel about the prospect
             "status": "pending"
         }
+        
+        # Only add custom_notes if provided (column may not exist in older schemas)
+        if body.custom_intel:
+            db_record["custom_notes"] = body.custom_intel
         
         result = supabase_service.table("research_briefs").insert(db_record).execute()
         
