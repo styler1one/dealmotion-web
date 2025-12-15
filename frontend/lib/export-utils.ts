@@ -18,10 +18,6 @@ import {
   HeadingLevel,
   AlignmentType,
   BorderStyle,
-  Table,
-  TableRow,
-  TableCell,
-  WidthType,
   ShadingType
 } from 'docx'
 
@@ -323,69 +319,11 @@ function markdownToHtml(markdown: string): string {
 // ============================================================
 
 /**
- * Convert a parsed markdown table to a docx Table
- * Uses simple styling for maximum compatibility
+ * Parse markdown content into docx elements (paragraphs only)
+ * Tables are rendered as formatted text for compatibility
  */
-function createDocxTable(table: ParsedTable): Table {
-  const rows: TableRow[] = []
-  
-  // Header row - bold text with gray background
-  const headerCells = table.headers.map(header => {
-    const cleanHeader = header.replace(/\*\*/g, '') // Remove bold markers
-    return new TableCell({
-      children: [
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: cleanHeader,
-              bold: true,
-              size: 22, // 11pt
-            }),
-          ],
-        }),
-      ],
-      shading: {
-        type: ShadingType.SOLID,
-        color: 'f1f5f9',
-        fill: 'f1f5f9',
-      },
-    })
-  })
-  
-  rows.push(new TableRow({
-    children: headerCells,
-    tableHeader: true,
-  }))
-  
-  // Data rows
-  for (const rowData of table.rows) {
-    const cells = rowData.map(cellText => {
-      return new TableCell({
-        children: [
-          new Paragraph({
-            children: parseTextWithFormatting(cellText),
-          }),
-        ],
-      })
-    })
-    
-    rows.push(new TableRow({ children: cells }))
-  }
-  
-  return new Table({
-    rows: rows,
-    width: {
-      size: 100,
-      type: WidthType.PERCENTAGE,
-    },
-  })
-}
-
-/**
- * Parse markdown content into docx elements (paragraphs and tables)
- */
-function parseMarkdownToDocxElements(content: string, title: string): (Paragraph | Table)[] {
-  const elements: (Paragraph | Table)[] = []
+function parseMarkdownToDocxElements(content: string, title: string): Paragraph[] {
+  const elements: Paragraph[] = []
   
   // Title
   elements.push(
@@ -433,6 +371,7 @@ function parseMarkdownToDocxElements(content: string, title: string): (Paragraph
     const trimmedLine = line.trim()
     
     // Check if this is the start of a table
+    // Render tables as formatted text for Word (native Table causes corruption)
     if (trimmedLine.includes('|') && i + 1 < lines.length && lines[i + 1].includes('|') && lines[i + 1].includes('-')) {
       // Collect all table lines
       const tableLines: string[] = []
@@ -441,13 +380,58 @@ function parseMarkdownToDocxElements(content: string, title: string): (Paragraph
         i++
       }
       
-      // Parse and create table
+      // Parse table and render as formatted paragraphs
       const table = parseMarkdownTable(tableLines)
       if (table) {
-        // Add some spacing before table
+        // Add spacing before table
         elements.push(new Paragraph({ children: [], spacing: { after: 100 } }))
-        elements.push(createDocxTable(table))
-        // Add some spacing after table
+        
+        // Render header row as bold
+        const headerText = table.headers.join('  |  ')
+        elements.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: headerText,
+                bold: true,
+                size: 22,
+              }),
+            ],
+            spacing: { after: 50 },
+            shading: {
+              type: ShadingType.SOLID,
+              color: 'f1f5f9',
+              fill: 'f1f5f9',
+            },
+          })
+        )
+        
+        // Add separator line
+        elements.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: '─'.repeat(Math.min(headerText.length, 60)),
+                size: 22,
+                color: 'cbd5e1',
+              }),
+            ],
+            spacing: { after: 50 },
+          })
+        )
+        
+        // Render data rows
+        for (const row of table.rows) {
+          const rowText = row.join('  |  ')
+          elements.push(
+            new Paragraph({
+              children: parseTextWithFormatting(rowText),
+              spacing: { after: 50 },
+            })
+          )
+        }
+        
+        // Add spacing after table
         elements.push(new Paragraph({ children: [], spacing: { after: 200 } }))
       }
       continue
