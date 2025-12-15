@@ -4,9 +4,10 @@ import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Icons } from '@/components/icons'
 import { Button } from '@/components/ui/button'
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { Logo, LogoIcon } from '@/components/dealmotion-logo'
+import { api } from '@/lib/api'
 
 interface SidebarProps {
   className?: string
@@ -100,6 +101,29 @@ export function Sidebar({ className }: SidebarProps) {
   const router = useRouter()
   const [collapsed, setCollapsed] = useState(false)
   const t = useTranslations('navigation')
+  
+  // Autopilot pending count for badge
+  const [pendingCount, setPendingCount] = useState(0)
+  
+  const fetchPendingCount = useCallback(async () => {
+    try {
+      const { data, error } = await api.get<{ proposals: unknown[], counts: { proposed: number } }>(
+        '/api/v1/autopilot/proposals?status=proposed&limit=1'
+      )
+      if (!error && data?.counts) {
+        setPendingCount(data.counts.proposed || 0)
+      }
+    } catch {
+      // Silently fail - badge is non-critical
+    }
+  }, [])
+  
+  // Fetch pending count on mount and periodically
+  useEffect(() => {
+    fetchPendingCount()
+    const interval = setInterval(fetchPendingCount, 60000) // Every 60 seconds
+    return () => clearInterval(interval)
+  }, [fetchPendingCount])
 
   const isActive = (href: string) => {
     if (href === '/dashboard') {
@@ -149,6 +173,7 @@ export function Sidebar({ className }: SidebarProps) {
             const Icon = item.icon
             const active = isActive(item.href)
             const name = t(item.key)
+            const showBadge = item.isAutopilot && pendingCount > 0
             return (
               <button
                 key={item.key}
@@ -162,9 +187,21 @@ export function Sidebar({ className }: SidebarProps) {
                 )}
                 title={collapsed ? name : undefined}
               >
-                <Icon className={cn('h-5 w-5 flex-shrink-0', active ? item.color : '')} />
+                <div className="relative">
+                  <Icon className={cn('h-5 w-5 flex-shrink-0', active ? item.color : '')} />
+                  {showBadge && collapsed && (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-purple-500 rounded-full" />
+                  )}
+                </div>
                 {!collapsed && (
-                  <span className="truncate">{name}</span>
+                  <>
+                    <span className="truncate flex-1">{name}</span>
+                    {showBadge && (
+                      <span className="flex-shrink-0 bg-purple-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+                        {pendingCount > 99 ? '99+' : pendingCount}
+                      </span>
+                    )}
+                  </>
                 )}
               </button>
             )
