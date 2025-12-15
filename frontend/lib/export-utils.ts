@@ -337,20 +337,23 @@ function createWordTable(tableLines: string[]): Table | null {
   // Create table rows
   const rows: TableRow[] = []
   
-  // Header row
+  // Header row with blue background
   rows.push(
     new TableRow({
       tableHeader: true,
       children: headers.map(header => 
         new TableCell({
           width: { size: colWidth, type: WidthType.DXA },
+          shading: { fill: '1e40af' }, // Blue background
           children: [
             new Paragraph({
+              spacing: { before: 80, after: 80 },
               children: [
                 new TextRun({
                   text: header.replace(/\*\*/g, '').replace(/\*/g, ''),
                   bold: true,
                   size: 22,
+                  color: 'ffffff', // White text
                 }),
               ],
             }),
@@ -360,15 +363,20 @@ function createWordTable(tableLines: string[]): Table | null {
     })
   )
   
-  // Data rows
-  for (const row of dataRows) {
+  // Data rows with alternating colors
+  for (let rowIdx = 0; rowIdx < dataRows.length; rowIdx++) {
+    const row = dataRows[rowIdx]
+    const isEvenRow = rowIdx % 2 === 0
+    
     rows.push(
       new TableRow({
         children: row.map(cell =>
           new TableCell({
             width: { size: colWidth, type: WidthType.DXA },
+            shading: { fill: isEvenRow ? 'f8fafc' : 'ffffff' }, // Alternating light gray/white
             children: [
               new Paragraph({
+                spacing: { before: 60, after: 60 },
                 children: parseFormattedText(cell),
               }),
             ],
@@ -378,17 +386,17 @@ function createWordTable(tableLines: string[]): Table | null {
     )
   }
   
-  // Create table with borders
+  // Create table with subtle borders
   return new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
     rows: rows,
     borders: {
-      top: { style: BorderStyle.SINGLE, size: 8, color: 'e2e8f0' },
-      bottom: { style: BorderStyle.SINGLE, size: 8, color: 'e2e8f0' },
-      left: { style: BorderStyle.SINGLE, size: 8, color: 'e2e8f0' },
-      right: { style: BorderStyle.SINGLE, size: 8, color: 'e2e8f0' },
-      insideHorizontal: { style: BorderStyle.SINGLE, size: 8, color: 'e2e8f0' },
-      insideVertical: { style: BorderStyle.SINGLE, size: 8, color: 'e2e8f0' },
+      top: { style: BorderStyle.SINGLE, size: 4, color: 'cbd5e1' },
+      bottom: { style: BorderStyle.SINGLE, size: 4, color: 'cbd5e1' },
+      left: { style: BorderStyle.SINGLE, size: 4, color: 'cbd5e1' },
+      right: { style: BorderStyle.SINGLE, size: 4, color: 'cbd5e1' },
+      insideHorizontal: { style: BorderStyle.SINGLE, size: 4, color: 'e2e8f0' },
+      insideVertical: { style: BorderStyle.SINGLE, size: 4, color: 'e2e8f0' },
     },
   })
 }
