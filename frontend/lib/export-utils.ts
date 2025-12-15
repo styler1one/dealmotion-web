@@ -1,6 +1,12 @@
 /**
  * Export utilities for downloading content as different file formats
  * Supports: Markdown (.md), PDF (.pdf), Word (.docx)
+ * 
+ * Features:
+ * - Headers (H1, H2, H3)
+ * - Bold and italic text
+ * - Bullet and numbered lists
+ * - Tables with proper styling
  */
 
 import { saveAs } from 'file-saver'
@@ -11,7 +17,13 @@ import {
   TextRun, 
   HeadingLevel,
   AlignmentType,
-  BorderStyle
+  BorderStyle,
+  Table,
+  TableRow,
+  TableCell,
+  WidthType,
+  VerticalAlign,
+  ShadingType
 } from 'docx'
 
 /**
@@ -88,7 +100,7 @@ export async function exportAsDocx(
   companyName: string,
   title: string
 ): Promise<void> {
-  const paragraphs = parseMarkdownToParagraphs(content, title)
+  const children = parseMarkdownToDocxElements(content, title)
   
   const doc = new Document({
     styles: {
@@ -111,7 +123,7 @@ export async function exportAsDocx(
     sections: [
       {
         properties: {},
-        children: paragraphs,
+        children: children,
       },
     ],
   })
@@ -121,43 +133,289 @@ export async function exportAsDocx(
   saveAs(buffer, filename)
 }
 
+// ============================================================
+// PDF Export Helpers
+// ============================================================
+
 /**
- * Convert markdown content to HTML for PDF generation
+ * Parse markdown tables and return array of table objects
  */
-function markdownToHtml(markdown: string): string {
-  return markdown
-    // Headers
-    .replace(/^### (.*$)/gm, '<h3 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 24px 0 12px 0;">$1</h3>')
-    .replace(/^## (.*$)/gm, '<h2 style="color: #1e293b; font-size: 20px; font-weight: 600; margin: 28px 0 16px 0; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0;">$1</h2>')
-    .replace(/^# (.*$)/gm, '<h1 style="color: #1e293b; font-size: 24px; font-weight: 700; margin: 32px 0 16px 0;">$1</h1>')
-    // Bold and italic
-    .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
-    .replace(/\*\*(.*?)\*\*/g, '<strong style="font-weight: 600;">$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    // Lists
-    .replace(/^\s*[-*]\s+(.*$)/gm, '<li style="margin: 4px 0; margin-left: 20px;">$1</li>')
-    .replace(/(<li.*<\/li>\n?)+/g, '<ul style="margin: 12px 0; padding-left: 0;">$&</ul>')
-    // Numbered lists
-    .replace(/^\d+\.\s+(.*$)/gm, '<li style="margin: 4px 0; margin-left: 20px;">$1</li>')
-    // Paragraphs (lines not starting with tags)
-    .replace(/^(?!<[hul])(.*$)/gm, (match) => {
-      if (match.trim() === '') return '<br/>'
-      if (match.startsWith('<')) return match
-      return `<p style="margin: 12px 0;">${match}</p>`
-    })
-    // Clean up extra breaks
-    .replace(/<br\/>\s*<br\/>/g, '<br/>')
-    .replace(/<p style="margin: 12px 0;"><\/p>/g, '')
+interface ParsedTable {
+  headers: string[]
+  rows: string[][]
+}
+
+function parseMarkdownTable(tableLines: string[]): ParsedTable | null {
+  if (tableLines.length < 2) return null
+  
+  // Parse header row
+  const headerLine = tableLines[0]
+  const headers = headerLine
+    .split('|')
+    .map(cell => cell.trim())
+    .filter(cell => cell.length > 0)
+  
+  if (headers.length === 0) return null
+  
+  // Skip separator line (index 1) and parse data rows
+  const rows: string[][] = []
+  for (let i = 2; i < tableLines.length; i++) {
+    const line = tableLines[i]
+    if (!line.includes('|')) break
+    
+    const cells = line
+      .split('|')
+      .map(cell => cell.trim())
+      .filter(cell => cell !== '')
+    
+    if (cells.length > 0) {
+      rows.push(cells)
+    }
+  }
+  
+  return { headers, rows }
 }
 
 /**
- * Parse markdown content into docx paragraphs
+ * Convert a parsed table to styled HTML
  */
-function parseMarkdownToParagraphs(content: string, title: string): Paragraph[] {
-  const paragraphs: Paragraph[] = []
+function tableToHtml(table: ParsedTable): string {
+  const tableStyle = `
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 13px;
+  `.replace(/\s+/g, ' ').trim()
+  
+  const thStyle = `
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #1e293b;
+  `.replace(/\s+/g, ' ').trim()
+  
+  const tdStyle = `
+    border: 1px solid #e2e8f0;
+    padding: 10px 12px;
+    color: #334155;
+  `.replace(/\s+/g, ' ').trim()
+  
+  let html = `<table style="${tableStyle}">`
+  
+  // Header row
+  html += '<thead><tr>'
+  for (const header of table.headers) {
+    // Parse bold/italic in header
+    const formattedHeader = header
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    html += `<th style="${thStyle}">${formattedHeader}</th>`
+  }
+  html += '</tr></thead>'
+  
+  // Data rows
+  html += '<tbody>'
+  for (const row of table.rows) {
+    html += '<tr>'
+    for (const cell of row) {
+      // Parse bold/italic in cells
+      const formattedCell = cell
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      html += `<td style="${tdStyle}">${formattedCell}</td>`
+    }
+    html += '</tr>'
+  }
+  html += '</tbody>'
+  
+  html += '</table>'
+  return html
+}
+
+/**
+ * Convert markdown content to HTML for PDF generation
+ * Now includes table support
+ */
+function markdownToHtml(markdown: string): string {
+  const lines = markdown.split('\n')
+  const result: string[] = []
+  let i = 0
+  
+  while (i < lines.length) {
+    const line = lines[i]
+    
+    // Check if this is the start of a table
+    if (line.includes('|') && i + 1 < lines.length && lines[i + 1].includes('|') && lines[i + 1].includes('-')) {
+      // Collect all table lines
+      const tableLines: string[] = []
+      while (i < lines.length && lines[i].includes('|')) {
+        tableLines.push(lines[i])
+        i++
+      }
+      
+      // Parse and convert table
+      const table = parseMarkdownTable(tableLines)
+      if (table) {
+        result.push(tableToHtml(table))
+      } else {
+        // If parsing failed, just output as text
+        result.push(...tableLines)
+      }
+      continue
+    }
+    
+    // Process non-table line
+    let processedLine = line
+    
+    // Headers
+    if (processedLine.startsWith('### ')) {
+      processedLine = `<h3 style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 24px 0 12px 0;">${processedLine.slice(4)}</h3>`
+    } else if (processedLine.startsWith('## ')) {
+      processedLine = `<h2 style="color: #1e293b; font-size: 20px; font-weight: 600; margin: 28px 0 16px 0; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0;">${processedLine.slice(3)}</h2>`
+    } else if (processedLine.startsWith('# ')) {
+      processedLine = `<h1 style="color: #1e293b; font-size: 24px; font-weight: 700; margin: 32px 0 16px 0;">${processedLine.slice(2)}</h1>`
+    } 
+    // Bullet lists
+    else if (/^\s*[-*]\s+/.test(processedLine)) {
+      const text = processedLine.replace(/^\s*[-*]\s+/, '')
+      processedLine = `<li style="margin: 4px 0; margin-left: 20px;">${text}</li>`
+    }
+    // Numbered lists
+    else if (/^\d+\.\s+/.test(processedLine)) {
+      const text = processedLine.replace(/^\d+\.\s+/, '')
+      processedLine = `<li style="margin: 4px 0; margin-left: 20px;">${text}</li>`
+    }
+    // Empty lines
+    else if (processedLine.trim() === '') {
+      processedLine = '<br/>'
+    }
+    // Regular paragraphs
+    else if (!processedLine.startsWith('<')) {
+      processedLine = `<p style="margin: 12px 0;">${processedLine}</p>`
+    }
+    
+    // Apply inline formatting (bold/italic)
+    processedLine = processedLine
+      .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong style="font-weight: 600;">$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    
+    result.push(processedLine)
+    i++
+  }
+  
+  // Wrap consecutive list items in ul
+  let html = result.join('\n')
+  html = html.replace(/(<li[^>]*>.*?<\/li>\n?)+/g, (match) => {
+    return `<ul style="margin: 12px 0; padding-left: 0;">${match}</ul>`
+  })
+  
+  // Clean up
+  html = html.replace(/<br\/>\s*<br\/>/g, '<br/>')
+  html = html.replace(/<p style="margin: 12px 0;"><\/p>/g, '')
+  
+  return html
+}
+
+// ============================================================
+// Word Export Helpers
+// ============================================================
+
+/**
+ * Convert a parsed markdown table to a docx Table
+ */
+function createDocxTable(table: ParsedTable): Table {
+  const borderStyle = {
+    style: BorderStyle.SINGLE,
+    size: 8,
+    color: 'e2e8f0',
+  }
+  
+  const rows: TableRow[] = []
+  
+  // Header row
+  const headerCells = table.headers.map(header => {
+    return new TableCell({
+      children: [
+        new Paragraph({
+          children: parseTextWithFormatting(header.replace(/\*\*/g, '')), // Remove bold markers, will be styled
+          spacing: { after: 0 },
+        }),
+      ],
+      shading: {
+        type: ShadingType.SOLID,
+        color: 'f8fafc',
+        fill: 'f8fafc',
+      },
+      verticalAlign: VerticalAlign.CENTER,
+      margins: {
+        top: 100,
+        bottom: 100,
+        left: 120,
+        right: 120,
+      },
+      borders: {
+        top: borderStyle,
+        bottom: borderStyle,
+        left: borderStyle,
+        right: borderStyle,
+      },
+    })
+  })
+  
+  rows.push(new TableRow({
+    children: headerCells,
+    tableHeader: true,
+  }))
+  
+  // Data rows
+  for (const rowData of table.rows) {
+    const cells = rowData.map(cellText => {
+      return new TableCell({
+        children: [
+          new Paragraph({
+            children: parseTextWithFormatting(cellText),
+            spacing: { after: 0 },
+          }),
+        ],
+        verticalAlign: VerticalAlign.CENTER,
+        margins: {
+          top: 80,
+          bottom: 80,
+          left: 120,
+          right: 120,
+        },
+        borders: {
+          top: borderStyle,
+          bottom: borderStyle,
+          left: borderStyle,
+          right: borderStyle,
+        },
+      })
+    })
+    
+    rows.push(new TableRow({ children: cells }))
+  }
+  
+  return new Table({
+    rows: rows,
+    width: {
+      size: 100,
+      type: WidthType.PERCENTAGE,
+    },
+  })
+}
+
+/**
+ * Parse markdown content into docx elements (paragraphs and tables)
+ */
+function parseMarkdownToDocxElements(content: string, title: string): (Paragraph | Table)[] {
+  const elements: (Paragraph | Table)[] = []
   
   // Title
-  paragraphs.push(
+  elements.push(
     new Paragraph({
       children: [
         new TextRun({
@@ -172,7 +430,7 @@ function parseMarkdownToParagraphs(content: string, title: string): Paragraph[] 
   )
   
   // Subtitle
-  paragraphs.push(
+  elements.push(
     new Paragraph({
       children: [
         new TextRun({
@@ -195,18 +453,43 @@ function parseMarkdownToParagraphs(content: string, title: string): Paragraph[] 
   
   // Parse content lines
   const lines = content.split('\n')
+  let i = 0
   
-  for (const line of lines) {
+  while (i < lines.length) {
+    const line = lines[i]
     const trimmedLine = line.trim()
     
+    // Check if this is the start of a table
+    if (trimmedLine.includes('|') && i + 1 < lines.length && lines[i + 1].includes('|') && lines[i + 1].includes('-')) {
+      // Collect all table lines
+      const tableLines: string[] = []
+      while (i < lines.length && lines[i].includes('|')) {
+        tableLines.push(lines[i])
+        i++
+      }
+      
+      // Parse and create table
+      const table = parseMarkdownTable(tableLines)
+      if (table) {
+        // Add some spacing before table
+        elements.push(new Paragraph({ children: [], spacing: { after: 100 } }))
+        elements.push(createDocxTable(table))
+        // Add some spacing after table
+        elements.push(new Paragraph({ children: [], spacing: { after: 200 } }))
+      }
+      continue
+    }
+    
+    // Empty line
     if (!trimmedLine) {
-      paragraphs.push(new Paragraph({ children: [] }))
+      elements.push(new Paragraph({ children: [] }))
+      i++
       continue
     }
     
     // H1
     if (trimmedLine.startsWith('# ')) {
-      paragraphs.push(
+      elements.push(
         new Paragraph({
           children: [
             new TextRun({
@@ -219,12 +502,13 @@ function parseMarkdownToParagraphs(content: string, title: string): Paragraph[] 
           spacing: { before: 400, after: 200 },
         })
       )
+      i++
       continue
     }
     
     // H2
     if (trimmedLine.startsWith('## ')) {
-      paragraphs.push(
+      elements.push(
         new Paragraph({
           children: [
             new TextRun({
@@ -245,12 +529,13 @@ function parseMarkdownToParagraphs(content: string, title: string): Paragraph[] 
           },
         })
       )
+      i++
       continue
     }
     
     // H3
     if (trimmedLine.startsWith('### ')) {
-      paragraphs.push(
+      elements.push(
         new Paragraph({
           children: [
             new TextRun({
@@ -263,46 +548,50 @@ function parseMarkdownToParagraphs(content: string, title: string): Paragraph[] 
           spacing: { before: 200, after: 100 },
         })
       )
+      i++
       continue
     }
     
     // Bullet points
     if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ')) {
       const text = trimmedLine.replace(/^[-*] /, '')
-      paragraphs.push(
+      elements.push(
         new Paragraph({
           children: parseTextWithFormatting(text),
           bullet: { level: 0 },
           spacing: { after: 80 },
         })
       )
+      i++
       continue
     }
     
     // Numbered lists
     if (/^\d+\. /.test(trimmedLine)) {
       const text = trimmedLine.replace(/^\d+\. /, '')
-      paragraphs.push(
+      elements.push(
         new Paragraph({
           children: parseTextWithFormatting(text),
           numbering: { reference: 'default-numbering', level: 0 },
           spacing: { after: 80 },
         })
       )
+      i++
       continue
     }
     
     // Regular paragraph
-    paragraphs.push(
+    elements.push(
       new Paragraph({
         children: parseTextWithFormatting(trimmedLine),
         spacing: { after: 150 },
       })
     )
+    i++
   }
   
   // Footer
-  paragraphs.push(
+  elements.push(
     new Paragraph({
       children: [
         new TextRun({
@@ -325,7 +614,7 @@ function parseMarkdownToParagraphs(content: string, title: string): Paragraph[] 
     })
   )
   
-  return paragraphs
+  return elements
 }
 
 /**
@@ -368,4 +657,3 @@ function parseTextWithFormatting(text: string): TextRun[] {
   
   return runs.length > 0 ? runs : [new TextRun({ text, size: 24 })]
 }
-
