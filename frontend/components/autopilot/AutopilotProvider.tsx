@@ -141,6 +141,29 @@ export function AutopilotProvider({ children }: AutopilotProviderProps) {
     }
   }, [])
   
+  // Complete a proposal directly (for inline actions that skip Inngest)
+  const completeProposal = useCallback(async (id: string) => {
+    try {
+      const { data, error } = await api.post<AutopilotProposal>(
+        `/api/v1/autopilot/proposals/${id}/complete`,
+        {}
+      )
+      
+      if (!error && data) {
+        // Update local state - mark as completed
+        setProposals(prev => prev.map(p => p.id === id ? data : p))
+        setCounts(prev => ({
+          ...prev,
+          proposed: Math.max(0, prev.proposed - 1),
+          completed: prev.completed + 1,
+        }))
+      }
+    } catch (err) {
+      logger.error('Failed to complete proposal', err, { source: 'AutopilotProvider' })
+      throw err
+    }
+  }, [])
+  
   const declineProposal = useCallback(async (id: string, reason?: string) => {
     try {
       const { data, error } = await api.post<AutopilotProposal>(
@@ -299,6 +322,7 @@ export function AutopilotProvider({ children }: AutopilotProviderProps) {
     settings,
     refreshProposals,
     acceptProposal,
+    completeProposal,
     declineProposal,
     snoozeProposal,
     retryProposal,

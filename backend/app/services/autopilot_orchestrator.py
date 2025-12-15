@@ -200,6 +200,42 @@ class AutopilotOrchestrator:
             logger.error(f"Error accepting proposal {proposal_id}: {e}")
             raise
     
+    async def complete_proposal_inline(
+        self,
+        proposal_id: str,
+        user_id: str
+    ) -> AutopilotProposal:
+        """
+        Mark a proposal as completed directly (for inline actions).
+        
+        This skips Inngest execution - use when user completed action
+        via inline modal/sheet (e.g., ContactSearchModal, PreparationForm).
+        """
+        try:
+            now = datetime.now().isoformat()
+            result = self.supabase.table("autopilot_proposals") \
+                .update({
+                    "status": "completed",
+                    "decided_at": now,
+                    "execution_started_at": now,
+                    "execution_completed_at": now,
+                    "artifacts": [{"type": "inline", "message": "Actie voltooid via inline UI"}],
+                }) \
+                .eq("id", proposal_id) \
+                .eq("user_id", user_id) \
+                .in_("status", ["proposed", "accepted", "executing"]) \
+                .execute()
+            
+            if not result.data:
+                raise Exception("Proposal not found or already processed")
+            
+            logger.info(f"Proposal {proposal_id} completed inline by user {user_id}")
+            return AutopilotProposal(**result.data[0])
+            
+        except Exception as e:
+            logger.error(f"Error completing proposal inline {proposal_id}: {e}")
+            raise
+    
     async def decline_proposal(
         self,
         proposal_id: str,

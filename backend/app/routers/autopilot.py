@@ -124,6 +124,36 @@ async def accept_proposal(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/proposals/{proposal_id}/complete", response_model=AutopilotProposal)
+async def complete_proposal_inline(
+    proposal_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Mark a proposal as completed directly (for inline actions).
+    
+    Use this when the user completed the action via an inline modal/sheet
+    (e.g., adding contacts, creating prep) and the proposal should be
+    marked complete WITHOUT triggering Inngest execution.
+    """
+    user_id = current_user["sub"]
+    
+    try:
+        orchestrator = AutopilotOrchestrator()
+        proposal = await orchestrator.complete_proposal_inline(
+            proposal_id=proposal_id,
+            user_id=user_id
+        )
+        
+        return proposal
+        
+    except Exception as e:
+        logger.error(f"Error completing proposal {proposal_id}: {e}")
+        if "not found" in str(e).lower():
+            raise HTTPException(status_code=404, detail="Proposal not found or already processed")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/proposals/{proposal_id}/decline", response_model=AutopilotProposal)
 async def decline_proposal(
     proposal_id: str,

@@ -230,6 +230,7 @@ export interface AutopilotContextValue {
   // Actions
   refreshProposals: () => Promise<void>
   acceptProposal: (id: string, reason?: string) => Promise<void>
+  completeProposal: (id: string) => Promise<void>  // For inline actions (skip Inngest)
   declineProposal: (id: string, reason?: string) => Promise<void>
   snoozeProposal: (id: string, until: Date, reason?: string) => Promise<void>
   retryProposal: (id: string) => Promise<void>

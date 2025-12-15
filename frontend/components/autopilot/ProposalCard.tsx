@@ -74,7 +74,7 @@ interface ProposalCardProps {
 
 export function ProposalCard({ proposal }: ProposalCardProps) {
   const router = useRouter()
-  const { acceptProposal, declineProposal, snoozeProposal, retryProposal, refreshProposals } = useAutopilot()
+  const { acceptProposal, completeProposal, declineProposal, snoozeProposal, retryProposal, refreshProposals } = useAutopilot()
   const [isProcessing, setIsProcessing] = useState(false)
   
   // Sheet/Modal states for inline actions
@@ -130,10 +130,10 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
     setShowPrepSheet(false)
     setShowFollowupSheet(false)
     
-    // Mark proposal as completed
+    // Mark proposal as completed directly (skip Inngest execution)
     setIsProcessing(true)
     try {
-      await acceptProposal(proposal.id)
+      await completeProposal(proposal.id)
       await refreshProposals()
     } finally {
       setIsProcessing(false)
