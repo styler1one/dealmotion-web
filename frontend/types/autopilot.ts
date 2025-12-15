@@ -49,6 +49,13 @@ export interface SuggestedAction {
   params: Record<string, unknown>
 }
 
+export interface ProposalArtifact {
+  type: 'research' | 'prep' | 'followup' | 'redirect'
+  id?: string
+  route?: string
+  message?: string
+}
+
 export interface AutopilotProposal {
   id: string
   organization_id: string
@@ -70,7 +77,7 @@ export interface AutopilotProposal {
   execution_completed_at: string | null
   execution_result: Record<string, unknown> | null
   execution_error: string | null
-  artifacts: Array<{ type: string; id: string }>
+  artifacts: ProposalArtifact[]
   expires_at: string | null
   expired_reason: string | null
   context_data: Record<string, unknown>

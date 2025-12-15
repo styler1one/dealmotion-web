@@ -252,24 +252,33 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
           </>
         )}
         
-        {proposal.status === 'completed' && proposal.artifacts.length > 0 && (
+        {proposal.status === 'completed' && proposal.artifacts && proposal.artifacts.length > 0 && (
           <Button
             size="sm"
             variant="outline"
             onClick={() => {
-              // Navigate to the first artifact
-              const artifact = proposal.artifacts[0]
-              if (artifact.type === 'research') {
-                router.push(`/dashboard/research/${artifact.id}`)
-              } else if (artifact.type === 'prep') {
-                router.push(`/dashboard/preparation/${artifact.id}`)
-              } else if (artifact.type === 'followup') {
-                router.push(`/dashboard/followup/${artifact.id}`)
+              // Find the best artifact to navigate to
+              const redirectArtifact = proposal.artifacts.find(a => a.type === 'redirect')
+              if (redirectArtifact && redirectArtifact.route) {
+                router.push(redirectArtifact.route)
+                return
+              }
+              
+              // Navigate to the first content artifact
+              const artifact = proposal.artifacts.find(a => a.type !== 'redirect')
+              if (artifact) {
+                if (artifact.type === 'research') {
+                  router.push(`/dashboard/research/${artifact.id}`)
+                } else if (artifact.type === 'prep') {
+                  router.push(`/dashboard/preparation/${artifact.id}`)
+                } else if (artifact.type === 'followup') {
+                  router.push(`/dashboard/followup/${artifact.id}`)
+                }
               }
             }}
             className="flex-1"
           >
-            Bekijk resultaat
+            {proposal.artifacts.some(a => a.type === 'redirect') ? 'Ga naar pagina' : 'Bekijk resultaat'}
           </Button>
         )}
       </div>

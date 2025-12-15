@@ -60,10 +60,33 @@ async def execute_proposal_fn(ctx, step):
             update_status(orchestrator, proposal_id, "executing")
         )
         
-        # Step 2: Execute based on proposal type
+        # Step 2: Execute based on proposal type AND flow_step
         artifacts = []
         
-        if proposal_type == "research_prep":
+        # Get the specific action from context_data (set by /detect endpoint)
+        flow_step = context_data.get("flow_step")
+        action_route = context_data.get("action_route")
+        
+        # =====================================================================
+        # NAVIGATIONAL PROPOSALS (no auto-execution, just redirect)
+        # These proposals require manual user action - we just mark complete
+        # =====================================================================
+        
+        if flow_step in ["add_contacts", "generate_actions"]:
+            # These can't be auto-executed - user needs to do this manually
+            # Just mark as completed with a redirect route
+            logger.info(f"Navigational proposal {proposal_id}: {flow_step} -> {action_route}")
+            artifacts.append({
+                "type": "redirect",
+                "route": action_route,
+                "message": "Ga naar de juiste pagina om deze actie uit te voeren"
+            })
+        
+        # =====================================================================
+        # EXECUTABLE PROPOSALS
+        # =====================================================================
+        
+        elif proposal_type == "research_prep":
             # Research + Prep flow
             research_id = await step.run("execute-research", lambda:
                 execute_research(
@@ -96,7 +119,7 @@ async def execute_proposal_fn(ctx, step):
                 if prep_id:
                     artifacts.append({"type": "prep", "id": prep_id})
         
-        elif proposal_type == "prep_only":
+        elif proposal_type == "prep_only" or flow_step == "create_prep":
             # Prep only
             prep_id = await step.run("execute-prep", lambda:
                 execute_prep(
@@ -110,8 +133,8 @@ async def execute_proposal_fn(ctx, step):
             if prep_id:
                 artifacts.append({"type": "prep", "id": prep_id})
         
-        elif proposal_type == "followup_pack":
-            # Follow-up generation
+        elif proposal_type == "followup_pack" or flow_step == "meeting_analysis":
+            # Follow-up generation (creates record, user still needs to upload transcript)
             followup_id = await step.run("execute-followup", lambda:
                 execute_followup(
                     supabase,
@@ -123,21 +146,51 @@ async def execute_proposal_fn(ctx, step):
             
             if followup_id:
                 artifacts.append({"type": "followup", "id": followup_id})
+                # Add route for user to upload transcript
+                artifacts.append({
+                    "type": "redirect",
+                    "route": f"/dashboard/followup/{followup_id}",
+                    "message": "Upload je meeting recording om de analyse te starten"
+                })
         
-        elif proposal_type in ["reactivation", "complete_flow"]:
-            # Special prep types
+        elif proposal_type == "reactivation":
+            # Reactivation prep
             prep_id = await step.run("execute-prep", lambda:
                 execute_prep(
                     supabase,
                     user_id=user_id,
                     organization_id=organization_id,
                     context_data=context_data,
-                    meeting_type="reactivation" if proposal_type == "reactivation" else "discovery"
+                    meeting_type="reactivation"
                 )
             )
             
             if prep_id:
                 artifacts.append({"type": "prep", "id": prep_id})
+        
+        elif proposal_type == "complete_flow":
+            # Complete flow - check if we should create prep or just redirect
+            if context_data.get("research_id") and context_data.get("prospect_id"):
+                # We have research, create prep
+                prep_id = await step.run("execute-prep", lambda:
+                    execute_prep(
+                        supabase,
+                        user_id=user_id,
+                        organization_id=organization_id,
+                        context_data=context_data,
+                        meeting_type="discovery"
+                    )
+                )
+                
+                if prep_id:
+                    artifacts.append({"type": "prep", "id": prep_id})
+            else:
+                # No valid execution path, just mark as redirect
+                artifacts.append({
+                    "type": "redirect",
+                    "route": action_route or "/dashboard",
+                    "message": "Actie vereist handmatige stappen"
+                })
         
         # Step 3: Update status to completed
         await step.run("update-status-completed", lambda:
