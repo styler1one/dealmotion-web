@@ -22,7 +22,6 @@ import {
   TableRow,
   TableCell,
   WidthType,
-  VerticalAlign,
   ShadingType
 } from 'docx'
 
@@ -325,42 +324,30 @@ function markdownToHtml(markdown: string): string {
 
 /**
  * Convert a parsed markdown table to a docx Table
+ * Uses simple styling for maximum compatibility
  */
 function createDocxTable(table: ParsedTable): Table {
-  const borderStyle = {
-    style: BorderStyle.SINGLE,
-    size: 8,
-    color: 'e2e8f0',
-  }
-  
   const rows: TableRow[] = []
   
-  // Header row
+  // Header row - bold text with gray background
   const headerCells = table.headers.map(header => {
+    const cleanHeader = header.replace(/\*\*/g, '') // Remove bold markers
     return new TableCell({
       children: [
         new Paragraph({
-          children: parseTextWithFormatting(header.replace(/\*\*/g, '')), // Remove bold markers, will be styled
-          spacing: { after: 0 },
+          children: [
+            new TextRun({
+              text: cleanHeader,
+              bold: true,
+              size: 22, // 11pt
+            }),
+          ],
         }),
       ],
       shading: {
         type: ShadingType.SOLID,
-        color: 'f8fafc',
-        fill: 'f8fafc',
-      },
-      verticalAlign: VerticalAlign.CENTER,
-      margins: {
-        top: 100,
-        bottom: 100,
-        left: 120,
-        right: 120,
-      },
-      borders: {
-        top: borderStyle,
-        bottom: borderStyle,
-        left: borderStyle,
-        right: borderStyle,
+        color: 'f1f5f9',
+        fill: 'f1f5f9',
       },
     })
   })
@@ -377,22 +364,8 @@ function createDocxTable(table: ParsedTable): Table {
         children: [
           new Paragraph({
             children: parseTextWithFormatting(cellText),
-            spacing: { after: 0 },
           }),
         ],
-        verticalAlign: VerticalAlign.CENTER,
-        margins: {
-          top: 80,
-          bottom: 80,
-          left: 120,
-          right: 120,
-        },
-        borders: {
-          top: borderStyle,
-          bottom: borderStyle,
-          left: borderStyle,
-          right: borderStyle,
-        },
       })
     })
     
