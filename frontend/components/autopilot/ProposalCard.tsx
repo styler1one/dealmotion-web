@@ -5,7 +5,10 @@
  * SPEC-045 / TASK-048
  * 
  * Displays a single autopilot proposal with actions.
- * Supports inline modals for actions like adding contacts.
+ * Supports inline modals/sheets for actions:
+ * - add_contacts: ContactSearchModal
+ * - create_prep: PreparationForm in Sheet
+ * - meeting_analysis: FollowupUploadForm in Sheet
  */
 
 import React, { useState } from 'react'
@@ -14,12 +17,19 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from '@/components/ui/sheet'
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Check, X, Clock, MoreHorizontal, RefreshCw, Loader2, UserPlus } from 'lucide-react'
+import { Check, X, Clock, RefreshCw, Loader2, UserPlus, FileText, Mic } from 'lucide-react'
 import type { AutopilotProposal } from '@/types/autopilot'
 import {
   PROPOSAL_STATUS_COLORS,
@@ -29,6 +39,8 @@ import {
 } from '@/types/autopilot'
 import { useAutopilot } from './AutopilotProvider'
 import { ContactSearchModal } from '@/components/contacts/contact-search-modal'
+import { PreparationForm } from '@/components/forms/PreparationForm'
+import { FollowupUploadForm } from '@/components/forms/FollowupUploadForm'
 
 // Simple relative time formatter (native JS, no external deps)
 function formatRelativeTime(date: Date): string {
@@ -64,25 +76,46 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
   const router = useRouter()
   const { acceptProposal, declineProposal, snoozeProposal, retryProposal, refreshProposals } = useAutopilot()
   const [isProcessing, setIsProcessing] = useState(false)
+  
+  // Sheet/Modal states for inline actions
   const [showContactModal, setShowContactModal] = useState(false)
+  const [showPrepSheet, setShowPrepSheet] = useState(false)
+  const [showFollowupSheet, setShowFollowupSheet] = useState(false)
   
   const isActionable = proposal.status === 'proposed'
   const isFailed = proposal.status === 'failed'
   const isExecuting = proposal.status === 'executing' || proposal.status === 'accepted'
   
-  // Check if this is an "add contacts" proposal that should open a modal
+  // Extract context data for inline actions
   const flowStep = proposal.context_data?.flow_step as string | undefined
-  const isAddContactsAction = flowStep === 'add_contacts'
   const researchId = proposal.context_data?.research_id as string | undefined
+  const prospectId = proposal.context_data?.prospect_id as string | undefined
   const companyName = proposal.context_data?.company_name as string | undefined
   
+  // Determine which inline action to use
+  const isAddContactsAction = flowStep === 'add_contacts'
+  const isCreatePrepAction = flowStep === 'create_prep'
+  const isMeetingAnalysisAction = flowStep === 'meeting_analysis'
+  const hasInlineAction = isAddContactsAction || isCreatePrepAction || isMeetingAnalysisAction
+  
   const handleAccept = async () => {
-    // For add_contacts, open modal instead of triggering backend execution
+    // For inline actions, open the appropriate modal/sheet
     if (isAddContactsAction && researchId) {
       setShowContactModal(true)
       return
     }
     
+    if (isCreatePrepAction) {
+      setShowPrepSheet(true)
+      return
+    }
+    
+    if (isMeetingAnalysisAction) {
+      setShowFollowupSheet(true)
+      return
+    }
+    
+    // Default: trigger backend execution
     setIsProcessing(true)
     try {
       await acceptProposal(proposal.id)
@@ -91,19 +124,34 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
     }
   }
   
-  // Called when contact is added via the modal
-  const handleContactAdded = async () => {
+  // Called when inline action is completed successfully
+  const handleInlineActionComplete = async () => {
     setShowContactModal(false)
-    // Mark proposal as completed by accepting it
-    // The backend will see it's an add_contacts action and just mark complete
+    setShowPrepSheet(false)
+    setShowFollowupSheet(false)
+    
+    // Mark proposal as completed
     setIsProcessing(true)
     try {
       await acceptProposal(proposal.id)
-      // Refresh to show updated status
       await refreshProposals()
     } finally {
       setIsProcessing(false)
     }
+  }
+  
+  // Get the appropriate button label and icon for inline actions
+  const getActionButton = () => {
+    if (isAddContactsAction) {
+      return { icon: <UserPlus className="w-4 h-4 mr-1" />, label: 'Voeg contact toe' }
+    }
+    if (isCreatePrepAction) {
+      return { icon: <FileText className="w-4 h-4 mr-1" />, label: 'Maak prep' }
+    }
+    if (isMeetingAnalysisAction) {
+      return { icon: <Mic className="w-4 h-4 mr-1" />, label: 'Upload recording' }
+    }
+    return { icon: <Check className="w-4 h-4 mr-1" />, label: 'Ja, doe maar' }
   }
   
   const handleDecline = async () => {
@@ -210,9 +258,55 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
           onClose={() => setShowContactModal(false)}
           companyName={companyName || 'Onbekend'}
           researchId={researchId}
-          onContactAdded={handleContactAdded}
+          onContactAdded={handleInlineActionComplete}
         />
       )}
+      
+      {/* Preparation Sheet for create_prep proposals */}
+      <Sheet open={showPrepSheet} onOpenChange={setShowPrepSheet}>
+        <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-blue-600" />
+              Prep maken
+            </SheetTitle>
+            <SheetDescription>
+              Maak een meeting prep voor {companyName || 'dit bedrijf'}
+            </SheetDescription>
+          </SheetHeader>
+          <div className="mt-4">
+            <PreparationForm
+              initialCompanyName={companyName || ''}
+              onSuccess={() => handleInlineActionComplete()}
+              onCancel={() => setShowPrepSheet(false)}
+              isSheet={true}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
+      
+      {/* Follow-up Upload Sheet for meeting_analysis proposals */}
+      <Sheet open={showFollowupSheet} onOpenChange={setShowFollowupSheet}>
+        <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <Mic className="w-5 h-5 text-orange-600" />
+              Meeting analyse
+            </SheetTitle>
+            <SheetDescription>
+              Upload een recording of transcript voor {companyName || 'dit bedrijf'}
+            </SheetDescription>
+          </SheetHeader>
+          <div className="mt-4">
+            <FollowupUploadForm
+              initialProspectCompany={companyName || ''}
+              onSuccess={() => handleInlineActionComplete()}
+              onCancel={() => setShowFollowupSheet(false)}
+              isSheet={true}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
       
       {/* Actions */}
       <div className="flex items-center gap-2">
@@ -226,15 +320,10 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
             >
               {isProcessing ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
-              ) : isAddContactsAction ? (
-                <>
-                  <UserPlus className="w-4 h-4 mr-1" />
-                  Voeg contact toe
-                </>
               ) : (
                 <>
-                  <Check className="w-4 h-4 mr-1" />
-                  Ja, doe maar
+                  {getActionButton().icon}
+                  {getActionButton().label}
                 </>
               )}
             </Button>
