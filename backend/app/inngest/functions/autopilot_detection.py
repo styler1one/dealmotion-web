@@ -6,6 +6,7 @@ Functions for detecting opportunities and creating proposals:
 - detect_calendar_opportunities_fn: After calendar sync
 - detect_meeting_ended_fn: Cron every 15 min
 - detect_silent_prospects_fn: Daily at 9 AM
+- detect_incomplete_flow_fn: After research completed
 - expire_proposals_fn: Cron every 5 min
 """
 
@@ -314,6 +315,180 @@ async def detect_silent_prospects_fn(ctx, step):
         "users_checked": len(enabled_users),
         "created": created_count
     }
+
+
+# =============================================================================
+# INCOMPLETE FLOW DETECTION (Research done, no prep)
+# =============================================================================
+
+@inngest_client.create_function(
+    fn_id="autopilot-detect-incomplete-flow",
+    trigger=TriggerEvent(event="dealmotion/research.completed"),
+    retries=1,
+)
+async def detect_incomplete_flow_fn(ctx, step):
+    """
+    Detect incomplete flows after research completes.
+    
+    SPEC-045 Flow 5: Creates proposal when:
+    - Research completed
+    - Prospect has contacts
+    - No prep exists for this prospect
+    - No meeting scheduled (optional)
+    """
+    from app.services.autopilot_orchestrator import AutopilotOrchestrator
+    from app.models.autopilot import (
+        ProposalType, TriggerType, AutopilotProposalCreate,
+        SuggestedAction, LUNA_TEMPLATES
+    )
+    
+    event_data = ctx.event.data
+    research_id = event_data.get("research_id")
+    prospect_id = event_data.get("prospect_id")
+    user_id = event_data.get("user_id")
+    organization_id = event_data.get("organization_id")
+    company_name = event_data.get("company_name", "Onbekend")
+    
+    if not research_id or not user_id:
+        logger.warning("Missing research_id or user_id in research completed event")
+        return {"created": False, "reason": "missing_data"}
+    
+    logger.info(f"Checking incomplete flow for research {research_id[:8]}")
+    
+    supabase = get_supabase_service()
+    
+    # Step 1: Check if user has autopilot enabled
+    async def check_settings():
+        orchestrator = AutopilotOrchestrator()
+        settings = await orchestrator.get_settings(user_id)
+        return settings.enabled
+    
+    enabled = await step.run("check-settings", check_settings)
+    
+    if not enabled:
+        return {"created": False, "reason": "autopilot_disabled"}
+    
+    # Step 2: Check if prospect has contacts and no prep
+    async def check_flow_state():
+        # Get prospect info
+        if not prospect_id:
+            # Research without prospect - skip
+            return {"has_contacts": False, "has_prep": True}
+        
+        # Check for contacts
+        contacts_result = supabase.table("prospect_contacts") \
+            .select("id") \
+            .eq("prospect_id", prospect_id) \
+            .limit(1) \
+            .execute()
+        
+        has_contacts = len(contacts_result.data or []) > 0
+        
+        # Check for existing prep
+        prep_result = supabase.table("meeting_preps") \
+            .select("id") \
+            .eq("prospect_id", prospect_id) \
+            .limit(1) \
+            .execute()
+        
+        has_prep = len(prep_result.data or []) > 0
+        
+        # Check for scheduled meeting
+        meeting_result = supabase.table("calendar_meetings") \
+            .select("id") \
+            .eq("prospect_id", prospect_id) \
+            .gte("start_time", datetime.now().isoformat()) \
+            .eq("status", "confirmed") \
+            .limit(1) \
+            .execute()
+        
+        has_meeting = len(meeting_result.data or []) > 0
+        
+        return {
+            "has_contacts": has_contacts,
+            "has_prep": has_prep,
+            "has_meeting": has_meeting
+        }
+    
+    flow_state = await step.run("check-flow-state", check_flow_state)
+    
+    # Only create proposal if: contacts exist, no prep, no meeting scheduled
+    if not flow_state["has_contacts"]:
+        return {"created": False, "reason": "no_contacts"}
+    
+    if flow_state["has_prep"]:
+        return {"created": False, "reason": "prep_exists"}
+    
+    if flow_state["has_meeting"]:
+        # Meeting scheduled - calendar detection will handle this
+        return {"created": False, "reason": "meeting_scheduled"}
+    
+    # Step 3: Get contact name for personalized message
+    async def get_contact_name():
+        if not prospect_id:
+            return None
+        result = supabase.table("prospect_contacts") \
+            .select("name") \
+            .eq("prospect_id", prospect_id) \
+            .order("created_at", desc=True) \
+            .limit(1) \
+            .execute()
+        if result.data:
+            return result.data[0].get("name")
+        return None
+    
+    contact_name = await step.run("get-contact-name", get_contact_name)
+    
+    # Step 4: Create proposal
+    async def create_proposal():
+        orchestrator = AutopilotOrchestrator()
+        
+        luna_message = LUNA_TEMPLATES.get("complete_flow", 
+            "Je hebt research gedaan over {company}. Wil je een prep maken voor het eerste gesprek?"
+        )
+        
+        if contact_name:
+            luna_message = f"Je hebt {contact_name} toegevoegd aan {company_name}. Wil je een prep maken voor het eerste gesprek?"
+        else:
+            luna_message = luna_message.format(company=company_name, contact=contact_name or "een contact")
+        
+        proposal = AutopilotProposalCreate(
+            organization_id=organization_id,
+            user_id=user_id,
+            proposal_type=ProposalType.COMPLETE_FLOW,
+            trigger_type=TriggerType.FLOW_INCOMPLETE,
+            trigger_entity_id=research_id,
+            trigger_entity_type="research",
+            title=f"Volgende stap voor {company_name}",
+            description="Research + contact klaar",
+            luna_message=luna_message,
+            suggested_actions=[
+                SuggestedAction(action="prep", params={
+                    "prospect_id": prospect_id,
+                    "research_id": research_id,
+                    "meeting_type": "discovery",
+                }),
+            ],
+            priority=60,
+            expires_at=datetime.now() + timedelta(days=7),
+            context_data={
+                "research_id": research_id,
+                "prospect_id": prospect_id,
+                "company_name": company_name,
+                "contact_name": contact_name,
+            },
+        )
+        
+        result = await orchestrator.create_proposal(proposal)
+        return result.id if result else None
+    
+    proposal_id = await step.run("create-proposal", create_proposal)
+    
+    if proposal_id:
+        logger.info(f"Created incomplete flow proposal {proposal_id} for {company_name}")
+        return {"created": True, "proposal_id": proposal_id}
+    else:
+        return {"created": False, "reason": "duplicate_or_error"}
 
 
 # =============================================================================
