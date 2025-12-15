@@ -14,7 +14,10 @@ import {
   Document, 
   Packer, 
   Paragraph, 
-  TextRun
+  TextRun,
+  HeadingLevel,
+  AlignmentType,
+  convertInchesToTwip
 } from 'docx'
 
 /**
@@ -84,7 +87,7 @@ export async function exportAsPdf(
 
 /**
  * Export content as Word document (.docx)
- * Uses docx library for generation - minimal version for compatibility
+ * Uses docx library for generation
  */
 export async function exportAsDocx(
   content: string, 
@@ -94,51 +97,102 @@ export async function exportAsDocx(
   // Create paragraphs array
   const paragraphs: Paragraph[] = []
   
-  // Title
+  // Title - large blue header
   paragraphs.push(
     new Paragraph({
       children: [
         new TextRun({
           text: title,
           bold: true,
-          size: 48, // 24pt
+          size: 56, // 28pt
+          color: '1e40af', // Blue
         }),
       ],
+      heading: HeadingLevel.TITLE,
+      spacing: { after: 120 },
     })
   )
   
-  // Subtitle
+  // Subtitle - gray text
   paragraphs.push(
     new Paragraph({
       children: [
         new TextRun({
-          text: `Research Brief - ${new Date().toLocaleDateString()}`,
+          text: `Research Brief • ${new Date().toLocaleDateString()}`,
           size: 24, // 12pt
+          color: '64748b', // Gray
         }),
       ],
+      spacing: { after: 400 },
     })
   )
   
-  // Empty line
-  paragraphs.push(new Paragraph({}))
-  
   // Content - split into paragraphs
   const lines = content.split('\n')
-  for (const line of lines) {
+  let inTable = false
+  
+  for (let idx = 0; idx < lines.length; idx++) {
+    const line = lines[idx]
     const trimmedLine = line.trim()
     
+    // Empty line
     if (!trimmedLine) {
-      paragraphs.push(new Paragraph({}))
+      if (!inTable) {
+        paragraphs.push(new Paragraph({ spacing: { after: 200 } }))
+      }
       continue
     }
     
-    // Skip table separator lines
-    if (/^[\s\-|:]+$/.test(trimmedLine)) {
+    // Skip table separator lines (|---|---|)
+    if (/^[\s\-|:]+$/.test(trimmedLine) && trimmedLine.includes('|')) {
+      inTable = true
       continue
     }
     
-    // Headers
-    if (trimmedLine.startsWith('### ')) {
+    // Detect table start
+    if (trimmedLine.includes('|') && idx + 1 < lines.length && lines[idx + 1].includes('-')) {
+      inTable = true
+    }
+    
+    // H1
+    if (trimmedLine.startsWith('# ') && !trimmedLine.startsWith('## ')) {
+      inTable = false
+      paragraphs.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: trimmedLine.slice(2),
+              bold: true,
+              size: 44, // 22pt
+              color: '1e293b',
+            }),
+          ],
+          heading: HeadingLevel.HEADING_1,
+          spacing: { before: 400, after: 200 },
+        })
+      )
+    }
+    // H2
+    else if (trimmedLine.startsWith('## ') && !trimmedLine.startsWith('### ')) {
+      inTable = false
+      paragraphs.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: trimmedLine.slice(3),
+              bold: true,
+              size: 36, // 18pt
+              color: '334155',
+            }),
+          ],
+          heading: HeadingLevel.HEADING_2,
+          spacing: { before: 320, after: 160 },
+        })
+      )
+    }
+    // H3
+    else if (trimmedLine.startsWith('### ')) {
+      inTable = false
       paragraphs.push(
         new Paragraph({
           children: [
@@ -146,114 +200,114 @@ export async function exportAsDocx(
               text: trimmedLine.slice(4),
               bold: true,
               size: 28, // 14pt
+              color: '475569',
             }),
           ],
+          heading: HeadingLevel.HEADING_3,
+          spacing: { before: 240, after: 120 },
         })
       )
-    } else if (trimmedLine.startsWith('## ')) {
+    }
+    // Bullet point
+    else if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ')) {
+      inTable = false
+      paragraphs.push(
+        new Paragraph({
+          children: parseFormattedText(trimmedLine.slice(2)),
+          bullet: { level: 0 },
+          spacing: { after: 80 },
+          indent: { left: convertInchesToTwip(0.25) },
+        })
+      )
+    }
+    // Numbered list
+    else if (/^\d+\.\s/.test(trimmedLine)) {
+      inTable = false
+      const num = trimmedLine.match(/^\d+/)?.[0] || '1'
+      const text = trimmedLine.replace(/^\d+\.\s/, '')
       paragraphs.push(
         new Paragraph({
           children: [
-            new TextRun({
-              text: trimmedLine.slice(3),
-              bold: true,
-              size: 32, // 16pt
-            }),
+            new TextRun({ text: num + '. ', bold: true, size: 24 }),
+            ...parseFormattedText(text),
           ],
+          spacing: { after: 80 },
+          indent: { left: convertInchesToTwip(0.25) },
         })
       )
-    } else if (trimmedLine.startsWith('# ')) {
-      paragraphs.push(
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: trimmedLine.slice(2),
-              bold: true,
-              size: 40, // 20pt
-            }),
-          ],
-        })
-      )
-    } else if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ')) {
-      // Bullet point
-      const text = trimmedLine.slice(2).replace(/\*\*/g, '').replace(/\*/g, '')
-      paragraphs.push(
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: '• ' + text,
-              size: 24,
-            }),
-          ],
-        })
-      )
-    } else if (/^\d+\.\s/.test(trimmedLine)) {
-      // Numbered list
-      const text = trimmedLine.replace(/^\d+\.\s/, '').replace(/\*\*/g, '').replace(/\*/g, '')
-      paragraphs.push(
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: trimmedLine.match(/^\d+/)?.[0] + '. ' + text,
-              size: 24,
-            }),
-          ],
-        })
-      )
-    } else if (trimmedLine.includes('|')) {
-      // Table row - render as formatted text with pipe separators
-      const cleanRow = trimmedLine
+    }
+    // Table row
+    else if (trimmedLine.includes('|')) {
+      const cells = trimmedLine
         .split('|')
         .map(cell => cell.trim())
         .filter(cell => cell.length > 0)
-        .join('  |  ')
-        .replace(/\*\*/g, '')
-        .replace(/\*/g, '')
+      
+      // Check if this is a header row (first row of table)
+      const isHeader = !inTable || idx === 0 || (idx > 0 && !lines[idx - 1].includes('|'))
+      
+      const children: TextRun[] = []
+      cells.forEach((cell, i) => {
+        if (i > 0) {
+          children.push(new TextRun({ text: '   │   ', size: 22, color: 'cbd5e1' }))
+        }
+        children.push(new TextRun({
+          text: cell.replace(/\*\*/g, '').replace(/\*/g, ''),
+          size: 22,
+          bold: isHeader && !inTable,
+        }))
+      })
       
       paragraphs.push(
         new Paragraph({
-          children: [
-            new TextRun({
-              text: cleanRow,
-              size: 22, // 11pt
-            }),
-          ],
+          children: children,
+          spacing: { after: 60 },
         })
       )
-    } else {
-      // Regular paragraph - strip markdown formatting
-      const text = trimmedLine.replace(/\*\*/g, '').replace(/\*/g, '')
+      inTable = true
+    }
+    // Regular paragraph
+    else {
+      inTable = false
       paragraphs.push(
         new Paragraph({
-          children: [
-            new TextRun({
-              text: text,
-              size: 24,
-            }),
-          ],
+          children: parseFormattedText(trimmedLine),
+          spacing: { after: 160 },
         })
       )
     }
   }
   
-  // Empty line before footer
-  paragraphs.push(new Paragraph({}))
+  // Spacer before footer
+  paragraphs.push(new Paragraph({ spacing: { before: 400 } }))
   
-  // Footer
+  // Footer - centered, gray, italic
   paragraphs.push(
     new Paragraph({
       children: [
         new TextRun({
-          text: `Generated by DealMotion - ${new Date().toLocaleDateString()}`,
+          text: `Generated by DealMotion • ${new Date().toLocaleDateString()}`,
           size: 20, // 10pt
           italics: true,
+          color: '94a3b8',
         }),
       ],
+      alignment: AlignmentType.CENTER,
     })
   )
   
-  // Create document with minimal configuration
+  // Create document
   const doc = new Document({
+    styles: {
+      default: {
+        document: {
+          run: {
+            font: 'Calibri',
+            size: 24,
+          },
+        },
+      },
+    },
     sections: [
       {
         children: paragraphs,
@@ -265,6 +319,39 @@ export async function exportAsDocx(
   const buffer = await Packer.toBlob(doc)
   const filename = `${sanitizeFilename(companyName)}_brief.docx`
   saveAs(buffer, filename)
+}
+
+/**
+ * Parse text with bold/italic markdown formatting into TextRuns
+ */
+function parseFormattedText(text: string): TextRun[] {
+  const runs: TextRun[] = []
+  const parts = text.split(/(\*\*.*?\*\*|\*.*?\*)/g)
+  
+  for (const part of parts) {
+    if (!part) continue
+    
+    if (part.startsWith('**') && part.endsWith('**')) {
+      runs.push(new TextRun({
+        text: part.slice(2, -2),
+        bold: true,
+        size: 24,
+      }))
+    } else if (part.startsWith('*') && part.endsWith('*')) {
+      runs.push(new TextRun({
+        text: part.slice(1, -1),
+        italics: true,
+        size: 24,
+      }))
+    } else {
+      runs.push(new TextRun({
+        text: part,
+        size: 24,
+      }))
+    }
+  }
+  
+  return runs.length > 0 ? runs : [new TextRun({ text, size: 24 })]
 }
 
 // ============================================================
