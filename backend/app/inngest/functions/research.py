@@ -77,6 +77,7 @@ async def research_company_fn(ctx, step):
     city = event_data.get("city")
     linkedin_url = event_data.get("linkedin_url")
     website_url = event_data.get("website_url")
+    custom_intel = event_data.get("custom_intel")  # User's own knowledge about prospect
     organization_id = event_data.get("organization_id")
     user_id = event_data.get("user_id")
     language = event_data.get("language", DEFAULT_LANGUAGE)
@@ -89,9 +90,11 @@ async def research_company_fn(ctx, step):
     # Step 2: Get seller context (for personalized research)
     seller_context = await step.run("get-seller-context", get_seller_context, organization_id, user_id)
     
-    # Add organization_id to seller_context for caching
+    # Add organization_id and custom_intel to seller_context
     if seller_context:
         seller_context["organization_id"] = organization_id
+        if custom_intel:
+            seller_context["custom_intel"] = custom_intel
     
     # Step 3: Gemini comprehensive research (PRIMARY - does all web searching)
     gemini_result = await step.run(

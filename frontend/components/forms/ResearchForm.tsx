@@ -6,6 +6,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { Icons } from '@/components/icons'
 import { useToast } from '@/components/ui/use-toast'
 import { LanguageSelect } from '@/components/language-select'
@@ -57,6 +58,7 @@ export function ResearchForm({
   const [city, setCity] = useState('')
   const [outputLanguage, setOutputLanguage] = useState('en')
   const [languageFromSettings, setLanguageFromSettings] = useState(false)
+  const [customIntel, setCustomIntel] = useState('')
   
   // Company search state
   const [isSearching, setIsSearching] = useState(false)
@@ -207,7 +209,8 @@ export function ResearchForm({
         company_website_url: websiteUrl || null,
         country: country || null,
         city: city || null,
-        language: outputLanguage
+        language: outputLanguage,
+        custom_intel: customIntel.trim() || null
       })
 
       if (error || !data) {
@@ -221,6 +224,7 @@ export function ResearchForm({
       setCountry('')
       setCity('')
       setOutputLanguage(settings.output_language)
+      setCustomIntel('')
       setSelectedCompany(null)
       setShowAdvanced(false)
       
@@ -425,6 +429,24 @@ export function ResearchForm({
               showSuggestion={!!country}
               suggestionSource={country}
             />
+            
+            {/* Custom Intel - user's own knowledge */}
+            <div>
+              <Label htmlFor="customIntel" className="text-xs text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                <Icons.lightbulb className="h-3 w-3 text-amber-500" />
+                {t('form.customIntel') || 'Eigen intel'}
+              </Label>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 mb-1">
+                {t('form.customIntelDesc') || 'Ken je al zaken over dit bedrijf die niet online staan? Deel ze hier.'}
+              </p>
+              <Textarea
+                id="customIntel"
+                value={customIntel}
+                onChange={(e) => setCustomIntel(e.target.value)}
+                placeholder={t('form.customIntelPlaceholder') || 'Bijv. "Via Jan gehoord dat ze bezig zijn met een grote reorganisatie..." of "CEO is oud-collega van onze directeur"'}
+                className="mt-1 text-sm min-h-[80px]"
+              />
+            </div>
           </div>
         )}
 

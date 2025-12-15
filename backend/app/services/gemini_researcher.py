@@ -191,6 +191,20 @@ class GeminiResearcher:
             if pain_points:
                 seller_hint = f"\n**Sales Focus**: Look for signals related to: {', '.join(pain_points[:3])}"
         
+        # Build custom intel hint if available (user's own knowledge)
+        custom_intel_hint = ""
+        if seller_context and seller_context.get("custom_intel"):
+            custom_intel_hint = f"""
+**INSIDER INTEL (from user's own knowledge - PRIORITIZE this information)**:
+{seller_context.get('custom_intel')}
+
+Use this insider information to focus your research and verify/expand on these claims.
+"""
+        
+        # Append custom intel to base context if available
+        if custom_intel_hint:
+            base_context = base_context + custom_intel_hint
+        
         prompts = {}
         
         # ═══════════════════════════════════════════════════════════════════════

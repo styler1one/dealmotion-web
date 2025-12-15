@@ -636,11 +636,31 @@ export function ContactSearchModal({
                 </div>
               </>
             ) : (
-              <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-                <p className="text-sm text-amber-700 dark:text-amber-300">
-                  Adding "{searchName}" manually without LinkedIn profile
-                </p>
-              </div>
+              <>
+                <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                  <p className="text-sm text-amber-700 dark:text-amber-300">
+                    Adding "{searchName}" manually without LinkedIn profile
+                  </p>
+                </div>
+                
+                {/* Notes field for manual entry - since we skip the enrich step */}
+                <div>
+                  <Label htmlFor="manual-notes" className="text-sm font-medium flex items-center gap-1">
+                    <Icons.lightbulb className="h-3 w-3 text-amber-500" />
+                    {t('contacts.search.notesLabel') || 'Eigen notities'}
+                  </Label>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1.5">
+                    {t('contacts.search.manualNotesHint') || 'Deel wat je al weet over deze persoon (achtergrond, relatie, gesprekken, etc.)'}
+                  </p>
+                  <Textarea
+                    id="manual-notes"
+                    placeholder={t('contacts.search.notesPlaceholder') || 'Bijv. "Ontmoet op event X", "Geïntroduceerd door Jan", "Geïnteresseerd in ons product Y"...'}
+                    value={additionalNotes}
+                    onChange={(e) => setAdditionalNotes(e.target.value)}
+                    className="min-h-[80px] text-sm"
+                  />
+                </div>
+              </>
             )}
 
             <div className="space-y-3">

@@ -37,6 +37,7 @@ class ResearchRequest(BaseModel):
     company_website_url: Optional[str] = None  # Direct website scraping
     country: Optional[str] = None
     city: Optional[str] = None
+    custom_intel: Optional[str] = None  # User's own knowledge about the prospect
     # Note: language is now read from user_settings.output_language (not from request)
 
 
@@ -294,6 +295,7 @@ async def start_research(
             "company_linkedin_url": body.company_linkedin_url,
             "country": body.country,
             "city": body.city,
+            "custom_notes": body.custom_intel,  # User's own intel about the prospect
             "status": "pending"
         }
         
@@ -327,6 +329,7 @@ async def start_research(
                     "city": body.city,
                     "linkedin_url": body.company_linkedin_url,
                     "website_url": body.company_website_url,
+                    "custom_intel": body.custom_intel,  # User's own knowledge
                     "organization_id": organization_id,
                     "user_id": user_id,
                     "language": output_language
