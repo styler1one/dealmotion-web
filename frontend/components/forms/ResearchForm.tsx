@@ -434,10 +434,10 @@ export function ResearchForm({
             <div>
               <Label htmlFor="customIntel" className="text-xs text-slate-700 dark:text-slate-300 flex items-center gap-1">
                 <Icons.lightbulb className="h-3 w-3 text-amber-500" />
-                {t('form.customIntel') || 'Eigen intel'}
+                {t('form.customIntel') || 'Eigen intel (optioneel)'}
               </Label>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 mb-1">
-                {t('form.customIntelDesc') || 'Ken je al zaken over dit bedrijf die niet online staan? Deel ze hier.'}
+                {t('form.customIntelDesc') || 'Weet je al iets over dit bedrijf? Dit wordt toegevoegd aan de volledige online research.'}
               </p>
               <Textarea
                 id="customIntel"

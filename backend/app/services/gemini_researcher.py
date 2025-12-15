@@ -195,10 +195,11 @@ class GeminiResearcher:
         custom_intel_hint = ""
         if seller_context and seller_context.get("custom_intel"):
             custom_intel_hint = f"""
-**INSIDER INTEL (from user's own knowledge - PRIORITIZE this information)**:
+**ADDITIONAL CONTEXT (insider knowledge from user - INCLUDE alongside your full research)**:
 {seller_context.get('custom_intel')}
 
-Use this insider information to focus your research and verify/expand on these claims.
+IMPORTANT: This is EXTRA information to ADD to your research, NOT to narrow it. 
+Continue doing your full comprehensive research as normal. Then also verify/expand on these insider claims where relevant. Do NOT limit your research scope based on this info.
 """
         
         # Append custom intel to base context if available
