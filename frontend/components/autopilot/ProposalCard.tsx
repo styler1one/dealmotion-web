@@ -5,6 +5,7 @@
  * SPEC-045 / TASK-048
  * 
  * Displays a single autopilot proposal with actions.
+ * Supports inline modals for actions like adding contacts.
  */
 
 import React, { useState } from 'react'
@@ -18,7 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Check, X, Clock, MoreHorizontal, RefreshCw, Loader2 } from 'lucide-react'
+import { Check, X, Clock, MoreHorizontal, RefreshCw, Loader2, UserPlus } from 'lucide-react'
 import type { AutopilotProposal } from '@/types/autopilot'
 import {
   PROPOSAL_STATUS_COLORS,
@@ -27,6 +28,7 @@ import {
   SNOOZE_OPTIONS,
 } from '@/types/autopilot'
 import { useAutopilot } from './AutopilotProvider'
+import { ContactSearchModal } from '@/components/contacts/contact-search-modal'
 
 // Simple relative time formatter (native JS, no external deps)
 function formatRelativeTime(date: Date): string {
@@ -60,17 +62,45 @@ interface ProposalCardProps {
 
 export function ProposalCard({ proposal }: ProposalCardProps) {
   const router = useRouter()
-  const { acceptProposal, declineProposal, snoozeProposal, retryProposal } = useAutopilot()
+  const { acceptProposal, declineProposal, snoozeProposal, retryProposal, refreshProposals } = useAutopilot()
   const [isProcessing, setIsProcessing] = useState(false)
+  const [showContactModal, setShowContactModal] = useState(false)
   
   const isActionable = proposal.status === 'proposed'
   const isFailed = proposal.status === 'failed'
   const isExecuting = proposal.status === 'executing' || proposal.status === 'accepted'
   
+  // Check if this is an "add contacts" proposal that should open a modal
+  const flowStep = proposal.context_data?.flow_step as string | undefined
+  const isAddContactsAction = flowStep === 'add_contacts'
+  const researchId = proposal.context_data?.research_id as string | undefined
+  const companyName = proposal.context_data?.company_name as string | undefined
+  
   const handleAccept = async () => {
+    // For add_contacts, open modal instead of triggering backend execution
+    if (isAddContactsAction && researchId) {
+      setShowContactModal(true)
+      return
+    }
+    
     setIsProcessing(true)
     try {
       await acceptProposal(proposal.id)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+  
+  // Called when contact is added via the modal
+  const handleContactAdded = async () => {
+    setShowContactModal(false)
+    // Mark proposal as completed by accepting it
+    // The backend will see it's an add_contacts action and just mark complete
+    setIsProcessing(true)
+    try {
+      await acceptProposal(proposal.id)
+      // Refresh to show updated status
+      await refreshProposals()
     } finally {
       setIsProcessing(false)
     }
@@ -173,6 +203,17 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
         </div>
       )}
       
+      {/* Contact Search Modal for add_contacts proposals */}
+      {isAddContactsAction && researchId && (
+        <ContactSearchModal
+          isOpen={showContactModal}
+          onClose={() => setShowContactModal(false)}
+          companyName={companyName || 'Onbekend'}
+          researchId={researchId}
+          onContactAdded={handleContactAdded}
+        />
+      )}
+      
       {/* Actions */}
       <div className="flex items-center gap-2">
         {isActionable && (
@@ -185,6 +226,11 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
             >
               {isProcessing ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
+              ) : isAddContactsAction ? (
+                <>
+                  <UserPlus className="w-4 h-4 mr-1" />
+                  Voeg contact toe
+                </>
               ) : (
                 <>
                   <Check className="w-4 h-4 mr-1" />
