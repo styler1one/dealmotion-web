@@ -77,9 +77,9 @@ async def execute_proposal_fn(ctx, step):
             if research_id:
                 artifacts.append({"type": "research", "id": research_id})
             
-            # Wait for research to complete (poll)
-            research_complete = await step.run("wait-for-research", lambda:
-                wait_for_completion(supabase, "research_briefs", research_id, max_attempts=30)
+            # Wait for research to complete (non-blocking poll using step.sleep)
+            research_complete = await wait_for_completion_async(
+                step, supabase, "research_briefs", research_id, max_attempts=30
             )
             
             if research_complete:
@@ -366,33 +366,47 @@ def execute_followup(
     return followup_id
 
 
-def wait_for_completion(
-    supabase, 
-    table: str, 
-    record_id: str, 
-    max_attempts: int = 30
-) -> bool:
+def check_completion_status(supabase, table: str, record_id: str) -> str:
     """
-    Wait for a record to reach 'completed' status.
+    Check the status of a record.
     
-    Polls every 10 seconds, up to max_attempts.
+    Returns: 'completed', 'failed', or 'pending'
     """
-    import time
+    result = supabase.table(table) \
+        .select("status") \
+        .eq("id", record_id) \
+        .execute()
+    
+    if result.data:
+        status = result.data[0].get("status")
+        if status == "completed":
+            return "completed"
+        elif status == "failed":
+            return "failed"
+    
+    return "pending"
+
+
+async def wait_for_completion_async(step, supabase, table: str, record_id: str, max_attempts: int = 30) -> bool:
+    """
+    Wait for a record to reach 'completed' status using non-blocking step.sleep.
+    
+    Uses Inngest step.sleep for non-blocking waits (10 seconds between checks).
+    """
+    from datetime import timedelta
     
     for attempt in range(max_attempts):
-        result = supabase.table(table) \
-            .select("status") \
-            .eq("id", record_id) \
-            .execute()
+        status = await step.run(
+            f"check-{table}-status-{attempt}",
+            lambda: check_completion_status(supabase, table, record_id)
+        )
         
-        if result.data:
-            status = result.data[0].get("status")
-            
-            if status == "completed":
-                return True
-            elif status == "failed":
-                raise Exception(f"{table} {record_id} failed")
+        if status == "completed":
+            return True
+        elif status == "failed":
+            raise Exception(f"{table} {record_id} failed")
         
-        time.sleep(10)  # Wait 10 seconds before next check
+        # Non-blocking sleep using Inngest step.sleep
+        await step.sleep(f"wait-for-{table}-{attempt}", timedelta(seconds=10))
     
     raise Exception(f"Timeout waiting for {table} {record_id} to complete")

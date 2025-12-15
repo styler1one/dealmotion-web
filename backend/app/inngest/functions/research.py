@@ -124,7 +124,14 @@ async def research_company_fn(ctx, step):
         research_id, gemini_result, kvk_result, website_result, brief_content
     )
     
-    # Step 8: Emit completion event
+    # Step 7b: Get prospect_id for Autopilot detection
+    prospect_id = await step.run(
+        "get-prospect-id",
+        get_research_prospect_id,
+        research_id
+    )
+    
+    # Step 8: Emit completion event (with prospect_id for Autopilot)
     await step.send_event(
         "emit-completion",
         inngest.Event(
@@ -134,6 +141,7 @@ async def research_company_fn(ctx, step):
                 "company_name": company_name,
                 "organization_id": organization_id,
                 "user_id": user_id,
+                "prospect_id": prospect_id,  # Added for Autopilot detection
                 "success": True
             }
         )
@@ -158,6 +166,20 @@ async def update_research_status(research_id: str, status: str) -> dict:
         "status": status
     }).eq("id", research_id).execute()
     return {"updated": True, "status": status}
+
+
+async def get_research_prospect_id(research_id: str) -> Optional[str]:
+    """Get prospect_id from research_briefs for Autopilot detection."""
+    try:
+        result = supabase.table("research_briefs").select("prospect_id").eq(
+            "id", research_id
+        ).limit(1).execute()
+        if result.data and result.data[0].get("prospect_id"):
+            return result.data[0]["prospect_id"]
+        return None
+    except Exception as e:
+        logger.warning(f"Failed to get prospect_id for research {research_id}: {e}")
+        return None
 
 
 async def get_seller_context(organization_id: Optional[str], user_id: Optional[str]) -> dict:

@@ -375,3 +375,152 @@ async def record_prep_viewed(
         logger.error(f"Error recording prep viewed: {e}")
         # Don't fail - this is non-critical
         return {"success": False, "error": str(e)}
+
+
+# =============================================================================
+# MANUAL DETECTION ENDPOINT
+# =============================================================================
+
+@router.post("/detect")
+async def trigger_detection(
+    prospect_id: Optional[str] = Query(None, description="Prospect ID to check for proposals"),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Manually trigger proposal detection for existing prospects.
+    
+    This is useful for:
+    - Prospects that existed before Autopilot was implemented
+    - Testing Autopilot detection logic
+    - Forcing a re-scan after data changes
+    
+    If prospect_id is provided, checks only that prospect.
+    If not provided, scans all prospects for the user.
+    """
+    from app.models.autopilot import (
+        ProposalType, TriggerType, AutopilotProposalCreate,
+        SuggestedAction, LUNA_TEMPLATES
+    )
+    
+    user_id = current_user["sub"]
+    
+    try:
+        supabase = get_supabase_service()
+        orchestrator = AutopilotOrchestrator()
+        
+        # Get user settings
+        settings = await orchestrator.get_settings(user_id)
+        if not settings.enabled:
+            return {"success": False, "reason": "autopilot_disabled", "created": 0}
+        
+        # Get organization ID
+        org_result = supabase.table("organization_members") \
+            .select("organization_id") \
+            .eq("user_id", user_id) \
+            .execute()
+        
+        if not org_result.data:
+            return {"success": False, "reason": "no_organization", "created": 0}
+        
+        organization_id = org_result.data[0]["organization_id"]
+        
+        # Build query for prospects
+        query = supabase.table("prospects") \
+            .select("id, company_name") \
+            .eq("organization_id", organization_id)
+        
+        if prospect_id:
+            query = query.eq("id", prospect_id)
+        else:
+            query = query.limit(20)  # Limit to 20 prospects per scan
+        
+        prospects_result = query.execute()
+        
+        if not prospects_result.data:
+            return {"success": True, "reason": "no_prospects", "created": 0}
+        
+        created_count = 0
+        
+        for prospect in prospects_result.data:
+            p_id = prospect["id"]
+            company = prospect["company_name"]
+            
+            # Check if prospect has research
+            research_result = supabase.table("research_briefs") \
+                .select("id") \
+                .eq("prospect_id", p_id) \
+                .eq("status", "completed") \
+                .limit(1) \
+                .execute()
+            
+            has_research = len(research_result.data or []) > 0
+            
+            # Check if prospect has contacts
+            contacts_result = supabase.table("prospect_contacts") \
+                .select("id") \
+                .eq("prospect_id", p_id) \
+                .limit(1) \
+                .execute()
+            
+            has_contacts = len(contacts_result.data or []) > 0
+            
+            # Check if prospect has prep
+            prep_result = supabase.table("meeting_preps") \
+                .select("id") \
+                .eq("prospect_id", p_id) \
+                .limit(1) \
+                .execute()
+            
+            has_prep = len(prep_result.data or []) > 0
+            
+            # Determine if we should create a proposal
+            if has_research and has_contacts and not has_prep:
+                # Create "complete_flow" proposal
+                research_id = research_result.data[0]["id"] if research_result.data else None
+                
+                try:
+                    proposal = AutopilotProposalCreate(
+                        organization_id=organization_id,
+                        user_id=user_id,
+                        proposal_type=ProposalType.COMPLETE_FLOW,
+                        trigger_type=TriggerType.MANUAL,
+                        trigger_entity_id=p_id,
+                        trigger_entity_type="prospect",
+                        title=f"Volgende stap voor {company}",
+                        description="Research en contacten klaar, geen prep",
+                        luna_message=f"Je hebt research gedaan over {company} en contacten toegevoegd. Wil je een prep maken voor het eerste gesprek?",
+                        suggested_actions=[
+                            SuggestedAction(action="prep", params={
+                                "prospect_id": p_id,
+                                "research_id": research_id,
+                                "meeting_type": "discovery",
+                            }),
+                        ],
+                        priority=60,
+                        expires_at=datetime.now() + timedelta(days=7),
+                        context_data={
+                            "prospect_id": p_id,
+                            "company_name": company,
+                            "research_id": research_id,
+                            "trigger": "manual_detection",
+                        },
+                    )
+                    
+                    result = await orchestrator.create_proposal(proposal)
+                    if result:
+                        created_count += 1
+                        logger.info(f"Created manual proposal for {company}")
+                        
+                except Exception as e:
+                    if "duplicate" not in str(e).lower() and "unique" not in str(e).lower():
+                        logger.warning(f"Failed to create proposal for {company}: {e}")
+        
+        return {
+            "success": True,
+            "checked": len(prospects_result.data),
+            "created": created_count
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in manual detection: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

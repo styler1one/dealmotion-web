@@ -284,6 +284,9 @@ class UserContext(BaseModel):
     # Time context
     current_hour: int = 12
     current_day_of_week: int = 0  # 0 = Monday
+    
+    # Autopilot integration (avoid duplicate suggestions)
+    autopilot_enabled: bool = False
 
 
 # =============================================================================

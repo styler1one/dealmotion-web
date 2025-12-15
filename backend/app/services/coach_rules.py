@@ -145,7 +145,11 @@ class CoachRuleEngine:
         """Evaluate all rules and return matching suggestions."""
         suggestions = []
         
-        # Profile completeness rules
+        # Rules that overlap with Autopilot proposals - skip if autopilot enabled
+        # Autopilot handles: prep suggestions, follow-up suggestions, overdue prospects
+        skip_overlapping_rules = context.autopilot_enabled
+        
+        # Profile completeness rules (never skip - Autopilot doesn't handle these)
         if not context.has_sales_profile:
             suggestions.append(self._create_suggestion(
                 self.rules["complete-sales-profile"],
@@ -169,14 +173,16 @@ class CoachRuleEngine:
             ))
         
         # Preps without follow-up
-        for prep in context.preps_without_followup:
-            suggestions.append(self._create_suggestion(
-                self.rules["needs-followup"],
-                {
-                    "company": prep.get("prospect_company_name", "Unknown"),
-                    "prep_date": self._format_date(prep.get("completed_at")),
-                }
-            ))
+        # SKIP if Autopilot enabled - Autopilot handles this with followup_pack proposals
+        if not skip_overlapping_rules:
+            for prep in context.preps_without_followup:
+                suggestions.append(self._create_suggestion(
+                    self.rules["needs-followup"],
+                    {
+                        "company": prep.get("prospect_company_name", "Unknown"),
+                        "prep_date": self._format_date(prep.get("completed_at")),
+                    }
+                ))
         
         # Follow-ups without actions
         for followup in context.followups_without_actions:
@@ -189,18 +195,20 @@ class CoachRuleEngine:
             ))
         
         # Inactive prospects
-        for prospect in context.inactive_prospects:
-            days = prospect.get("days_inactive", 7)
-            suggestions.append(self._create_suggestion(
-                self.rules["overdue-prospect"],
-                {
-                    "company": prospect.get("company_name", "Unknown"),
-                    "days": days,
-                    "last_activity": prospect.get("last_activity", "Unknown"),
-                    "research_id": prospect.get("research_id", ""),
-                },
-                priority_boost=min(days - 7, 20)  # Boost priority based on how overdue
-            ))
+        # SKIP if Autopilot enabled - Autopilot handles this with reactivation proposals
+        if not skip_overlapping_rules:
+            for prospect in context.inactive_prospects:
+                days = prospect.get("days_inactive", 7)
+                suggestions.append(self._create_suggestion(
+                    self.rules["overdue-prospect"],
+                    {
+                        "company": prospect.get("company_name", "Unknown"),
+                        "days": days,
+                        "last_activity": prospect.get("last_activity", "Unknown"),
+                        "research_id": prospect.get("research_id", ""),
+                    },
+                    priority_boost=min(days - 7, 20)  # Boost priority based on how overdue
+                ))
         
         # Sort by priority (highest first)
         suggestions.sort(key=lambda s: s.priority, reverse=True)
@@ -309,6 +317,20 @@ async def build_user_context(
         current_hour=datetime.now().hour,
         current_day_of_week=datetime.now().weekday(),
     )
+    
+    try:
+        # Check if Autopilot is enabled for this user (to avoid duplicate suggestions)
+        autopilot_settings = supabase.table("autopilot_settings") \
+            .select("enabled") \
+            .eq("user_id", user_id) \
+            .execute()
+        context.autopilot_enabled = bool(
+            autopilot_settings.data and 
+            autopilot_settings.data[0].get("enabled", False)
+        )
+    except Exception as e:
+        logger.warning(f"Failed to check autopilot settings: {e}")
+        context.autopilot_enabled = False
     
     try:
         # Check sales profile (user-based, not org-based)
