@@ -121,6 +121,7 @@
     }
   },
   "navigation": {
+    "home": "Autopilot",
     "dashboard": "Dashboard",
     "prospects": "Prospects",
     "research": "Research",

@@ -15,6 +15,13 @@ from .calendar_post_sync import process_calendar_post_sync_fn
 from .fireflies import sync_all_fireflies_fn, sync_fireflies_user_fn
 from .ai_notetaker import process_ai_notetaker_recording_fn
 from .email_invite import process_email_invite_fn
+from .autopilot_detection import (
+    detect_calendar_opportunities_fn,
+    detect_meeting_ended_fn,
+    detect_silent_prospects_fn,
+    expire_proposals_fn,
+)
+from .autopilot_execution import execute_proposal_fn
 
 # All functions to register with Inngest
 all_functions = [
@@ -32,6 +39,12 @@ all_functions = [
     sync_fireflies_user_fn,
     process_ai_notetaker_recording_fn,
     process_email_invite_fn,
+    # Autopilot functions
+    detect_calendar_opportunities_fn,
+    detect_meeting_ended_fn,
+    detect_silent_prospects_fn,
+    expire_proposals_fn,
+    execute_proposal_fn,
 ]
 
 __all__ = [
@@ -50,5 +63,11 @@ __all__ = [
     "sync_fireflies_user_fn",
     "process_ai_notetaker_recording_fn",
     "process_email_invite_fn",
+    # Autopilot functions
+    "detect_calendar_opportunities_fn",
+    "detect_meeting_ended_fn",
+    "detect_silent_prospects_fn",
+    "expire_proposals_fn",
+    "execute_proposal_fn",
 ]
 

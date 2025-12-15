@@ -1,16 +1,24 @@
 -- ============================================================
 -- DealMotion Complete Database Schema
--- Version: 3.9
--- Last Updated: 10 December 2025
+-- Version: 4.0
+-- Last Updated: 15 December 2025
 -- 
 -- This file consolidates ALL migrations into a single schema.
 -- Use this as reference documentation - DO NOT run on existing DB!
 -- 
 -- COUNTS:
--- - Tables: 46 (+1 scheduled_recordings)
--- - Functions: 42 (+8 admin functions)
--- - Triggers: 38 (+1 scheduled_recordings trigger)
--- - Indexes: 202 (+6 scheduled_recordings indexes)
+-- - Tables: 50 (+4 autopilot tables)
+-- - Functions: 43 (+1 autopilot trigger function)
+-- - Triggers: 41 (+3 autopilot triggers)
+-- - Indexes: 215 (+13 autopilot indexes)
+-- 
+-- Changes in 4.0:
+-- - Added autopilot_proposals table (SPEC-045: DealMotion Autopilot)
+-- - Added autopilot_settings table (user configuration)
+-- - Added meeting_outcomes table (learning data)
+-- - Added user_prep_preferences table (learned preferences)
+-- - Added RLS policies for all autopilot tables
+-- - Added unique constraint for duplicate proposal prevention
 -- 
 -- Changes in 3.9:
 -- - Added scheduled_recordings table (AI Notetaker via Recall.ai)
@@ -2891,10 +2899,223 @@ CREATE TRIGGER update_scheduled_recordings_updated_at
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================================
+-- AUTOPILOT_PROPOSALS (SPEC-045: DealMotion Autopilot)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS autopilot_proposals (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    
+    -- Type & trigger
+    proposal_type TEXT NOT NULL CHECK (proposal_type IN (
+        'research_prep',      -- New meeting, unknown org
+        'prep_only',          -- Known prospect, no prep
+        'followup_pack',      -- Post-meeting
+        'reactivation',       -- Silent prospect
+        'complete_flow'       -- Research done, no next step
+    )),
+    
+    trigger_type TEXT NOT NULL CHECK (trigger_type IN (
+        'calendar_new_org',
+        'calendar_known_prospect',
+        'meeting_ended',
+        'transcript_ready',
+        'prospect_silent',
+        'flow_incomplete',
+        'manual'
+    )),
+    trigger_entity_id UUID,
+    trigger_entity_type TEXT,
+    
+    -- Content
+    title TEXT NOT NULL,
+    description TEXT,
+    luna_message TEXT NOT NULL,
+    
+    -- Actions
+    suggested_actions JSONB NOT NULL DEFAULT '[]',
+    
+    -- State
+    status TEXT NOT NULL DEFAULT 'proposed' CHECK (status IN (
+        'proposed', 'accepted', 'executing', 'completed',
+        'declined', 'snoozed', 'expired', 'failed'
+    )),
+    priority INTEGER DEFAULT 50 CHECK (priority >= 0 AND priority <= 100),
+    
+    -- Decision
+    decided_at TIMESTAMPTZ,
+    decision_reason TEXT,
+    snoozed_until TIMESTAMPTZ,
+    
+    -- Execution
+    execution_started_at TIMESTAMPTZ,
+    execution_completed_at TIMESTAMPTZ,
+    execution_result JSONB,
+    execution_error TEXT,
+    artifacts JSONB DEFAULT '[]',
+    
+    -- Expiry
+    expires_at TIMESTAMPTZ,
+    expired_reason TEXT,
+    
+    -- Metadata
+    context_data JSONB DEFAULT '{}',
+    
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_proposals_user_status ON autopilot_proposals(user_id, status);
+CREATE INDEX IF NOT EXISTS idx_proposals_org ON autopilot_proposals(organization_id);
+CREATE INDEX IF NOT EXISTS idx_proposals_expires ON autopilot_proposals(expires_at) WHERE status = 'proposed';
+CREATE INDEX IF NOT EXISTS idx_proposals_trigger ON autopilot_proposals(trigger_entity_id, trigger_entity_type);
+CREATE INDEX IF NOT EXISTS idx_proposals_created ON autopilot_proposals(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_proposals_priority ON autopilot_proposals(user_id, priority DESC) WHERE status = 'proposed';
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_proposals_unique_trigger 
+ON autopilot_proposals(trigger_entity_id, trigger_entity_type, user_id) 
+WHERE status IN ('proposed', 'accepted', 'executing');
+
+ALTER TABLE autopilot_proposals ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own proposals" ON autopilot_proposals FOR SELECT USING (user_id = auth.uid());
+CREATE POLICY "Users can update own proposals" ON autopilot_proposals FOR UPDATE USING (user_id = auth.uid());
+CREATE POLICY "Users can insert own proposals" ON autopilot_proposals FOR INSERT WITH CHECK (user_id = auth.uid());
+CREATE POLICY "Service role can manage all proposals" ON autopilot_proposals FOR ALL USING (auth.role() = 'service_role');
+
+-- ============================================================
+-- AUTOPILOT_SETTINGS (User configuration)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS autopilot_settings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    
+    enabled BOOLEAN DEFAULT true,
+    auto_research_new_meetings BOOLEAN DEFAULT true,
+    auto_prep_known_prospects BOOLEAN DEFAULT true,
+    auto_followup_after_meeting BOOLEAN DEFAULT true,
+    reactivation_days_threshold INTEGER DEFAULT 14,
+    prep_hours_before_meeting INTEGER DEFAULT 24,
+    notification_style TEXT DEFAULT 'balanced' CHECK (notification_style IN ('eager', 'balanced', 'minimal')),
+    excluded_meeting_keywords TEXT[] DEFAULT '{}',
+    
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    
+    UNIQUE(user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_autopilot_settings_user ON autopilot_settings(user_id);
+
+ALTER TABLE autopilot_settings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage own settings" ON autopilot_settings FOR ALL USING (user_id = auth.uid());
+CREATE POLICY "Service role can manage all settings" ON autopilot_settings FOR ALL USING (auth.role() = 'service_role');
+
+-- ============================================================
+-- MEETING_OUTCOMES (Learning data)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS meeting_outcomes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    
+    calendar_meeting_id UUID REFERENCES calendar_meetings(id) ON DELETE SET NULL,
+    preparation_id UUID REFERENCES meeting_preps(id) ON DELETE SET NULL,
+    followup_id UUID REFERENCES followups(id) ON DELETE SET NULL,
+    prospect_id UUID REFERENCES prospects(id) ON DELETE SET NULL,
+    
+    outcome_rating TEXT CHECK (outcome_rating IN ('positive', 'neutral', 'negative')),
+    outcome_source TEXT CHECK (outcome_source IN ('user_input', 'followup_sentiment', 'inferred')),
+    
+    prep_viewed BOOLEAN DEFAULT false,
+    prep_view_duration_seconds INTEGER,
+    prep_scroll_depth FLOAT,
+    
+    had_contact_analysis BOOLEAN,
+    had_kb_content BOOLEAN,
+    prep_length_words INTEGER,
+    
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_outcomes_user ON meeting_outcomes(user_id);
+CREATE INDEX IF NOT EXISTS idx_outcomes_prep ON meeting_outcomes(preparation_id);
+CREATE INDEX IF NOT EXISTS idx_outcomes_org ON meeting_outcomes(organization_id);
+CREATE INDEX IF NOT EXISTS idx_outcomes_prospect ON meeting_outcomes(prospect_id);
+CREATE INDEX IF NOT EXISTS idx_outcomes_calendar ON meeting_outcomes(calendar_meeting_id);
+
+ALTER TABLE meeting_outcomes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view own outcomes" ON meeting_outcomes FOR SELECT USING (user_id = auth.uid());
+CREATE POLICY "Users can insert own outcomes" ON meeting_outcomes FOR INSERT WITH CHECK (user_id = auth.uid());
+CREATE POLICY "Users can update own outcomes" ON meeting_outcomes FOR UPDATE USING (user_id = auth.uid());
+CREATE POLICY "Service role can manage all outcomes" ON meeting_outcomes FOR ALL USING (auth.role() = 'service_role');
+
+-- ============================================================
+-- USER_PREP_PREFERENCES (Learned preferences)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS user_prep_preferences (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE,
+    
+    preferred_length TEXT CHECK (preferred_length IN ('short', 'medium', 'long')),
+    valued_sections TEXT[] DEFAULT '{}',
+    deemphasized_sections TEXT[] DEFAULT '{}',
+    
+    avg_prep_view_duration_seconds INTEGER,
+    prep_completion_rate FLOAT,
+    positive_outcome_rate FLOAT,
+    
+    sample_size INTEGER DEFAULT 0,
+    
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_prep_preferences_user ON user_prep_preferences(user_id);
+
+ALTER TABLE user_prep_preferences ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage own preferences" ON user_prep_preferences FOR ALL USING (user_id = auth.uid());
+CREATE POLICY "Service role can manage all preferences" ON user_prep_preferences FOR ALL USING (auth.role() = 'service_role');
+
+-- ============================================================
+-- AUTOPILOT TRIGGERS
+-- ============================================================
+CREATE OR REPLACE FUNCTION update_autopilot_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS autopilot_proposals_updated_at ON autopilot_proposals;
+CREATE TRIGGER autopilot_proposals_updated_at
+    BEFORE UPDATE ON autopilot_proposals
+    FOR EACH ROW EXECUTE FUNCTION update_autopilot_updated_at();
+
+DROP TRIGGER IF EXISTS autopilot_settings_updated_at ON autopilot_settings;
+CREATE TRIGGER autopilot_settings_updated_at
+    BEFORE UPDATE ON autopilot_settings
+    FOR EACH ROW EXECUTE FUNCTION update_autopilot_updated_at();
+
+DROP TRIGGER IF EXISTS user_prep_preferences_updated_at ON user_prep_preferences;
+CREATE TRIGGER user_prep_preferences_updated_at
+    BEFORE UPDATE ON user_prep_preferences
+    FOR EACH ROW EXECUTE FUNCTION update_autopilot_updated_at();
+
+-- ============================================================
 -- END OF SCHEMA
 -- ============================================================
--- Version: 3.9
--- Last Updated: 10 December 2025
+-- Version: 4.0
+-- Last Updated: 15 December 2025
+-- 
+-- Changes in 4.0:
+-- - Added autopilot_proposals table (SPEC-045: DealMotion Autopilot)
+-- - Added autopilot_settings table (user configuration)
+-- - Added meeting_outcomes table (learning data)
+-- - Added user_prep_preferences table (learned preferences)
+-- - Added RLS policies for all autopilot tables
+-- - Added unique constraint for duplicate proposal prevention
 -- 
 -- Changes in 3.9:
 -- - Added scheduled_recordings table (AI Notetaker via Recall.ai)
@@ -2906,12 +3127,12 @@ CREATE TRIGGER update_scheduled_recordings_updated_at
 -- - Added RLS policies for mobile_recordings
 -- 
 -- Summary:
--- - Tables: 46 (36 + 4 admin + 4 calendar/recording + 1 mobile + 1 scheduled)
+-- - Tables: 50 (46 + 4 autopilot)
 -- - Views: 2
--- - Functions: 42 (34 + 8 admin)
--- - Triggers: 38 (31 + 1 admin + 4 calendar/recording + 1 mobile + 1 scheduled)
+-- - Functions: 43 (42 + 1 autopilot)
+-- - Triggers: 41 (38 + 3 autopilot)
 -- - Storage Buckets: 4 (with policies)
--- - Indexes: 202 (169 + 6 admin + 18 calendar/recording + 3 mobile + 6 scheduled)
+-- - Indexes: 215 (202 + 13 autopilot)
 -- 
 -- This file is for REFERENCE ONLY. Do not run on existing database!
 -- Use individual migration files for updates.

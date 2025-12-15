@@ -15,6 +15,13 @@ interface SidebarProps {
 // Navigation items with translation keys
 const navigationItems = [
   {
+    key: 'home',
+    href: '/dashboard/home',
+    icon: Icons.sparkles,
+    color: 'text-purple-500',
+    isAutopilot: true,  // Special flag for autopilot badge
+  },
+  {
     key: 'dashboard',
     href: '/dashboard',
     icon: Icons.home,
