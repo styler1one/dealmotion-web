@@ -195,7 +195,7 @@ export function Sidebar({ className }: SidebarProps) {
                 </div>
                 {!collapsed && (
                   <>
-                    <span className="truncate flex-1">{name}</span>
+                    <span className="truncate flex-1 text-left">{name}</span>
                     {showBadge && (
                       <span className="flex-shrink-0 bg-purple-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
                         {pendingCount > 99 ? '99+' : pendingCount}
