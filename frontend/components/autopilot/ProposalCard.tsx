@@ -27,8 +27,32 @@ import {
   SNOOZE_OPTIONS,
 } from '@/types/autopilot'
 import { useAutopilot } from './AutopilotProvider'
-import { formatDistanceToNow } from 'date-fns'
-import { nl } from 'date-fns/locale'
+
+// Simple relative time formatter (native JS, no external deps)
+function formatRelativeTime(date: Date): string {
+  const now = new Date()
+  const diffMs = date.getTime() - now.getTime()
+  const diffMinutes = Math.round(diffMs / (1000 * 60))
+  const diffHours = Math.round(diffMs / (1000 * 60 * 60))
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24))
+  
+  // Future dates
+  if (diffMs > 0) {
+    if (diffMinutes < 60) return `over ${diffMinutes} minuten`
+    if (diffHours < 24) return `over ${diffHours} uur`
+    return `over ${diffDays} dagen`
+  }
+  
+  // Past dates
+  const absDiffMinutes = Math.abs(diffMinutes)
+  const absDiffHours = Math.abs(diffHours)
+  const absDiffDays = Math.abs(diffDays)
+  
+  if (absDiffMinutes < 1) return 'zojuist'
+  if (absDiffMinutes < 60) return `${absDiffMinutes} minuten geleden`
+  if (absDiffHours < 24) return `${absDiffHours} uur geleden`
+  return `${absDiffDays} dagen geleden`
+}
 
 interface ProposalCardProps {
   proposal: AutopilotProposal
@@ -83,10 +107,10 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
     if (proposal.expires_at) {
       const expiresAt = new Date(proposal.expires_at)
       if (expiresAt > new Date()) {
-        return `Verloopt ${formatDistanceToNow(expiresAt, { addSuffix: true, locale: nl })}`
+        return `Verloopt ${formatRelativeTime(expiresAt)}`
       }
     }
-    return formatDistanceToNow(new Date(proposal.created_at), { addSuffix: true, locale: nl })
+    return formatRelativeTime(new Date(proposal.created_at))
   }
   
   const getPriorityIndicator = () => {

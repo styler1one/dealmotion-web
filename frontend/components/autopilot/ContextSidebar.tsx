@@ -14,8 +14,11 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, Clock, Building2, User, Settings } from 'lucide-react'
 import type { UpcomingMeeting, AutopilotStats } from '@/types/autopilot'
-import { formatDistanceToNow, format } from 'date-fns'
-import { nl } from 'date-fns/locale'
+
+// Format time as HH:mm
+function formatTime(date: Date): string {
+  return date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
+}
 
 interface ContextSidebarProps {
   stats: AutopilotStats | null
@@ -131,7 +134,7 @@ function MeetingItem({ meeting, onClick }: MeetingItemProps) {
           <div className="flex items-center gap-2 mt-1">
             <Clock className="w-3 h-3 text-gray-400" />
             <span className="text-xs text-gray-500">
-              {format(startTime, 'HH:mm', { locale: nl })}
+              {formatTime(startTime)}
             </span>
             {isUrgent && (
               <Badge variant="destructive" className="text-xs px-1.5 py-0">
