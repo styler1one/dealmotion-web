@@ -683,6 +683,290 @@ async def detect_contact_added_fn(ctx, step):
 
 
 # =============================================================================
+# PREP WITHOUT MEETING DETECTION (Remind to plan meeting after 3 days)
+# =============================================================================
+
+@inngest_client.create_function(
+    fn_id="autopilot-detect-prep-no-meeting",
+    trigger=TriggerCron(cron="0 10 * * *"),  # Daily at 10 AM
+    retries=1,
+)
+async def detect_prep_no_meeting_fn(ctx, step):
+    """
+    Detect preps without scheduled meetings after 3 days.
+    
+    Checks for:
+    - Preps created >3 days ago
+    - No meeting scheduled for the prospect
+    - No existing proposal for this prep
+    """
+    from app.services.autopilot_orchestrator import AutopilotOrchestrator
+    from app.models.autopilot import (
+        ProposalType, TriggerType, AutopilotProposalCreate,
+        SuggestedAction
+    )
+    
+    supabase = get_supabase_service()
+    
+    logger.info("Detecting preps without scheduled meetings")
+    
+    # Step 1: Find preps without meetings
+    async def find_preps_without_meetings():
+        three_days_ago = datetime.now() - timedelta(days=3)
+        
+        # Get preps older than 3 days
+        preps_result = supabase.table("meeting_preps") \
+            .select("id, prospect_id, organization_id, user_id, created_at, prospects(company_name)") \
+            .lt("created_at", three_days_ago.isoformat()) \
+            .execute()
+        
+        if not preps_result.data:
+            return []
+        
+        preps_without_meeting = []
+        
+        for prep in preps_result.data:
+            prospect_id = prep.get("prospect_id")
+            if not prospect_id:
+                continue
+            
+            # Check if meeting is scheduled
+            meeting_result = supabase.table("calendar_meetings") \
+                .select("id") \
+                .eq("prospect_id", prospect_id) \
+                .gte("start_time", datetime.now().isoformat()) \
+                .neq("status", "cancelled") \
+                .limit(1) \
+                .execute()
+            
+            if not meeting_result.data:
+                # No meeting scheduled - add to list
+                preps_without_meeting.append(prep)
+        
+        return preps_without_meeting
+    
+    preps = await step.run("find-preps-without-meetings", find_preps_without_meetings)
+    
+    if not preps:
+        logger.info("No preps without meetings found")
+        return {"checked": 0, "created": 0}
+    
+    logger.info(f"Found {len(preps)} preps without scheduled meetings")
+    
+    # Step 2: Create proposals
+    async def create_plan_meeting_proposals():
+        orchestrator = AutopilotOrchestrator()
+        created = 0
+        
+        for prep in preps:
+            try:
+                # Get company name
+                company = "Onbekend"
+                if prep.get("prospects") and prep["prospects"].get("company_name"):
+                    company = prep["prospects"]["company_name"]
+                
+                # Check if user has autopilot enabled
+                settings = await orchestrator.get_settings(prep["user_id"])
+                if not settings.enabled:
+                    continue
+                
+                proposal = AutopilotProposalCreate(
+                    organization_id=prep["organization_id"],
+                    user_id=prep["user_id"],
+                    proposal_type=ProposalType.COMPLETE_FLOW,
+                    trigger_type=TriggerType.FLOW_INCOMPLETE,
+                    trigger_entity_id=prep["id"],
+                    trigger_entity_type="meeting_prep",
+                    title=f"Plan meeting met {company}",
+                    description="Prep klaar, meeting niet gepland",
+                    luna_message=f"Je prep voor {company} is al een paar dagen klaar. Tijd om je meeting te plannen!",
+                    suggested_actions=[
+                        SuggestedAction(action="plan_meeting", params={
+                            "prospect_id": prep.get("prospect_id"),
+                            "prep_id": prep["id"],
+                        }),
+                    ],
+                    priority=65,
+                    expires_at=datetime.now() + timedelta(days=7),
+                    context_data={
+                        "prep_id": prep["id"],
+                        "prospect_id": prep.get("prospect_id"),
+                        "company_name": company,
+                        "flow_step": "plan_meeting",
+                        "action_route": f"/dashboard/preparation/{prep['id']}",
+                    },
+                )
+                
+                result = await orchestrator.create_proposal(proposal)
+                if result:
+                    created += 1
+                    
+            except Exception as e:
+                logger.error(f"Error creating plan meeting proposal for prep {prep['id']}: {e}")
+        
+        return created
+    
+    created_count = await step.run("create-plan-meeting-proposals", create_plan_meeting_proposals)
+    
+    logger.info(f"Created {created_count} plan meeting proposals")
+    
+    return {
+        "checked": len(preps),
+        "created": created_count
+    }
+
+
+# =============================================================================
+# INCOMPLETE FOLLOW-UP ACTIONS DETECTION (Remind to complete actions)
+# =============================================================================
+
+@inngest_client.create_function(
+    fn_id="autopilot-detect-incomplete-actions",
+    trigger=TriggerCron(cron="0 11 * * *"),  # Daily at 11 AM
+    retries=1,
+)
+async def detect_incomplete_actions_fn(ctx, step):
+    """
+    Detect follow-up actions not completed after 3 days.
+    
+    Checks for:
+    - Followup actions created >3 days ago
+    - Status is 'pending' or 'in_progress'
+    - No existing proposal for these actions
+    """
+    from app.services.autopilot_orchestrator import AutopilotOrchestrator
+    from app.models.autopilot import (
+        ProposalType, TriggerType, AutopilotProposalCreate,
+        SuggestedAction
+    )
+    
+    supabase = get_supabase_service()
+    
+    logger.info("Detecting incomplete follow-up actions")
+    
+    # Step 1: Find incomplete actions older than 3 days
+    async def find_incomplete_actions():
+        three_days_ago = datetime.now() - timedelta(days=3)
+        
+        # Get followup actions that are incomplete
+        # Group by followup_id to avoid multiple proposals for same followup
+        result = supabase.table("followup_actions") \
+            .select("followup_id, organization_id, user_id, created_at") \
+            .in_("status", ["pending", "in_progress"]) \
+            .lt("created_at", three_days_ago.isoformat()) \
+            .execute()
+        
+        if not result.data:
+            return []
+        
+        # Group by followup_id and get unique followups
+        followup_ids = set()
+        unique_followups = []
+        
+        for action in result.data:
+            followup_id = action.get("followup_id")
+            if followup_id and followup_id not in followup_ids:
+                followup_ids.add(followup_id)
+                unique_followups.append(action)
+        
+        return unique_followups
+    
+    incomplete_followups = await step.run("find-incomplete-actions", find_incomplete_actions)
+    
+    if not incomplete_followups:
+        logger.info("No incomplete follow-up actions found")
+        return {"checked": 0, "created": 0}
+    
+    logger.info(f"Found {len(incomplete_followups)} followups with incomplete actions")
+    
+    # Step 2: Get followup details and create proposals
+    async def create_complete_actions_proposals():
+        orchestrator = AutopilotOrchestrator()
+        created = 0
+        
+        for action in incomplete_followups:
+            try:
+                followup_id = action.get("followup_id")
+                
+                # Get followup details with prospect
+                followup_result = supabase.table("followup_analyses") \
+                    .select("id, prospect_id, prospects(company_name)") \
+                    .eq("id", followup_id) \
+                    .single() \
+                    .execute()
+                
+                if not followup_result.data:
+                    continue
+                
+                followup = followup_result.data
+                
+                # Get company name
+                company = "Onbekend"
+                if followup.get("prospects") and followup["prospects"].get("company_name"):
+                    company = followup["prospects"]["company_name"]
+                
+                # Count pending actions
+                actions_result = supabase.table("followup_actions") \
+                    .select("id", count="exact") \
+                    .eq("followup_id", followup_id) \
+                    .in_("status", ["pending", "in_progress"]) \
+                    .execute()
+                
+                pending_count = actions_result.count or 0
+                
+                # Check if user has autopilot enabled
+                settings = await orchestrator.get_settings(action["user_id"])
+                if not settings.enabled:
+                    continue
+                
+                proposal = AutopilotProposalCreate(
+                    organization_id=action["organization_id"],
+                    user_id=action["user_id"],
+                    proposal_type=ProposalType.COMPLETE_FLOW,
+                    trigger_type=TriggerType.FLOW_INCOMPLETE,
+                    trigger_entity_id=followup_id,
+                    trigger_entity_type="followup_analysis",
+                    title=f"Rond acties af voor {company}",
+                    description=f"{pending_count} acties nog open",
+                    luna_message=f"Je hebt nog {pending_count} openstaande acties voor {company}. Tijd om ze af te ronden!",
+                    suggested_actions=[
+                        SuggestedAction(action="complete_actions", params={
+                            "followup_id": followup_id,
+                            "prospect_id": followup.get("prospect_id"),
+                        }),
+                    ],
+                    priority=60,
+                    expires_at=datetime.now() + timedelta(days=7),
+                    context_data={
+                        "followup_id": followup_id,
+                        "prospect_id": followup.get("prospect_id"),
+                        "company_name": company,
+                        "pending_count": pending_count,
+                        "flow_step": "complete_actions",
+                        "action_route": f"/dashboard/followup/{followup_id}",
+                    },
+                )
+                
+                result = await orchestrator.create_proposal(proposal)
+                if result:
+                    created += 1
+                    
+            except Exception as e:
+                logger.error(f"Error creating complete actions proposal for followup {action.get('followup_id')}: {e}")
+        
+        return created
+    
+    created_count = await step.run("create-complete-actions-proposals", create_complete_actions_proposals)
+    
+    logger.info(f"Created {created_count} complete actions proposals")
+    
+    return {
+        "checked": len(incomplete_followups),
+        "created": created_count
+    }
+
+
+# =============================================================================
 # EXPIRY & UNSNOOZE
 # =============================================================================
 
