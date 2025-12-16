@@ -21,6 +21,15 @@ interface PrepStartResult {
   prospect_id?: string
 }
 
+interface MeetingHistoryItem {
+  id: string
+  meeting_date: string
+  meeting_subject: string
+  summary_preview: string
+  prospect_company_name: string
+  created_at: string
+}
+
 interface PreparationFormProps {
   // Pre-filled values (from Hub context)
   initialCompanyName?: string
@@ -68,6 +77,11 @@ export function PreparationForm({
   const [availableDeals, setAvailableDeals] = useState<Deal[]>(initialDeals)
   const [selectedDealId, setSelectedDealId] = useState<string>('')
   const [dealsLoading, setDealsLoading] = useState(false)
+  
+  // Meeting history state (previous conversations)
+  const [availableMeetingHistory, setAvailableMeetingHistory] = useState<MeetingHistoryItem[]>([])
+  const [selectedFollowupIds, setSelectedFollowupIds] = useState<string[]>([])
+  const [meetingHistoryLoading, setMeetingHistoryLoading] = useState(false)
   
   // Calendar meeting linking state
   const [calendarMeetingId, setCalendarMeetingId] = useState<string | null>(initialCalendarMeetingId)
@@ -151,16 +165,56 @@ export function PreparationForm({
     }
   }
 
-  // Only fetch contacts/deals if NOT in Hub context
+  // Load meeting history for a prospect (previous conversations)
+  const loadMeetingHistory = async (prospectName: string) => {
+    if (!prospectName || prospectName.length < 2) {
+      setAvailableMeetingHistory([])
+      setSelectedFollowupIds([])
+      return
+    }
+
+    setMeetingHistoryLoading(true)
+    
+    try {
+      const { data, error } = await api.get<{ followups: MeetingHistoryItem[]; total: number }>(
+        `/api/v1/prep/meeting-history/${encodeURIComponent(prospectName)}`
+      )
+
+      if (!error && data) {
+        setAvailableMeetingHistory(data.followups || [])
+        // Auto-select all by default (user can uncheck if needed)
+        if (data.followups && data.followups.length > 0) {
+          setSelectedFollowupIds(data.followups.map(f => f.id))
+        }
+      } else {
+        setAvailableMeetingHistory([])
+      }
+    } catch (error) {
+      logger.error('Failed to load meeting history:', error)
+      setAvailableMeetingHistory([])
+    } finally {
+      setMeetingHistoryLoading(false)
+    }
+  }
+
+  // Only fetch contacts/deals/history if NOT in Hub context
   useEffect(() => {
     if (isHubContext) return  // Data already provided from Hub
     
     const timeoutId = setTimeout(() => {
       loadContactsAndDealsForProspect(companyName)
+      loadMeetingHistory(companyName)
     }, 500)
 
     return () => clearTimeout(timeoutId)
   }, [companyName, isHubContext])
+  
+  // In Hub context, still load meeting history
+  useEffect(() => {
+    if (isHubContext && companyName) {
+      loadMeetingHistory(companyName)
+    }
+  }, [isHubContext, companyName])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -180,7 +234,8 @@ export function PreparationForm({
         contact_ids: selectedContactIds.length > 0 ? selectedContactIds : null,
         deal_id: selectedDealId || null,
         calendar_meeting_id: calendarMeetingId || null,
-        language: outputLanguage
+        language: outputLanguage,
+        selected_followup_ids: selectedFollowupIds.length > 0 ? selectedFollowupIds : null
       })
 
       if (!error && data) {
@@ -195,6 +250,8 @@ export function PreparationForm({
           setAvailableContacts([])
           setSelectedDealId('')
           setAvailableDeals([])
+          setSelectedFollowupIds([])
+          setAvailableMeetingHistory([])
           setCalendarMeetingId(null)
           setShowAdvanced(false)
         }
@@ -312,7 +369,74 @@ export function PreparationForm({
         </div>
       )}
 
-      {(contactsLoading || dealsLoading) && (
+      {/* Meeting History (Previous Conversations) */}
+      {availableMeetingHistory.length > 0 && (
+        <div>
+          <Label className="text-xs text-slate-700 dark:text-slate-300 flex items-center gap-1">
+            📜 {t('form.previousMeetings') || 'Previous Meetings'}
+            <span className="text-slate-400 font-normal">({availableMeetingHistory.length})</span>
+          </Label>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+            {t('form.previousMeetingsDesc') || 'Include context from previous conversations'}
+          </p>
+          <div className="mt-1 space-y-1 max-h-40 overflow-y-auto p-2 border border-slate-200 dark:border-slate-700 rounded-md bg-slate-50 dark:bg-slate-800">
+            {availableMeetingHistory.map((meeting) => {
+              const isSelected = selectedFollowupIds.includes(meeting.id)
+              const meetingDate = meeting.meeting_date 
+                ? new Date(meeting.meeting_date).toLocaleDateString('nl-NL', { 
+                    day: 'numeric', 
+                    month: 'short', 
+                    year: 'numeric' 
+                  })
+                : 'Unknown date'
+              
+              return (
+                <label
+                  key={meeting.id}
+                  className={`flex items-start gap-2 p-2 rounded cursor-pointer text-xs ${
+                    isSelected 
+                      ? 'bg-purple-100 dark:bg-purple-900/50 border border-purple-200 dark:border-purple-800' 
+                      : 'hover:bg-slate-100 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedFollowupIds(prev => [...prev, meeting.id])
+                      } else {
+                        setSelectedFollowupIds(prev => prev.filter(id => id !== meeting.id))
+                      }
+                    }}
+                    className="rounded border-gray-300 dark:border-gray-600 mt-0.5"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-slate-900 dark:text-white truncate">
+                        {meeting.meeting_subject || 'Meeting'}
+                      </span>
+                      <span className="text-slate-400 flex-shrink-0">{meetingDate}</span>
+                    </div>
+                    {meeting.summary_preview && (
+                      <p className="text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">
+                        {meeting.summary_preview}
+                      </p>
+                    )}
+                  </div>
+                </label>
+              )
+            })}
+          </div>
+          {selectedFollowupIds.length > 0 && (
+            <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+              ✓ {selectedFollowupIds.length} {selectedFollowupIds.length === 1 ? 'meeting' : 'meetings'} will be included as context
+            </p>
+          )}
+        </div>
+      )}
+
+      {(contactsLoading || dealsLoading || meetingHistoryLoading) && (
         <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
           <Icons.spinner className="h-3 w-3 animate-spin" />
           {t('loading')}

@@ -449,7 +449,9 @@
       "customNotesPlaceholder": "Optional: extra info for this meeting...",
       "startPrep": "Generate Preparation",
       "generating": "Generating...",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "previousMeetings": "Previous Conversations",
+      "previousMeetingsDesc": "Include context from earlier meetings with this prospect"
     },
     "loading": "Loading...",
     "history": {

@@ -447,7 +447,10 @@
       "customNotes": "Extra Context",
       "customNotesPlaceholder": "Optioneel: extra info voor deze meeting...",
       "startPrep": "Genereer Voorbereiding",
-      "generating": "Genereren..."
+      "generating": "Genereren...",
+      "cancel": "Annuleren",
+      "previousMeetings": "Vorige Gesprekken",
+      "previousMeetingsDesc": "Neem context mee uit eerdere gesprekken met deze prospect"
     },
     "history": {
       "title": "Mijn Voorbereidingen",
