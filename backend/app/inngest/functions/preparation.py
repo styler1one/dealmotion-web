@@ -62,17 +62,20 @@ async def preparation_meeting_fn(ctx, step):
     custom_notes = event_data.get("custom_notes")
     contact_ids = event_data.get("contact_ids", [])
     language = event_data.get("language", "en")
+    prospect_id = event_data.get("prospect_id")
+    selected_followup_ids = event_data.get("selected_followup_ids", [])
     
     logger.info(f"Starting Inngest preparation for {prospect_company} (id={prep_id})")
     
     # Step 1: Update status to generating
     await step.run("update-status-generating", update_prep_status, prep_id, "generating")
     
-    # Step 2: Build context using RAG service
+    # Step 2: Build context using RAG service (includes meeting history)
     context = await step.run(
         "build-rag-context",
         build_rag_context,
-        prospect_company, meeting_type, organization_id, user_id, custom_notes
+        prospect_company, meeting_type, organization_id, user_id, custom_notes,
+        prospect_id, selected_followup_ids
     )
     
     # Step 3: Fetch contact persons if specified
@@ -140,18 +143,22 @@ async def build_rag_context(
     meeting_type: str,
     organization_id: str,
     user_id: str,
-    custom_notes: Optional[str]
+    custom_notes: Optional[str],
+    prospect_id: Optional[str] = None,
+    selected_followup_ids: Optional[List[str]] = None
 ) -> dict:
-    """Build context using RAG service (includes profile context)."""
+    """Build context using RAG service (includes profile context and meeting history)."""
     try:
         context = await rag_service.build_context_for_ai(
             prospect_company=prospect_company,
             meeting_type=meeting_type,
             organization_id=organization_id,
             user_id=user_id,
-            custom_notes=custom_notes
+            custom_notes=custom_notes,
+            prospect_id=prospect_id,
+            selected_followup_ids=selected_followup_ids
         )
-        logger.info(f"Built RAG context for {prospect_company}")
+        logger.info(f"Built RAG context for {prospect_company} (meeting_history: {context.get('has_meeting_history', False)})")
         return context
     except Exception as e:
         logger.error(f"Failed to build RAG context: {e}")

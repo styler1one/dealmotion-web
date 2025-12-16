@@ -235,13 +235,117 @@ class RAGService:
         
         return formatted
     
+    async def query_meeting_history(
+        self,
+        organization_id: str,
+        prospect_id: Optional[str] = None,
+        prospect_company_name: Optional[str] = None,
+        selected_followup_ids: Optional[List[str]] = None,
+        limit: int = 3
+    ) -> List[Dict[str, Any]]:
+        """
+        Query previous meeting followups for a prospect
+        
+        Args:
+            organization_id: Organization ID
+            prospect_id: Prospect ID (preferred lookup)
+            prospect_company_name: Fallback company name lookup
+            selected_followup_ids: Specific followup IDs to include (user selection)
+            limit: Maximum number of followups to return
+            
+        Returns:
+            List of previous followup data with summaries and key outcomes
+        """
+        try:
+            followups = []
+            
+            # If specific followups are selected, fetch those
+            if selected_followup_ids and len(selected_followup_ids) > 0:
+                result = self.supabase.table("followups").select(
+                    "id, meeting_date, meeting_subject, executive_summary, "
+                    "prospect_company_name, status, created_at"
+                ).eq("organization_id", organization_id).in_("id", selected_followup_ids).order("meeting_date", desc=True).execute()
+                
+                if result.data:
+                    followups = result.data
+                    logger.info(f"Found {len(followups)} selected followups for meeting history")
+            
+            # Otherwise, auto-fetch recent followups for this prospect
+            else:
+                query = self.supabase.table("followups").select(
+                    "id, meeting_date, meeting_subject, executive_summary, "
+                    "prospect_company_name, status, created_at"
+                ).eq("organization_id", organization_id).eq("status", "completed")
+                
+                # Try prospect_id first, then company name
+                if prospect_id:
+                    query = query.eq("prospect_id", prospect_id)
+                elif prospect_company_name:
+                    query = query.ilike("prospect_company_name", prospect_company_name)
+                else:
+                    return []
+                
+                result = query.order("meeting_date", desc=True).limit(limit).execute()
+                
+                if result.data:
+                    followups = result.data
+                    logger.info(f"Found {len(followups)} recent followups for meeting history")
+            
+            return followups
+            
+        except Exception as e:
+            logger.error(f"Error querying meeting history: {e}")
+            return []
+    
+    def _format_meeting_history(self, followups: List[Dict[str, Any]]) -> str:
+        """Format previous meeting followups into readable context"""
+        if not followups:
+            return ""
+        
+        formatted = "## Previous Meeting History\n\n"
+        formatted += "**IMPORTANT**: Use this context to:\n"
+        formatted += "- Reference specific points from previous conversations\n"
+        formatted += "- Follow up on open action items and commitments\n"
+        formatted += "- Build on established rapport and understanding\n"
+        formatted += "- Avoid repeating questions already answered\n\n"
+        
+        for i, followup in enumerate(followups, 1):
+            meeting_date = followup.get("meeting_date", "Unknown date")
+            if meeting_date and meeting_date != "Unknown date":
+                # Format date nicely
+                try:
+                    from datetime import datetime
+                    if isinstance(meeting_date, str):
+                        dt = datetime.fromisoformat(meeting_date.replace("Z", "+00:00"))
+                        meeting_date = dt.strftime("%d %B %Y")
+                except:
+                    pass
+            
+            formatted += f"### Meeting {i}: {meeting_date}\n"
+            formatted += f"**Subject**: {followup.get('meeting_subject', 'Not specified')}\n\n"
+            
+            summary = followup.get("executive_summary", "")
+            if summary:
+                # Limit summary length but keep substantial
+                if len(summary) > 2000:
+                    summary = summary[:2000] + "\n\n[Summary continues...]"
+                formatted += f"**Summary**:\n{summary}\n\n"
+            else:
+                formatted += "*No summary available for this meeting.*\n\n"
+            
+            formatted += "---\n\n"
+        
+        return formatted
+    
     async def build_context_for_ai(
         self,
         prospect_company: str,
         meeting_type: str,
         organization_id: str,
         user_id: Optional[str] = None,
-        custom_notes: Optional[str] = None
+        custom_notes: Optional[str] = None,
+        prospect_id: Optional[str] = None,
+        selected_followup_ids: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """
         Main method to build complete context for AI generation
@@ -252,6 +356,8 @@ class RAGService:
             organization_id: Organization ID
             user_id: Optional user ID for profile context
             custom_notes: Optional custom notes
+            prospect_id: Optional prospect ID for better matching
+            selected_followup_ids: Optional list of followup IDs to include from meeting history
             
         Returns:
             Complete context for AI prompt
@@ -265,6 +371,14 @@ class RAGService:
         kb_chunks = await self.query_knowledge_base(query, organization_id)
         research_data = await self.query_research_brief(prospect_company, organization_id)
         
+        # Query meeting history (previous conversations)
+        meeting_history = await self.query_meeting_history(
+            organization_id=organization_id,
+            prospect_id=prospect_id,
+            prospect_company_name=prospect_company,
+            selected_followup_ids=selected_followup_ids
+        )
+        
         # Combine results
         context = await self.combine_results(
             kb_chunks,
@@ -273,6 +387,17 @@ class RAGService:
             meeting_type,
             custom_notes
         )
+        
+        # Add meeting history context
+        if meeting_history:
+            context["meeting_history"] = meeting_history
+            context["has_meeting_history"] = True
+            context["formatted_meeting_history"] = self._format_meeting_history(meeting_history)
+            logger.info(f"Added {len(meeting_history)} previous meetings to context")
+        else:
+            context["meeting_history"] = []
+            context["has_meeting_history"] = False
+            context["formatted_meeting_history"] = ""
         
         # Add profile context if user_id provided
         if user_id:

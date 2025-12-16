@@ -144,6 +144,19 @@ IMPORTANT:
         if context.get("has_contacts") and context.get("contacts"):
             prompt += self._format_contacts_context(context["contacts"])
         
+        # Add meeting history context (previous conversations with this prospect)
+        if context.get("has_meeting_history") and context.get("formatted_meeting_history"):
+            prompt += context["formatted_meeting_history"]
+            prompt += """
+**USE THIS MEETING HISTORY TO**:
+1. **Reference previous conversations**: "Last time we discussed X, and I wanted to follow up on..."
+2. **Build continuity**: Show you remember what was said and what matters to them
+3. **Track commitments**: Note any open action items or promises made
+4. **Deepen the relationship**: Use insights from past meetings to personalize this one
+5. **Avoid redundancy**: Don't ask questions that were already answered
+
+"""
+        
         # Add meeting type-specific instructions
         prompt += self._get_meeting_type_instructions(meeting_type, language)
         

@@ -38,6 +38,7 @@ class PrepStartRequest(BaseModel):
     deal_id: Optional[str] = None  # Optional deal to link this prep to
     calendar_meeting_id: Optional[str] = None  # Link to calendar meeting (SPEC-038)
     language: Optional[str] = "en"  # i18n: output language (default: English)
+    selected_followup_ids: Optional[List[str]] = None  # Previous meetings to include as context
 
 
 class PrepResponse(BaseModel):
@@ -72,7 +73,9 @@ def generate_prep_background(
     user_id: str,
     custom_notes: Optional[str],
     contact_ids: Optional[List[str]] = None,
-    language: str = "en"  # i18n: output language (default: English)
+    language: str = "en",  # i18n: output language (default: English)
+    prospect_id: Optional[str] = None,
+    selected_followup_ids: Optional[List[str]] = None  # Previous meetings to include
 ):
     """Background task to generate meeting prep (synchronous for BackgroundTasks)"""
     import asyncio
@@ -87,13 +90,15 @@ def generate_prep_background(
             
             logger.info(f"Starting prep generation for {prep_id}")
             
-            # Build context using RAG (now includes profile context)
+            # Build context using RAG (now includes profile context and meeting history)
             context = await rag_service.build_context_for_ai(
                 prospect_company=prospect_company,
                 meeting_type=meeting_type,
                 organization_id=organization_id,
                 user_id=user_id,
-                custom_notes=custom_notes
+                custom_notes=custom_notes,
+                prospect_id=prospect_id,
+                selected_followup_ids=selected_followup_ids
             )
             
             # Fetch contact persons if specified
@@ -213,7 +218,7 @@ async def start_prep(
         research_response = research_response.limit(1).execute()
         research_brief_id = research_response.data[0]["id"] if research_response.data else None
         
-        # Create prep record with prospect_id, deal_id and contact_ids
+        # Create prep record with prospect_id, deal_id, contact_ids and selected_followup_ids
         prep_data = {
             "organization_id": organization_id,
             "user_id": user_id,
@@ -224,7 +229,8 @@ async def start_prep(
             "custom_notes": body.custom_notes,
             "status": "pending",
             "research_brief_id": research_brief_id,
-            "contact_ids": body.contact_ids or []  # Store linked contacts
+            "contact_ids": body.contact_ids or [],  # Store linked contacts
+            "selected_followup_ids": body.selected_followup_ids or []  # Store selected meeting history
         }
         
         response = supabase.table("meeting_preps").insert(prep_data).execute()
@@ -260,7 +266,9 @@ async def start_prep(
                     "user_id": user_id,
                     "custom_notes": body.custom_notes,
                     "contact_ids": body.contact_ids or [],
-                    "language": body.language or "en"
+                    "language": body.language or "en",
+                    "prospect_id": prospect_id,
+                    "selected_followup_ids": body.selected_followup_ids or []
                 },
                 user={"id": user_id}
             )
@@ -279,7 +287,9 @@ async def start_prep(
                     user_id,
                     body.custom_notes,
                     body.contact_ids,
-                    body.language or "en"
+                    body.language or "en",
+                    prospect_id,
+                    body.selected_followup_ids
                 )
         else:
             # Use BackgroundTasks (legacy/fallback)
@@ -292,7 +302,9 @@ async def start_prep(
                 user_id,
                 body.custom_notes,
                 body.contact_ids,
-                body.language or "en"
+                body.language or "en",
+                prospect_id,
+                body.selected_followup_ids
             )
             logger.info(f"Prep {prep_id} triggered via BackgroundTasks")
         
@@ -488,6 +500,84 @@ async def update_prep(
         raise
     except Exception as e:
         raise handle_exception(e, "update_prep", user_id=user_id, resource_id=prep_id)
+
+
+@router.get("/meeting-history/{prospect_company_name}", response_model=dict)
+async def get_meeting_history(
+    prospect_company_name: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get previous meetings/followups for a prospect.
+    
+    Used by the frontend to show which past conversations 
+    can be included in a new preparation.
+    """
+    try:
+        user_id = current_user.get("sub") or current_user.get("id")
+        
+        # Get user's organization
+        org_response = supabase.table("organization_members").select(
+            "organization_id"
+        ).eq("user_id", user_id).limit(1).execute()
+        
+        if not org_response.data:
+            raise HTTPException(status_code=404, detail="User not in any organization")
+        
+        organization_id = org_response.data[0]["organization_id"]
+        
+        # Find followups for this prospect (by company name or prospect_id)
+        # First try to find prospect_id
+        prospect_response = supabase.table("prospects").select("id").eq(
+            "organization_id", organization_id
+        ).ilike("company_name", prospect_company_name).limit(1).execute()
+        
+        prospect_id = prospect_response.data[0]["id"] if prospect_response.data else None
+        
+        # Build query for followups
+        query = supabase.table("followups").select(
+            "id, meeting_date, meeting_subject, executive_summary, "
+            "prospect_company_name, status, created_at"
+        ).eq("organization_id", organization_id).eq("status", "completed")
+        
+        if prospect_id:
+            query = query.eq("prospect_id", prospect_id)
+        else:
+            # Fallback to fuzzy company name match
+            search_term = prospect_company_name.split()[0] if prospect_company_name else ""
+            if search_term:
+                query = query.ilike("prospect_company_name", f"%{search_term}%")
+        
+        followups_response = query.order("meeting_date", desc=True).limit(10).execute()
+        
+        followups = []
+        for f in followups_response.data:
+            # Create a summary preview (first 200 chars of executive_summary)
+            summary_preview = ""
+            if f.get("executive_summary"):
+                summary_preview = f["executive_summary"][:200]
+                if len(f["executive_summary"]) > 200:
+                    summary_preview += "..."
+            
+            followups.append({
+                "id": f["id"],
+                "meeting_date": f["meeting_date"],
+                "meeting_subject": f["meeting_subject"],
+                "summary_preview": summary_preview,
+                "prospect_company_name": f["prospect_company_name"],
+                "created_at": f["created_at"]
+            })
+        
+        return {
+            "followups": followups,
+            "total": len(followups),
+            "prospect_id": prospect_id
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise handle_exception(e, "get_meeting_history", user_id=user_id)
 
 
 @router.delete("/{prep_id}", status_code=204)
