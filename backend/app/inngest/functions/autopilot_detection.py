@@ -530,6 +530,159 @@ async def detect_incomplete_flow_fn(ctx, step):
 
 
 # =============================================================================
+# CONTACT ADDED DETECTION (Suggest prep after contact is added)
+# =============================================================================
+
+@inngest_client.create_function(
+    fn_id="autopilot-detect-contact-added",
+    trigger=TriggerEvent(event="dealmotion/contact.added"),
+    retries=1,
+)
+async def detect_contact_added_fn(ctx, step):
+    """
+    Detect when a contact is added and suggest creating a prep.
+    
+    Triggered when:
+    - User adds a contact to a prospect
+    
+    Creates proposal when:
+    - Research exists for the prospect
+    - No prep exists yet
+    - No meeting scheduled
+    """
+    from app.services.autopilot_orchestrator import AutopilotOrchestrator
+    from app.models.autopilot import (
+        ProposalType, TriggerType, AutopilotProposalCreate,
+        SuggestedAction, LUNA_TEMPLATES
+    )
+    
+    event_data = ctx.event.data
+    contact_id = event_data.get("contact_id")
+    contact_name = event_data.get("contact_name")
+    research_id = event_data.get("research_id")
+    user_id = event_data.get("user_id")
+    organization_id = event_data.get("organization_id")
+    
+    if not contact_id or not user_id or not research_id:
+        logger.warning("Missing data in contact added event")
+        return {"created": False, "reason": "missing_data"}
+    
+    logger.info(f"Checking prep proposal after contact {contact_name} added")
+    
+    supabase = get_supabase_service()
+    
+    # Step 1: Check if user has autopilot enabled
+    async def check_settings():
+        orchestrator = AutopilotOrchestrator()
+        settings = await orchestrator.get_settings(user_id)
+        return settings.enabled
+    
+    enabled = await step.run("check-settings", check_settings)
+    
+    if not enabled:
+        return {"created": False, "reason": "autopilot_disabled"}
+    
+    # Step 2: Get prospect and company info from research
+    async def get_context():
+        research = supabase.table("research_briefs") \
+            .select("prospect_id, company_name") \
+            .eq("id", research_id) \
+            .single() \
+            .execute()
+        
+        if not research.data:
+            return None
+        
+        prospect_id = research.data.get("prospect_id")
+        company_name = research.data.get("company_name", "Onbekend")
+        
+        # Check if prep exists
+        prep_result = supabase.table("meeting_preps") \
+            .select("id") \
+            .eq("prospect_id", prospect_id) \
+            .limit(1) \
+            .execute()
+        
+        has_prep = len(prep_result.data or []) > 0
+        
+        # Check for scheduled meeting
+        meeting_result = supabase.table("calendar_meetings") \
+            .select("id") \
+            .eq("prospect_id", prospect_id) \
+            .gte("start_time", datetime.now().isoformat()) \
+            .eq("status", "confirmed") \
+            .limit(1) \
+            .execute()
+        
+        has_meeting = len(meeting_result.data or []) > 0
+        
+        return {
+            "prospect_id": prospect_id,
+            "company_name": company_name,
+            "has_prep": has_prep,
+            "has_meeting": has_meeting
+        }
+    
+    context = await step.run("get-context", get_context)
+    
+    if not context:
+        return {"created": False, "reason": "research_not_found"}
+    
+    if context["has_prep"]:
+        return {"created": False, "reason": "prep_exists"}
+    
+    if context["has_meeting"]:
+        # Meeting scheduled - calendar detection will handle prep
+        return {"created": False, "reason": "meeting_scheduled"}
+    
+    # Step 3: Create "create prep" proposal
+    async def create_prep_proposal():
+        orchestrator = AutopilotOrchestrator()
+        
+        luna_message = f"Je hebt {contact_name} toegevoegd aan {context['company_name']}. Wil je een prep maken voor het eerste gesprek?"
+        
+        proposal = AutopilotProposalCreate(
+            organization_id=organization_id,
+            user_id=user_id,
+            proposal_type=ProposalType.PREP_ONLY,
+            trigger_type=TriggerType.FLOW_INCOMPLETE,
+            trigger_entity_id=contact_id,
+            trigger_entity_type="contact",
+            title=f"Maak prep voor {context['company_name']}",
+            description=f"Contact {contact_name} toegevoegd",
+            luna_message=luna_message,
+            suggested_actions=[
+                SuggestedAction(action="prep", params={
+                    "prospect_id": context["prospect_id"],
+                    "research_id": research_id,
+                    "meeting_type": "discovery",
+                }),
+            ],
+            priority=75,
+            expires_at=datetime.now() + timedelta(days=7),
+            context_data={
+                "research_id": research_id,
+                "prospect_id": context["prospect_id"],
+                "company_name": context["company_name"],
+                "contact_name": contact_name,
+                "contact_id": contact_id,
+                "flow_step": "create_prep",
+            },
+        )
+        
+        result = await orchestrator.create_proposal(proposal)
+        return result.id if result else None
+    
+    proposal_id = await step.run("create-prep-proposal", create_prep_proposal)
+    
+    if proposal_id:
+        logger.info(f"Created prep proposal {proposal_id} after contact {contact_name} added")
+        return {"created": True, "proposal_id": proposal_id}
+    else:
+        return {"created": False, "reason": "duplicate_or_error"}
+
+
+# =============================================================================
 # EXPIRY & UNSNOOZE
 # =============================================================================
 

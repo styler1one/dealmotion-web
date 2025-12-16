@@ -20,6 +20,7 @@ from .autopilot_detection import (
     detect_meeting_ended_fn,
     detect_silent_prospects_fn,
     detect_incomplete_flow_fn,
+    detect_contact_added_fn,
     expire_proposals_fn,
 )
 from .autopilot_execution import execute_proposal_fn
@@ -45,6 +46,7 @@ all_functions = [
     detect_meeting_ended_fn,
     detect_silent_prospects_fn,
     detect_incomplete_flow_fn,
+    detect_contact_added_fn,
     expire_proposals_fn,
     execute_proposal_fn,
 ]
@@ -70,6 +72,7 @@ __all__ = [
     "detect_meeting_ended_fn",
     "detect_silent_prospects_fn",
     "detect_incomplete_flow_fn",
+    "detect_contact_added_fn",
     "expire_proposals_fn",
     "execute_proposal_fn",
 ]
