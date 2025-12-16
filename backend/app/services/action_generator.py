@@ -45,11 +45,12 @@ class ActionGeneratorService:
         
         # Determine max_tokens based on action type
         # Commercial Analysis and Sales Coaching need more tokens due to comprehensive output
+        # Customer Report increased to handle longer, more detailed reports for 60+ min meetings
         max_tokens_map = {
             ActionType.COMMERCIAL_ANALYSIS: 6000,
             ActionType.SALES_COACHING: 5000,
             ActionType.ACTION_ITEMS: 5000,
-            ActionType.CUSTOMER_REPORT: 4500,
+            ActionType.CUSTOMER_REPORT: 6000,  # Increased for comprehensive extraction
             ActionType.INTERNAL_REPORT: 3500,
             ActionType.SHARE_EMAIL: 2000,  # Increased for 3 subject lines + personalization notes
         }
@@ -74,41 +75,96 @@ class ActionGeneratorService:
             if followup_result.data:
                 context["followup"] = followup_result.data[0]
             
-            # Get organization_id from followup
+            # Get organization_id and prospect_id from followup
             org_id = context.get("followup", {}).get("organization_id")
+            prospect_id = context.get("followup", {}).get("prospect_id")
+            company_name = context.get("followup", {}).get("prospect_company_name")
+            
+            logger.info(f"Gathering context for followup {followup_id}: org={org_id}, prospect={prospect_id}, company={company_name}")
             
             # Get sales profile
             sales_result = supabase.table("sales_profiles").select("*").eq("user_id", user_id).execute()
             if sales_result.data:
                 context["sales_profile"] = sales_result.data[0]
+                logger.debug("Found sales_profile")
             
             # Get company profile
             if org_id:
                 company_result = supabase.table("company_profiles").select("*").eq("organization_id", org_id).execute()
                 if company_result.data:
                     context["company_profile"] = company_result.data[0]
+                    logger.debug("Found company_profile")
             
-            # Get prospect/company name from followup
-            company_name = context.get("followup", {}).get("prospect_company_name")
-            
-            # Try to find research brief for this company
-            if company_name and org_id:
-                research_result = supabase.table("research_briefs").select("*").eq("organization_id", org_id).ilike("company_name", company_name).eq("status", "completed").order("created_at", desc=True).limit(1).execute()
-                if research_result.data:
+            # Try to find research brief - first by prospect_id (most reliable), then by company name
+            if org_id:
+                research_result = None
+                
+                # Method 1: Direct prospect_id match (most reliable)
+                if prospect_id:
+                    research_result = supabase.table("research_briefs").select("*").eq("organization_id", org_id).eq("prospect_id", prospect_id).eq("status", "completed").order("created_at", desc=True).limit(1).execute()
+                    if research_result.data:
+                        logger.info(f"Found research_brief via prospect_id: {prospect_id}")
+                
+                # Method 2: Exact company name match
+                if not research_result or not research_result.data:
+                    if company_name:
+                        research_result = supabase.table("research_briefs").select("*").eq("organization_id", org_id).ilike("company_name", company_name).eq("status", "completed").order("created_at", desc=True).limit(1).execute()
+                        if research_result.data:
+                            logger.info(f"Found research_brief via exact company name: {company_name}")
+                
+                # Method 3: Fuzzy company name match (contains)
+                if not research_result or not research_result.data:
+                    if company_name:
+                        # Try partial match - search for company name containing the search term
+                        search_term = company_name.split()[0] if company_name else ""  # Use first word
+                        if search_term and len(search_term) >= 3:
+                            research_result = supabase.table("research_briefs").select("*").eq("organization_id", org_id).ilike("company_name", f"%{search_term}%").eq("status", "completed").order("created_at", desc=True).limit(1).execute()
+                            if research_result.data:
+                                logger.info(f"Found research_brief via fuzzy match on: {search_term}")
+                
+                if research_result and research_result.data:
                     context["research_brief"] = research_result.data[0]
                     
                     # Get contacts via prospect_id from research_brief
-                    prospect_id = research_result.data[0].get("prospect_id")
-                    if prospect_id:
-                        contacts_result = supabase.table("prospect_contacts").select("*").eq("prospect_id", prospect_id).execute()
+                    research_prospect_id = research_result.data[0].get("prospect_id")
+                    if research_prospect_id:
+                        contacts_result = supabase.table("prospect_contacts").select("*").eq("prospect_id", research_prospect_id).execute()
                         if contacts_result.data:
                             context["contacts"] = contacts_result.data
+                            logger.info(f"Found {len(contacts_result.data)} contacts")
+                else:
+                    logger.warning(f"No research_brief found for company: {company_name}")
             
-            # Try to find preparation brief for this company
-            if company_name and org_id:
-                prep_result = supabase.table("meeting_preps").select("*").eq("organization_id", org_id).ilike("prospect_company_name", company_name).eq("status", "completed").order("created_at", desc=True).limit(1).execute()
-                if prep_result.data:
+            # Try to find preparation brief - same multi-method approach
+            if org_id:
+                prep_result = None
+                
+                # Method 1: Direct prospect_id match
+                if prospect_id:
+                    prep_result = supabase.table("meeting_preps").select("*").eq("organization_id", org_id).eq("prospect_id", prospect_id).eq("status", "completed").order("created_at", desc=True).limit(1).execute()
+                    if prep_result.data:
+                        logger.info(f"Found preparation via prospect_id: {prospect_id}")
+                
+                # Method 2: Exact company name match
+                if not prep_result or not prep_result.data:
+                    if company_name:
+                        prep_result = supabase.table("meeting_preps").select("*").eq("organization_id", org_id).ilike("prospect_company_name", company_name).eq("status", "completed").order("created_at", desc=True).limit(1).execute()
+                        if prep_result.data:
+                            logger.info(f"Found preparation via exact company name: {company_name}")
+                
+                # Method 3: Fuzzy company name match
+                if not prep_result or not prep_result.data:
+                    if company_name:
+                        search_term = company_name.split()[0] if company_name else ""
+                        if search_term and len(search_term) >= 3:
+                            prep_result = supabase.table("meeting_preps").select("*").eq("organization_id", org_id).ilike("prospect_company_name", f"%{search_term}%").eq("status", "completed").order("created_at", desc=True).limit(1).execute()
+                            if prep_result.data:
+                                logger.info(f"Found preparation via fuzzy match on: {search_term}")
+                
+                if prep_result and prep_result.data:
                     context["preparation"] = prep_result.data[0]
+                else:
+                    logger.warning(f"No preparation found for company: {company_name}")
             
             # Get deal if linked
             deal_id = context.get("followup", {}).get("deal_id")
@@ -116,6 +172,11 @@ class ActionGeneratorService:
                 deal_result = supabase.table("deals").select("*").eq("id", deal_id).execute()
                 if deal_result.data:
                     context["deal"] = deal_result.data[0]
+                    logger.debug("Found deal")
+            
+            # Log final context summary
+            context_found = [k for k in ["sales_profile", "company_profile", "research_brief", "contacts", "preparation", "deal"] if k in context]
+            logger.info(f"Context gathered for followup {followup_id}: {context_found}")
             
         except Exception as e:
             logger.error(f"Error gathering context: {e}")
@@ -151,9 +212,15 @@ class ActionGeneratorService:
         """Format context into a readable string for the prompt"""
         parts = []
         
-        # Followup/Transcript
+        # Followup/Transcript - use generous limit (Claude can handle 200K tokens)
+        # 75K chars ≈ 18K tokens, well within Claude's capacity
+        TRANSCRIPT_LIMIT = 75000
+        
         followup = context.get("followup", {})
         if followup:
+            transcript = followup.get('transcription_text', 'No transcript available')
+            transcript_truncated = len(transcript) > TRANSCRIPT_LIMIT
+            
             parts.append(f"""
 ## Meeting Information
 - Company: {followup.get('prospect_company_name', 'Unknown')}
@@ -163,8 +230,8 @@ class ActionGeneratorService:
 ## Meeting Summary
 {followup.get('executive_summary', 'No summary available')}
 
-## Transcript
-{followup.get('transcription_text', 'No transcript available')[:8000]}
+## Full Transcript{' (truncated)' if transcript_truncated else ''}
+{transcript[:TRANSCRIPT_LIMIT]}
 """)
         
         # Sales Profile
@@ -202,49 +269,54 @@ class ActionGeneratorService:
 """)
         
         # Research Brief - include full BANT, leadership, entry strategy
+        # Increased limit to capture full research intelligence
+        RESEARCH_LIMIT = 15000
         research = context.get("research_brief", {})
         if research:
             brief = research.get('brief_content', '')
-            # Use more of research - critical for understanding prospect
             parts.append(f"""
 ## Prospect Research (Full)
-{brief[:5000] if brief else 'No research available'}
+{brief[:RESEARCH_LIMIT] if brief else 'No research available'}
 """)
         
-        # Contacts - include full profile analysis for each
+        # Contacts - include full profile analysis for each contact
+        # Increased limits to capture full stakeholder intelligence
+        CONTACT_LIMIT = 5  # More contacts for multi-stakeholder meetings
+        CONTACT_BRIEF_LIMIT = 2000  # Fuller profile per contact
         contacts = context.get("contacts", [])
         if contacts:
             contact_parts = []
-            for c in contacts[:3]:  # Top 3 contacts
+            for c in contacts[:CONTACT_LIMIT]:
                 contact_section = f"""### {c.get('name', 'Unknown')}
 - **Role**: {c.get('role', 'Unknown role')}
 - **Decision Authority**: {c.get('decision_authority', 'Unknown')}
 - **Communication Style**: {c.get('communication_style', 'Unknown')}
 - **Key Motivations**: {c.get('probable_drivers', 'Unknown')}"""
                 
-                # Add profile brief if available (truncated but substantial)
+                # Add profile brief if available
                 if c.get('profile_brief'):
                     brief = c['profile_brief']
-                    if len(brief) > 800:
-                        brief = brief[:800] + "..."
+                    if len(brief) > CONTACT_BRIEF_LIMIT:
+                        brief = brief[:CONTACT_BRIEF_LIMIT] + "..."
                     contact_section += f"\n\n**Profile Analysis**:\n{brief}"
                 
                 contact_parts.append(contact_section)
             
             parts.append(f"""
-## Key Contacts
+## Key Contacts ({len(contacts)} total, showing top {min(len(contacts), CONTACT_LIMIT)})
 
 {chr(10).join(contact_parts)}
 """)
         
         # Preparation - include full meeting prep for context
+        # Increased limit to capture full preparation strategy
+        PREP_LIMIT = 12000
         prep = context.get("preparation", {})
         if prep:
             brief = prep.get('brief_content', 'No preparation notes')
-            # Use more of prep - contains talking points, questions, strategy
             parts.append(f"""
 ## Meeting Preparation Notes
-{brief[:4000] if brief else 'No preparation notes'}
+{brief[:PREP_LIMIT] if brief else 'No preparation notes'}
 """)
         
         # Deal
@@ -292,6 +364,37 @@ class ActionGeneratorService:
 
 CRITICAL GUIDELINES:
 
+**EXTRACTION REQUIREMENTS — Read the ENTIRE transcript carefully:**
+You MUST extract and include ALL of the following from the transcript:
+
+1. **ALL PEOPLE mentioned** — names, roles, and their organizational position
+   - Extract every person mentioned by name, even if only referenced once
+   - Include their role/title and relationship to the customer organization
+   - These are critical for the customer to share internally
+
+2. **ALL TECHNOLOGIES & PLATFORMS mentioned** — current state and future plans
+   - Every software, platform, tool, or system discussed
+   - Their status: current, planned, being replaced, under evaluation
+   - Migration timelines if mentioned
+
+3. **ALL TIMELINES & DATES** — concrete and estimated
+   - Project milestones, deadlines, target dates
+   - Phases and their expected durations
+   - "Next year", "Q2", "by 2027" — all of these matter
+
+4. **ALL ORGANIZATIONS mentioned** — partners, competitors, vendors
+   - Companies mentioned as current partners, potential partners, or competitors
+   - Their role in the customer's ecosystem
+
+5. **ALL STRATEGIC THEMES** — not just surface topics
+   - Underlying challenges and ambitions
+   - Political dynamics hinted at
+   - Growth plans and transformation goals
+
+6. **ALL ACTION ITEMS & COMMITMENTS** — explicit and implicit
+   - What was promised by whom
+   - Follow-up meetings, introductions, deliverables
+
 **Tone & Perspective:**
 - Write entirely from the CUSTOMER's perspective — this is THEIR document
 - Use warm, strategic, and mature language befitting a senior consultant
@@ -313,6 +416,7 @@ CRITICAL GUIDELINES:
 - Deep discussion (45-60 min): 900-1400 words
 - Complex multi-stakeholder (60+ min): 1200-1800 words
 - NEVER sacrifice quality for brevity — thoroughness is valued
+- A 60+ minute conversation with rich content should result in a COMPREHENSIVE report
 
 {context_text}
 
@@ -330,8 +434,14 @@ DOCUMENT STRUCTURE:
 |---|---|
 | **Datum** | {meeting_date} |
 | **Onderwerp** | {meeting_subject} |
-| **Deelnemers** | {', '.join(attendee_roles) if attendee_roles else '[Names and roles from transcript]'} |
+| **Deelnemers** | {', '.join(attendee_roles) if attendee_roles else '[MUST EXTRACT from transcript - see instruction below]'} |
 | **Namens** | {seller_company} — {sales_name} |
+
+**ATTENDEE EXTRACTION** (if not pre-filled above):
+If "Deelnemers" shows "[MUST EXTRACT from transcript]", carefully scan the transcript to identify ALL participants:
+- Look for introductions, greetings, and moments where people address each other by name
+- Extract: Full name + Role/Title + Organization
+- Format as: "Name (Role)", "Name (Role)"
 
 ---
 
