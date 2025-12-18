@@ -416,24 +416,23 @@ class PeopleSearchProvider:
                     if "/in/" not in url.lower():
                         continue
                     
-                    # Skip duplicates
-                    url_normalized = url.lower().rstrip('/')
-                    if url_normalized in seen_urls:
+                    # Normalize LinkedIn URL for deduplication
+                    # Extract just the profile slug: linkedin.com/in/username
+                    url_slug = self._extract_linkedin_slug(url)
+                    if url_slug in seen_urls:
                         continue
-                    seen_urls.add(url_normalized)
+                    seen_urls.add(url_slug)
                     
                     # Get result text for better matching
                     result_title = result.title or ""
                     result_text = getattr(result, 'text', '') or ""
                     combined_text = f"{result_title} {result_text}".lower()
                     
-                    # Parse name and title from result title
-                    # Typical format: "Name - Title | LinkedIn"
-                    title_parts = result_title.split(" - ")
-                    parsed_name = title_parts[0].strip() if title_parts else name
-                    parsed_title = None
-                    if len(title_parts) > 1:
-                        parsed_title = title_parts[1].split(" | ")[0].strip()
+                    # Parse name, title, and company from result
+                    # Typical format: "Name - Title at Company | LinkedIn"
+                    parsed_name, parsed_title, parsed_company = self._parse_linkedin_title(
+                        result_title, name, company_name
+                    )
                     
                     # Calculate confidence with improved matching
                     confidence = self._calculate_confidence_v2(
@@ -451,7 +450,7 @@ class PeopleSearchProvider:
                     all_matches.append(ProfileMatch(
                         name=parsed_name,
                         title=parsed_title,
-                        company=company_name,
+                        company=parsed_company,  # Use parsed company, not search company
                         location=None,
                         linkedin_url=url,
                         headline=parsed_title,
@@ -544,25 +543,23 @@ class PeopleSearchProvider:
                         title = result.get("title", "")
                         description = result.get("description", "")
                         
-                        # Parse name from title
-                        parsed_name = title.split(" - ")[0].strip() if " - " in title else title.split(" | ")[0].strip()
-                        parsed_title = None
-                        if " - " in title:
-                            parts = title.split(" - ")
-                            if len(parts) > 1:
-                                parsed_title = parts[1].split(" | ")[0].strip()
+                        # Parse name, title, and company from result
+                        parsed_name, parsed_title, parsed_company = self._parse_linkedin_title(
+                            title, name, company_name
+                        )
                         
-                        confidence = self._calculate_confidence(
+                        confidence = self._calculate_confidence_v2(
                             search_name=name,
                             found_name=parsed_name,
                             search_company=company_name,
+                            search_role=role,
                             found_text=title + " " + description
                         )
                         
                         matches.append(ProfileMatch(
                             name=parsed_name,
                             title=parsed_title,
-                            company=company_name,
+                            company=parsed_company,  # Use parsed company
                             linkedin_url=url,
                             headline=parsed_title,
                             summary=description[:500] if description else None,
@@ -929,6 +926,91 @@ class PeopleSearchProvider:
                     result["experience_years"] = current_year - earliest
         
         return result
+    
+    def _extract_linkedin_slug(self, url: str) -> str:
+        """
+        Extract normalized LinkedIn profile slug from URL.
+        
+        Handles various formats:
+        - https://www.linkedin.com/in/username/
+        - https://nl.linkedin.com/in/username
+        - http://linkedin.com/in/username?param=value
+        
+        Returns: "linkedin.com/in/username" (normalized)
+        """
+        import re
+        
+        if not url:
+            return ""
+        
+        url_lower = url.lower()
+        
+        # Extract the /in/username part
+        match = re.search(r'/in/([a-zA-Z0-9\-]+)', url_lower)
+        if match:
+            username = match.group(1).rstrip('-')
+            return f"linkedin.com/in/{username}"
+        
+        return url_lower.rstrip('/')
+    
+    def _parse_linkedin_title(
+        self,
+        title: str,
+        fallback_name: str,
+        search_company: Optional[str]
+    ) -> tuple:
+        """
+        Parse name, title, and company from LinkedIn result title.
+        
+        Common formats:
+        - "John Smith - CEO at Acme Corp | LinkedIn"
+        - "John Smith - CEO | LinkedIn"  
+        - "John Smith | LinkedIn"
+        - "John Smith - Acme Corp | LinkedIn"
+        
+        Returns: (name, title, company)
+        """
+        import re
+        
+        if not title:
+            return fallback_name, None, search_company
+        
+        # Remove LinkedIn suffix
+        title = re.sub(r'\s*\|\s*LinkedIn.*$', '', title, flags=re.IGNORECASE)
+        title = title.strip()
+        
+        name = fallback_name
+        parsed_title = None
+        company = None
+        
+        # Split on " - " to get name and rest
+        if " - " in title:
+            parts = title.split(" - ", 1)
+            name = parts[0].strip()
+            rest = parts[1].strip() if len(parts) > 1 else ""
+            
+            # Check for "Title at Company" or "Title @ Company"
+            at_match = re.search(r'^(.+?)\s+(?:at|@|bij)\s+(.+)$', rest, re.IGNORECASE)
+            if at_match:
+                parsed_title = at_match.group(1).strip()
+                company = at_match.group(2).strip()
+            else:
+                # Just a title, no company in the format
+                parsed_title = rest
+        else:
+            # No " - ", just name
+            name = title
+        
+        # If no company found, use search company
+        if not company:
+            company = search_company
+        
+        # Clean up: if title equals company name, it's probably not a real title
+        if parsed_title and company:
+            if parsed_title.lower() == company.lower():
+                parsed_title = None
+        
+        return name, parsed_title, company
     
     def _clean_name(self, name: str) -> str:
         """Clean name by removing degree abbreviations and garbage."""
