@@ -10,6 +10,10 @@ export interface ContactMatch {
   location?: string | null
   linkedin_url?: string | null
   headline?: string | null
+  // Rich profile data from search provider
+  summary?: string | null  // AI-generated or extracted profile summary
+  experience_years?: number | null
+  skills?: string[] | null
   confidence: number
   match_reason: string
   from_research?: boolean  // True if this match came from research data

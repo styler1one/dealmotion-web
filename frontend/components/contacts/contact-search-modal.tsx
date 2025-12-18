@@ -203,9 +203,30 @@ export function ContactSearchModal({
     }
   }
 
-  // Select a match - go to enrich step
+  // Select a match - go to enrich step and pre-fill with found data
   const handleSelect = (match: ContactMatch) => {
     setSelectedMatch(match)
+    
+    // Pre-fill fields with data from search provider
+    if (match.summary) {
+      setLinkedinAbout(match.summary)
+    }
+    
+    // Build experience string from available data
+    const experienceParts: string[] = []
+    if (match.headline && match.headline !== match.title) {
+      experienceParts.push(match.headline)
+    }
+    if (match.experience_years) {
+      experienceParts.push(`${match.experience_years}+ years of experience`)
+    }
+    if (match.skills && match.skills.length > 0) {
+      experienceParts.push(`Skills: ${match.skills.slice(0, 8).join(', ')}`)
+    }
+    if (experienceParts.length > 0) {
+      setLinkedinExperience(experienceParts.join('\n\n'))
+    }
+    
     setStep('enrich')
   }
 
@@ -502,72 +523,109 @@ export function ContactSearchModal({
                 <span>{selectedMatch.name}</span>
                 {selectedMatch.title && <span className="text-blue-600 dark:text-blue-400">• {selectedMatch.title}</span>}
               </div>
+              {selectedMatch.location && (
+                <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">📍 {selectedMatch.location}</div>
+              )}
             </div>
 
-            <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-              <div className="flex items-start gap-3">
-                <Icons.lightbulb className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-                <div className="text-sm text-amber-800 dark:text-amber-200 flex-1">
-                  <p className="font-medium mb-1">{t('contacts.search.enrichTip')}</p>
-                  <p className="text-amber-700 dark:text-amber-300 mb-3">{t('contacts.search.enrichDescription')}</p>
-                  {selectedMatch.linkedin_url ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="bg-white dark:bg-slate-900 border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/40"
-                      onClick={() => window.open(selectedMatch.linkedin_url!, '_blank')}
-                    >
-                      <Icons.link className="h-4 w-4 mr-2" />
-                      {t('contacts.search.openLinkedIn')}
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="bg-white dark:bg-slate-900 border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/40"
-                      onClick={() => {
-                        const query = encodeURIComponent(`"${selectedMatch.name}" "${companyName}" linkedin`)
-                        window.open(`https://www.google.com/search?q=${query}`, '_blank')
-                      }}
-                    >
-                      <Icons.search className="h-4 w-4 mr-2" />
-                      {t('contacts.search.searchLinkedIn') || 'Search on LinkedIn'}
-                    </Button>
-                  )}
+            {/* Show if we found data or need manual input */}
+            {(selectedMatch.summary || selectedMatch.skills?.length) ? (
+              <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <Icons.check className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-green-800 dark:text-green-200 flex-1">
+                    <p className="font-medium mb-1">Profile data found!</p>
+                    <p className="text-green-700 dark:text-green-300">
+                      We automatically filled the fields below. Review and edit if needed, or add more details.
+                    </p>
+                    {selectedMatch.linkedin_url && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-2 bg-white dark:bg-slate-900 border-green-300 dark:border-green-700 text-green-800 dark:text-green-200 hover:bg-green-100 dark:hover:bg-green-900/40"
+                        onClick={() => window.open(selectedMatch.linkedin_url!, '_blank')}
+                      >
+                        <Icons.link className="h-4 w-4 mr-2" />
+                        {t('contacts.search.openLinkedIn')}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <Icons.lightbulb className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-amber-800 dark:text-amber-200 flex-1">
+                    <p className="font-medium mb-1">{t('contacts.search.enrichTip')}</p>
+                    <p className="text-amber-700 dark:text-amber-300 mb-3">{t('contacts.search.enrichDescription')}</p>
+                    {selectedMatch.linkedin_url ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="bg-white dark:bg-slate-900 border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/40"
+                        onClick={() => window.open(selectedMatch.linkedin_url!, '_blank')}
+                      >
+                        <Icons.link className="h-4 w-4 mr-2" />
+                        {t('contacts.search.openLinkedIn')}
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="bg-white dark:bg-slate-900 border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/40"
+                        onClick={() => {
+                          const query = encodeURIComponent(`"${selectedMatch.name}" "${companyName}" linkedin`)
+                          window.open(`https://www.google.com/search?q=${query}`, '_blank')
+                        }}
+                      >
+                        <Icons.search className="h-4 w-4 mr-2" />
+                        {t('contacts.search.searchLinkedIn') || 'Search on LinkedIn'}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="space-y-4">
               <div>
-                <Label htmlFor="linkedin-about" className="text-sm font-medium">
+                <Label htmlFor="linkedin-about" className="text-sm font-medium flex items-center gap-1.5">
                   {t('contacts.search.aboutLabel')}
+                  {linkedinAbout && <span className="text-xs text-green-600 dark:text-green-400">(auto-filled)</span>}
                 </Label>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-1.5">
-                  {t('contacts.search.aboutHint')}
+                  {linkedinAbout 
+                    ? 'Review the found summary. Edit or add more details if needed.'
+                    : t('contacts.search.aboutHint')
+                  }
                 </p>
                 <Textarea
                   id="linkedin-about"
                   placeholder={t('contacts.search.aboutPlaceholder')}
                   value={linkedinAbout}
                   onChange={(e) => setLinkedinAbout(e.target.value)}
-                  className="min-h-[80px] text-sm"
+                  className={`min-h-[80px] text-sm ${linkedinAbout ? 'border-green-300 dark:border-green-700' : ''}`}
                 />
               </div>
 
               <div>
-                <Label htmlFor="linkedin-experience" className="text-sm font-medium">
+                <Label htmlFor="linkedin-experience" className="text-sm font-medium flex items-center gap-1.5">
                   {t('contacts.search.experienceLabel')}
+                  {linkedinExperience && <span className="text-xs text-green-600 dark:text-green-400">(auto-filled)</span>}
                 </Label>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-1.5">
-                  {t('contacts.search.experienceHint')}
+                  {linkedinExperience
+                    ? 'Review skills and experience. Add more details from their profile if available.'
+                    : t('contacts.search.experienceHint')
+                  }
                 </p>
                 <Textarea
                   id="linkedin-experience"
                   placeholder={t('contacts.search.experiencePlaceholder')}
                   value={linkedinExperience}
                   onChange={(e) => setLinkedinExperience(e.target.value)}
-                  className="min-h-[80px] text-sm"
+                  className={`min-h-[80px] text-sm ${linkedinExperience ? 'border-green-300 dark:border-green-700' : ''}`}
                 />
               </div>
 

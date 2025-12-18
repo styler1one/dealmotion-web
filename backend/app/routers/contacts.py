@@ -119,6 +119,10 @@ class ContactMatch(BaseModel):
     location: Optional[str] = None
     linkedin_url: Optional[str] = None
     headline: Optional[str] = None
+    # NEW: Rich profile data from search provider
+    summary: Optional[str] = None  # AI-generated or extracted profile summary
+    experience_years: Optional[int] = None
+    skills: Optional[List[str]] = None
     confidence: float = 0.5
     match_reason: str = "Name match"
     from_research: bool = False  # True if this match came from research data
@@ -522,6 +526,10 @@ async def search_contact_profiles(
             location=m.location,
             linkedin_url=m.linkedin_url,
             headline=m.headline,
+            # NEW: Pass through rich profile data
+            summary=getattr(m, 'summary', None),
+            experience_years=getattr(m, 'experience_years', None),
+            skills=getattr(m, 'skills', None),
             confidence=m.confidence,
             match_reason=m.match_reason,
             from_research=m.from_research

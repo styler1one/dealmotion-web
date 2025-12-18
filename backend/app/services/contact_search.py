@@ -39,6 +39,10 @@ class ContactMatch(BaseModel):
     location: Optional[str] = None
     linkedin_url: Optional[str] = None
     headline: Optional[str] = None
+    # Rich profile data from search provider
+    summary: Optional[str] = None  # AI-generated or extracted profile summary
+    experience_years: Optional[int] = None
+    skills: Optional[List[str]] = None
     confidence: float = 0.5
     match_reason: str = "Name match"
     from_research: bool = False  # True if this was found in research data
@@ -200,7 +204,7 @@ class ContactSearchService:
                 
                 if provider_result.matches:
                     for pm in provider_result.matches:
-                        # Convert ProfileMatch to ContactMatch
+                        # Convert ProfileMatch to ContactMatch with all rich data
                         matches.append(ContactMatch(
                             name=pm.name,
                             title=pm.title,
@@ -208,6 +212,10 @@ class ContactSearchService:
                             location=pm.location,
                             linkedin_url=pm.linkedin_url,
                             headline=pm.headline,
+                            # NEW: Pass through rich profile data for frontend
+                            summary=pm.summary,
+                            experience_years=pm.experience_years,
+                            skills=pm.skills,
                             confidence=pm.confidence,
                             match_reason=pm.match_reason,
                             from_research=False
