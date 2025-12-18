@@ -926,9 +926,9 @@ class ExaComprehensiveResearcher:
         
         Rate Limiting Strategy:
         - Exa has a 5 requests/second limit
-        - We execute in batches of 4 with 250ms delay between batches
-        - Total time: ~8 batches * 0.25s = ~2 seconds overhead
-        - This ensures we stay well under the rate limit
+        - We execute in batches of 5 with 1 second delay between batches
+        - Total time: 6 batches * 1s = ~6 seconds overhead
+        - This ensures we stay exactly at the rate limit
         
         Args:
             company_name: Name of the company to research
@@ -966,9 +966,9 @@ class ExaComprehensiveResearcher:
         logger.info(f"[EXA_COMPREHENSIVE] Executing {len(task_definitions)} searches in rate-limited batches")
         
         # Execute tasks in batches to respect Exa's 5 req/sec rate limit
-        # Batch size of 4 with 250ms delay = safe margin under 5/sec
-        BATCH_SIZE = 4
-        BATCH_DELAY_SECONDS = 0.25
+        # Batch size of 5 with 1 second delay = exactly 5 requests per second
+        BATCH_SIZE = 5
+        BATCH_DELAY_SECONDS = 1.0
         
         results = []
         for batch_start in range(0, len(task_definitions), BATCH_SIZE):
