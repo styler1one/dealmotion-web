@@ -410,12 +410,15 @@ class PeopleSearchProvider:
                 category="linkedin profile",
                 num_results=max_results * 3,  # Get more results to filter
                 text={"max_characters": 300},
-                # Additional queries run in parallel for better recall
-                # Handles: "Kobus Dijkhorst" works at both "Precision Health" and "NOK"
+                additional_queries=additional_queries,  # Run these queries in parallel!
             )
         
         try:
             response = await loop.run_in_executor(None, do_search)
+            
+            # Log how many results Exa returned
+            raw_count = len(response.results) if response.results else 0
+            print(f"[PEOPLE_SEARCH] Exa returned {raw_count} raw results", flush=True)
             
             for result in response.results:
                 url = result.url or ""
@@ -449,8 +452,12 @@ class PeopleSearchProvider:
                     found_text=combined_text
                 )
                 
+                # Log each result for debugging
+                print(f"[PEOPLE_SEARCH] Result: '{result_title}' -> conf={confidence:.2f}, url={url}", flush=True)
+                
                 # Only include if confidence is reasonable
                 if confidence < 0.4:
+                    print(f"[PEOPLE_SEARCH] FILTERED (conf < 0.4): {parsed_name}", flush=True)
                     continue
                 
                 all_matches.append(ProfileMatch(
