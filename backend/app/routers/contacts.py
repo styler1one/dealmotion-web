@@ -136,6 +136,22 @@ class ContactSearchResponse(BaseModel):
     error: Optional[str] = None
 
 
+class ProfileEnrichRequest(BaseModel):
+    """Request to enrich a selected profile with full data."""
+    linkedin_url: str
+
+
+class ProfileEnrichResponse(BaseModel):
+    """Response with enriched profile data."""
+    success: bool = False
+    summary: Optional[str] = None
+    headline: Optional[str] = None
+    location: Optional[str] = None
+    experience_years: Optional[int] = None
+    skills: Optional[List[str]] = None
+    error: Optional[str] = None
+
+
 class ResearchExecutive(BaseModel):
     """An executive found in research data."""
     name: str
@@ -543,6 +559,58 @@ async def search_contact_profiles(
         search_source=result.search_source,
         error=result.error
     )
+
+
+@router.post("/contacts/enrich", response_model=ProfileEnrichResponse)
+async def enrich_contact_profile(
+    request: ProfileEnrichRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Fetch full profile data for a selected LinkedIn profile.
+    
+    Called AFTER user selects a profile from search results.
+    This is where we fetch full text + AI summary (costs ~$0.002).
+    
+    The search step is cheap (light search), this step fetches full content
+    only for the one profile the user selected.
+    """
+    logger.info(f"Enriching profile: {request.linkedin_url[:50]}...")
+    
+    try:
+        from app.services.people_search_provider import get_people_search_provider
+        
+        provider = get_people_search_provider()
+        
+        if not provider.has_primary:
+            return ProfileEnrichResponse(
+                success=False,
+                error="Profile enrichment not available - no provider configured"
+            )
+        
+        result = await provider.enrich_profile(request.linkedin_url)
+        
+        if result.get("success"):
+            return ProfileEnrichResponse(
+                success=True,
+                summary=result.get("summary"),
+                headline=result.get("headline"),
+                location=result.get("location"),
+                experience_years=result.get("experience_years"),
+                skills=result.get("skills")
+            )
+        else:
+            return ProfileEnrichResponse(
+                success=False,
+                error=result.get("error", "Failed to enrich profile")
+            )
+    
+    except Exception as e:
+        logger.error(f"Profile enrich error: {e}")
+        return ProfileEnrichResponse(
+            success=False,
+            error=str(e)
+        )
 
 
 async def _get_research_executives(

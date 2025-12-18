@@ -160,6 +160,73 @@ class PeopleSearchProvider:
             error="No search providers available or all failed"
         )
     
+    async def enrich_profile(self, linkedin_url: str) -> Dict[str, Any]:
+        """
+        Fetch full content for a selected LinkedIn profile.
+        
+        Called AFTER user selects a profile from search results.
+        This is where we spend credits on text + summary retrieval.
+        
+        Cost: ~$0.002 per profile (text + summary for 1 page)
+        
+        Returns dict with:
+        - success: bool
+        - summary: str (AI-generated profile summary)
+        - headline: str
+        - location: str
+        - experience_years: int
+        - skills: list[str]
+        - raw_text: str (full profile text for Claude)
+        """
+        if not self._primary_client:
+            return {"success": False, "error": "No search provider available"}
+        
+        try:
+            loop = asyncio.get_event_loop()
+            
+            def do_get_contents():
+                # Get full content for this specific profile
+                return self._primary_client.get_contents(
+                    urls=[linkedin_url],
+                    text={"max_characters": 3000},
+                    summary={
+                        "query": "Extract: current role, company, experience summary, skills, and notable achievements"
+                    },
+                )
+            
+            response = await loop.run_in_executor(None, do_get_contents)
+            
+            if not response.results:
+                return {"success": False, "error": "No content retrieved"}
+            
+            result = response.results[0]
+            profile_text = getattr(result, 'text', None) or ""
+            ai_summary = getattr(result, 'summary', None) or ""
+            
+            # Parse structured info from profile text
+            parsed_info = self._parse_linkedin_text(profile_text)
+            
+            # Build summary
+            summary = ai_summary if ai_summary else (
+                profile_text[:800] + "..." if len(profile_text) > 800 else profile_text
+            )
+            
+            logger.info(f"[PEOPLE_SEARCH] Enriched profile: {linkedin_url[:50]}...")
+            
+            return {
+                "success": True,
+                "summary": summary,
+                "headline": parsed_info.get("headline"),
+                "location": parsed_info.get("location"),
+                "experience_years": parsed_info.get("experience_years"),
+                "skills": parsed_info.get("skills") or [],
+                "raw_text": profile_text[:2000] if profile_text else None
+            }
+            
+        except Exception as e:
+            logger.error(f"[PEOPLE_SEARCH] Enrich failed: {e}")
+            return {"success": False, "error": str(e)}
+    
     async def get_profile_info(
         self,
         name: str,
@@ -168,6 +235,9 @@ class PeopleSearchProvider:
     ) -> Dict[str, Any]:
         """
         Get enriched profile information for a person.
+        
+        This combines search + enrich for use in contact_analyzer.
+        For contact search flow, use search_person() + enrich_profile() separately.
         
         Returns dict with:
         - found: bool
@@ -182,6 +252,7 @@ class PeopleSearchProvider:
         - source: str
         - confidence: float
         """
+        # First do light search
         result = await self.search_person(
             name=name,
             role=role,
@@ -189,27 +260,46 @@ class PeopleSearchProvider:
             max_results=3
         )
         
-        if result.matches:
-            best_match = result.matches[0]
-            return {
-                "found": True,
-                "name": best_match.name,
-                "headline": best_match.headline or best_match.title,
-                "title": best_match.title,
-                "company": best_match.company,
-                "location": best_match.location,
-                "about": best_match.summary,
-                "experience_years": best_match.experience_years,
-                "skills": best_match.skills or [],
-                "linkedin_url": best_match.linkedin_url,
-                "raw_text": best_match.raw_text,
-                "source": result.source,
-                "confidence": best_match.confidence
-            }
+        if not result.matches:
+            return {"found": False, "source": result.source}
         
+        best_match = result.matches[0]
+        
+        # Then enrich the best match
+        if best_match.linkedin_url:
+            enriched = await self.enrich_profile(best_match.linkedin_url)
+            if enriched.get("success"):
+                return {
+                    "found": True,
+                    "name": best_match.name,
+                    "headline": enriched.get("headline") or best_match.headline or best_match.title,
+                    "title": best_match.title,
+                    "company": best_match.company,
+                    "location": enriched.get("location"),
+                    "about": enriched.get("summary"),
+                    "experience_years": enriched.get("experience_years"),
+                    "skills": enriched.get("skills") or [],
+                    "linkedin_url": best_match.linkedin_url,
+                    "raw_text": enriched.get("raw_text"),
+                    "source": result.source,
+                    "confidence": best_match.confidence
+                }
+        
+        # Fallback: return what we have from light search
         return {
-            "found": False,
-            "source": result.source
+            "found": True,
+            "name": best_match.name,
+            "headline": best_match.headline or best_match.title,
+            "title": best_match.title,
+            "company": best_match.company,
+            "location": None,
+            "about": None,
+            "experience_years": None,
+            "skills": [],
+            "linkedin_url": best_match.linkedin_url,
+            "raw_text": None,
+            "source": result.source,
+            "confidence": best_match.confidence
         }
     
     async def _search_primary(
@@ -222,6 +312,9 @@ class PeopleSearchProvider:
         """
         Search using primary neural search provider.
         
+        OPTIMIZED: Light search first, full content only after selection.
+        Cost: ~$0.005 per search (vs $0.025 with full content for all)
+        
         Uses semantic search with people category for optimal results.
         """
         # Build optimized query for people search
@@ -233,27 +326,22 @@ class PeopleSearchProvider:
         
         query = " ".join(query_parts)
         
-        # Execute search with people category
-        # Run in thread pool since exa_py is sync
+        # Execute LIGHT search (no content = much cheaper)
+        # Full content is fetched later via enrich_profile() after user selects
         loop = asyncio.get_event_loop()
         
         def do_search():
-            # Use search_and_contents to get full profile data in one call
-            return self._primary_client.search_and_contents(
+            # Light search: only metadata, no text/summary (saves ~80% cost)
+            return self._primary_client.search(
                 query,
                 type="auto",
                 category="linkedin profile",
                 num_results=max_results * 2,  # Get extra to filter
-                text={"max_characters": 3000},  # More profile text for better context
-                summary={
-                    "query": "Extract: current role, company, experience summary, skills, and notable achievements"
-                },  # AI-generated summary of profile
-                livecrawl="fallback",  # Fresh data if cache is stale
             )
         
         response = await loop.run_in_executor(None, do_search)
         
-        # Parse results
+        # Parse results (light search - no content yet)
         matches = []
         for result in response.results:
             url = result.url or ""
@@ -270,46 +358,28 @@ class PeopleSearchProvider:
             if len(title_parts) > 1:
                 parsed_title = title_parts[1].split(" | ")[0].strip()
             
-            # Extract all available profile content
-            profile_text = getattr(result, 'text', None) or ""
-            ai_summary = getattr(result, 'summary', None) or ""
-            
-            # Parse structured info from profile text
-            parsed_info = self._parse_linkedin_text(profile_text)
-            
-            # Build comprehensive summary
-            summary = None
-            if ai_summary:
-                # AI summary is most valuable - contains extracted insights
-                summary = ai_summary
-            elif profile_text:
-                # Fall back to truncated profile text
-                summary = profile_text[:800].strip()
-                if len(profile_text) > 800:
-                    summary += "..."
-            
-            # Calculate confidence based on name match + content
+            # Calculate confidence based on name match (no content in light search)
             confidence = self._calculate_confidence(
                 search_name=name,
                 found_name=parsed_name,
                 search_company=company_name,
-                found_text=(result.title or "") + " " + profile_text
+                found_text=result.title or ""
             )
             
             matches.append(ProfileMatch(
                 name=parsed_name,
-                title=parsed_title or parsed_info.get("current_role"),
-                company=parsed_info.get("company") or company_name,
-                location=parsed_info.get("location"),
+                title=parsed_title,
+                company=company_name,
+                location=None,  # Will be enriched after selection
                 linkedin_url=url,
-                headline=parsed_title or parsed_info.get("headline"),
-                summary=summary,
-                experience_years=parsed_info.get("experience_years"),
-                skills=parsed_info.get("skills") or [],
+                headline=parsed_title,
+                summary=None,  # Will be enriched after selection
+                experience_years=None,  # Will be enriched after selection
+                skills=None,  # Will be enriched after selection
                 confidence=confidence,
                 match_reason=self._get_match_reason(confidence, company_name),
                 source="primary",
-                raw_text=profile_text[:2000] if profile_text else None  # Keep for Claude
+                raw_text=None  # Will be enriched after selection
             ))
         
         # Sort by confidence and limit

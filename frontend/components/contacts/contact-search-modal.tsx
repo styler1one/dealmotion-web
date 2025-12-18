@@ -203,31 +203,63 @@ export function ContactSearchModal({
     }
   }
 
-  // Select a match - go to enrich step and pre-fill with found data
-  const handleSelect = (match: ContactMatch) => {
+  // State for enrichment loading
+  const [isEnriching, setIsEnriching] = useState(false)
+
+  // Select a match - enrich profile and go to enrich step
+  const handleSelect = async (match: ContactMatch) => {
     setSelectedMatch(match)
-    
-    // Pre-fill fields with data from search provider
-    if (match.summary) {
-      setLinkedinAbout(match.summary)
-    }
-    
-    // Build experience string from available data
-    const experienceParts: string[] = []
-    if (match.headline && match.headline !== match.title) {
-      experienceParts.push(match.headline)
-    }
-    if (match.experience_years) {
-      experienceParts.push(`${match.experience_years}+ years of experience`)
-    }
-    if (match.skills && match.skills.length > 0) {
-      experienceParts.push(`Skills: ${match.skills.slice(0, 8).join(', ')}`)
-    }
-    if (experienceParts.length > 0) {
-      setLinkedinExperience(experienceParts.join('\n\n'))
-    }
-    
     setStep('enrich')
+    
+    // If we have a LinkedIn URL, fetch full profile data
+    if (match.linkedin_url) {
+      setIsEnriching(true)
+      
+      try {
+        const { data, error } = await api.post<{
+          success: boolean
+          summary?: string
+          headline?: string
+          location?: string
+          experience_years?: number
+          skills?: string[]
+          error?: string
+        }>('/api/v1/contacts/enrich', {
+          linkedin_url: match.linkedin_url
+        })
+        
+        if (!error && data?.success) {
+          // Pre-fill fields with enriched data
+          if (data.summary) {
+            setLinkedinAbout(data.summary)
+          }
+          
+          // Build experience string from enriched data
+          const experienceParts: string[] = []
+          if (data.headline && data.headline !== match.title) {
+            experienceParts.push(data.headline)
+          }
+          if (data.experience_years) {
+            experienceParts.push(`${data.experience_years}+ years of experience`)
+          }
+          if (data.skills && data.skills.length > 0) {
+            experienceParts.push(`Skills: ${data.skills.slice(0, 8).join(', ')}`)
+          }
+          if (experienceParts.length > 0) {
+            setLinkedinExperience(experienceParts.join('\n\n'))
+          }
+          
+          // Update the match with location if found
+          if (data.location) {
+            setSelectedMatch({ ...match, location: data.location })
+          }
+        }
+      } catch (err) {
+        console.log('Profile enrichment failed, continuing without enriched data:', err)
+      } finally {
+        setIsEnriching(false)
+      }
+    }
   }
 
   // Skip to manual entry (no LinkedIn found)
@@ -528,8 +560,18 @@ export function ContactSearchModal({
               )}
             </div>
 
-            {/* Show if we found data or need manual input */}
-            {(selectedMatch.summary || selectedMatch.skills?.length) ? (
+            {/* Show loading state while enriching */}
+            {isEnriching ? (
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <Icons.spinner className="h-5 w-5 text-blue-600 dark:text-blue-400 animate-spin" />
+                  <div className="text-sm text-blue-800 dark:text-blue-200">
+                    <p className="font-medium">Fetching profile data...</p>
+                    <p className="text-blue-600 dark:text-blue-400">This may take a few seconds</p>
+                  </div>
+                </div>
+              </div>
+            ) : (linkedinAbout || linkedinExperience) ? (
               <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                 <div className="flex items-start gap-3">
                   <Icons.check className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
