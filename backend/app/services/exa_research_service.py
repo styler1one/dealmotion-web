@@ -23,107 +23,67 @@ logger = logging.getLogger(__name__)
 
 
 # =============================================================================
-# Output Schema for Company Research
+# Output Schema for Company Research (flattened to max depth 5)
 # =============================================================================
 
 COMPANY_RESEARCH_SCHEMA = {
     "type": "object",
     "properties": {
-        "company": {
-            "type": "object",
-            "properties": {
-                "legal_name": {"type": "string"},
-                "trading_name": {"type": "string"},
-                "founded": {"type": "string"},
-                "headquarters": {"type": "string"},
-                "other_locations": {"type": "array", "items": {"type": "string"}},
-                "industry": {"type": "string"},
-                "sub_sector": {"type": "string"},
-                "employee_range": {"type": "string"},
-                "revenue_estimate": {"type": "string"},
-                "description": {"type": "string"},
-                "mission": {"type": "string"},
-                "website": {"type": "string"},
-                "linkedin_url": {"type": "string"}
-            }
-        },
-        "leadership": {
-            "type": "object",
-            "properties": {
-                "c_suite": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "name": {"type": "string"},
-                            "title": {"type": "string"},
-                            "linkedin_url": {"type": "string"},
-                            "background": {"type": "string"},
-                            "is_founder": {"type": "boolean"}
-                        }
-                    }
-                },
-                "senior_leadership": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "name": {"type": "string"},
-                            "title": {"type": "string"},
-                            "linkedin_url": {"type": "string"},
-                            "department": {"type": "string"}
-                        }
-                    }
-                },
-                "board_of_directors": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "name": {"type": "string"},
-                            "role": {"type": "string"},
-                            "affiliation": {"type": "string"}
-                        }
-                    }
-                },
-                "recent_changes": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "date": {"type": "string"},
-                            "type": {"type": "string"},
-                            "name": {"type": "string"},
-                            "role": {"type": "string"}
-                        }
-                    }
+        # Company basics - flat
+        "company_name": {"type": "string"},
+        "legal_name": {"type": "string"},
+        "founded": {"type": "string"},
+        "headquarters": {"type": "string"},
+        "industry": {"type": "string"},
+        "employee_range": {"type": "string"},
+        "revenue_estimate": {"type": "string"},
+        "description": {"type": "string"},
+        "website": {"type": "string"},
+        "linkedin_url": {"type": "string"},
+        
+        # Leadership - arrays of objects (depth 3)
+        "executives": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "title": {"type": "string"},
+                    "linkedin_url": {"type": "string"},
+                    "is_founder": {"type": "boolean"}
                 }
             }
         },
-        "ownership_funding": {
-            "type": "object",
-            "properties": {
-                "ownership_type": {"type": "string"},
-                "parent_company": {"type": "string"},
-                "major_shareholders": {"type": "array", "items": {"type": "string"}},
-                "total_funding_raised": {"type": "string"},
-                "funding_rounds": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "date": {"type": "string"},
-                            "round_type": {"type": "string"},
-                            "amount": {"type": "string"},
-                            "lead_investor": {"type": "string"},
-                            "other_investors": {"type": "array", "items": {"type": "string"}}
-                        }
-                    }
-                },
-                "key_investors": {"type": "array", "items": {"type": "string"}},
-                "acquisitions": {"type": "array", "items": {"type": "string"}}
+        "board_members": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "role": {"type": "string"},
+                    "affiliation": {"type": "string"}
+                }
             }
         },
+        
+        # Funding - simplified
+        "ownership_type": {"type": "string"},
+        "total_funding": {"type": "string"},
+        "key_investors": {"type": "array", "items": {"type": "string"}},
+        "funding_rounds": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "date": {"type": "string"},
+                    "round_type": {"type": "string"},
+                    "amount": {"type": "string"},
+                    "investors": {"type": "string"}
+                }
+            }
+        },
+        
+        # News - array of objects (depth 3)
         "recent_news": {
             "type": "array",
             "items": {
@@ -131,41 +91,22 @@ COMPANY_RESEARCH_SCHEMA = {
                 "properties": {
                     "date": {"type": "string"},
                     "headline": {"type": "string"},
-                    "type": {"type": "string"},
                     "source_url": {"type": "string"}
                 }
             }
         },
-        "signals": {
-            "type": "object",
-            "properties": {
-                "hiring_activity": {
-                    "type": "object",
-                    "properties": {
-                        "job_openings_count": {"type": "string"},
-                        "top_hiring_departments": {"type": "array", "items": {"type": "string"}},
-                        "hiring_velocity": {"type": "string"}
-                    }
-                },
-                "growth_signals": {"type": "array", "items": {"type": "string"}},
-                "technology_stack": {
-                    "type": "object",
-                    "properties": {
-                        "crm": {"type": "string"},
-                        "cloud_provider": {"type": "string"},
-                        "other_tools": {"type": "array", "items": {"type": "string"}}
-                    }
-                }
-            }
-        },
-        "competitive_landscape": {
-            "type": "object",
-            "properties": {
-                "main_competitors": {"type": "array", "items": {"type": "string"}},
-                "market_position": {"type": "string"},
-                "differentiators": {"type": "array", "items": {"type": "string"}}
-            }
-        }
+        
+        # Signals - flat
+        "job_openings": {"type": "string"},
+        "hiring_velocity": {"type": "string"},
+        "growth_signals": {"type": "array", "items": {"type": "string"}},
+        
+        # Technology - flat
+        "tech_stack": {"type": "array", "items": {"type": "string"}},
+        
+        # Competition - flat
+        "competitors": {"type": "array", "items": {"type": "string"}},
+        "market_position": {"type": "string"}
     }
 }
 
@@ -481,7 +422,7 @@ Find: 1) Company info (name, founded, HQ, industry, employees, revenue, descript
         Parse raw Exa Research API result into structured dataclass.
         
         Args:
-            raw_result: Raw API response
+            raw_result: Raw API response (using flattened schema)
             
         Returns:
             CompanyResearchResult with all fields populated
@@ -520,62 +461,46 @@ Find: 1) Company info (name, founded, HQ, industry, employees, revenue, descript
         result.num_pages = cost_info.get("numPages", 0)
         result.reasoning_tokens = cost_info.get("reasoningTokens", 0)
         
-        # Company basics
-        company = parsed.get("company", {})
-        result.legal_name = company.get("legal_name", "")
-        result.trading_name = company.get("trading_name", "")
-        result.company_name = result.trading_name or result.legal_name
-        result.founded = company.get("founded", "")
-        result.headquarters = company.get("headquarters", "")
-        result.other_locations = company.get("other_locations", [])
-        result.industry = company.get("industry", "")
-        result.sub_sector = company.get("sub_sector", "")
-        result.employee_range = company.get("employee_range", "")
-        result.revenue_estimate = company.get("revenue_estimate", "")
-        result.description = company.get("description", "")
-        result.mission = company.get("mission", "")
-        result.website = company.get("website", "")
-        result.linkedin_url = company.get("linkedin_url", "")
+        # Company basics (flat schema)
+        result.company_name = parsed.get("company_name", "")
+        result.legal_name = parsed.get("legal_name", "")
+        result.founded = parsed.get("founded", "")
+        result.headquarters = parsed.get("headquarters", "")
+        result.industry = parsed.get("industry", "")
+        result.employee_range = parsed.get("employee_range", "")
+        result.revenue_estimate = parsed.get("revenue_estimate", "")
+        result.description = parsed.get("description", "")
+        result.website = parsed.get("website", "")
+        result.linkedin_url = parsed.get("linkedin_url", "")
         
-        # Leadership
-        leadership = parsed.get("leadership", {})
-        
-        for exec_data in leadership.get("c_suite", []):
+        # Leadership - executives array
+        for exec_data in parsed.get("executives", []):
             result.c_suite.append(ExecutiveInfo(
                 name=exec_data.get("name", ""),
                 title=exec_data.get("title", ""),
                 linkedin_url=exec_data.get("linkedin_url", ""),
-                background=exec_data.get("background", ""),
                 is_founder=exec_data.get("is_founder", False)
             ))
         
-        for exec_data in leadership.get("senior_leadership", []):
-            result.senior_leadership.append(ExecutiveInfo(
-                name=exec_data.get("name", ""),
-                title=exec_data.get("title", ""),
-                linkedin_url=exec_data.get("linkedin_url", ""),
-                department=exec_data.get("department", "")
-            ))
+        # Board members
+        for member in parsed.get("board_members", []):
+            result.board_of_directors.append({
+                "name": member.get("name", ""),
+                "role": member.get("role", ""),
+                "affiliation": member.get("affiliation", "")
+            })
         
-        result.board_of_directors = leadership.get("board_of_directors", [])
-        result.leadership_changes = leadership.get("recent_changes", [])
+        # Funding (flat)
+        result.ownership_type = parsed.get("ownership_type", "")
+        result.total_funding_raised = parsed.get("total_funding", "")
+        result.key_investors = parsed.get("key_investors", [])
         
-        # Ownership & Funding
-        funding = parsed.get("ownership_funding", {})
-        result.ownership_type = funding.get("ownership_type", "")
-        result.parent_company = funding.get("parent_company", "")
-        result.major_shareholders = funding.get("major_shareholders", [])
-        result.total_funding_raised = funding.get("total_funding_raised", "")
-        result.key_investors = funding.get("key_investors", [])
-        result.acquisitions = funding.get("acquisitions", [])
-        
-        for round_data in funding.get("funding_rounds", []):
+        for round_data in parsed.get("funding_rounds", []):
             result.funding_rounds.append(FundingRound(
                 date=round_data.get("date", ""),
                 round_type=round_data.get("round_type", ""),
                 amount=round_data.get("amount", ""),
-                lead_investor=round_data.get("lead_investor", ""),
-                other_investors=round_data.get("other_investors", [])
+                lead_investor=round_data.get("investors", "")  # Simplified to single string
             ))
         
         # News
@@ -583,28 +508,20 @@ Find: 1) Company info (name, founded, HQ, industry, employees, revenue, descript
             result.recent_news.append(NewsItem(
                 date=news_data.get("date", ""),
                 headline=news_data.get("headline", ""),
-                news_type=news_data.get("type", ""),
                 source_url=news_data.get("source_url", "")
             ))
         
-        # Signals
-        signals = parsed.get("signals", {})
-        hiring = signals.get("hiring_activity", {})
-        result.job_openings_count = hiring.get("job_openings_count", "")
-        result.top_hiring_departments = hiring.get("top_hiring_departments", [])
-        result.hiring_velocity = hiring.get("hiring_velocity", "")
-        result.growth_signals = signals.get("growth_signals", [])
+        # Signals (flat)
+        result.job_openings_count = parsed.get("job_openings", "")
+        result.hiring_velocity = parsed.get("hiring_velocity", "")
+        result.growth_signals = parsed.get("growth_signals", [])
         
-        tech = signals.get("technology_stack", {})
-        result.crm = tech.get("crm", "")
-        result.cloud_provider = tech.get("cloud_provider", "")
-        result.other_tools = tech.get("other_tools", [])
+        # Tech stack (flat array)
+        result.other_tools = parsed.get("tech_stack", [])
         
-        # Competitive
-        competitive = parsed.get("competitive_landscape", {})
-        result.main_competitors = competitive.get("main_competitors", [])
-        result.market_position = competitive.get("market_position", "")
-        result.differentiators = competitive.get("differentiators", [])
+        # Competition (flat)
+        result.main_competitors = parsed.get("competitors", [])
+        result.market_position = parsed.get("market_position", "")
         
         return result
     
