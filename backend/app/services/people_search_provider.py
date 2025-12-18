@@ -416,9 +416,14 @@ class PeopleSearchProvider:
                 
                 for result in response.results:
                     url = result.url or ""
+                    result_title = result.title or ""
+                    
+                    # Log ALL results to debug
+                    print(f"[PEOPLE_SEARCH] Raw result: {result_title[:60]}... -> {url[:80]}", flush=True)
                     
                     # Only include personal LinkedIn profile URLs (not company pages)
                     if "/in/" not in url.lower():
+                        print(f"[PEOPLE_SEARCH] SKIP (no /in/): {url[:60]}", flush=True)
                         continue
                     
                     # Normalize LinkedIn URL for deduplication
@@ -428,7 +433,6 @@ class PeopleSearchProvider:
                     seen_urls.add(url_slug)
                     
                     # Get result text for better matching
-                    result_title = result.title or ""
                     result_text = getattr(result, 'text', '') or ""
                     combined_text = f"{result_title} {result_text}".lower()
                     
