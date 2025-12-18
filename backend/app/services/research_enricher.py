@@ -263,9 +263,25 @@ class ResearchEnricher:
             
             logger.info(f"[RESEARCH_ENRICHER] Got {len(response.results)} raw results from Exa")
             
-            # Prepare company name variations for matching
-            company_name_lower = company_name.lower()
-            company_words = set(company_name_lower.split())
+            # Prepare company name for strict matching
+            # We need the FULL company name, not individual words (too loose)
+            company_name_lower = company_name.lower().strip()
+            
+            # Create variations of the company name for matching
+            # e.g., "Exact Software" -> ["exact software", "exactsoftware", "exact-software"]
+            company_variations = [
+                company_name_lower,
+                company_name_lower.replace(' ', ''),
+                company_name_lower.replace(' ', '-'),
+            ]
+            
+            # Add slug variations if available
+            if company_slug:
+                company_variations.append(company_slug.lower())
+                company_variations.append(company_slug.replace('-', ' ').lower())
+                company_variations.append(company_slug.replace('-', '').lower())
+            
+            logger.info(f"[RESEARCH_ENRICHER] Company variations for matching: {company_variations}")
             
             # Filter for LinkedIn profile URLs and parse
             for result in response.results:
@@ -284,16 +300,15 @@ class ResearchEnricher:
                     continue
                 
                 # Check if this person is actually from the target company
-                # by looking for company name in their title/headline
+                # by looking for FULL company name in their title/headline
+                # Single word matches are too loose (e.g., "Precision" matches many companies)
                 title_lower = title.lower() if title else ''
                 title_text_lower = title_text.lower() if title_text else ''
                 
-                # Check for company match (company name or slug in title)
-                company_match = (
-                    company_name_lower in title_text_lower or
-                    (company_slug and company_slug.replace('-', ' ') in title_text_lower) or
-                    (company_slug and company_slug in title_text_lower) or
-                    any(word in title_text_lower for word in company_words if len(word) > 3)
+                # Check for company match - must match a FULL variation, not individual words
+                company_match = any(
+                    variation in title_text_lower 
+                    for variation in company_variations
                 )
                 
                 # Determine if this is likely an executive
@@ -317,19 +332,31 @@ class ResearchEnricher:
                     confidence = 0.5
                 
                 # Log what we found
-                logger.debug(
-                    f"[RESEARCH_ENRICHER] Found: {name} | {title} | "
+                logger.info(
+                    f"[RESEARCH_ENRICHER] Candidate: {name} | {title[:50] if title else 'N/A'}... | "
                     f"company_match={company_match}, is_exec={is_executive}, conf={confidence}"
                 )
                 
-                # Include if company matches, or if executive title, or take top 5 anyway
-                if company_match or is_executive or len(executives) < 5:
+                # STRICT: Only include if company actually matches
+                # Without company match, we're just finding random executives from other companies
+                if company_match:
                     executives.append(ExecutiveProfile(
                         name=name,
                         title=title or "Executive",
                         linkedin_url=url,
                         headline=title,
                         confidence=confidence,
+                        source_url=url
+                    ))
+                elif is_executive and len(executives) < 3:
+                    # Only take a few non-matched executives as fallback
+                    # Mark them with lower confidence
+                    executives.append(ExecutiveProfile(
+                        name=name,
+                        title=title or "Executive",
+                        linkedin_url=url,
+                        headline=title,
+                        confidence=0.4,  # Low confidence - not verified company match
                         source_url=url
                     ))
             
