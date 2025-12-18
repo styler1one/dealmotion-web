@@ -129,25 +129,34 @@ class ContactAnalyzer:
         has_user_info = bool(user_provided_context)
         has_brave_info = profile_info.get("source") == "brave"
         has_research_info = profile_info.get("source") == "research"
+        has_provider_info = profile_info.get("source") == "provider"
         
         logger.info(f"[CONTACT_ANALYZER] Analyzing {contact_name} at {company_name}")
-        logger.info(f"[CONTACT_ANALYZER] Info sources: user={has_user_info}, brave={has_brave_info}, research={has_research_info}")
+        logger.info(f"[CONTACT_ANALYZER] Info sources: user={has_user_info}, brave={has_brave_info}, research={has_research_info}, provider={has_provider_info}")
+        print(f"[CONTACT_ANALYZER] Building prompt for {contact_name}...", flush=True)
         
         # STEP 2: Build optimized prompt (no web search needed)
-        prompt = self._build_analysis_prompt(
-            contact_name=contact_name,
-            contact_role=contact_role,
-            linkedin_url=linkedin_url,
-            company_context=company_context,
-            seller_context=seller_context,
-            language=language,
-            user_provided_context=user_provided_context,
-            profile_info=profile_info  # NEW: Include gathered profile info
-        )
+        try:
+            prompt = self._build_analysis_prompt(
+                contact_name=contact_name,
+                contact_role=contact_role,
+                linkedin_url=linkedin_url,
+                company_context=company_context,
+                seller_context=seller_context,
+                language=language,
+                user_provided_context=user_provided_context,
+                profile_info=profile_info  # Include gathered profile info
+            )
+            print(f"[CONTACT_ANALYZER] Prompt built successfully, length={len(prompt)} chars", flush=True)
+        except Exception as e:
+            logger.error(f"[CONTACT_ANALYZER] ❌ Error building prompt: {e}")
+            print(f"[CONTACT_ANALYZER] ❌ Error building prompt: {e}", flush=True)
+            raise
         
         try:
             # STEP 3: Claude analysis WITHOUT web tools (85% cost reduction!)
             logger.info(f"[CONTACT_ANALYZER] Starting Claude analysis (no web tools)")
+            print(f"[CONTACT_ANALYZER] Starting Claude API call...", flush=True)
             
             response = await self.client.messages.create(
                 model="claude-sonnet-4-20250514",
@@ -449,39 +458,49 @@ class ContactAnalyzer:
         
         # === PROFILE INFORMATION (from search provider/research) ===
         profile_section = ""
-        if profile_info and profile_info.get("source") != "none":
-            source = profile_info.get("source", "unknown")
-            profile_section = f"\n## PROFILE INFORMATION (Source: {source})\n"
-            
-            if profile_info.get("headline"):
-                profile_section += f"**Headline**: {profile_info['headline']}\n"
-            if profile_info.get("about"):
-                profile_section += f"**About**: {profile_info['about'][:500]}\n"
-            if profile_info.get("experience"):
-                profile_section += f"**Experience**: {profile_info['experience'][:500]}\n"
-            if profile_info.get("background"):
-                profile_section += f"**Background**: {profile_info['background']}\n"
-            if profile_info.get("recent_activity"):
-                profile_section += f"**Recent Activity**: {profile_info['recent_activity']}\n"
-            
-            # Add skills if available
-            skills = profile_info.get("skills", [])
-            if skills:
-                profile_section += f"**Skills**: {', '.join(skills[:10])}\n"
-            
-            # Add experience years if available
-            if profile_info.get("experience_years"):
-                profile_section += f"**Years of Experience**: {profile_info['experience_years']}\n"
-            
-            # Add location if available
-            if profile_info.get("location"):
-                profile_section += f"**Location**: {profile_info['location']}\n"
-            
-            # Include raw LinkedIn profile text for comprehensive analysis
-            # This gives Claude full context about the person
-            raw_text = profile_info.get("raw_profile_text")
-            if raw_text:
-                profile_section += f"\n**Full LinkedIn Profile Content**:\n```\n{raw_text[:2500]}\n```\n"
+        try:
+            if profile_info and profile_info.get("source") not in (None, "none"):
+                source = profile_info.get("source", "unknown")
+                profile_section = f"\n## PROFILE INFORMATION (Source: {source})\n"
+                
+                if profile_info.get("headline"):
+                    profile_section += f"**Headline**: {profile_info['headline']}\n"
+                if profile_info.get("about"):
+                    about_text = str(profile_info['about'])[:500]
+                    profile_section += f"**About**: {about_text}\n"
+                if profile_info.get("experience"):
+                    exp_text = str(profile_info['experience'])[:500]
+                    profile_section += f"**Experience**: {exp_text}\n"
+                if profile_info.get("background"):
+                    profile_section += f"**Background**: {profile_info['background']}\n"
+                if profile_info.get("recent_activity"):
+                    profile_section += f"**Recent Activity**: {profile_info['recent_activity']}\n"
+                
+                # Add skills if available (with defensive coding)
+                skills = profile_info.get("skills") or []
+                if skills and isinstance(skills, list):
+                    # Filter out None values and convert to strings
+                    clean_skills = [str(s) for s in skills if s][:10]
+                    if clean_skills:
+                        profile_section += f"**Skills**: {', '.join(clean_skills)}\n"
+                
+                # Add experience years if available
+                exp_years = profile_info.get("experience_years")
+                if exp_years:
+                    profile_section += f"**Years of Experience**: {exp_years}\n"
+                
+                # Add location if available
+                if profile_info.get("location"):
+                    profile_section += f"**Location**: {profile_info['location']}\n"
+                
+                # Include raw LinkedIn profile text for comprehensive analysis
+                # This gives Claude full context about the person
+                raw_text = profile_info.get("raw_profile_text")
+                if raw_text and isinstance(raw_text, str):
+                    profile_section += f"\n**Full LinkedIn Profile Content**:\n```\n{raw_text[:2500]}\n```\n"
+        except Exception as e:
+            logger.error(f"[CONTACT_ANALYZER] Error building profile section: {e}")
+            profile_section = ""  # Continue without profile section
         
         # === USER-PROVIDED INFO (highest priority) ===
         user_info_section = ""
