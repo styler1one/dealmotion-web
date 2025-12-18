@@ -208,22 +208,60 @@ class PeopleSearchProvider:
             # Parse structured info from profile text
             parsed_info = self._parse_linkedin_text(profile_text)
             
+            # Also extract skills from AI summary if not found in profile text
+            skills = parsed_info.get("skills") or []
+            experience_years = parsed_info.get("experience_years")
+            
+            if ai_summary:
+                # Try to extract additional info from AI summary
+                import re
+                
+                # Extract skills from AI summary if we don't have enough
+                if len(skills) < 3:
+                    # Common skill patterns in summaries
+                    skill_patterns = [
+                        r'(?:expertise|skills?|specializ\w+|proficient)\s*(?:in|:)?\s*([^.]+)',
+                        r'(?:experienced|background)\s+in\s+([^.]+)',
+                    ]
+                    for pattern in skill_patterns:
+                        match = re.search(pattern, ai_summary, re.IGNORECASE)
+                        if match:
+                            extracted = match.group(1)
+                            # Split on common delimiters
+                            new_skills = re.split(r'[,;and]+', extracted)
+                            for s in new_skills:
+                                s = s.strip()
+                                if s and 3 <= len(s) <= 40 and s not in skills:
+                                    skills.append(s)
+                            break
+                
+                # Extract years from AI summary if not found
+                if not experience_years:
+                    years_match = re.search(r'(\d+)\+?\s*(?:years?|jaar)', ai_summary, re.IGNORECASE)
+                    if years_match:
+                        try:
+                            experience_years = int(years_match.group(1))
+                        except ValueError:
+                            pass
+            
             logger.info(f"[PEOPLE_SEARCH] Enriched profile: {linkedin_url[:50]}...")
             logger.info(f"[PEOPLE_SEARCH] - About section: {'Found' if parsed_info.get('about_section') else 'Not found'}")
             logger.info(f"[PEOPLE_SEARCH] - Experience section: {'Found' if parsed_info.get('experience_section') else 'Not found'}")
-            logger.info(f"[PEOPLE_SEARCH] - Skills: {len(parsed_info.get('skills', []))} found")
+            logger.info(f"[PEOPLE_SEARCH] - Skills: {len(skills)} found")
+            logger.info(f"[PEOPLE_SEARCH] - Experience years: {experience_years}")
+            logger.info(f"[PEOPLE_SEARCH] - Raw text length: {len(profile_text)} chars")
             
             return {
                 "success": True,
                 # NEW: Separate sections for better UI display
                 "about_section": parsed_info.get("about_section"),  # LinkedIn About text
                 "experience_section": parsed_info.get("experience_section"),  # Career history
-                "skills": parsed_info.get("skills") or [],
+                "skills": skills[:15],  # Limit to 15 skills
                 "ai_summary": ai_summary,  # Exa's AI summary (for extra context)
                 # Existing fields
                 "headline": parsed_info.get("headline"),
                 "location": parsed_info.get("location"),
-                "experience_years": parsed_info.get("experience_years"),
+                "experience_years": experience_years,
                 # Full text for Claude analysis
                 "raw_text": profile_text[:3000] if profile_text else None
             }

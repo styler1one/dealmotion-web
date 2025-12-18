@@ -233,24 +233,39 @@ export function ContactSearchModal({
         })
         
         if (!error && data?.success) {
-          // Pre-fill About field - prioritize actual LinkedIn About section
-          if (data.about_section) {
+          // Determine what goes where:
+          // - About field: LinkedIn About section (primary) or AI summary (fallback)
+          // - Experience field: Experience section + years + skills, or career info from AI summary
+          
+          const hasAboutSection = !!data.about_section
+          const hasExperienceSection = !!data.experience_section
+          
+          // === ABOUT FIELD ===
+          if (hasAboutSection) {
             // Use the actual About section from LinkedIn
-            setLinkedinAbout(data.about_section)
+            setLinkedinAbout(data.about_section!)
           } else if (data.ai_summary) {
             // Fallback to AI summary if no About section found
             setLinkedinAbout(data.ai_summary)
           }
           
-          // Pre-fill Experience field - combine experience, skills, and years
+          // === EXPERIENCE FIELD ===
           const experienceParts: string[] = []
           
-          // Add experience section if available
-          if (data.experience_section) {
-            experienceParts.push(data.experience_section)
-          } else if (data.headline && data.headline !== match.title) {
-            // Fallback to headline if no experience section
-            experienceParts.push(`Current: ${data.headline}`)
+          if (hasExperienceSection) {
+            // Use the parsed experience section
+            experienceParts.push(data.experience_section!)
+          } else {
+            // No experience section - build from available data
+            if (data.headline) {
+              experienceParts.push(`Current Role: ${data.headline}`)
+            }
+            
+            // If we have both About section AND AI summary, 
+            // use AI summary for Experience (since About has the user's own text)
+            if (hasAboutSection && data.ai_summary) {
+              experienceParts.push(`\nCareer Background:\n${data.ai_summary}`)
+            }
           }
           
           // Add years of experience
@@ -258,7 +273,7 @@ export function ContactSearchModal({
             experienceParts.push(`\n${data.experience_years}+ years of experience`)
           }
           
-          // Add skills as a separate section
+          // Add skills
           if (data.skills && data.skills.length > 0) {
             experienceParts.push(`\nKey Skills: ${data.skills.slice(0, 10).join(', ')}`)
           }
@@ -666,7 +681,7 @@ export function ContactSearchModal({
                   placeholder="Paste their LinkedIn About section or write a brief summary of who they are..."
                   value={linkedinAbout}
                   onChange={(e) => setLinkedinAbout(e.target.value)}
-                  className={`min-h-[100px] text-sm ${linkedinAbout ? 'border-green-300 dark:border-green-700' : ''}`}
+                  className={`min-h-[150px] text-sm ${linkedinAbout ? 'border-green-300 dark:border-green-700' : ''}`}
                 />
               </div>
 
