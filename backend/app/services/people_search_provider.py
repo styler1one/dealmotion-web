@@ -397,11 +397,11 @@ class PeopleSearchProvider:
             print(f"[PEOPLE_SEARCH] Trying query: {query}", flush=True)
             
             def do_search(q=query):
-                # Neural search = embeddings-based = understands semantic meaning
-                # include_domains for LinkedIn only
+                # Keyword search = literal text matching (NOT semantic)
+                # Neural was matching "Kobus" to "Kube" (Kubernetes) - WRONG!
                 return self._primary_client.search_and_contents(
                     q,
-                    type="neural",  # Neural = precise semantic matching
+                    type="keyword",  # Keyword = exact text matching
                     include_domains=["linkedin.com"],  # Only LinkedIn
                     num_results=max_results * 2,
                     text={"max_characters": 300},
