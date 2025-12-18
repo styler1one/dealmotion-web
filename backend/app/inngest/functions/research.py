@@ -27,6 +27,7 @@ from app.services.gemini_researcher import GeminiResearcher
 from app.services.claude_researcher import ClaudeResearcher
 from app.services.kvk_api import KVKApi
 from app.services.website_scraper import get_website_scraper
+from app.services.research_enricher import get_research_enricher
 from app.i18n.config import DEFAULT_LANGUAGE
 
 logger = logging.getLogger(__name__)
@@ -36,6 +37,13 @@ gemini_researcher = GeminiResearcher()
 claude_researcher = ClaudeResearcher()
 kvk_api = KVKApi()
 website_scraper = get_website_scraper()
+research_enricher = get_research_enricher()
+
+# Log enricher availability at module load
+if research_enricher.is_available:
+    logger.info("[INNGEST_RESEARCH] Research enricher available - enhanced executive discovery enabled")
+else:
+    logger.info("[INNGEST_RESEARCH] Research enricher not available - using Gemini only")
 
 # Database client
 supabase = get_supabase_service()
@@ -113,11 +121,20 @@ async def research_company_fn(ctx, step):
     if website_url:
         website_result = await step.run("website-scrape", run_website_scrape, website_url)
     
-    # Step 6: Claude analysis (NO web search - just analyzes Gemini data)
+    # Step 5b: Research enrichment (executives, funding) - runs if enricher is available
+    enrichment_result = None
+    if research_enricher.is_available:
+        enrichment_result = await step.run(
+            "research-enrichment",
+            run_research_enrichment,
+            company_name, website_url, linkedin_url, country
+        )
+    
+    # Step 6: Claude analysis (NO web search - just analyzes Gemini data + enrichment)
     brief_content = await step.run(
         "claude-analysis",
         run_claude_analysis,
-        company_name, country, city, gemini_result, kvk_result, website_result, seller_context, language
+        company_name, country, city, gemini_result, kvk_result, website_result, enrichment_result, seller_context, language
     )
     
     # Step 7: Save results to database
@@ -322,6 +339,55 @@ async def run_website_scrape(website_url: str) -> dict:
         return {"success": False, "error": str(e), "source": "website"}
 
 
+async def run_research_enrichment(
+    company_name: str,
+    website_url: Optional[str],
+    linkedin_url: Optional[str],
+    country: Optional[str]
+) -> dict:
+    """
+    Run research enrichment for executives and funding data.
+    
+    Uses specialized neural search for:
+    - Executive discovery with LinkedIn profiles
+    - Funding/investor data from quality sources
+    - Similar company discovery
+    """
+    try:
+        logger.info(f"[INNGEST_RESEARCH] Starting enrichment for {company_name}")
+        
+        result = await research_enricher.enrich_company(
+            company_name=company_name,
+            website_url=website_url,
+            linkedin_url=linkedin_url,
+            country=country
+        )
+        
+        if result.success:
+            # Format as markdown for Claude
+            markdown = research_enricher.format_for_claude(result, company_name)
+            logger.info(
+                f"[INNGEST_RESEARCH] Enrichment complete: "
+                f"{len(result.executives)} executives, "
+                f"{'funding found' if result.funding else 'no funding'}"
+            )
+            return {
+                "success": True,
+                "source": "enricher",
+                "executives_count": len(result.executives),
+                "has_funding": result.funding is not None,
+                "similar_companies_count": len(result.similar_companies),
+                "markdown": markdown
+            }
+        else:
+            logger.warning(f"[INNGEST_RESEARCH] Enrichment failed: {result.errors}")
+            return {"success": False, "error": str(result.errors), "source": "enricher"}
+            
+    except Exception as e:
+        logger.error(f"[INNGEST_RESEARCH] Enrichment error: {e}")
+        return {"success": False, "error": str(e), "source": "enricher"}
+
+
 async def run_claude_analysis(
     company_name: str,
     country: Optional[str],
@@ -329,6 +395,7 @@ async def run_claude_analysis(
     gemini_result: dict,
     kvk_result: Optional[dict],
     website_result: Optional[dict],
+    enrichment_result: Optional[dict],
     seller_context: dict,
     language: str
 ) -> str:
@@ -336,7 +403,7 @@ async def run_claude_analysis(
     Run Claude analysis on collected data.
     
     This step does NOT perform web searches - Claude only analyzes
-    the data collected by Gemini and generates the final report.
+    the data collected by Gemini + enrichment and generates the final report.
     
     Much cheaper than Claude with web_search tool.
     """
@@ -349,6 +416,13 @@ async def run_claude_analysis(
     
     if not gemini_data:
         return f"# Research Failed: {company_name}\n\nNo research data available."
+    
+    # Merge enrichment data into gemini_data if available
+    if enrichment_result and enrichment_result.get("success"):
+        enrichment_markdown = enrichment_result.get("markdown", "")
+        if enrichment_markdown:
+            gemini_data = gemini_data + "\n\n" + enrichment_markdown
+            logger.info(f"[INNGEST_RESEARCH] Merged enrichment data ({len(enrichment_markdown)} chars)")
     
     try:
         result = await claude_researcher.analyze_research_data(
