@@ -421,6 +421,17 @@ class PeopleSearchProvider:
                     # Log ALL results to debug
                     print(f"[PEOPLE_SEARCH] Raw result: {result_title[:60]}... -> {url[:80]}", flush=True)
                     
+                    # Convert post/activity URLs to profile URLs
+                    # /posts/kobus-dijkhorst-8ab616_... -> /in/kobus-dijkhorst-8ab616/
+                    if "/posts/" in url.lower() or "/pulse/" in url.lower():
+                        import re
+                        # Extract username from post URL
+                        match = re.search(r'/(?:posts|pulse)/([a-zA-Z0-9-]+?)_', url)
+                        if match:
+                            username = match.group(1)
+                            url = f"https://www.linkedin.com/in/{username}/"
+                            print(f"[PEOPLE_SEARCH] Converted post to profile: {url}", flush=True)
+                    
                     # Only include personal LinkedIn profile URLs (not company pages)
                     if "/in/" not in url.lower():
                         print(f"[PEOPLE_SEARCH] SKIP (no /in/): {url[:60]}", flush=True)
