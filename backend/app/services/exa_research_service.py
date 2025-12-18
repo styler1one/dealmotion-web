@@ -499,7 +499,8 @@ class ExaComprehensiveResearcher:
         query: str,
         domains: List[str],
         num_results: int = 5,
-        get_contents: bool = True
+        get_contents: bool = True,
+        max_characters: int = 2000
     ) -> SearchTopicResult:
         """
         Execute a domain-filtered search for quality sources.
@@ -510,7 +511,7 @@ class ExaComprehensiveResearcher:
             include_domains=domains,
             num_results=num_results,
             get_contents=get_contents,
-            max_characters=2000
+            max_characters=max_characters
         )
     
     def _build_all_search_tasks(
@@ -1037,6 +1038,55 @@ class ExaComprehensiveResearcher:
                 )
             ))
         
+        # =========================================================================
+        # SECTION 7: SALES INTELLIGENCE (4 calls)
+        # Hypothesis-driven queries for commercial relevance
+        # =========================================================================
+        
+        # 31. Transformation Signals - Are they in a change period?
+        tasks.append((
+            "transformation_signals",
+            self._execute_search(
+                topic="transformation_signals",
+                query=f'{exact_name} {context} "digital transformation" OR "AI adoption" OR "modernization" OR "restructuring"',
+                num_results=8,
+                get_contents=True
+            )
+        ))
+        
+        # 32. Pain Point Indicators - What challenges do they mention?
+        tasks.append((
+            "pain_points",
+            self._execute_search(
+                topic="pain_points",
+                query=f'{exact_name} {context} "challenge" OR "struggling" OR "complexity" OR "legacy" OR "manual process"',
+                num_results=8,
+                get_contents=True
+            )
+        ))
+        
+        # 33. Growth Signals - Are they expanding?
+        tasks.append((
+            "growth_signals",
+            self._execute_search(
+                topic="growth_signals",
+                query=f'{exact_name} {context} "growth" OR "expansion" OR "scale" OR "new office" OR "international"',
+                num_results=8,
+                get_contents=True
+            )
+        ))
+        
+        # 34. Investment Priorities - Where are they spending?
+        tasks.append((
+            "investment_priorities",
+            self._execute_search(
+                topic="investment_priorities",
+                query=f'{exact_name} {context} "investing in" OR "budget" OR "priority" OR "focus area" OR "strategic initiative"',
+                num_results=8,
+                get_contents=True
+            )
+        ))
+        
         return tasks
     
     async def research_company(
@@ -1048,12 +1098,12 @@ class ExaComprehensiveResearcher:
         website_url: Optional[str] = None
     ) -> ComprehensiveResearchResult:
         """
-        Execute comprehensive company research with 30 searches in rate-limited batches.
+        Execute comprehensive company research with 34 searches in rate-limited batches.
         
         Rate Limiting Strategy:
         - Exa has a 5 requests/second limit
         - We execute in batches of 5 with 1 second delay between batches
-        - Total time: 6 batches * 1s = ~6 seconds overhead
+        - Total time: 7 batches * 1s = ~7 seconds overhead
         - This ensures we stay exactly at the rate limit
         
         Args:
@@ -1134,6 +1184,7 @@ class ExaComprehensiveResearcher:
             "employee_reviews": "DEEP INSIGHTS",
             "key_customers": "STRATEGIC INTELLIGENCE",
             "local_media": "LOCAL MARKET",
+            "transformation_signals": "SALES INTELLIGENCE",
         }
         
         current_section = None
