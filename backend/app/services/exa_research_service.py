@@ -1040,52 +1040,76 @@ class ExaComprehensiveResearcher:
         
         # =========================================================================
         # SECTION 7: SALES INTELLIGENCE (4 calls)
-        # Hypothesis-driven queries for commercial relevance
+        # Universal signals that work for any company type
         # =========================================================================
         
-        # 31. Transformation Signals - Are they in a change period?
+        # 31. Recent Changes - What's new at the company? (universal)
         tasks.append((
-            "transformation_signals",
-            self._execute_search(
-                topic="transformation_signals",
-                query=f'{exact_name} {context} "digital transformation" OR "AI adoption" OR "modernization" OR "restructuring"',
-                num_results=8,
-                get_contents=True
+            "recent_changes",
+            self._execute_news_search(
+                topic="recent_changes",
+                query=f'{exact_name} {context} announcement OR launched OR new OR change',
+                days_back=180,
+                num_results=10
             )
         ))
         
-        # 32. Pain Point Indicators - What challenges do they mention?
+        # 32. Company Challenges - What do they say about their own challenges?
+        if website_domain:
+            tasks.append((
+                "company_challenges",
+                self._execute_domain_search(
+                    topic="company_challenges",
+                    query=f"challenge problem improve better solution",
+                    domains=[website_domain],
+                    num_results=8,
+                    get_contents=True
+                )
+            ))
+        else:
+            tasks.append((
+                "company_challenges",
+                self._execute_search(
+                    topic="company_challenges",
+                    query=f'{exact_name} {context} challenge OR problem OR solution OR improve',
+                    num_results=8,
+                    get_contents=True
+                )
+            ))
+        
+        # 33. Growth & Expansion - Any expansion signals?
         tasks.append((
-            "pain_points",
-            self._execute_search(
-                topic="pain_points",
-                query=f'{exact_name} {context} "challenge" OR "struggling" OR "complexity" OR "legacy" OR "manual process"',
-                num_results=8,
-                get_contents=True
+            "growth_expansion",
+            self._execute_news_search(
+                topic="growth_expansion",
+                query=f'{exact_name} {context} growth OR expansion OR new office OR hiring OR acquired',
+                days_back=365,
+                num_results=8
             )
         ))
         
-        # 33. Growth Signals - Are they expanding?
-        tasks.append((
-            "growth_signals",
-            self._execute_search(
-                topic="growth_signals",
-                query=f'{exact_name} {context} "growth" OR "expansion" OR "scale" OR "new office" OR "international"',
-                num_results=8,
-                get_contents=True
-            )
-        ))
-        
-        # 34. Investment Priorities - Where are they spending?
-        tasks.append((
-            "investment_priorities",
-            self._execute_search(
-                topic="investment_priorities",
-                query=f'{exact_name} {context} "investing in" OR "budget" OR "priority" OR "focus area" OR "strategic initiative"',
-                num_results=8,
-                get_contents=True
-            )
-        ))
+        # 34. What They Value - Their own words about priorities
+        if website_domain:
+            tasks.append((
+                "company_values",
+                self._execute_domain_search(
+                    topic="company_values",
+                    query=f"important priority value believe focus",
+                    domains=[website_domain],
+                    num_results=8,
+                    get_contents=True
+                )
+            ))
+        else:
+            tasks.append((
+                "company_values",
+                self._execute_search(
+                    topic="company_values",
+                    query=f'{exact_name} {context} priority OR value OR believe OR focus',
+                    num_results=8,
+                    get_contents=True
+                )
+            ))
         
         return tasks
     
@@ -1184,7 +1208,7 @@ class ExaComprehensiveResearcher:
             "employee_reviews": "DEEP INSIGHTS",
             "key_customers": "STRATEGIC INTELLIGENCE",
             "local_media": "LOCAL MARKET",
-            "transformation_signals": "SALES INTELLIGENCE",
+            "recent_changes": "SALES INTELLIGENCE",
         }
         
         current_section = None
