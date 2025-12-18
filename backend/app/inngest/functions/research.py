@@ -906,11 +906,19 @@ async def save_research_results_v2(
     if kvk_result:
         sources["kvk"] = kvk_result
     
+    # Map source names to allowed source_type values (same as V1)
+    source_type_map = {
+        "exa_research": "web",  # Exa is web-based research
+        "kvk": "api",           # KVK is an API source
+    }
+    
     # Save individual sources
     for source_name, source_result in sources.items():
+        source_type = source_type_map.get(source_name, "web")
         try:
             supabase.table("research_sources").insert({
                 "research_id": research_id,
+                "source_type": source_type,
                 "source_name": source_name,
                 "data": source_result
             }).execute()
