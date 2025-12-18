@@ -234,7 +234,7 @@ class ResearchEnricher:
                 return self._client.search(
                     search_query,
                     type="auto",
-                    category="linkedin_company",
+                    category="people",  # Uses Exa's 1B+ LinkedIn profile index
                     num_results=15
                 )
             
@@ -324,7 +324,7 @@ class ResearchEnricher:
                     return self._client.search(
                         query,
                         type="auto",
-                        category="linkedin_company",
+                        category="people",  # Uses Exa's 1B+ LinkedIn profile index
                         num_results=3
                     )
                 
