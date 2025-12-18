@@ -447,7 +447,7 @@ class ContactAnalyzer:
 **Our Company**: {seller_context.get('company_name', 'Unknown')}
 """
         
-        # === PROFILE INFORMATION (from Brave/research/user) ===
+        # === PROFILE INFORMATION (from search provider/research) ===
         profile_section = ""
         if profile_info and profile_info.get("source") != "none":
             source = profile_info.get("source", "unknown")
@@ -463,6 +463,25 @@ class ContactAnalyzer:
                 profile_section += f"**Background**: {profile_info['background']}\n"
             if profile_info.get("recent_activity"):
                 profile_section += f"**Recent Activity**: {profile_info['recent_activity']}\n"
+            
+            # Add skills if available
+            skills = profile_info.get("skills", [])
+            if skills:
+                profile_section += f"**Skills**: {', '.join(skills[:10])}\n"
+            
+            # Add experience years if available
+            if profile_info.get("experience_years"):
+                profile_section += f"**Years of Experience**: {profile_info['experience_years']}\n"
+            
+            # Add location if available
+            if profile_info.get("location"):
+                profile_section += f"**Location**: {profile_info['location']}\n"
+            
+            # Include raw LinkedIn profile text for comprehensive analysis
+            # This gives Claude full context about the person
+            raw_text = profile_info.get("raw_profile_text")
+            if raw_text:
+                profile_section += f"\n**Full LinkedIn Profile Content**:\n```\n{raw_text[:2500]}\n```\n"
         
         # === USER-PROVIDED INFO (highest priority) ===
         user_info_section = ""

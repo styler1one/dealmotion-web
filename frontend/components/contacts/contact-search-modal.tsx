@@ -218,35 +218,53 @@ export function ContactSearchModal({
       try {
         const { data, error } = await api.post<{
           success: boolean
-          summary?: string
+          // New structured response
+          about_section?: string  // Actual LinkedIn About text
+          experience_section?: string  // Career history
+          skills?: string[]
+          ai_summary?: string  // AI-generated summary
+          // Basic info
           headline?: string
           location?: string
           experience_years?: number
-          skills?: string[]
           error?: string
         }>('/api/v1/contacts/enrich', {
           linkedin_url: match.linkedin_url
         })
         
         if (!error && data?.success) {
-          // Pre-fill fields with enriched data
-          if (data.summary) {
-            setLinkedinAbout(data.summary)
+          // Pre-fill About field - prioritize actual LinkedIn About section
+          if (data.about_section) {
+            // Use the actual About section from LinkedIn
+            setLinkedinAbout(data.about_section)
+          } else if (data.ai_summary) {
+            // Fallback to AI summary if no About section found
+            setLinkedinAbout(data.ai_summary)
           }
           
-          // Build experience string from enriched data
+          // Pre-fill Experience field - combine experience, skills, and years
           const experienceParts: string[] = []
-          if (data.headline && data.headline !== match.title) {
-            experienceParts.push(data.headline)
+          
+          // Add experience section if available
+          if (data.experience_section) {
+            experienceParts.push(data.experience_section)
+          } else if (data.headline && data.headline !== match.title) {
+            // Fallback to headline if no experience section
+            experienceParts.push(`Current: ${data.headline}`)
           }
+          
+          // Add years of experience
           if (data.experience_years) {
-            experienceParts.push(`${data.experience_years}+ years of experience`)
+            experienceParts.push(`\n${data.experience_years}+ years of experience`)
           }
+          
+          // Add skills as a separate section
           if (data.skills && data.skills.length > 0) {
-            experienceParts.push(`Skills: ${data.skills.slice(0, 8).join(', ')}`)
+            experienceParts.push(`\nKey Skills: ${data.skills.slice(0, 10).join(', ')}`)
           }
+          
           if (experienceParts.length > 0) {
-            setLinkedinExperience(experienceParts.join('\n\n'))
+            setLinkedinExperience(experienceParts.join('\n'))
           }
           
           // Update the match with location if found
@@ -631,56 +649,59 @@ export function ContactSearchModal({
             )}
 
             <div className="space-y-4">
+              {/* About Section - LinkedIn's "About" / Summary */}
               <div>
                 <Label htmlFor="linkedin-about" className="text-sm font-medium flex items-center gap-1.5">
-                  {t('contacts.search.aboutLabel')}
-                  {linkedinAbout && <span className="text-xs text-green-600 dark:text-green-400">(auto-filled)</span>}
+                  About (LinkedIn)
+                  {linkedinAbout && <span className="text-xs text-green-600 dark:text-green-400">(from profile)</span>}
                 </Label>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-1.5">
                   {linkedinAbout 
-                    ? 'Review the found summary. Edit or add more details if needed.'
-                    : t('contacts.search.aboutHint')
+                    ? 'This is their LinkedIn "About" section. Review and edit if needed.'
+                    : 'Copy their LinkedIn "About" section here, or describe who they are.'
                   }
                 </p>
                 <Textarea
                   id="linkedin-about"
-                  placeholder={t('contacts.search.aboutPlaceholder')}
+                  placeholder="Paste their LinkedIn About section or write a brief summary of who they are..."
                   value={linkedinAbout}
                   onChange={(e) => setLinkedinAbout(e.target.value)}
-                  className={`min-h-[80px] text-sm ${linkedinAbout ? 'border-green-300 dark:border-green-700' : ''}`}
+                  className={`min-h-[100px] text-sm ${linkedinAbout ? 'border-green-300 dark:border-green-700' : ''}`}
                 />
               </div>
 
+              {/* Experience & Skills Section */}
               <div>
                 <Label htmlFor="linkedin-experience" className="text-sm font-medium flex items-center gap-1.5">
-                  {t('contacts.search.experienceLabel')}
-                  {linkedinExperience && <span className="text-xs text-green-600 dark:text-green-400">(auto-filled)</span>}
+                  Experience & Skills
+                  {linkedinExperience && <span className="text-xs text-green-600 dark:text-green-400">(from profile)</span>}
                 </Label>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-1.5">
                   {linkedinExperience
-                    ? 'Review skills and experience. Add more details from their profile if available.'
-                    : t('contacts.search.experienceHint')
+                    ? 'Career history and skills from their profile. Add more details if available.'
+                    : 'Add their work experience, past roles, and key skills.'
                   }
                 </p>
                 <Textarea
                   id="linkedin-experience"
-                  placeholder={t('contacts.search.experiencePlaceholder')}
+                  placeholder="Current role, past positions, years of experience, key skills..."
                   value={linkedinExperience}
                   onChange={(e) => setLinkedinExperience(e.target.value)}
-                  className={`min-h-[80px] text-sm ${linkedinExperience ? 'border-green-300 dark:border-green-700' : ''}`}
+                  className={`min-h-[100px] text-sm ${linkedinExperience ? 'border-green-300 dark:border-green-700' : ''}`}
                 />
               </div>
 
+              {/* Your Notes Section */}
               <div>
                 <Label htmlFor="additional-notes" className="text-sm font-medium">
-                  {t('contacts.search.notesLabel')}
+                  Your Notes
                 </Label>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-1.5">
-                  {t('contacts.search.notesHint')}
+                  Add any personal observations, meeting notes, or context that could help.
                 </p>
                 <Textarea
                   id="additional-notes"
-                  placeholder={t('contacts.search.notesPlaceholder')}
+                  placeholder='E.g. "Met at event X", "Referred by John", "Interested in our product Y"...'
                   value={additionalNotes}
                   onChange={(e) => setAdditionalNotes(e.target.value)}
                   className="min-h-[60px] text-sm"

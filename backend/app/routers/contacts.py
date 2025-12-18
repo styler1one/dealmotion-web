@@ -142,13 +142,18 @@ class ProfileEnrichRequest(BaseModel):
 
 
 class ProfileEnrichResponse(BaseModel):
-    """Response with enriched profile data."""
+    """Response with enriched profile data - structured for UI display."""
     success: bool = False
-    summary: Optional[str] = None
+    # Structured sections for UI
+    about_section: Optional[str] = None  # LinkedIn About text (user's own description)
+    experience_section: Optional[str] = None  # Career history text
+    skills: Optional[List[str]] = None  # Extracted skills list
+    ai_summary: Optional[str] = None  # AI-generated summary for extra context
+    # Basic profile info
     headline: Optional[str] = None
     location: Optional[str] = None
     experience_years: Optional[int] = None
-    skills: Optional[List[str]] = None
+    # Error handling
     error: Optional[str] = None
 
 
@@ -593,11 +598,15 @@ async def enrich_contact_profile(
         if result.get("success"):
             return ProfileEnrichResponse(
                 success=True,
-                summary=result.get("summary"),
+                # Structured sections
+                about_section=result.get("about_section"),
+                experience_section=result.get("experience_section"),
+                skills=result.get("skills"),
+                ai_summary=result.get("ai_summary"),
+                # Basic info
                 headline=result.get("headline"),
                 location=result.get("location"),
-                experience_years=result.get("experience_years"),
-                skills=result.get("skills")
+                experience_years=result.get("experience_years")
             )
         else:
             return ProfileEnrichResponse(
