@@ -301,83 +301,20 @@ class ExaResearchService:
         linkedin_url: Optional[str] = None,
         website_url: Optional[str] = None
     ) -> str:
-        """Build research instructions for Exa."""
+        """Build research instructions for Exa. Max 4096 chars."""
         location_context = f" ({country})" if country else ""
-        linkedin_context = f"\nLinkedIn: {linkedin_url}" if linkedin_url else ""
-        website_context = f"\nWebsite: {website_url}" if website_url else ""
+        linkedin_context = f" LinkedIn: {linkedin_url}" if linkedin_url else ""
+        website_context = f" Website: {website_url}" if website_url else ""
         
-        return f"""Research {company_name}{location_context} comprehensively for B2B sales intelligence.
-{linkedin_context}{website_context}
+        # Keep under 4096 chars - Exa API limit
+        return f"""Research {company_name}{location_context} for B2B sales.{linkedin_context}{website_context}
 
-1. COMPANY BASICS
-   - Legal name and trading name (if different)
-   - Founded date
-   - Headquarters location
-   - Other office locations
-   - Industry and sub-sector
-   - Employee count range
-   - Estimated annual revenue (if available)
-   - Company description and mission statement
-   - Website URL
-   - LinkedIn company URL
-
-2. LEADERSHIP TEAM (CRITICAL - Include LinkedIn URLs)
-   a) C-Suite Executives:
-      - CEO/Managing Director with LinkedIn URL
-      - CFO/Finance Director with LinkedIn URL
-      - CTO/CIO with LinkedIn URL
-      - COO with LinkedIn URL
-      - CMO with LinkedIn URL
-      - Other C-level executives
-   b) Senior Leadership:
-      - VPs and Directors with LinkedIn URLs
-      - Department heads
-   c) Board of Directors:
-      - Board members with affiliations
-      - Advisory board members if available
-   d) Recent Leadership Changes (last 12 months):
-      - New hires at executive level
-      - Departures
-
-3. OWNERSHIP & FUNDING
-   a) Ownership Structure:
-      - Private / Public / PE-backed / VC-backed / Family-owned
-      - Parent company (if subsidiary)
-      - Major shareholders
-   b) Complete Funding History:
-      - Total funding raised
-      - Each funding round: date, type (Seed/Series A/B/C), amount, lead investor
-      - Key investors with fund names
-   c) Recent M&A Activity:
-      - Acquisitions made
-      - If they were acquired
-
-4. RECENT NEWS & EVENTS (last 6 months)
-   - Major announcements with dates and source URLs
-   - Partnerships and collaborations
-   - Product launches
-   - Awards and recognition
-   - Media coverage
-
-5. BUSINESS SIGNALS
-   a) Hiring Activity:
-      - Current job openings count
-      - Departments hiring most
-      - Hiring velocity (growing/stable/shrinking)
-   b) Growth Signals:
-      - Expansion news
-      - New market entry
-      - New product lines
-   c) Technology Stack (if discoverable):
-      - CRM system
-      - Cloud provider (AWS/Azure/GCP)
-      - Key technology vendors
-
-6. COMPETITIVE LANDSCAPE
-   - Main competitors
-   - Market positioning (leader/challenger/niche)
-   - Key differentiators
-"""
+Find: 1) Company info (name, founded, HQ, industry, employees, revenue, description)
+2) Leadership with LinkedIn URLs (CEO, CFO, CTO, COO, CMO, VPs, Board members)
+3) Ownership & funding (type, investors, funding rounds with dates/amounts)
+4) Recent news (last 6 months, with source URLs)
+5) Hiring activity and growth signals
+6) Competitors and market position"""
     
     async def start_research(
         self,
@@ -414,6 +351,8 @@ class ExaResearchService:
         }
         
         try:
+            logger.info(f"[EXA_RESEARCH] Request payload: model={model}, instructions_len={len(instructions)}")
+            
             async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.post(
                     f"{self.BASE_URL}/research/v1",
@@ -423,7 +362,12 @@ class ExaResearchService:
                     },
                     json=payload
                 )
-                response.raise_for_status()
+                
+                if response.status_code >= 400:
+                    error_body = response.text
+                    logger.error(f"[EXA_RESEARCH] API error {response.status_code}: {error_body}")
+                    return {"success": False, "error": f"{response.status_code}: {error_body}"}
+                
                 data = response.json()
                 
                 research_id = data.get("researchId")
