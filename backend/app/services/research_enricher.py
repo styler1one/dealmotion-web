@@ -331,15 +331,23 @@ class ResearchEnricher:
                 else:
                     confidence = 0.5
                 
+                # Exa's ranking position matters - top results are more likely correct
+                result_position = response.results.index(result)
+                is_top_result = result_position < 5
+                
                 # Log what we found
                 logger.info(
-                    f"[RESEARCH_ENRICHER] Candidate: {name} | {title[:50] if title else 'N/A'}... | "
+                    f"[RESEARCH_ENRICHER] #{result_position+1} {name} | {title[:50] if title else 'N/A'}... | "
                     f"company_match={company_match}, is_exec={is_executive}, conf={confidence}"
                 )
                 
-                # STRICT: Only include if company actually matches
-                # Without company match, we're just finding random executives from other companies
+                # Strategy: Trust Exa's ranking + validate where possible
+                # - Company match = high confidence (verified)
+                # - Top 5 results with executive title = medium confidence (Exa found them)
+                # - Lower results without match = low confidence
+                
                 if company_match:
+                    # Verified company match - include with high confidence
                     executives.append(ExecutiveProfile(
                         name=name,
                         title=title or "Executive",
@@ -348,15 +356,25 @@ class ResearchEnricher:
                         confidence=confidence,
                         source_url=url
                     ))
-                elif is_executive and len(executives) < 3:
-                    # Only take a few non-matched executives as fallback
-                    # Mark them with lower confidence
+                elif is_top_result and is_executive:
+                    # Top Exa result with executive title - trust Exa's relevance ranking
+                    # CEO's often use taglines instead of company names (e.g., "From Hype to Healthspan")
                     executives.append(ExecutiveProfile(
                         name=name,
                         title=title or "Executive",
                         linkedin_url=url,
                         headline=title,
-                        confidence=0.4,  # Low confidence - not verified company match
+                        confidence=0.7,  # Medium confidence - Exa ranked high but no text match
+                        source_url=url
+                    ))
+                elif is_executive and len([e for e in executives if e.confidence < 0.6]) < 3:
+                    # Fallback: take a few more executives but with low confidence
+                    executives.append(ExecutiveProfile(
+                        name=name,
+                        title=title or "Executive",
+                        linkedin_url=url,
+                        headline=title,
+                        confidence=0.4,  # Low confidence - not verified
                         source_url=url
                     ))
             
