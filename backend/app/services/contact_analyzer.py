@@ -155,6 +155,9 @@ class ContactAnalyzer:
         
         try:
             # STEP 3: Claude analysis WITHOUT web tools (85% cost reduction!)
+            import time
+            start_time = time.time()
+            
             logger.info(f"[CONTACT_ANALYZER] Starting Claude analysis (no web tools)")
             print(f"[CONTACT_ANALYZER] Starting Claude API call...", flush=True)
             
@@ -169,11 +172,17 @@ class ContactAnalyzer:
                 # NO tools parameter = no web search = much cheaper!
             )
             
+            elapsed = time.time() - start_time
+            print(f"[CONTACT_ANALYZER] ✅ Claude API call completed in {elapsed:.1f}s", flush=True)
+            logger.info(f"[CONTACT_ANALYZER] Claude API call completed in {elapsed:.1f}s")
+            
             # Extract text from all text blocks
             analysis_text = ""
             for block in response.content:
                 if hasattr(block, 'text'):
                     analysis_text += block.text
+            
+            print(f"[CONTACT_ANALYZER] Response length: {len(analysis_text)} chars", flush=True)
             
             # Parse the analysis into structured data
             return self._parse_analysis(analysis_text, contact_name, contact_role, linkedin_url)
@@ -428,12 +437,12 @@ class ContactAnalyzer:
         lang_instruction = get_language_instruction(language)
         company_name = company_context.get("company_name", "Unknown") if company_context else "Unknown"
         
-        # === COMPANY CONTEXT (compact) ===
+        # === COMPANY CONTEXT (full for quality) ===
         company_section = ""
         if company_context:
             industry = company_context.get("industry", "")
-            # Use shorter brief excerpt - we don't need the full thing
-            brief = company_context.get("brief_content", "")[:1500] if company_context.get("brief_content") else ""
+            # Use full brief for best quality analysis
+            brief = company_context.get("brief_content", "") or ""
             
             company_section = f"""## COMPANY CONTEXT
 **Company**: {company_name}
@@ -466,10 +475,10 @@ class ContactAnalyzer:
                 if profile_info.get("headline"):
                     profile_section += f"**Headline**: {profile_info['headline']}\n"
                 if profile_info.get("about"):
-                    about_text = str(profile_info['about'])[:500]
+                    about_text = str(profile_info['about'])
                     profile_section += f"**About**: {about_text}\n"
                 if profile_info.get("experience"):
-                    exp_text = str(profile_info['experience'])[:500]
+                    exp_text = str(profile_info['experience'])
                     profile_section += f"**Experience**: {exp_text}\n"
                 if profile_info.get("background"):
                     profile_section += f"**Background**: {profile_info['background']}\n"
@@ -497,7 +506,7 @@ class ContactAnalyzer:
                 # This gives Claude full context about the person
                 raw_text = profile_info.get("raw_profile_text")
                 if raw_text and isinstance(raw_text, str):
-                    profile_section += f"\n**Full LinkedIn Profile Content**:\n```\n{raw_text[:2500]}\n```\n"
+                    profile_section += f"\n**Full LinkedIn Profile Content**:\n```\n{raw_text}\n```\n"
         except Exception as e:
             logger.error(f"[CONTACT_ANALYZER] Error building profile section: {e}")
             profile_section = ""  # Continue without profile section
