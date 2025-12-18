@@ -13,5 +13,7 @@
 			"path": "../dealmotion-pwa"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"powershell.cwd": "dealmotion-web"
+	}
 }

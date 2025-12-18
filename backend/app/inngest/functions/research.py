@@ -602,7 +602,7 @@ async def research_company_v2_fn(ctx, step):
     exa_result = await step.run(
         "exa-research",
         run_exa_research,
-        company_name, country, linkedin_url, website_url
+        company_name, country, city, linkedin_url, website_url
     )
     
     # Step 4: KVK lookup (if Dutch company)
@@ -696,6 +696,7 @@ async def research_company_v2_fn(ctx, step):
 async def run_exa_research(
     company_name: str,
     country: Optional[str],
+    city: Optional[str],
     linkedin_url: Optional[str],
     website_url: Optional[str]
 ) -> dict:
@@ -713,6 +714,7 @@ async def run_exa_research(
         result = await exa_research_service.research_company(
             company_name=company_name,
             country=country,
+            city=city,
             linkedin_url=linkedin_url,
             website_url=website_url,
             model="exa-research",  # Use standard model (faster, cheaper)

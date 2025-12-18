@@ -298,11 +298,21 @@ class ExaResearchService:
         self,
         company_name: str,
         country: Optional[str] = None,
+        city: Optional[str] = None,
         linkedin_url: Optional[str] = None,
         website_url: Optional[str] = None
     ) -> str:
         """Build research instructions for Exa. Max 4096 chars."""
-        location_context = f" ({country})" if country else ""
+        # Build location context
+        if city and country:
+            location_context = f" ({city}, {country})"
+        elif country:
+            location_context = f" ({country})"
+        elif city:
+            location_context = f" ({city})"
+        else:
+            location_context = ""
+        
         linkedin_context = f" LinkedIn: {linkedin_url}" if linkedin_url else ""
         website_context = f" Website: {website_url}" if website_url else ""
         
@@ -320,6 +330,7 @@ Find: 1) Company info (name, founded, HQ, industry, employees, revenue, descript
         self,
         company_name: str,
         country: Optional[str] = None,
+        city: Optional[str] = None,
         linkedin_url: Optional[str] = None,
         website_url: Optional[str] = None,
         model: str = "exa-research"
@@ -330,6 +341,7 @@ Find: 1) Company info (name, founded, HQ, industry, employees, revenue, descript
         Args:
             company_name: Company to research
             country: Country for regional context
+            city: City for more specific location
             linkedin_url: Company LinkedIn URL
             website_url: Company website URL
             model: exa-research (faster) or exa-research-pro (more thorough)
@@ -341,7 +353,7 @@ Find: 1) Company info (name, founded, HQ, industry, employees, revenue, descript
             return {"success": False, "error": "Service not available"}
         
         instructions = self._build_instructions(
-            company_name, country, linkedin_url, website_url
+            company_name, country, city, linkedin_url, website_url
         )
         
         payload = {
@@ -600,6 +612,7 @@ Find: 1) Company info (name, founded, HQ, industry, employees, revenue, descript
         self,
         company_name: str,
         country: Optional[str] = None,
+        city: Optional[str] = None,
         linkedin_url: Optional[str] = None,
         website_url: Optional[str] = None,
         model: str = "exa-research",
@@ -613,6 +626,7 @@ Find: 1) Company info (name, founded, HQ, industry, employees, revenue, descript
         Args:
             company_name: Company to research
             country: Country for regional context
+            city: City for more specific location
             linkedin_url: Company LinkedIn URL
             website_url: Company website URL
             model: exa-research or exa-research-pro
@@ -625,7 +639,7 @@ Find: 1) Company info (name, founded, HQ, industry, employees, revenue, descript
         
         # Start research
         start_result = await self.start_research(
-            company_name, country, linkedin_url, website_url, model
+            company_name, country, city, linkedin_url, website_url, model
         )
         
         if not start_result.get("success"):
