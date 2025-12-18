@@ -524,16 +524,42 @@ class ExaComprehensiveResearcher:
         """
         Build all 30 search tasks with their parameters.
         
+        Query Strategy for Disambiguation:
+        - Use exact company name with quotes: "Cmotions"
+        - Add website domain where possible: site:cmotions.com
+        - Include location context: Netherlands, Amsterdam
+        - Add sector hints from LinkedIn/website if known
+        
         Returns list of (topic, coroutine) tuples.
         """
         tasks = []
         
-        # Location context
+        # Location context for people searches
         location_hint = ""
         if city and country:
             location_hint = f" {city} {country}"
         elif country:
             location_hint = f" {country}"
+        
+        # Extract website domain for more precise searches
+        website_domain = ""
+        if website_url:
+            website_domain = website_url.replace("https://", "").replace("http://", "").split("/")[0]
+        
+        # Extract LinkedIn company slug for better matching
+        company_slug = ""
+        if linkedin_url:
+            import re
+            match = re.search(r'linkedin\.com/company/([^/?\s]+)', linkedin_url)
+            if match:
+                company_slug = match.group(1)
+        
+        # Build exact search term with quotes for disambiguation
+        # This helps Exa find the exact company, not similar names
+        exact_name = f'"{company_name}"'
+        
+        # Context string for general searches
+        context = f"{country}" if country else ""
         
         # Get local sources
         local_sources = self._get_local_sources(country)
@@ -542,27 +568,27 @@ class ExaComprehensiveResearcher:
         # SECTION 1: COMPANY INFORMATION (4 calls)
         # =========================================================================
         
-        # 1. Company Identity
+        # 1. Company Identity - Use exact name + quality sources
         tasks.append((
             "company_identity",
             self._execute_domain_search(
                 topic="company_identity",
-                query=f"{company_name} company founded headquarters industry employees",
-                domains=["linkedin.com", "crunchbase.com", "wikipedia.org", "bloomberg.com"],
+                query=f'{exact_name} {context} company profile founded headquarters employees',
+                domains=["linkedin.com", "crunchbase.com", "pitchbook.com", "dealroom.co"],
                 num_results=5,
                 get_contents=True
             )
         ))
         
-        # 2. Business Model (website content)
-        if website_url:
+        # 2. Business Model - Prefer company's own website
+        if website_domain:
             tasks.append((
                 "business_model",
                 self._execute_domain_search(
                     topic="business_model",
-                    query=f"{company_name} about services what we do business model",
-                    domains=[website_url.replace("https://", "").replace("http://", "").split("/")[0]],
-                    num_results=5,
+                    query=f"about services solutions",
+                    domains=[website_domain],
+                    num_results=8,
                     get_contents=True
                 )
             ))
@@ -571,31 +597,44 @@ class ExaComprehensiveResearcher:
                 "business_model",
                 self._execute_search(
                     topic="business_model",
-                    query=f"{company_name} about us services business model what they do",
+                    query=f'{exact_name} {context} about us services what we do',
                     num_results=5,
                     get_contents=True
                 )
             ))
         
-        # 3. Products & Services
-        tasks.append((
-            "products_services",
-            self._execute_search(
-                topic="products_services",
-                query=f"{company_name} products services solutions platform pricing",
-                num_results=8,
-                get_contents=True,
-                max_characters=1500
-            )
-        ))
+        # 3. Products & Services - Search company website + general
+        if website_domain:
+            tasks.append((
+                "products_services",
+                self._execute_domain_search(
+                    topic="products_services",
+                    query=f"products services solutions platform",
+                    domains=[website_domain],
+                    num_results=8,
+                    get_contents=True,
+                    max_characters=1500
+                )
+            ))
+        else:
+            tasks.append((
+                "products_services",
+                self._execute_search(
+                    topic="products_services",
+                    query=f'{exact_name} {context} products services solutions',
+                    num_results=8,
+                    get_contents=True,
+                    max_characters=1500
+                )
+            ))
         
-        # 4. Financials & Funding
+        # 4. Financials & Funding - Exact name on quality sources
         tasks.append((
             "financials_funding",
             self._execute_domain_search(
                 topic="financials_funding",
-                query=f"{company_name} funding revenue valuation series investment",
-                domains=["crunchbase.com", "pitchbook.com", "techcrunch.com", "forbes.com", "dealroom.co"],
+                query=f'{exact_name} {context} funding revenue valuation investment',
+                domains=["crunchbase.com", "pitchbook.com", "dealroom.co", "techcrunch.com"],
                 num_results=5,
                 get_contents=True
             )
@@ -605,125 +644,152 @@ class ExaComprehensiveResearcher:
         # SECTION 2: PEOPLE & LEADERSHIP (6 calls)
         # =========================================================================
         
-        # 5. CEO & Founder
+        # Build people search query with company slug for better matching
+        people_company_ref = company_slug if company_slug else company_name
+        
+        # 5. CEO & Founder - Use LinkedIn slug if available
         tasks.append((
             "ceo_founder",
             self._execute_people_search(
                 topic="ceo_founder",
-                query=f"CEO founder managing director at {company_name}{location_hint}",
-                num_results=5
+                query=f'CEO founder "managing director" at {people_company_ref}{location_hint}',
+                num_results=8
             )
         ))
         
-        # 6. C-Suite
+        # 6. C-Suite - Search for each role
         tasks.append((
             "c_suite",
             self._execute_people_search(
                 topic="c_suite",
-                query=f"CFO CTO COO CMO CRO CHRO chief officer at {company_name}{location_hint}",
-                num_results=10
+                query=f'CFO CTO COO CMO CRO "chief" at {people_company_ref}{location_hint}',
+                num_results=12
             )
         ))
         
-        # 7. Senior Leadership
+        # 7. Senior Leadership - Directors and VPs
         tasks.append((
             "senior_leadership",
             self._execute_people_search(
                 topic="senior_leadership",
-                query=f"VP Vice President Director Head of at {company_name}",
-                num_results=10
+                query=f'"director" OR "VP" OR "head of" at {people_company_ref}{location_hint}',
+                num_results=12
             )
         ))
         
-        # 8. Board & Advisors
+        # 8. Board & Advisors - Exact name on quality sources
         tasks.append((
             "board_advisors",
-            self._execute_search(
+            self._execute_domain_search(
                 topic="board_advisors",
-                query=f"{company_name} board of directors advisory investors shareholders",
-                include_domains=["linkedin.com", "crunchbase.com", "pitchbook.com"],
+                query=f'{exact_name} {context} board directors investors shareholders advisory',
+                domains=["linkedin.com", "crunchbase.com", "pitchbook.com", "dealroom.co"],
                 num_results=8,
                 get_contents=True
             )
         ))
         
-        # 9. Leadership Changes
+        # 9. Leadership Changes - Recent news with exact name
         tasks.append((
             "leadership_changes",
             self._execute_news_search(
                 topic="leadership_changes",
-                query=f"{company_name} new CEO CFO CTO hired appointed joined leadership",
+                query=f'{exact_name} CEO CFO CTO appointed hired joined leadership change',
                 days_back=365,
-                num_results=5
+                num_results=8
             )
         ))
         
-        # 10. Founder Story
-        tasks.append((
-            "founder_story",
-            self._execute_search(
-                topic="founder_story",
-                query=f"{company_name} founder story origin how started why founded vision",
-                num_results=5,
-                get_contents=True
-            )
-        ))
+        # 10. Founder Story - Search company website + general
+        if website_domain:
+            tasks.append((
+                "founder_story",
+                self._execute_domain_search(
+                    topic="founder_story",
+                    query=f"about founder story history mission vision",
+                    domains=[website_domain],
+                    num_results=5,
+                    get_contents=True
+                )
+            ))
+        else:
+            tasks.append((
+                "founder_story",
+                self._execute_search(
+                    topic="founder_story",
+                    query=f'{exact_name} {context} founder story origin history started',
+                    num_results=5,
+                    get_contents=True
+                )
+            ))
         
         # =========================================================================
         # SECTION 3: MARKET INTELLIGENCE (5 calls)
         # =========================================================================
         
-        # 11. Recent News
+        # 11. Recent News - Exact name for precision
         tasks.append((
             "recent_news",
             self._execute_news_search(
                 topic="recent_news",
-                query=f"{company_name} news announcement launch",
+                query=f'{exact_name} {context} news announcement',
                 days_back=90,
                 num_results=10
             )
         ))
         
-        # 12. Partnerships & Acquisitions
+        # 12. Partnerships & Acquisitions - Exact name
         tasks.append((
             "partnerships_acquisitions",
             self._execute_search(
                 topic="partnerships_acquisitions",
-                query=f"{company_name} partnership acquisition merger deal alliance",
+                query=f'{exact_name} {context} partnership acquisition merger alliance',
                 num_results=8,
                 get_contents=True
             )
         ))
         
-        # 13. Hiring Signals
-        tasks.append((
-            "hiring_signals",
-            self._execute_search(
-                topic="hiring_signals",
-                query=f"{company_name} jobs careers hiring vacatures open positions we are hiring",
-                num_results=8,
-                get_contents=True
-            )
-        ))
+        # 13. Hiring Signals - Search company career page + job boards
+        if website_domain:
+            tasks.append((
+                "hiring_signals",
+                self._execute_domain_search(
+                    topic="hiring_signals",
+                    query=f"jobs careers vacatures werken",
+                    domains=[website_domain, "linkedin.com"],
+                    num_results=8,
+                    get_contents=True
+                )
+            ))
+        else:
+            tasks.append((
+                "hiring_signals",
+                self._execute_search(
+                    topic="hiring_signals",
+                    query=f'{exact_name} {context} jobs careers hiring vacatures',
+                    num_results=8,
+                    get_contents=True
+                )
+            ))
         
-        # 14. Technology Stack
+        # 14. Technology Stack - Exact name on tech sources
         tasks.append((
             "technology_stack",
             self._execute_domain_search(
                 topic="technology_stack",
-                query=f"{company_name} technology stack uses powered by",
-                domains=["stackshare.io", "builtwith.com", "g2.com", "siftery.com"],
+                query=f'{exact_name} technology stack',
+                domains=["stackshare.io", "builtwith.com", "g2.com", "siftery.com", "wappalyzer.com"],
                 num_results=5,
                 get_contents=True
             )
         ))
         
-        # 15. Competition
+        # 15. Competition - Exact name + alternatives
         tasks.append((
             "competition",
             self._execute_search(
                 topic="competition",
-                query=f"{company_name} competitors vs alternative comparison market share",
+                query=f'{exact_name} {context} competitors alternatives vs comparison',
                 num_results=10,
                 get_contents=True
             )
@@ -733,80 +799,104 @@ class ExaComprehensiveResearcher:
         # SECTION 4: DEEP INSIGHTS (7 calls)
         # =========================================================================
         
-        # 16. Employee Reviews
+        # 16. Employee Reviews - Exact name on review sites
         tasks.append((
             "employee_reviews",
             self._execute_domain_search(
                 topic="employee_reviews",
-                query=f"{company_name} reviews working culture",
-                domains=["glassdoor.com", "indeed.com", "kununu.com", "comparably.com"],
+                query=f'{exact_name} reviews',
+                domains=["glassdoor.com", "glassdoor.nl", "indeed.com", "kununu.com", "comparably.com"],
                 num_results=5,
                 get_contents=True
             )
         ))
         
-        # 17. Events & Speaking
-        tasks.append((
-            "events_speaking",
-            self._execute_search(
-                topic="events_speaking",
-                query=f"{company_name} conference speaker event webinar summit presentation",
-                num_results=8,
-                get_contents=True
-            )
-        ))
+        # 17. Events & Speaking - Search company website + general
+        if website_domain:
+            tasks.append((
+                "events_speaking",
+                self._execute_domain_search(
+                    topic="events_speaking",
+                    query=f"event conference webinar summit speaker",
+                    domains=[website_domain],
+                    num_results=8,
+                    get_contents=True
+                )
+            ))
+        else:
+            tasks.append((
+                "events_speaking",
+                self._execute_search(
+                    topic="events_speaking",
+                    query=f'{exact_name} {context} conference speaker event webinar',
+                    num_results=8,
+                    get_contents=True
+                )
+            ))
         
-        # 18. Awards & Recognition
+        # 18. Awards & Recognition - Exact name
         tasks.append((
             "awards_recognition",
             self._execute_search(
                 topic="awards_recognition",
-                query=f"{company_name} award winner best ranking fastest growing recognition",
+                query=f'{exact_name} {context} award winner ranking recognition',
                 num_results=8,
                 get_contents=True
             )
         ))
         
-        # 19. Media & Interviews
+        # 19. Media & Interviews - Exact name
         tasks.append((
             "media_interviews",
             self._execute_search(
                 topic="media_interviews",
-                query=f"{company_name} CEO founder interview podcast featured profile",
+                query=f'{exact_name} {context} CEO founder interview podcast',
                 num_results=8,
                 get_contents=True
             )
         ))
         
-        # 20. Customer Reviews
+        # 20. Customer Reviews - Exact name on review platforms
         tasks.append((
             "customer_reviews",
             self._execute_domain_search(
                 topic="customer_reviews",
-                query=f"{company_name} reviews",
-                domains=["g2.com", "capterra.com", "trustpilot.com", "softwareadvice.com", "getapp.com"],
+                query=f'{exact_name} reviews',
+                domains=["g2.com", "capterra.com", "trustpilot.com", "softwareadvice.com"],
                 num_results=5,
                 get_contents=True
             )
         ))
         
-        # 21. Challenges & Priorities
-        tasks.append((
-            "challenges_priorities",
-            self._execute_search(
-                topic="challenges_priorities",
-                query=f"{company_name} strategy priorities challenges transformation investing focus",
-                num_results=8,
-                get_contents=True
-            )
-        ))
+        # 21. Challenges & Priorities - Search company website for strategy
+        if website_domain:
+            tasks.append((
+                "challenges_priorities",
+                self._execute_domain_search(
+                    topic="challenges_priorities",
+                    query=f"strategy vision priorities focus transformation",
+                    domains=[website_domain],
+                    num_results=8,
+                    get_contents=True
+                )
+            ))
+        else:
+            tasks.append((
+                "challenges_priorities",
+                self._execute_search(
+                    topic="challenges_priorities",
+                    query=f'{exact_name} {context} strategy priorities transformation focus',
+                    num_results=8,
+                    get_contents=True
+                )
+            ))
         
-        # 22. Certifications
+        # 22. Certifications - Exact name
         tasks.append((
             "certifications",
             self._execute_search(
                 topic="certifications",
-                query=f"{company_name} ISO SOC2 GDPR certified compliance security certification",
+                query=f'{exact_name} {context} ISO SOC2 GDPR certified compliance',
                 num_results=5,
                 get_contents=True
             )
@@ -816,97 +906,133 @@ class ExaComprehensiveResearcher:
         # SECTION 5: STRATEGIC INTELLIGENCE (6 calls)
         # =========================================================================
         
-        # 23. Key Customers
-        tasks.append((
-            "key_customers",
-            self._execute_search(
-                topic="key_customers",
-                query=f"{company_name} customers clients case study trusted by success story",
-                num_results=10,
-                get_contents=True
-            )
-        ))
+        # 23. Key Customers - Search company website for case studies
+        if website_domain:
+            tasks.append((
+                "key_customers",
+                self._execute_domain_search(
+                    topic="key_customers",
+                    query=f"customers clients case study success story",
+                    domains=[website_domain],
+                    num_results=10,
+                    get_contents=True
+                )
+            ))
+        else:
+            tasks.append((
+                "key_customers",
+                self._execute_search(
+                    topic="key_customers",
+                    query=f'{exact_name} {context} customers clients case study',
+                    num_results=10,
+                    get_contents=True
+                )
+            ))
         
-        # 24. Risk Signals
+        # 24. Risk Signals - Exact name for precision
         tasks.append((
             "risk_signals",
             self._execute_search(
                 topic="risk_signals",
-                query=f"{company_name} lawsuit layoffs controversy scandal problem issue",
+                query=f'{exact_name} {context} lawsuit layoffs controversy problem',
                 num_results=5,
                 get_contents=True
             )
         ))
         
-        # 25. Future Roadmap
-        tasks.append((
-            "future_roadmap",
-            self._execute_search(
-                topic="future_roadmap",
-                query=f"{company_name} roadmap strategy 2025 plans expansion future vision",
-                num_results=8,
-                get_contents=True
-            )
-        ))
-        
-        # 26. Sustainability & ESG
-        tasks.append((
-            "sustainability_esg",
-            self._execute_search(
-                topic="sustainability_esg",
-                query=f"{company_name} sustainability ESG carbon CSR duurzaamheid environmental",
-                num_results=5,
-                get_contents=True
-            )
-        ))
-        
-        # 27. Patents & Innovation
-        tasks.append((
-            "patents_innovation",
-            self._execute_search(
-                topic="patents_innovation",
-                query=f"{company_name} patent innovation R&D research technology breakthrough",
-                num_results=5,
-                get_contents=True
-            )
-        ))
-        
-        # 28. Vendor Partners
-        tasks.append((
-            "vendor_partners",
-            self._execute_search(
-                topic="vendor_partners",
-                query=f"{company_name} partner integration vendor ecosystem certified partner",
-                num_results=8,
-                get_contents=True
-            )
-        ))
-        
-        # =========================================================================
-        # SECTION 6: LOCAL MARKET (2 calls - conditional)
-        # =========================================================================
-        
-        # 29. Local Media
-        if local_sources["domains"]:
+        # 25. Future Roadmap - Search company website + news
+        if website_domain:
             tasks.append((
-                "local_media",
+                "future_roadmap",
                 self._execute_domain_search(
-                    topic="local_media",
-                    query=f"{company_name}",
-                    domains=local_sources["domains"],
+                    topic="future_roadmap",
+                    query=f"roadmap strategy 2025 plans future expansion",
+                    domains=[website_domain],
+                    num_results=8,
+                    get_contents=True
+                )
+            ))
+        else:
+            tasks.append((
+                "future_roadmap",
+                self._execute_search(
+                    topic="future_roadmap",
+                    query=f'{exact_name} {context} roadmap strategy 2025 plans expansion',
                     num_results=8,
                     get_contents=True
                 )
             ))
         
-        # 30. Local Rankings
+        # 26. Sustainability & ESG - Exact name
+        tasks.append((
+            "sustainability_esg",
+            self._execute_search(
+                topic="sustainability_esg",
+                query=f'{exact_name} {context} sustainability ESG CSR duurzaamheid',
+                num_results=5,
+                get_contents=True
+            )
+        ))
+        
+        # 27. Patents & Innovation - Exact name
+        tasks.append((
+            "patents_innovation",
+            self._execute_search(
+                topic="patents_innovation",
+                query=f'{exact_name} {context} patent innovation R&D research',
+                num_results=5,
+                get_contents=True
+            )
+        ))
+        
+        # 28. Vendor Partners - Search company website for partnerships
+        if website_domain:
+            tasks.append((
+                "vendor_partners",
+                self._execute_domain_search(
+                    topic="vendor_partners",
+                    query=f"partners partnership certified integration",
+                    domains=[website_domain],
+                    num_results=8,
+                    get_contents=True
+                )
+            ))
+        else:
+            tasks.append((
+                "vendor_partners",
+                self._execute_search(
+                    topic="vendor_partners",
+                    query=f'{exact_name} {context} partner certified integration',
+                    num_results=8,
+                    get_contents=True
+                )
+            ))
+        
+        # =========================================================================
+        # SECTION 6: LOCAL MARKET (2 calls - conditional)
+        # =========================================================================
+        
+        # 29. Local Media - Exact name on local business media
+        if local_sources["domains"]:
+            tasks.append((
+                "local_media",
+                self._execute_domain_search(
+                    topic="local_media",
+                    query=f'{exact_name}',
+                    domains=local_sources["domains"],
+                    num_results=10,
+                    get_contents=True
+                )
+            ))
+        
+        # 30. Local Rankings - Exact name + local ranking terms
         if local_sources["rankings"]:
             tasks.append((
                 "local_rankings",
                 self._execute_search(
                     topic="local_rankings",
-                    query=f"{company_name} {local_sources['rankings']}",
-                    num_results=5,
+                    query=f'{exact_name} {local_sources["rankings"]}',
+                    num_results=8,
                     get_contents=True
                 )
             ))
