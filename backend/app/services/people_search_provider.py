@@ -186,10 +186,15 @@ class PeopleSearchProvider:
         try:
             loop = asyncio.get_event_loop()
             
+            # Normalize URL: convert regional subdomains to www
+            # e.g., nl.linkedin.com → www.linkedin.com
+            normalized_url = self._normalize_linkedin_url(linkedin_url)
+            logger.info(f"[PEOPLE_SEARCH] Enriching profile: {normalized_url}")
+            
             def do_get_contents():
                 # Get full content for this specific profile
                 return self._primary_client.get_contents(
-                    urls=[linkedin_url],
+                    urls=[normalized_url],
                     text={"max_characters": 4000},  # Increased for better section extraction
                     summary={
                         "query": "Summarize this person's professional background: current role, key achievements, expertise areas, and career trajectory"
@@ -396,13 +401,13 @@ class PeopleSearchProvider:
             logger.info(f"[PEOPLE_SEARCH] Trying query: {query}")
             
             def do_search(q=query):
-                # Neural search with LinkedIn domain filter
-                # This is much more effective than category="linkedin profile"
+                # Neural search with LinkedIn profile category
+                # Per Exa docs: category="linkedin profile" is more precise than include_domains
                 return self._primary_client.search_and_contents(
                     q,
                     type="neural",
+                    category="linkedin profile",  # Specific to personal profiles
                     num_results=max_results * 2,
-                    include_domains=["linkedin.com"],
                     text={"max_characters": 300}  # Minimal text for name matching
                 )
             
@@ -929,14 +934,14 @@ class PeopleSearchProvider:
     
     def _extract_linkedin_slug(self, url: str) -> str:
         """
-        Extract normalized LinkedIn profile slug from URL.
+        Extract normalized LinkedIn profile slug from URL for deduplication.
         
         Handles various formats:
         - https://www.linkedin.com/in/username/
         - https://nl.linkedin.com/in/username
         - http://linkedin.com/in/username?param=value
         
-        Returns: "linkedin.com/in/username" (normalized)
+        Returns: "linkedin.com/in/username" (normalized slug for comparison)
         """
         import re
         
@@ -952,6 +957,33 @@ class PeopleSearchProvider:
             return f"linkedin.com/in/{username}"
         
         return url_lower.rstrip('/')
+    
+    def _normalize_linkedin_url(self, url: str) -> str:
+        """
+        Normalize LinkedIn URL to standard format for API calls.
+        
+        Converts regional subdomains (nl., de., uk., etc.) to www.
+        This ensures consistent URL format for Exa's get_contents API.
+        
+        Examples:
+        - https://nl.linkedin.com/in/username → https://www.linkedin.com/in/username
+        - https://de.linkedin.com/in/username → https://www.linkedin.com/in/username
+        - http://linkedin.com/in/username → https://www.linkedin.com/in/username
+        """
+        import re
+        
+        if not url:
+            return url
+        
+        # Extract username from URL
+        match = re.search(r'/in/([a-zA-Z0-9\-]+)', url)
+        if match:
+            username = match.group(1).rstrip('-')
+            # Return normalized URL with www subdomain
+            return f"https://www.linkedin.com/in/{username}"
+        
+        # If no match, return original URL
+        return url
     
     def _parse_linkedin_title(
         self,
