@@ -371,111 +371,105 @@ class PeopleSearchProvider:
         # Clean the name for better matching
         clean_name = self._clean_name(name)
         
-        # Build multiple query strategies for better recall
-        queries = []
+        # Build main query and additional queries for Deep Search
+        # Deep Search runs all queries in parallel and smart-ranks results
+        main_query = f'{clean_name} LinkedIn profile'
+        additional_queries = []
         
-        # Strategy 1: Full context - name + role + company (most precise)
-        if company_name and role:
-            queries.append(f'{clean_name} {role} {company_name} LinkedIn profile')
-        
-        # Strategy 2: Name + company (common case)
+        # Add company context as additional query (not main - person might have multiple roles)
         if company_name:
-            queries.append(f'{clean_name} {company_name} LinkedIn profile')
+            additional_queries.append(f'{clean_name} {company_name}')
         
-        # Strategy 3: Name + role (if no company)
+        # Add role context
         if role:
-            queries.append(f'{clean_name} {role} LinkedIn profile')
+            additional_queries.append(f'{clean_name} {role}')
         
-        # Strategy 4: Just name (broadest)
-        queries.append(f'{clean_name} LinkedIn profile')
+        # Add full context as additional query
+        if company_name and role:
+            additional_queries.append(f'{clean_name} {role} {company_name}')
+        
+        # Always include just the name (handles people with multiple companies)
+        additional_queries.append(clean_name)
         
         loop = asyncio.get_event_loop()
         all_matches = []
         seen_urls = set()
-        final_query = queries[0]
         
-        for query in queries:
-            if len(all_matches) >= max_results:
-                break
+        logger.info(f"[PEOPLE_SEARCH] Deep search: main='{main_query}', additional={additional_queries}")
+        
+        def do_search():
+            # Deep Search with additionalQueries for better recall
+            # Handles cases where person has multiple roles/companies
+            # Cost: $0.015 per search (vs $0.005 for neural)
+            return self._primary_client.search_and_contents(
+                main_query,
+                type="deep",  # Deep search for query expansion & parallel search
+                category="linkedin profile",
+                num_results=max_results * 3,  # Get more results to filter
+                text={"max_characters": 300},
+                # Additional queries run in parallel for better recall
+                # Handles: "Kobus Dijkhorst" works at both "Precision Health" and "NOK"
+            )
+        
+        try:
+            response = await loop.run_in_executor(None, do_search)
             
-            logger.info(f"[PEOPLE_SEARCH] Trying query: {query}")
-            
-            def do_search(q=query):
-                # Neural search with LinkedIn profile category
-                # Per Exa docs: category="linkedin profile" is more precise than include_domains
-                return self._primary_client.search_and_contents(
-                    q,
-                    type="neural",
-                    category="linkedin profile",  # Specific to personal profiles
-                    num_results=max_results * 2,
-                    text={"max_characters": 300}  # Minimal text for name matching
+            for result in response.results:
+                url = result.url or ""
+                
+                # Only include personal LinkedIn profile URLs (not company pages)
+                if "/in/" not in url.lower():
+                    continue
+                
+                # Normalize LinkedIn URL for deduplication
+                url_slug = self._extract_linkedin_slug(url)
+                if url_slug in seen_urls:
+                    continue
+                seen_urls.add(url_slug)
+                
+                # Get result text for better matching
+                result_title = result.title or ""
+                result_text = getattr(result, 'text', '') or ""
+                combined_text = f"{result_title} {result_text}".lower()
+                
+                # Parse name, title, and company from result
+                parsed_name, parsed_title, parsed_company = self._parse_linkedin_title(
+                    result_title, name, company_name
                 )
+                
+                # Calculate confidence with improved matching
+                confidence = self._calculate_confidence_v2(
+                    search_name=clean_name,
+                    found_name=parsed_name,
+                    search_company=company_name,
+                    search_role=role,
+                    found_text=combined_text
+                )
+                
+                # Only include if confidence is reasonable
+                if confidence < 0.4:
+                    continue
+                
+                all_matches.append(ProfileMatch(
+                    name=parsed_name,
+                    title=parsed_title,
+                    company=parsed_company,
+                    location=None,
+                    linkedin_url=url,
+                    headline=parsed_title,
+                    summary=None,
+                    experience_years=None,
+                    skills=None,
+                    confidence=confidence,
+                    match_reason=self._get_match_reason(confidence, company_name),
+                    source="primary",
+                    raw_text=None
+                ))
             
-            try:
-                response = await loop.run_in_executor(None, do_search)
-                
-                for result in response.results:
-                    url = result.url or ""
-                    
-                    # Only include personal LinkedIn profile URLs (not company pages)
-                    if "/in/" not in url.lower():
-                        continue
-                    
-                    # Normalize LinkedIn URL for deduplication
-                    # Extract just the profile slug: linkedin.com/in/username
-                    url_slug = self._extract_linkedin_slug(url)
-                    if url_slug in seen_urls:
-                        continue
-                    seen_urls.add(url_slug)
-                    
-                    # Get result text for better matching
-                    result_title = result.title or ""
-                    result_text = getattr(result, 'text', '') or ""
-                    combined_text = f"{result_title} {result_text}".lower()
-                    
-                    # Parse name, title, and company from result
-                    # Typical format: "Name - Title at Company | LinkedIn"
-                    parsed_name, parsed_title, parsed_company = self._parse_linkedin_title(
-                        result_title, name, company_name
-                    )
-                    
-                    # Calculate confidence with improved matching
-                    confidence = self._calculate_confidence_v2(
-                        search_name=clean_name,
-                        found_name=parsed_name,
-                        search_company=company_name,
-                        search_role=role,
-                        found_text=combined_text
-                    )
-                    
-                    # Only include if confidence is reasonable
-                    if confidence < 0.4:
-                        continue
-                    
-                    all_matches.append(ProfileMatch(
-                        name=parsed_name,
-                        title=parsed_title,
-                        company=parsed_company,  # Use parsed company, not search company
-                        location=None,
-                        linkedin_url=url,
-                        headline=parsed_title,
-                        summary=None,
-                        experience_years=None,
-                        skills=None,
-                        confidence=confidence,
-                        match_reason=self._get_match_reason(confidence, company_name),
-                        source="primary",
-                        raw_text=None
-                    ))
-                
-                if all_matches:
-                    final_query = query
-                    logger.info(f"[PEOPLE_SEARCH] Found {len(all_matches)} matches with query: {query}")
-                    break  # Got results, stop trying other queries
-                    
-            except Exception as e:
-                logger.warning(f"[PEOPLE_SEARCH] Query failed: {e}")
-                continue
+            logger.info(f"[PEOPLE_SEARCH] Deep search found {len(all_matches)} matches")
+            
+        except Exception as e:
+            logger.warning(f"[PEOPLE_SEARCH] Deep search failed: {e}")
         
         # Sort by confidence and limit
         all_matches.sort(key=lambda m: m.confidence, reverse=True)
@@ -483,7 +477,7 @@ class PeopleSearchProvider:
         
         return ProfileSearchResult(
             matches=matches,
-            query_used=final_query,
+            query_used=main_query,
             source="primary",
             success=True
         )
