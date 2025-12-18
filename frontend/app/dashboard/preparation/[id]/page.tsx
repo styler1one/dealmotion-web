@@ -513,6 +513,17 @@ export default function PreparationDetailPage() {
                           tr: ({ node, ...props }) => <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors" {...props} />,
                           th: ({ node, ...props }) => <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider whitespace-nowrap" {...props} />,
                           td: ({ node, ...props }) => <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300" {...props} />,
+                          a: ({ node, href, children, ...props }) => (
+                            <a 
+                              href={href} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline"
+                              {...props}
+                            >
+                              {children}
+                            </a>
+                          ),
                         }}
                       >
                         {prep.brief_content}

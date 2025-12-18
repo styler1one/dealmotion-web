@@ -1223,6 +1223,17 @@ export default function ProspectHubPage() {
                             tr: ({ node, ...props }) => <tr {...props} />,
                             th: ({ node, ...props }) => <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider" {...props} />,
                             td: ({ node, ...props }) => <td className="px-3 py-2 text-slate-700 dark:text-slate-300 whitespace-normal" {...props} />,
+                            a: ({ node, href, children, ...props }) => (
+                              <a 
+                                href={href} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline"
+                                {...props}
+                              >
+                                {children}
+                              </a>
+                            ),
                           }}
                         >
                           {selectedContact.profile_brief}
