@@ -214,10 +214,7 @@ class ResearchEnricher:
         
         executives = []
         
-        # Map country names to ISO 3166-1 alpha-2 codes
-        country_code = self._get_country_code(country)
-        
-        # Build location-aware query
+        # Build location-aware query (Exa SDK doesn't support userLocation parameter)
         location_hint = ""
         if city:
             location_hint = f" {city}"
@@ -227,20 +224,19 @@ class ResearchEnricher:
         try:
             loop = asyncio.get_event_loop()
             
-            # Search for executives using people category with geo-filtering
+            # Search for executives using people category with location in query
+            # Note: Exa Python SDK doesn't support userLocation parameter,
+            # so we add location context directly to the query
+            search_query = f"CEO CFO CTO COO CMO executives at {company_name}{location_hint}"
+            logger.info(f"[RESEARCH_ENRICHER] Executive search query: {search_query}")
+            
             def do_executive_search():
-                search_params = {
-                    "query": f"CEO CFO CTO COO CMO executives at {company_name}{location_hint}",
-                    "type": "auto",
-                    "category": "linkedin_company",
-                    "num_results": 15
-                }
-                # Add geo-filter if we have a country code
-                if country_code:
-                    search_params["userLocation"] = country_code
-                    logger.info(f"[RESEARCH_ENRICHER] Using geo-filter: {country_code}")
-                
-                return self._client.search(**search_params)
+                return self._client.search(
+                    search_query,
+                    type="auto",
+                    category="linkedin_company",
+                    num_results=15
+                )
             
             response = await loop.run_in_executor(None, do_executive_search)
             
@@ -286,7 +282,7 @@ class ResearchEnricher:
             
             # Also do a dedicated C-suite search for better coverage
             if len(executives) < 5:
-                c_suite_results = await self._search_c_suite(company_name, country_code)
+                c_suite_results = await self._search_c_suite(company_name, location_hint)
                 
                 # Add any new executives not already found
                 existing_urls = {e.linkedin_url for e in executives}
@@ -303,8 +299,8 @@ class ResearchEnricher:
             logger.error(f"[RESEARCH_ENRICHER] Executive search error: {e}")
             return []
     
-    async def _search_c_suite(self, company_name: str, country_code: Optional[str] = None) -> List[ExecutiveProfile]:
-        """Dedicated search for C-suite executives with geo-filtering."""
+    async def _search_c_suite(self, company_name: str, location_hint: str = "") -> List[ExecutiveProfile]:
+        """Dedicated search for C-suite executives with location context."""
         if not self._client:
             return []
         
@@ -321,16 +317,16 @@ class ResearchEnricher:
         
         for short_title, full_title in c_suite_roles:
             try:
-                def do_search(query=f"{short_title} {company_name}", cc=country_code):
-                    search_params = {
-                        "query": query,
-                        "type": "auto",
-                        "category": "linkedin_company",
-                        "num_results": 3
-                    }
-                    if cc:
-                        search_params["userLocation"] = cc
-                    return self._client.search(**search_params)
+                # Include location in query for better regional matching
+                search_query = f"{short_title} {company_name}{location_hint}"
+                
+                def do_search(query=search_query):
+                    return self._client.search(
+                        query,
+                        type="auto",
+                        category="linkedin_company",
+                        num_results=3
+                    )
                 
                 response = await loop.run_in_executor(None, do_search)
                 
