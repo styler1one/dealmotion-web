@@ -549,24 +549,35 @@ async def save_research_results(
 )
 async def research_company_v2_fn(ctx, step):
     """
-    Exa Comprehensive company research with 30 parallel searches.
+    V2: Gemini + Smart Exa Enrichment (Hybrid Approach).
     
-    Architecture (V2 - Exa Comprehensive):
+    Architecture (V2 - Hybrid):
     1. Update status to 'researching'
     2. Get seller context
-    3. Exa Comprehensive Research: 30 parallel searches (PRIMARY)
-       - COMPANY (4): identity, business model, products, financials
-       - PEOPLE (6): CEO, C-suite, senior leadership, board, changes
-       - MARKET (5): news, partnerships, hiring, tech stack, competition
-       - DEEP INSIGHTS (7): reviews, events, awards, media, challenges
-       - STRATEGIC (6): customers, risks, roadmap, ESG, patents, vendors
-       - LOCAL (2): country-specific media and rankings
-    4. KVK lookup (if Dutch company)
-    5. Claude: Synthesize data and generate 360° report
-    6. Save to database
-    7. Emit completion event
+    3. Gemini Research: 31 parallel searches (PRIMARY - intelligence layer)
+       - Company info, executives, news, market intelligence
+       - Gemini understands context and filters irrelevant data
+    4. Smart Exa Enrichment (AFTER Gemini):
+       - Parse executive names from Gemini output
+       - Find verified LinkedIn URLs for each executive
+       - Get funding data from Crunchbase/PitchBook
+       - Get employee reviews from Glassdoor
+       - Get product reviews from G2/Capterra
+       - Find similar companies (competitors)
+    5. KVK lookup (if Dutch company)
+    6. Website scraping (if URL provided)
+    7. Claude: Analyze Gemini data + Exa enrichment
+    8. Save to database
+    9. Emit completion event
     
-    Fallback: If Exa fails, falls back to Gemini-first (V1)
+    Benefits over V1:
+    - Verified LinkedIn URLs via Exa's 1B+ profile index
+    - Structured funding data from Crunchbase
+    - Employee sentiment from Glassdoor
+    - Product reviews from G2/Capterra
+    - Competitor discovery via Exa's similar companies API
+    
+    Cost: ~$0.24 per research (vs ~$0.17 for V1)
     """
     # Extract event data
     event_data = ctx.event.data
@@ -581,7 +592,7 @@ async def research_company_v2_fn(ctx, step):
     user_id = event_data.get("user_id")
     language = event_data.get("language", DEFAULT_LANGUAGE)
     
-    logger.info(f"[V2] Starting Exa-first research for {company_name} (id={research_id})")
+    logger.info(f"[V2] Starting Hybrid research (Gemini + Exa) for {company_name} (id={research_id})")
     
     # Step 1: Update status to researching
     await step.run(
@@ -598,20 +609,29 @@ async def research_company_v2_fn(ctx, step):
         user_id
     )
     
-    # Add organization_id and custom_intel to seller_context (same as V1)
+    # Add organization_id and custom_intel to seller_context
     if seller_context:
         seller_context["organization_id"] = organization_id
         if custom_intel:
             seller_context["custom_intel"] = custom_intel
     
-    # Step 3: Exa Research (PRIMARY)
-    exa_result = await step.run(
-        "exa-research",
-        run_exa_research,
-        company_name, country, city, linkedin_url, website_url
+    # Step 3: Gemini Research (PRIMARY - intelligence layer)
+    gemini_result = await step.run(
+        "gemini-research",
+        run_gemini_research,
+        company_name, country, city, linkedin_url, seller_context, language
     )
     
-    # Step 4: KVK lookup (if Dutch company)
+    # Step 4: Smart Exa Enrichment (uses Gemini output as input)
+    exa_enrichment_result = None
+    if gemini_result.get("success") and research_enricher.is_available:
+        exa_enrichment_result = await step.run(
+            "exa-smart-enrichment",
+            run_smart_exa_enrichment,
+            company_name, gemini_result.get("data", ""), website_url, country
+        )
+    
+    # Step 5: KVK lookup (if Dutch company)
     kvk_result = None
     if country and country.lower() in ["netherlands", "nederland", "nl", "the netherlands"]:
         kvk_result = await step.run(
@@ -620,7 +640,7 @@ async def research_company_v2_fn(ctx, step):
             company_name, city
         )
     
-    # Step 4b: Website content extraction (if URL provided)
+    # Step 6: Website content extraction (if URL provided)
     website_result = None
     if website_url:
         website_result = await step.run(
@@ -629,59 +649,28 @@ async def research_company_v2_fn(ctx, step):
             website_url, company_name
         )
     
-    # Step 5: Check if Exa succeeded, fallback if not
-    if not exa_result.get("success"):
-        logger.warning(f"[V2] Exa research failed, falling back to Gemini-first")
-        
-        # Fallback to Gemini
-        gemini_result = await step.run(
-            "gemini-research-fallback",
-            run_gemini_research,
-            company_name, country, city, linkedin_url, seller_context, language
-        )
-        
-        # Website scraping as fallback
-        website_result = None
-        if website_url:
-            website_result = await step.run(
-                "website-scrape-fallback",
-                run_website_scrape,
-                website_url, company_name
-            )
-        
-        # Claude analysis (full, like V1)
-        brief_content = await step.run(
-            "claude-analysis-fallback",
-            run_claude_analysis,
-            company_name, country, city, gemini_result, kvk_result, website_result, None, seller_context, language
-        )
-        
-        architecture = "gemini-first-fallback"
-    else:
-        # Step 6: Claude Synthesis (smaller role - structured input)
-        brief_content = await step.run(
-            "claude-synthesis",
-            run_claude_synthesis,
-            company_name, country, city, exa_result, kvk_result, website_result, seller_context, language
-        )
-        
-        architecture = "exa-first"
-    
-    # Step 7: Save results to database
-    await step.run(
-        "save-results",
-        save_research_results_v2,
-        research_id, exa_result, kvk_result, brief_content, architecture
+    # Step 7: Claude analysis (Gemini data + Exa enrichment)
+    brief_content = await step.run(
+        "claude-analysis",
+        run_claude_analysis,
+        company_name, country, city, gemini_result, kvk_result, website_result, exa_enrichment_result, seller_context, language
     )
     
-    # Step 8: Get prospect_id for Autopilot detection
+    # Step 8: Save results to database
+    await step.run(
+        "save-results",
+        save_research_results_v2_hybrid,
+        research_id, gemini_result, exa_enrichment_result, kvk_result, brief_content
+    )
+    
+    # Step 9: Get prospect_id for Autopilot detection
     prospect_id = await step.run(
         "get-prospect-id",
         get_research_prospect_id,
         research_id
     )
     
-    # Step 9: Emit completion event
+    # Step 10: Emit completion event
     await step.send_event(
         "emit-completion",
         inngest.Event(
@@ -692,19 +681,19 @@ async def research_company_v2_fn(ctx, step):
                 "organization_id": organization_id,
                 "user_id": user_id,
                 "prospect_id": prospect_id,
-                "architecture": architecture,
+                "architecture": "gemini-exa-hybrid",
                 "success": True
             }
         )
     )
     
-    logger.info(f"[V2] Research completed for {company_name} using {architecture}")
+    logger.info(f"[V2] Hybrid research completed for {company_name}")
     
     return {
         "research_id": research_id,
         "status": "completed",
         "company_name": company_name,
-        "architecture": architecture
+        "architecture": "gemini-exa-hybrid"
     }
 
 
@@ -767,6 +756,128 @@ async def run_exa_research(
     except Exception as e:
         logger.error(f"[V2] Exa comprehensive research error: {e}")
         return {"success": False, "error": str(e), "source": "exa-comprehensive"}
+
+
+async def run_smart_exa_enrichment(
+    company_name: str,
+    gemini_data: str,
+    website_url: Optional[str],
+    country: Optional[str]
+) -> Optional[dict]:
+    """
+    Run Smart Exa Enrichment using Gemini output as input.
+    
+    This function:
+    1. Parses executive names from Gemini research output
+    2. Uses Exa to find verified LinkedIn URLs for each executive
+    3. Fetches funding data from Crunchbase/PitchBook
+    4. Gets employee reviews from Glassdoor
+    5. Gets product reviews from G2/Capterra
+    6. Finds similar companies (competitors)
+    
+    Returns enrichment data formatted for Claude.
+    """
+    if not research_enricher.is_available:
+        logger.info("[V2] Exa enricher not available, skipping smart enrichment")
+        return None
+    
+    try:
+        logger.info(f"[V2] Starting Smart Exa Enrichment for {company_name}")
+        
+        result = await research_enricher.smart_enrich_from_gemini(
+            company_name=company_name,
+            gemini_data=gemini_data,
+            website_url=website_url,
+            country=country
+        )
+        
+        if result.success:
+            # Format for Claude
+            markdown = research_enricher.format_smart_enrichment_for_claude(result, company_name)
+            
+            logger.info(
+                f"[V2] Smart Exa Enrichment complete: "
+                f"{len(result.executives)} verified LinkedIn profiles, "
+                f"{'funding found' if result.funding else 'no funding'}, "
+                f"{len(result.similar_companies)} competitors"
+            )
+            
+            return {
+                "success": True,
+                "source": "exa-smart-enrichment",
+                "markdown": markdown,
+                "executives_found": len(result.executives),
+                "funding_found": result.funding is not None,
+                "competitors_found": len(result.similar_companies)
+            }
+        else:
+            logger.warning(f"[V2] Smart Exa Enrichment failed: {result.errors}")
+            return {"success": False, "error": str(result.errors), "source": "exa-smart-enrichment"}
+            
+    except Exception as e:
+        logger.error(f"[V2] Smart Exa Enrichment error: {e}")
+        return {"success": False, "error": str(e), "source": "exa-smart-enrichment"}
+
+
+async def save_research_results_v2_hybrid(
+    research_id: str,
+    gemini_result: dict,
+    exa_enrichment_result: Optional[dict],
+    kvk_result: Optional[dict],
+    brief_content: str
+) -> dict:
+    """Save V2 Hybrid research results to database."""
+    sources = {
+        "gemini": gemini_result,
+    }
+    
+    if exa_enrichment_result:
+        sources["exa_enrichment"] = exa_enrichment_result
+    
+    if kvk_result:
+        sources["kvk"] = kvk_result
+    
+    # Map source names to allowed source_type values
+    source_type_map = {
+        "gemini": "gemini",
+        "exa_enrichment": "web",
+        "kvk": "kvk"
+    }
+    
+    # Save each source to research_sources table
+    for source_name, source_result in sources.items():
+        source_type = source_type_map.get(source_name, "web")
+        try:
+            supabase.table("research_sources").insert({
+                "research_id": research_id,
+                "source_type": source_type,
+                "source_name": source_name,
+                "data": source_result
+            }).execute()
+        except Exception as e:
+            logger.warning(f"[V2] Failed to save source {source_name}: {e}")
+    
+    # Calculate success metrics
+    success_count = sum(1 for s in sources.values() if s and s.get("success"))
+    
+    # Update research record
+    research_data = {
+        "sources": sources,
+        "success_count": success_count,
+        "total_sources": len(sources),
+        "architecture": "gemini-exa-hybrid"
+    }
+    
+    supabase.table("research_briefs").update({
+        "status": "completed",
+        "research_data": research_data,
+        "brief_content": brief_content,
+        "completed_at": "now()"
+    }).eq("id", research_id).execute()
+    
+    logger.info(f"[V2] Saved hybrid research results: {success_count}/{len(sources)} sources successful")
+    
+    return {"saved": True, "sources_count": len(sources), "success_count": success_count}
 
 
 async def run_claude_synthesis(

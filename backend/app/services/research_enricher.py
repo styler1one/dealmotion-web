@@ -791,6 +791,418 @@ class ResearchEnricher:
             sections.append(f"\n*Sources: {', '.join(result.sources_used)}*\n")
         
         return "\n".join(sections)
+    
+    async def smart_enrich_from_gemini(
+        self,
+        company_name: str,
+        gemini_data: str,
+        website_url: Optional[str] = None,
+        country: Optional[str] = None
+    ) -> EnrichmentResult:
+        """
+        Smart enrichment using Gemini output as input.
+        
+        This method:
+        1. Parses executive names from Gemini research output
+        2. Uses Exa to find verified LinkedIn URLs for each executive
+        3. Fetches funding data from Crunchbase/PitchBook
+        4. Gets employee reviews from Glassdoor
+        5. Gets product reviews from G2/Capterra
+        6. Finds similar companies (competitors)
+        
+        Args:
+            company_name: Name of the company
+            gemini_data: Raw Gemini research output (markdown)
+            website_url: Company website for similar companies search
+            country: Country for regional context
+            
+        Returns:
+            EnrichmentResult with verified LinkedIn URLs and structured data
+        """
+        if not self.is_available:
+            return EnrichmentResult(
+                success=False,
+                errors=["Enrichment service not available"]
+            )
+        
+        logger.info(f"[SMART_ENRICHER] Starting smart enrichment for {company_name}")
+        
+        result = EnrichmentResult()
+        
+        # Step 1: Parse executive names from Gemini output
+        executives_to_find = self._parse_executives_from_gemini(gemini_data)
+        logger.info(f"[SMART_ENRICHER] Found {len(executives_to_find)} executives in Gemini output")
+        
+        # Step 2: Run all enrichment tasks in parallel
+        tasks = []
+        
+        # LinkedIn URLs for each executive
+        for name, title in executives_to_find[:10]:  # Limit to 10 executives
+            tasks.append(self._find_executive_linkedin(name, title, company_name, country))
+        
+        # Funding data
+        tasks.append(self._find_funding(company_name))
+        
+        # Employee reviews (Glassdoor)
+        tasks.append(self._find_glassdoor_reviews(company_name))
+        
+        # Product reviews (G2/Capterra)
+        tasks.append(self._find_product_reviews(company_name))
+        
+        # Similar companies (if website provided)
+        if website_url:
+            tasks.append(self._find_similar_companies(company_name, website_url))
+        
+        try:
+            outcomes = await asyncio.gather(*tasks, return_exceptions=True)
+            
+            # Process executive LinkedIn results
+            exec_count = len(executives_to_find[:10])
+            for i, outcome in enumerate(outcomes[:exec_count]):
+                if not isinstance(outcome, Exception) and outcome:
+                    result.executives.append(outcome)
+                    result.sources_used.append("linkedin_search")
+            
+            # Process funding
+            funding_idx = exec_count
+            if not isinstance(outcomes[funding_idx], Exception):
+                result.funding = outcomes[funding_idx]
+                if result.funding:
+                    result.sources_used.append("funding_search")
+            
+            # Process Glassdoor reviews
+            glassdoor_idx = funding_idx + 1
+            if glassdoor_idx < len(outcomes) and not isinstance(outcomes[glassdoor_idx], Exception):
+                glassdoor_data = outcomes[glassdoor_idx]
+                if glassdoor_data:
+                    # Store as additional data - will be added to formatted output
+                    result.sources_used.append("glassdoor")
+                    # Add to errors as a way to pass data (hacky but works)
+                    if glassdoor_data.get("markdown"):
+                        result.errors.append(f"GLASSDOOR_DATA:{glassdoor_data['markdown']}")
+            
+            # Process G2/Capterra reviews
+            g2_idx = glassdoor_idx + 1
+            if g2_idx < len(outcomes) and not isinstance(outcomes[g2_idx], Exception):
+                g2_data = outcomes[g2_idx]
+                if g2_data:
+                    result.sources_used.append("g2_capterra")
+                    if g2_data.get("markdown"):
+                        result.errors.append(f"G2_DATA:{g2_data['markdown']}")
+            
+            # Process similar companies
+            if website_url:
+                similar_idx = g2_idx + 1
+                if similar_idx < len(outcomes) and not isinstance(outcomes[similar_idx], Exception):
+                    result.similar_companies = outcomes[similar_idx] or []
+                    if result.similar_companies:
+                        result.sources_used.append("similar_companies")
+            
+            result.success = len(result.executives) > 0 or result.funding is not None
+            
+            logger.info(
+                f"[SMART_ENRICHER] Enrichment complete for {company_name}: "
+                f"{len(result.executives)} executives with LinkedIn, "
+                f"{'funding found' if result.funding else 'no funding'}, "
+                f"{len(result.similar_companies)} competitors"
+            )
+            
+        except Exception as e:
+            logger.error(f"[SMART_ENRICHER] Enrichment failed: {e}")
+            result.success = False
+            result.errors.append(str(e))
+        
+        return result
+    
+    def _parse_executives_from_gemini(self, gemini_data: str) -> List[tuple]:
+        """
+        Parse executive names and titles from Gemini research output.
+        
+        Looks for patterns like:
+        - "CEO: John Smith"
+        - "| John Smith | CEO |"
+        - "John Smith (CEO)"
+        - "John Smith, CEO"
+        
+        Returns list of (name, title) tuples.
+        """
+        import re
+        
+        executives = []
+        
+        if not gemini_data:
+            return executives
+        
+        # Common C-level and leadership titles to look for
+        titles = [
+            "CEO", "CFO", "CTO", "COO", "CMO", "CRO", "CHRO", "CIO", "CISO", "CPO",
+            "Chief Executive Officer", "Chief Financial Officer", "Chief Technology Officer",
+            "Chief Operating Officer", "Chief Marketing Officer", "Chief Revenue Officer",
+            "Managing Director", "General Manager", "President", "Founder", "Co-Founder",
+            "VP", "Vice President", "Director", "Head of",
+            "Directeur", "Oprichter", "Mede-oprichter"  # Dutch titles
+        ]
+        
+        # Pattern 1: "Title: Name" or "**Title**: Name"
+        for title in titles:
+            pattern = rf'\*?\*?{re.escape(title)}\*?\*?\s*[:\-]\s*([A-Z][a-z]+(?:\s+(?:van\s+(?:der?\s+)?|de\s+|den\s+)?[A-Z][a-z]+)+)'
+            matches = re.findall(pattern, gemini_data, re.IGNORECASE)
+            for name in matches:
+                name = name.strip()
+                if len(name) > 3 and name not in [e[0] for e in executives]:
+                    executives.append((name, title))
+        
+        # Pattern 2: Table format "| Name | Title |"
+        table_pattern = r'\|\s*([A-Z][a-z]+(?:\s+(?:van\s+(?:der?\s+)?|de\s+|den\s+)?[A-Z][a-z]+)+)\s*\|\s*([^|]*(?:CEO|CFO|CTO|COO|CMO|CRO|Chief|Director|VP|President|Founder|Manager|Head)[^|]*)\s*\|'
+        table_matches = re.findall(table_pattern, gemini_data, re.IGNORECASE)
+        for name, title in table_matches:
+            name = name.strip()
+            title = title.strip()
+            if len(name) > 3 and name not in [e[0] for e in executives]:
+                executives.append((name, title))
+        
+        # Pattern 3: "Name (Title)" or "Name, Title"
+        for title in titles[:15]:  # Focus on C-level
+            pattern = rf'([A-Z][a-z]+(?:\s+(?:van\s+(?:der?\s+)?|de\s+|den\s+)?[A-Z][a-z]+)+)\s*[\(,]\s*{re.escape(title)}'
+            matches = re.findall(pattern, gemini_data, re.IGNORECASE)
+            for name in matches:
+                name = name.strip()
+                if len(name) > 3 and name not in [e[0] for e in executives]:
+                    executives.append((name, title))
+        
+        logger.info(f"[SMART_ENRICHER] Parsed executives: {executives[:5]}...")
+        return executives
+    
+    async def _find_executive_linkedin(
+        self,
+        name: str,
+        title: str,
+        company_name: str,
+        country: Optional[str] = None
+    ) -> Optional[ExecutiveProfile]:
+        """
+        Find LinkedIn URL for a specific executive.
+        
+        Uses the executive's name + company name for precise matching.
+        """
+        if not self._client:
+            return None
+        
+        try:
+            loop = asyncio.get_event_loop()
+            
+            # Build precise query with name and company
+            location_hint = f" {country}" if country else ""
+            query = f'"{name}" {company_name}{location_hint}'
+            
+            logger.info(f"[SMART_ENRICHER] LinkedIn search: {query}")
+            
+            def do_search():
+                return self._client.search(
+                    query,
+                    type="auto",
+                    category="people",
+                    num_results=5
+                )
+            
+            response = await loop.run_in_executor(None, do_search)
+            
+            if not response.results:
+                return None
+            
+            # Find the best matching LinkedIn profile
+            for result in response.results:
+                url = getattr(result, 'url', '')
+                result_title = getattr(result, 'title', '')
+                
+                if 'linkedin.com/in/' not in url.lower():
+                    continue
+                
+                # Check if this is likely the right person
+                # Name should appear in the result title
+                name_parts = name.lower().split()
+                title_lower = result_title.lower()
+                
+                # At least first and last name should match
+                if len(name_parts) >= 2:
+                    first_name = name_parts[0]
+                    last_name = name_parts[-1]
+                    
+                    if first_name in title_lower and last_name in title_lower:
+                        return ExecutiveProfile(
+                            name=name,
+                            title=title,
+                            linkedin_url=url,
+                            headline=result_title,
+                            confidence=0.95,
+                            source_url=url
+                        )
+            
+            return None
+            
+        except Exception as e:
+            logger.error(f"[SMART_ENRICHER] LinkedIn search failed for {name}: {e}")
+            return None
+    
+    async def _find_glassdoor_reviews(self, company_name: str) -> Optional[Dict[str, Any]]:
+        """
+        Find Glassdoor employee reviews and ratings.
+        """
+        if not self._client:
+            return None
+        
+        try:
+            loop = asyncio.get_event_loop()
+            
+            def do_search():
+                return self._client.search_and_contents(
+                    f"{company_name} reviews rating",
+                    type="neural",
+                    num_results=3,
+                    include_domains=["glassdoor.com", "glassdoor.nl", "indeed.com"],
+                    text={"max_characters": 1500}
+                )
+            
+            response = await loop.run_in_executor(None, do_search)
+            
+            if not response.results:
+                return None
+            
+            # Format as markdown
+            lines = ["### Employee Reviews (Glassdoor/Indeed)\n"]
+            for result in response.results[:2]:
+                url = getattr(result, 'url', '')
+                title = getattr(result, 'title', '')
+                text = getattr(result, 'text', '')[:500]
+                
+                lines.append(f"**[{title}]({url})**")
+                if text:
+                    lines.append(f"\n{text}\n")
+            
+            return {"markdown": "\n".join(lines)}
+            
+        except Exception as e:
+            logger.error(f"[SMART_ENRICHER] Glassdoor search failed: {e}")
+            return None
+    
+    async def _find_product_reviews(self, company_name: str) -> Optional[Dict[str, Any]]:
+        """
+        Find G2/Capterra product reviews.
+        """
+        if not self._client:
+            return None
+        
+        try:
+            loop = asyncio.get_event_loop()
+            
+            def do_search():
+                return self._client.search_and_contents(
+                    f"{company_name} reviews",
+                    type="neural",
+                    num_results=3,
+                    include_domains=["g2.com", "capterra.com", "trustpilot.com", "trustradius.com"],
+                    text={"max_characters": 1500}
+                )
+            
+            response = await loop.run_in_executor(None, do_search)
+            
+            if not response.results:
+                return None
+            
+            # Format as markdown
+            lines = ["### Product Reviews (G2/Capterra/Trustpilot)\n"]
+            for result in response.results[:2]:
+                url = getattr(result, 'url', '')
+                title = getattr(result, 'title', '')
+                text = getattr(result, 'text', '')[:500]
+                
+                lines.append(f"**[{title}]({url})**")
+                if text:
+                    lines.append(f"\n{text}\n")
+            
+            return {"markdown": "\n".join(lines)}
+            
+        except Exception as e:
+            logger.error(f"[SMART_ENRICHER] Product reviews search failed: {e}")
+            return None
+    
+    def format_smart_enrichment_for_claude(self, result: EnrichmentResult, company_name: str) -> str:
+        """
+        Format smart enrichment result for Claude analysis.
+        
+        This output is merged with Gemini data for richer analysis.
+        """
+        if not result.success and not result.executives and not result.funding:
+            return ""
+        
+        sections = []
+        sections.append(f"\n## EXA ENRICHMENT DATA (Verified Sources)\n")
+        sections.append("*Data enriched via Exa.ai specialized search*\n")
+        
+        # Executive LinkedIn URLs section
+        if result.executives:
+            sections.append("\n### Verified LinkedIn Profiles\n")
+            sections.append("| Name | Title | LinkedIn URL | Confidence |")
+            sections.append("|------|-------|--------------|------------|")
+            
+            for exec in result.executives:
+                confidence_icon = "🟢" if exec.confidence >= 0.9 else "🟡"
+                linkedin = exec.linkedin_url or "Not found"
+                sections.append(
+                    f"| {exec.name} | {exec.title} | {linkedin} | {confidence_icon} {int(exec.confidence*100)}% |"
+                )
+            sections.append("")
+        
+        # Funding section
+        if result.funding:
+            sections.append("\n### Funding Intelligence (Crunchbase/PitchBook)\n")
+            
+            if result.funding.total_raised:
+                sections.append(f"**Total Raised**: {result.funding.total_raised}\n")
+            
+            if result.funding.valuation:
+                sections.append(f"**Valuation**: {result.funding.valuation}\n")
+            
+            if result.funding.investors:
+                sections.append(f"**Key Investors**: {', '.join(result.funding.investors[:10])}\n")
+            
+            if result.funding.rounds:
+                sections.append("\n**Funding Rounds**:\n")
+                sections.append("| Round | Amount | Lead Investors |")
+                sections.append("|-------|--------|----------------|")
+                for round in result.funding.rounds[:5]:
+                    leads = ', '.join(round.lead_investors) if round.lead_investors else '-'
+                    sections.append(f"| {round.round_type or '-'} | {round.amount or '-'} | {leads} |")
+            sections.append("")
+        
+        # Similar companies section
+        if result.similar_companies:
+            sections.append("\n### Competitors (Similar Companies)\n")
+            sections.append("| Company | Website |")
+            sections.append("|---------|---------|")
+            for company in result.similar_companies[:5]:
+                sections.append(f"| {company['name']} | {company['url']} |")
+            sections.append("")
+        
+        # Glassdoor reviews (parsed from errors)
+        for error in result.errors:
+            if error.startswith("GLASSDOOR_DATA:"):
+                sections.append("\n" + error.replace("GLASSDOOR_DATA:", ""))
+        
+        # G2 reviews (parsed from errors)
+        for error in result.errors:
+            if error.startswith("G2_DATA:"):
+                sections.append("\n" + error.replace("G2_DATA:", ""))
+        
+        # Clean up errors (remove data markers)
+        result.errors = [e for e in result.errors if not e.startswith(("GLASSDOOR_DATA:", "G2_DATA:"))]
+        
+        # Sources section
+        unique_sources = list(set(result.sources_used))
+        if unique_sources:
+            sections.append(f"\n*Enrichment sources: {', '.join(unique_sources)}*\n")
+        
+        return "\n".join(sections)
 
 
 # Singleton instance
