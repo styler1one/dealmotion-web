@@ -922,7 +922,13 @@ class ExaComprehensiveResearcher:
         website_url: Optional[str] = None
     ) -> ComprehensiveResearchResult:
         """
-        Execute comprehensive company research with 30 parallel searches.
+        Execute comprehensive company research with 30 searches in rate-limited batches.
+        
+        Rate Limiting Strategy:
+        - Exa has a 5 requests/second limit
+        - We execute in batches of 4 with 250ms delay between batches
+        - Total time: ~8 batches * 0.25s = ~2 seconds overhead
+        - This ensures we stay well under the rate limit
         
         Args:
             company_name: Name of the company to research
@@ -957,11 +963,29 @@ class ExaComprehensiveResearcher:
             website_url=website_url
         )
         
-        logger.info(f"[EXA_COMPREHENSIVE] Executing {len(task_definitions)} parallel searches")
+        logger.info(f"[EXA_COMPREHENSIVE] Executing {len(task_definitions)} searches in rate-limited batches")
         
-        # Execute all tasks in parallel
-        coroutines = [task[1] for task in task_definitions]
-        results = await asyncio.gather(*coroutines, return_exceptions=True)
+        # Execute tasks in batches to respect Exa's 5 req/sec rate limit
+        # Batch size of 4 with 250ms delay = safe margin under 5/sec
+        BATCH_SIZE = 4
+        BATCH_DELAY_SECONDS = 0.25
+        
+        results = []
+        for batch_start in range(0, len(task_definitions), BATCH_SIZE):
+            batch_end = min(batch_start + BATCH_SIZE, len(task_definitions))
+            batch_tasks = task_definitions[batch_start:batch_end]
+            
+            # Execute this batch
+            batch_coroutines = [task[1] for task in batch_tasks]
+            batch_results = await asyncio.gather(*batch_coroutines, return_exceptions=True)
+            results.extend(batch_results)
+            
+            # Log progress
+            logger.info(f"[EXA_COMPREHENSIVE] Batch {batch_start//BATCH_SIZE + 1}/{(len(task_definitions) + BATCH_SIZE - 1)//BATCH_SIZE} complete ({batch_end}/{len(task_definitions)} topics)")
+            
+            # Delay before next batch (except for the last one)
+            if batch_end < len(task_definitions):
+                await asyncio.sleep(BATCH_DELAY_SECONDS)
         
         # Process results
         result = ComprehensiveResearchResult(
