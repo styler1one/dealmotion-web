@@ -207,14 +207,27 @@ class ResearchEnricher:
         Find executives and leadership team with LinkedIn profiles.
         
         Uses neural people search for high-accuracy LinkedIn discovery.
-        Includes geo-filtering for better accuracy.
+        Strategy:
+        1. If we have a LinkedIn company URL, extract the slug for precise matching
+        2. Add location context to improve regional accuracy
+        3. Search for people associated with that company
         """
         if not self._client:
             return []
         
         executives = []
         
-        # Build location-aware query (Exa SDK doesn't support userLocation parameter)
+        # Extract company slug from LinkedIn URL if available
+        # e.g., "https://linkedin.com/company/exact-software" -> "exact-software"
+        company_slug = None
+        if linkedin_url:
+            import re
+            match = re.search(r'linkedin\.com/company/([^/?\s]+)', linkedin_url)
+            if match:
+                company_slug = match.group(1)
+                logger.info(f"[RESEARCH_ENRICHER] Extracted company slug: {company_slug}")
+        
+        # Build location-aware query
         location_hint = ""
         if city:
             location_hint = f" {city}"
@@ -224,10 +237,14 @@ class ResearchEnricher:
         try:
             loop = asyncio.get_event_loop()
             
-            # Search for executives using people category with location in query
-            # Note: Exa Python SDK doesn't support userLocation parameter,
-            # so we add location context directly to the query
-            search_query = f"CEO CFO CTO COO CMO executives at {company_name}{location_hint}"
+            # Build search query - use company slug if available for more precise matching
+            # The slug often matches how LinkedIn indexes the company
+            if company_slug:
+                # Use both company name and slug for better matching
+                search_query = f"CEO CFO CTO COO CMO executives at {company_name} {company_slug}{location_hint}"
+            else:
+                search_query = f"CEO CFO CTO COO CMO executives at {company_name}{location_hint}"
+            
             logger.info(f"[RESEARCH_ENRICHER] Executive search query: {search_query}")
             
             def do_executive_search():
@@ -244,6 +261,12 @@ class ResearchEnricher:
                 logger.info(f"[RESEARCH_ENRICHER] No executives found for {company_name}")
                 return []
             
+            logger.info(f"[RESEARCH_ENRICHER] Got {len(response.results)} raw results from Exa")
+            
+            # Prepare company name variations for matching
+            company_name_lower = company_name.lower()
+            company_words = set(company_name_lower.split())
+            
             # Filter for LinkedIn profile URLs and parse
             for result in response.results:
                 url = getattr(result, 'url', '')
@@ -251,6 +274,7 @@ class ResearchEnricher:
                 
                 # Only process LinkedIn profile URLs
                 if 'linkedin.com/in/' not in url.lower():
+                    logger.debug(f"[RESEARCH_ENRICHER] Skipping non-profile URL: {url}")
                     continue
                 
                 # Parse name and title from result
@@ -258,6 +282,19 @@ class ResearchEnricher:
                 
                 if not name:
                     continue
+                
+                # Check if this person is actually from the target company
+                # by looking for company name in their title/headline
+                title_lower = title.lower() if title else ''
+                title_text_lower = title_text.lower() if title_text else ''
+                
+                # Check for company match (company name or slug in title)
+                company_match = (
+                    company_name_lower in title_text_lower or
+                    (company_slug and company_slug.replace('-', ' ') in title_text_lower) or
+                    (company_slug and company_slug in title_text_lower) or
+                    any(word in title_text_lower for word in company_words if len(word) > 3)
+                )
                 
                 # Determine if this is likely an executive
                 executive_titles = [
@@ -267,16 +304,32 @@ class ResearchEnricher:
                     'partner', 'owner', 'oprichter', 'directeur'
                 ]
                 
-                title_lower = title.lower() if title else ''
                 is_executive = any(t in title_lower for t in executive_titles)
                 
-                if is_executive or len(executives) < 5:  # Always take top 5
+                # Calculate confidence based on company match and executive title
+                if company_match and is_executive:
+                    confidence = 0.95
+                elif company_match:
+                    confidence = 0.85
+                elif is_executive:
+                    confidence = 0.7
+                else:
+                    confidence = 0.5
+                
+                # Log what we found
+                logger.debug(
+                    f"[RESEARCH_ENRICHER] Found: {name} | {title} | "
+                    f"company_match={company_match}, is_exec={is_executive}, conf={confidence}"
+                )
+                
+                # Include if company matches, or if executive title, or take top 5 anyway
+                if company_match or is_executive or len(executives) < 5:
                     executives.append(ExecutiveProfile(
                         name=name,
                         title=title or "Executive",
                         linkedin_url=url,
                         headline=title,
-                        confidence=0.9 if is_executive else 0.7,
+                        confidence=confidence,
                         source_url=url
                     ))
             
