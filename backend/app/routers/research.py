@@ -21,7 +21,7 @@ from app.database import get_supabase_service, get_user_client
 from app.services.prospect_service import get_prospect_service
 from app.services.company_lookup import get_company_lookup
 from app.services.usage_service import get_usage_service
-from app.inngest.events import send_event, Events, use_inngest_for
+from app.inngest.events import send_event, Events, use_inngest_for, get_research_event, get_research_architecture
 
 
 router = APIRouter()
@@ -322,9 +322,13 @@ async def start_research(
         use_background_tasks = True  # Default fallback
         
         if use_inngest_for("research"):
+            # Determine which research architecture to use (V1 or V2)
+            research_arch = get_research_architecture()
+            research_event = get_research_event()
+            
             # Try Inngest for durable execution and observability
             event_sent = await send_event(
-                Events.RESEARCH_REQUESTED,
+                research_event,
                 {
                     "research_id": research_id,
                     "company_name": body.company_name,
@@ -341,7 +345,7 @@ async def start_research(
             )
             if event_sent:
                 use_background_tasks = False
-                logger.info(f"Research {research_id} triggered via Inngest")
+                logger.info(f"Research {research_id} triggered via Inngest ({research_arch})")
             else:
                 logger.warning(f"Inngest event failed, falling back to BackgroundTasks for {research_id}")
         

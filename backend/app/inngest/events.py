@@ -111,10 +111,13 @@ def send_event_sync(
 class Events:
     """Event name constants for type safety."""
     
-    # Research Agent
+    # Research Agent (V1 - Gemini-first)
     RESEARCH_REQUESTED = "dealmotion/research.requested"
     RESEARCH_COMPLETED = "dealmotion/research.completed"
     RESEARCH_FAILED = "dealmotion/research.failed"
+    
+    # Research Agent (V2 - Exa-first)
+    RESEARCH_REQUESTED_V2 = "dealmotion/research.requested.v2"
     
     # Preparation Agent
     PREP_REQUESTED = "dealmotion/prep.requested"
@@ -193,4 +196,59 @@ def use_inngest_for(feature: str) -> bool:
     
     logger.debug(f"use_inngest_for({feature}): {env_key}={feature_flag} -> {result}")
     return result
+
+
+# =============================================================================
+# Research Architecture Selection (A/B Testing)
+# =============================================================================
+
+import random
+
+def get_research_architecture() -> str:
+    """
+    Determine which research architecture to use.
+    
+    Supports A/B testing via percentage rollout.
+    
+    Environment variables:
+        RESEARCH_ARCHITECTURE: "v1" (Gemini-first), "v2" (Exa-first), or "ab" (A/B test)
+        RESEARCH_V2_PERCENTAGE: Percentage of requests to route to V2 (default: 0)
+        
+    Returns:
+        "v1" or "v2"
+    """
+    architecture = os.getenv("RESEARCH_ARCHITECTURE", "v1").lower()
+    
+    if architecture == "v2":
+        # Force V2 for all requests
+        logger.debug("[RESEARCH_ARCH] Using V2 (Exa-first) - forced")
+        return "v2"
+    elif architecture == "ab":
+        # A/B testing mode
+        v2_percentage = int(os.getenv("RESEARCH_V2_PERCENTAGE", "0"))
+        roll = random.randint(1, 100)
+        
+        if roll <= v2_percentage:
+            logger.info(f"[RESEARCH_ARCH] A/B roll={roll}, threshold={v2_percentage} -> V2")
+            return "v2"
+        else:
+            logger.debug(f"[RESEARCH_ARCH] A/B roll={roll}, threshold={v2_percentage} -> V1")
+            return "v1"
+    else:
+        # Default to V1 (Gemini-first)
+        logger.debug("[RESEARCH_ARCH] Using V1 (Gemini-first) - default")
+        return "v1"
+
+
+def get_research_event() -> str:
+    """
+    Get the appropriate research event based on architecture selection.
+    
+    Returns:
+        Event name for research request
+    """
+    arch = get_research_architecture()
+    if arch == "v2":
+        return Events.RESEARCH_REQUESTED_V2
+    return Events.RESEARCH_REQUESTED
 

@@ -28,6 +28,7 @@ from app.services.claude_researcher import ClaudeResearcher
 from app.services.kvk_api import KVKApi
 from app.services.website_content_provider import get_website_content_provider
 from app.services.research_enricher import get_research_enricher
+from app.services.exa_research_service import get_exa_research_service
 from app.i18n.config import DEFAULT_LANGUAGE
 
 logger = logging.getLogger(__name__)
@@ -38,8 +39,14 @@ claude_researcher = ClaudeResearcher()
 kvk_api = KVKApi()
 website_content_provider = get_website_content_provider()
 research_enricher = get_research_enricher()
+exa_research_service = get_exa_research_service()
 
 # Log service availability at module load
+if exa_research_service.is_available:
+    logger.info("[INNGEST_RESEARCH] Exa Research Service available - Exa-first architecture enabled")
+else:
+    logger.info("[INNGEST_RESEARCH] Exa Research Service not available - falling back to Gemini-first")
+
 if research_enricher.is_available:
     logger.info("[INNGEST_RESEARCH] Research enricher available - enhanced executive discovery enabled")
 else:
@@ -524,3 +531,404 @@ async def save_research_results(
     logger.info(f"Saved research results: {success_count}/{len(sources)} sources successful")
     
     return {"saved": True, "sources_count": len(sources), "success_count": success_count}
+
+
+# =============================================================================
+# Exa-First Research Function (V2)
+# =============================================================================
+
+@inngest_client.create_function(
+    fn_id="research-company-v2",
+    trigger=TriggerEvent(event="dealmotion/research.requested.v2"),
+    retries=2,
+    throttle=Throttle(
+        limit=5,
+        period=timedelta(minutes=1),
+        key="event.data.user_id",
+    ),
+)
+async def research_company_v2_fn(ctx, step):
+    """
+    Exa-first company research with structured JSON output.
+    
+    Architecture (V2 - Exa-First):
+    1. Update status to 'researching'
+    2. Get seller context
+    3. Exa Research API: Comprehensive multi-step research (PRIMARY)
+    4. KVK lookup (if Dutch company)
+    5. Claude: Synthesize data and generate report (smaller role)
+    6. Save to database
+    7. Emit completion event
+    
+    Fallback: If Exa fails, falls back to Gemini-first (V1)
+    """
+    # Extract event data
+    event_data = ctx.event.data
+    research_id = event_data["research_id"]
+    company_name = event_data["company_name"]
+    country = event_data.get("country")
+    city = event_data.get("city")
+    linkedin_url = event_data.get("linkedin_url")
+    website_url = event_data.get("website_url")
+    custom_intel = event_data.get("custom_intel")
+    organization_id = event_data.get("organization_id")
+    user_id = event_data.get("user_id")
+    language = event_data.get("language", DEFAULT_LANGUAGE)
+    
+    logger.info(f"[V2] Starting Exa-first research for {company_name} (id={research_id})")
+    
+    # Step 1: Update status to researching
+    await step.run(
+        "update-status-researching",
+        update_research_status,
+        research_id, "researching"
+    )
+    
+    # Step 2: Get seller context
+    seller_context = await step.run(
+        "get-seller-context",
+        get_seller_context,
+        organization_id
+    )
+    
+    # Step 3: Exa Research (PRIMARY)
+    exa_result = await step.run(
+        "exa-research",
+        run_exa_research,
+        company_name, country, linkedin_url, website_url
+    )
+    
+    # Step 4: KVK lookup (if Dutch company)
+    kvk_result = None
+    if country and country.lower() in ["netherlands", "nederland", "nl", "the netherlands"]:
+        kvk_result = await step.run(
+            "kvk-lookup",
+            run_kvk_lookup,
+            company_name, country
+        )
+    
+    # Step 5: Check if Exa succeeded, fallback if not
+    if not exa_result.get("success"):
+        logger.warning(f"[V2] Exa research failed, falling back to Gemini-first")
+        
+        # Fallback to Gemini
+        gemini_result = await step.run(
+            "gemini-research-fallback",
+            run_gemini_research,
+            company_name, country, city, custom_intel
+        )
+        
+        # Website scraping as fallback
+        website_result = None
+        if website_url:
+            website_result = await step.run(
+                "website-scrape-fallback",
+                run_website_scrape,
+                website_url
+            )
+        
+        # Claude analysis (full, like V1)
+        brief_content = await step.run(
+            "claude-analysis-fallback",
+            run_claude_analysis,
+            company_name, country, city, gemini_result, kvk_result, website_result, None, seller_context, language
+        )
+        
+        architecture = "gemini-first-fallback"
+    else:
+        # Step 6: Claude Synthesis (smaller role - structured input)
+        brief_content = await step.run(
+            "claude-synthesis",
+            run_claude_synthesis,
+            company_name, country, city, exa_result, kvk_result, seller_context, language
+        )
+        
+        architecture = "exa-first"
+    
+    # Step 7: Save results to database
+    await step.run(
+        "save-results",
+        save_research_results_v2,
+        research_id, exa_result, kvk_result, brief_content, architecture
+    )
+    
+    # Step 8: Get prospect_id for Autopilot detection
+    prospect_id = await step.run(
+        "get-prospect-id",
+        get_research_prospect_id,
+        research_id
+    )
+    
+    # Step 9: Emit completion event
+    await step.send_event(
+        "emit-completion",
+        inngest.Event(
+            name="dealmotion/research.completed",
+            data={
+                "research_id": research_id,
+                "company_name": company_name,
+                "organization_id": organization_id,
+                "user_id": user_id,
+                "prospect_id": prospect_id,
+                "architecture": architecture,
+                "success": True
+            }
+        )
+    )
+    
+    logger.info(f"[V2] Research completed for {company_name} using {architecture}")
+    
+    return {
+        "research_id": research_id,
+        "status": "completed",
+        "company_name": company_name,
+        "architecture": architecture
+    }
+
+
+async def run_exa_research(
+    company_name: str,
+    country: Optional[str],
+    linkedin_url: Optional[str],
+    website_url: Optional[str]
+) -> dict:
+    """
+    Run Exa Research API for comprehensive company research.
+    
+    Returns structured JSON with all company data.
+    """
+    if not exa_research_service.is_available:
+        return {"success": False, "error": "Exa Research Service not available"}
+    
+    try:
+        logger.info(f"[V2] Starting Exa research for {company_name}")
+        
+        result = await exa_research_service.research_company(
+            company_name=company_name,
+            country=country,
+            linkedin_url=linkedin_url,
+            website_url=website_url,
+            model="exa-research",  # Use standard model (faster, cheaper)
+            max_wait_seconds=180
+        )
+        
+        if result.success:
+            # Format as markdown for Claude synthesis
+            markdown = exa_research_service.format_for_claude(result)
+            
+            logger.info(
+                f"[V2] Exa research complete: "
+                f"{len(result.c_suite)} c-suite, "
+                f"{len(result.funding_rounds)} funding rounds, "
+                f"{len(result.recent_news)} news items, "
+                f"cost=${result.cost_dollars:.4f}"
+            )
+            
+            return {
+                "success": True,
+                "source": "exa-research",
+                "markdown": markdown,
+                "data": result.raw_output,
+                "stats": {
+                    "c_suite_count": len(result.c_suite),
+                    "senior_leadership_count": len(result.senior_leadership),
+                    "board_count": len(result.board_of_directors),
+                    "funding_rounds_count": len(result.funding_rounds),
+                    "news_count": len(result.recent_news),
+                    "cost_dollars": result.cost_dollars
+                }
+            }
+        else:
+            error_msg = ", ".join(result.errors) if result.errors else "Unknown error"
+            logger.warning(f"[V2] Exa research failed: {error_msg}")
+            return {"success": False, "error": error_msg, "source": "exa-research"}
+            
+    except Exception as e:
+        logger.error(f"[V2] Exa research error: {e}")
+        return {"success": False, "error": str(e), "source": "exa-research"}
+
+
+async def run_claude_synthesis(
+    company_name: str,
+    country: Optional[str],
+    city: Optional[str],
+    exa_result: dict,
+    kvk_result: Optional[dict],
+    seller_context: dict,
+    language: str
+) -> str:
+    """
+    Claude synthesis of Exa research data.
+    
+    Unlike V1 (full analysis), this just synthesizes pre-structured data
+    into a sales brief. Much smaller prompt, faster, cheaper.
+    """
+    from datetime import datetime
+    
+    exa_markdown = exa_result.get("markdown", "")
+    
+    if not exa_markdown:
+        return f"# Research Failed: {company_name}\n\nNo research data available."
+    
+    # Build supplementary data
+    supplementary = ""
+    
+    if kvk_result and kvk_result.get("success"):
+        kvk = kvk_result.get("data", {})
+        supplementary += f"""
+
+## OFFICIAL REGISTRATION DATA (Dutch Chamber of Commerce)
+
+| Field | Value |
+|-------|-------|
+| **KVK Number** | {kvk.get('kvk_number', 'Unknown')} |
+| **Legal Form** | {kvk.get('legal_form', 'Unknown')} |
+| **Registration Date** | {kvk.get('registration_date', 'Unknown')} |
+| **Address** | {kvk.get('address', 'Unknown')} |
+"""
+    
+    # Seller context
+    seller_section = ""
+    if seller_context:
+        seller_section = f"""
+## SELLER CONTEXT (What {seller_context.get('company_name', 'the seller')} offers)
+
+{seller_context.get('description', '')}
+
+**Target Industries**: {', '.join(seller_context.get('target_industries', []))}
+**Value Proposition**: {seller_context.get('value_proposition', '')}
+"""
+    
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    
+    synthesis_prompt = f"""You are a B2B sales intelligence analyst. Synthesize the following research data into a 360° Prospect Intelligence Report.
+
+## TODAY'S DATE: {current_date}
+
+{seller_section}
+
+## RESEARCH DATA (from Exa)
+
+{exa_markdown}
+
+{supplementary}
+
+## YOUR TASK
+
+Generate a comprehensive sales brief in the EXACT structure below. The research data is already structured - your job is to:
+1. Present it clearly in the brief format
+2. Add sales intelligence insights (opportunity fit, timing, entry strategy)
+3. Connect the data to seller's value proposition
+4. Identify risks and information gaps
+
+Generate the report in {"Dutch" if language == "nl" else "English"}.
+
+# 360° Prospect Intelligence Report: {company_name}
+
+**Research Date**: {current_date}
+
+---
+
+## Section 1: Executive Summary
+[Sharp insight + opportunity assessment + timing + quick actions]
+
+## Section 2: Company Deep Dive
+[Use company data from research]
+
+## Section 3: People & Power (DMU)
+[Use leadership data - present C-suite and senior leadership clearly with LinkedIn URLs]
+
+## Section 4: What's Happening Now
+[Use news, funding, hiring signals]
+
+## Section 5: Market & Competitive Position
+[Use competitive landscape data]
+
+## Section 6: Commercial Opportunity Assessment
+[Your analysis: BANT qualification, pain points, triggers]
+
+## Section 7: Strategic Approach
+[Your recommendations: priority targets, entry strategy, key topics]
+
+## Section 8: Risks, Obstacles & Watchouts
+[Your analysis: obstacles, things to avoid, information gaps]
+
+## Section 9: Research Quality & Metadata
+[Data sources used, confidence levels]
+"""
+
+    try:
+        result = await claude_researcher.analyze_research_data(
+            company_name=company_name,
+            gemini_data=synthesis_prompt,  # Use the synthesis prompt as the data
+            country=country,
+            city=city,
+            kvk_data=None,  # Already included in prompt
+            website_data=None,
+            kb_chunks=None,
+            seller_context=None,  # Already included in prompt
+            language=language
+        )
+        
+        if result.get("success"):
+            return result.get("data", "")
+        else:
+            logger.error(f"[V2] Claude synthesis failed: {result.get('error')}")
+            # Return the raw Exa data as fallback
+            return f"# Research Brief: {company_name}\n\n**Note**: Synthesis failed, showing raw data.\n\n{exa_markdown}"
+            
+    except Exception as e:
+        logger.error(f"[V2] Claude synthesis error: {e}")
+        return f"# Research Brief: {company_name}\n\n**Note**: Synthesis failed.\n\n{exa_markdown}"
+
+
+async def save_research_results_v2(
+    research_id: str,
+    exa_result: dict,
+    kvk_result: Optional[dict],
+    brief_content: str,
+    architecture: str
+) -> dict:
+    """Save V2 research results to database."""
+    sources = {
+        "exa_research": exa_result,
+    }
+    
+    if kvk_result:
+        sources["kvk"] = kvk_result
+    
+    # Save individual sources
+    for source_name, source_result in sources.items():
+        try:
+            supabase.table("research_sources").insert({
+                "research_id": research_id,
+                "source_name": source_name,
+                "data": source_result
+            }).execute()
+        except Exception as e:
+            logger.warning(f"[V2] Failed to save source {source_name}: {e}")
+    
+    # Calculate metrics
+    success_count = sum(1 for s in sources.values() if s and s.get("success"))
+    
+    # Get Exa stats if available
+    exa_stats = exa_result.get("stats", {}) if exa_result else {}
+    
+    research_data = {
+        "sources": sources,
+        "success_count": success_count,
+        "total_sources": len(sources),
+        "architecture": architecture,
+        "exa_stats": exa_stats
+    }
+    
+    supabase.table("research_briefs").update({
+        "status": "completed",
+        "research_data": research_data,
+        "brief_content": brief_content,
+        "completed_at": "now()"
+    }).eq("id", research_id).execute()
+    
+    logger.info(f"[V2] Saved research results: architecture={architecture}")
+    
+    return {"saved": True, "architecture": architecture}
