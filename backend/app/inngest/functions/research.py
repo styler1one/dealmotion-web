@@ -588,7 +588,8 @@ async def research_company_v2_fn(ctx, step):
     seller_context = await step.run(
         "get-seller-context",
         get_seller_context,
-        organization_id
+        organization_id,
+        user_id
     )
     
     # Step 3: Exa Research (PRIMARY)
