@@ -361,125 +361,120 @@ class PeopleSearchProvider:
         Search using primary neural search provider.
         
         OPTIMIZED: 
-        - Neural search with LinkedIn domain filter for precision
-        - Multiple query strategies for better recall
-        - Light search first (no content = cheaper)
-        - Full content only after user selection
+        - Neural search with LinkedIn domain filter for EXACT name matching
+        - Multiple query strategies run in sequence for better recall
+        - Deep Search was too fuzzy (found "Kobus Boons" instead of "Kobus Dijkhorst")
         
-        Cost: ~$0.005 per search
+        Cost: ~$0.005 per search x number of queries
         """
         # Clean the name for better matching
         clean_name = self._clean_name(name)
         
-        # Build main query and additional queries for Deep Search
-        # Deep Search runs all queries in parallel and smart-ranks results
-        main_query = f'{clean_name} LinkedIn profile'
-        additional_queries = []
+        # Build multiple query strategies - we'll run them in sequence
+        # Neural search is more precise than Deep Search for exact name matches
+        queries = []
         
-        # Add company context as additional query (not main - person might have multiple roles)
+        # Strategy 1: Exact name with LinkedIn context (best for unique names)
+        queries.append(f'"{clean_name}" LinkedIn')
+        
+        # Strategy 2: Name with company (if person is still there)
         if company_name:
-            additional_queries.append(f'{clean_name} {company_name}')
+            queries.append(f'"{clean_name}" {company_name}')
         
-        # Add role context
-        if role:
-            additional_queries.append(f'{clean_name} {role}')
-        
-        # Add full context as additional query
-        if company_name and role:
-            additional_queries.append(f'{clean_name} {role} {company_name}')
-        
-        # Always include just the name (handles people with multiple companies)
-        additional_queries.append(clean_name)
+        # Strategy 3: Just the name (for people with multiple companies like Kobus)
+        queries.append(f'"{clean_name}"')
         
         loop = asyncio.get_event_loop()
         all_matches = []
         seen_urls = set()
         
         # Log with both logger and print to ensure visibility in Railway
-        log_msg = f"[PEOPLE_SEARCH] Deep search: main='{main_query}', additional={additional_queries}"
+        log_msg = f"[PEOPLE_SEARCH] Neural search with {len(queries)} queries for '{clean_name}'"
         logger.info(log_msg)
         print(log_msg, flush=True)
         
-        def do_search():
-            # Deep Search with additionalQueries for better recall
-            # Handles cases where person has multiple roles/companies
-            # Cost: $0.015 per search (vs $0.005 for neural)
-            return self._primary_client.search_and_contents(
-                main_query,
-                type="deep",  # Deep search for query expansion & parallel search
-                category="linkedin profile",
-                num_results=max_results * 3,  # Get more results to filter
-                text={"max_characters": 300},
-                additional_queries=additional_queries,  # Run these queries in parallel!
-            )
+        for query in queries:
+            print(f"[PEOPLE_SEARCH] Trying query: {query}", flush=True)
+            
+            def do_search(q=query):
+                # Neural search = embeddings-based = understands semantic meaning
+                # include_domains for LinkedIn only
+                return self._primary_client.search_and_contents(
+                    q,
+                    type="neural",  # Neural = precise semantic matching
+                    include_domains=["linkedin.com"],  # Only LinkedIn
+                    num_results=max_results * 2,
+                    text={"max_characters": 300},
+                )
+            
+                response = await loop.run_in_executor(None, do_search)
+                
+                # Log how many results Exa returned
+                raw_count = len(response.results) if response.results else 0
+                print(f"[PEOPLE_SEARCH] Query '{query}' returned {raw_count} results", flush=True)
+                
+                for result in response.results:
+                    url = result.url or ""
+                    
+                    # Only include personal LinkedIn profile URLs (not company pages)
+                    if "/in/" not in url.lower():
+                        continue
+                    
+                    # Normalize LinkedIn URL for deduplication
+                    url_slug = self._extract_linkedin_slug(url)
+                    if url_slug in seen_urls:
+                        continue
+                    seen_urls.add(url_slug)
+                    
+                    # Get result text for better matching
+                    result_title = result.title or ""
+                    result_text = getattr(result, 'text', '') or ""
+                    combined_text = f"{result_title} {result_text}".lower()
+                    
+                    # Parse name, title, and company from result
+                    parsed_name, parsed_title, parsed_company = self._parse_linkedin_title(
+                        result_title, name, company_name
+                    )
+                    
+                    # Calculate confidence with improved matching
+                    confidence = self._calculate_confidence_v2(
+                        search_name=clean_name,
+                        found_name=parsed_name,
+                        search_company=company_name,
+                        search_role=role,
+                        found_text=combined_text
+                    )
+                    
+                    # Log each result for debugging
+                    print(f"[PEOPLE_SEARCH] Result: '{result_title}' -> conf={confidence:.2f}, url={url}", flush=True)
+                    
+                    # Only include if confidence is reasonable
+                    if confidence < 0.4:
+                        print(f"[PEOPLE_SEARCH] FILTERED (conf < 0.4): {parsed_name}", flush=True)
+                        continue
+                    
+                    all_matches.append(ProfileMatch(
+                        name=parsed_name,
+                        title=parsed_title,
+                        company=parsed_company,
+                        location=None,
+                        linkedin_url=url,
+                        headline=parsed_title,
+                        summary=None,
+                        experience_years=None,
+                        skills=None,
+                        confidence=confidence,
+                        match_reason=self._get_match_reason(confidence, company_name),
+                        source="primary",
+                        raw_text=None
+                    ))
+                
+            except Exception as e:
+                print(f"[PEOPLE_SEARCH] Query '{query}' failed: {e}", flush=True)
+                continue
         
-        try:
-            response = await loop.run_in_executor(None, do_search)
-            
-            # Log how many results Exa returned
-            raw_count = len(response.results) if response.results else 0
-            print(f"[PEOPLE_SEARCH] Exa returned {raw_count} raw results", flush=True)
-            
-            for result in response.results:
-                url = result.url or ""
-                
-                # Only include personal LinkedIn profile URLs (not company pages)
-                if "/in/" not in url.lower():
-                    continue
-                
-                # Normalize LinkedIn URL for deduplication
-                url_slug = self._extract_linkedin_slug(url)
-                if url_slug in seen_urls:
-                    continue
-                seen_urls.add(url_slug)
-                
-                # Get result text for better matching
-                result_title = result.title or ""
-                result_text = getattr(result, 'text', '') or ""
-                combined_text = f"{result_title} {result_text}".lower()
-                
-                # Parse name, title, and company from result
-                parsed_name, parsed_title, parsed_company = self._parse_linkedin_title(
-                    result_title, name, company_name
-                )
-                
-                # Calculate confidence with improved matching
-                confidence = self._calculate_confidence_v2(
-                    search_name=clean_name,
-                    found_name=parsed_name,
-                    search_company=company_name,
-                    search_role=role,
-                    found_text=combined_text
-                )
-                
-                # Log each result for debugging
-                print(f"[PEOPLE_SEARCH] Result: '{result_title}' -> conf={confidence:.2f}, url={url}", flush=True)
-                
-                # Only include if confidence is reasonable
-                if confidence < 0.4:
-                    print(f"[PEOPLE_SEARCH] FILTERED (conf < 0.4): {parsed_name}", flush=True)
-                    continue
-                
-                all_matches.append(ProfileMatch(
-                    name=parsed_name,
-                    title=parsed_title,
-                    company=parsed_company,
-                    location=None,
-                    linkedin_url=url,
-                    headline=parsed_title,
-                    summary=None,
-                    experience_years=None,
-                    skills=None,
-                    confidence=confidence,
-                    match_reason=self._get_match_reason(confidence, company_name),
-                    source="primary",
-                    raw_text=None
-                ))
-            
-            logger.info(f"[PEOPLE_SEARCH] Deep search found {len(all_matches)} matches")
-            
-        except Exception as e:
-            logger.warning(f"[PEOPLE_SEARCH] Deep search failed: {e}")
+        # Log total matches found
+        print(f"[PEOPLE_SEARCH] Total matches after all queries: {len(all_matches)}", flush=True)
         
         # Sort by confidence and limit
         all_matches.sort(key=lambda m: m.confidence, reverse=True)
@@ -487,7 +482,7 @@ class PeopleSearchProvider:
         
         return ProfileSearchResult(
             matches=matches,
-            query_used=main_query,
+            query_used=queries[0] if queries else "",
             source="primary",
             success=True
         )
