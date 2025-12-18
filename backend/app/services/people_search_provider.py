@@ -407,6 +407,7 @@ class PeopleSearchProvider:
                     text={"max_characters": 300},
                 )
             
+            try:
                 response = await loop.run_in_executor(None, do_search)
                 
                 # Log how many results Exa returned
