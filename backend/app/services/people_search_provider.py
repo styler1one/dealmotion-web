@@ -395,7 +395,10 @@ class PeopleSearchProvider:
         all_matches = []
         seen_urls = set()
         
-        logger.info(f"[PEOPLE_SEARCH] Deep search: main='{main_query}', additional={additional_queries}")
+        # Log with both logger and print to ensure visibility in Railway
+        log_msg = f"[PEOPLE_SEARCH] Deep search: main='{main_query}', additional={additional_queries}"
+        logger.info(log_msg)
+        print(log_msg, flush=True)
         
         def do_search():
             # Deep Search with additionalQueries for better recall
@@ -999,7 +1002,7 @@ class PeopleSearchProvider:
         import re
         
         if not title:
-            return fallback_name, None, search_company
+            return fallback_name, None, None  # Don't use search_company as fallback
         
         # Remove LinkedIn suffix
         title = re.sub(r'\s*\|\s*LinkedIn.*$', '', title, flags=re.IGNORECASE)
@@ -1027,9 +1030,9 @@ class PeopleSearchProvider:
             # No " - ", just name
             name = title
         
-        # If no company found, use search company
-        if not company:
-            company = search_company
+        # DON'T fallback to search_company - only show what's actually in the profile
+        # If someone searches "Dave Jansen at Cmotions" but finds a Dave Jansen at "Remote Dev",
+        # we shouldn't display "Cmotions" - that's misleading
         
         # Clean up: if title equals company name, it's probably not a real title
         if parsed_title and company:
