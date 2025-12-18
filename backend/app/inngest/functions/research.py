@@ -620,6 +620,15 @@ async def research_company_v2_fn(ctx, step):
             company_name, city
         )
     
+    # Step 4b: Website content extraction (if URL provided)
+    website_result = None
+    if website_url:
+        website_result = await step.run(
+            "website-scrape",
+            run_website_scrape,
+            website_url, company_name
+        )
+    
     # Step 5: Check if Exa succeeded, fallback if not
     if not exa_result.get("success"):
         logger.warning(f"[V2] Exa research failed, falling back to Gemini-first")
@@ -653,7 +662,7 @@ async def research_company_v2_fn(ctx, step):
         brief_content = await step.run(
             "claude-synthesis",
             run_claude_synthesis,
-            company_name, country, city, exa_result, kvk_result, seller_context, language
+            company_name, country, city, exa_result, kvk_result, website_result, seller_context, language
         )
         
         architecture = "exa-first"
@@ -766,6 +775,7 @@ async def run_claude_synthesis(
     city: Optional[str],
     exa_result: dict,
     kvk_result: Optional[dict],
+    website_result: Optional[dict],
     seller_context: dict,
     language: str
 ) -> str:
@@ -801,6 +811,19 @@ async def run_claude_synthesis(
 | **Legal Form** | {kvk.get('legal_form', 'Unknown')} |
 | **Registration Date** | {kvk.get('registration_date', 'Unknown')} |
 | **Address** | {kvk.get('address', 'Unknown')} |
+"""
+    
+    # Build website content section
+    website_section = ""
+    if website_result and website_result.get("success"):
+        website_section = f"""
+
+## COMPANY WEBSITE CONTENT
+
+**URL**: {website_result.get('url', 'Unknown')}
+**Pages Scraped**: {website_result.get('pages_scraped', 0)}
+
+{website_result.get('summary', 'No summary available')}
 """
     
     # Build seller context section (detailed, like V1)
@@ -885,6 +908,8 @@ The following data was collected via comprehensive web research (Exa AI - 30+ pa
 {exa_markdown}
 
 {kvk_section}
+
+{website_section}
 
 ## YOUR TASK
 
