@@ -43,9 +43,9 @@ exa_research_service = get_exa_research_service()
 
 # Log service availability at module load
 if exa_research_service.is_available:
-    logger.info("[INNGEST_RESEARCH] Exa Research Service available - Exa-first architecture enabled")
+    logger.info("[INNGEST_RESEARCH] Exa Comprehensive Researcher available - 30 parallel search architecture enabled")
 else:
-    logger.info("[INNGEST_RESEARCH] Exa Research Service not available - falling back to Gemini-first")
+    logger.info("[INNGEST_RESEARCH] Exa Comprehensive Researcher not available - using Gemini-first")
 
 if research_enricher.is_available:
     logger.info("[INNGEST_RESEARCH] Research enricher available - enhanced executive discovery enabled")
@@ -549,14 +549,20 @@ async def save_research_results(
 )
 async def research_company_v2_fn(ctx, step):
     """
-    Exa-first company research with structured JSON output.
+    Exa Comprehensive company research with 30 parallel searches.
     
-    Architecture (V2 - Exa-First):
+    Architecture (V2 - Exa Comprehensive):
     1. Update status to 'researching'
     2. Get seller context
-    3. Exa Research API: Comprehensive multi-step research (PRIMARY)
+    3. Exa Comprehensive Research: 30 parallel searches (PRIMARY)
+       - COMPANY (4): identity, business model, products, financials
+       - PEOPLE (6): CEO, C-suite, senior leadership, board, changes
+       - MARKET (5): news, partnerships, hiring, tech stack, competition
+       - DEEP INSIGHTS (7): reviews, events, awards, media, challenges
+       - STRATEGIC (6): customers, risks, roadmap, ESG, patents, vendors
+       - LOCAL (2): country-specific media and rankings
     4. KVK lookup (if Dutch company)
-    5. Claude: Synthesize data and generate report (smaller role)
+    5. Claude: Synthesize data and generate 360° report
     6. Save to database
     7. Emit completion event
     
@@ -701,60 +707,57 @@ async def run_exa_research(
     website_url: Optional[str]
 ) -> dict:
     """
-    Run Exa Research API for comprehensive company research.
+    Run Exa Comprehensive Research with 30 parallel searches.
     
-    Returns structured JSON with all company data.
+    Uses ExaComprehensiveResearcher which mirrors the Gemini-first architecture
+    but uses Exa's APIs (Search, Contents, People category, domain filters).
+    
+    Returns comprehensive markdown data for Claude synthesis.
     """
     if not exa_research_service.is_available:
         return {"success": False, "error": "Exa Research Service not available"}
     
     try:
-        logger.info(f"[V2] Starting Exa research for {company_name}")
+        logger.info(f"[V2] Starting Exa comprehensive research for {company_name}")
         
         result = await exa_research_service.research_company(
             company_name=company_name,
             country=country,
             city=city,
             linkedin_url=linkedin_url,
-            website_url=website_url,
-            model="exa-research",  # Use standard model (faster, cheaper)
-            max_wait_seconds=180
+            website_url=website_url
         )
         
         if result.success:
-            # Format as markdown for Claude synthesis
+            # Get markdown output for Claude synthesis
             markdown = exa_research_service.format_for_claude(result)
             
             logger.info(
-                f"[V2] Exa research complete: "
-                f"{len(result.c_suite)} c-suite, "
-                f"{len(result.funding_rounds)} funding rounds, "
-                f"{len(result.recent_news)} news items, "
-                f"cost=${result.cost_dollars:.4f}"
+                f"[V2] Exa comprehensive research complete: "
+                f"{result.topics_completed}/{result.topics_completed + result.topics_failed} topics, "
+                f"{result.total_results} total results, "
+                f"{result.execution_time_seconds:.1f}s"
             )
             
             return {
                 "success": True,
-                "source": "exa-research",
+                "source": "exa-comprehensive",
                 "markdown": markdown,
-                "data": result.raw_output,
                 "stats": {
-                    "c_suite_count": len(result.c_suite),
-                    "senior_leadership_count": len(result.senior_leadership),
-                    "board_count": len(result.board_of_directors),
-                    "funding_rounds_count": len(result.funding_rounds),
-                    "news_count": len(result.recent_news),
-                    "cost_dollars": result.cost_dollars
+                    "topics_completed": result.topics_completed,
+                    "topics_failed": result.topics_failed,
+                    "total_results": result.total_results,
+                    "execution_time_seconds": result.execution_time_seconds
                 }
             }
         else:
             error_msg = ", ".join(result.errors) if result.errors else "Unknown error"
-            logger.warning(f"[V2] Exa research failed: {error_msg}")
-            return {"success": False, "error": error_msg, "source": "exa-research"}
+            logger.warning(f"[V2] Exa comprehensive research failed: {error_msg}")
+            return {"success": False, "error": error_msg, "source": "exa-comprehensive"}
             
     except Exception as e:
-        logger.error(f"[V2] Exa research error: {e}")
-        return {"success": False, "error": str(e), "source": "exa-research"}
+        logger.error(f"[V2] Exa comprehensive research error: {e}")
+        return {"success": False, "error": str(e), "source": "exa-comprehensive"}
 
 
 async def run_claude_synthesis(

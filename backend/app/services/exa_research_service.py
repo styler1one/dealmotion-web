@@ -1,113 +1,211 @@
 """
-Exa Research Service - Comprehensive company research using Exa's Research API.
+Exa Comprehensive Research Service - State-of-the-art B2B prospect research.
 
-This service replaces the Gemini-first architecture with a single Exa Research API call
-that returns structured JSON output for B2B sales intelligence.
+This service mirrors the Gemini-first architecture but uses Exa's APIs:
+- 30 PARALLEL search calls for maximum coverage
+- Each call focuses on ONE specific research area
+- Uses Exa's specialized capabilities (category filters, domain filters, date filters)
+- Output: Comprehensive structured raw data for Claude to analyze
+
+Architecture:
+- COMPANY (4 calls): identity, business model, products, financials
+- PEOPLE (6 calls): CEO, C-suite, senior leadership, board, changes, founder story
+- MARKET (5 calls): news, partnerships, hiring, tech stack, competition
+- DEEP INSIGHTS (7 calls): reviews, events, awards, media, customers, challenges, certifications
+- STRATEGIC (6 calls): key accounts, risks, roadmap, ESG, patents, vendors
+- LOCAL (2 calls): country-specific media and rankings
 
 Features:
-- Async research with polling
-- Structured JSON output schema
-- Complete leadership, funding, and signals data
-- Fallback to legacy Gemini-first flow
+- International support with country-specific business media sources
+- Specialized category filters (people, company, news)
+- Domain filtering for quality sources (Crunchbase, G2, Glassdoor, etc.)
+- Date filtering for recent news
+- Answer API for specific factual queries
 """
 
 import os
 import asyncio
 import logging
-import httpx
 from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any
-from datetime import datetime
+from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
 
 # =============================================================================
-# Output Schema for Company Research (flattened to max depth 5)
+# Local Business Sources - International Support
 # =============================================================================
 
-COMPANY_RESEARCH_SCHEMA = {
-    "type": "object",
-    "properties": {
-        # Company basics - flat
-        "company_name": {"type": "string"},
-        "legal_name": {"type": "string"},
-        "founded": {"type": "string"},
-        "headquarters": {"type": "string"},
-        "industry": {"type": "string"},
-        "employee_range": {"type": "string"},
-        "revenue_estimate": {"type": "string"},
-        "description": {"type": "string"},
-        "website": {"type": "string"},
-        "linkedin_url": {"type": "string"},
-        
-        # Leadership - arrays of objects (depth 3)
-        "executives": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "name": {"type": "string"},
-                    "title": {"type": "string"},
-                    "linkedin_url": {"type": "string"},
-                    "is_founder": {"type": "boolean"}
-                }
-            }
-        },
-        "board_members": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "name": {"type": "string"},
-                    "role": {"type": "string"},
-                    "affiliation": {"type": "string"}
-                }
-            }
-        },
-        
-        # Funding - simplified
-        "ownership_type": {"type": "string"},
-        "total_funding": {"type": "string"},
-        "key_investors": {"type": "array", "items": {"type": "string"}},
-        "funding_rounds": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "date": {"type": "string"},
-                    "round_type": {"type": "string"},
-                    "amount": {"type": "string"},
-                    "investors": {"type": "string"}
-                }
-            }
-        },
-        
-        # News - array of objects (depth 3)
-        "recent_news": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "date": {"type": "string"},
-                    "headline": {"type": "string"},
-                    "source_url": {"type": "string"}
-                }
-            }
-        },
-        
-        # Signals - flat
-        "job_openings": {"type": "string"},
-        "hiring_velocity": {"type": "string"},
-        "growth_signals": {"type": "array", "items": {"type": "string"}},
-        
-        # Technology - flat
-        "tech_stack": {"type": "array", "items": {"type": "string"}},
-        
-        # Competition - flat
-        "competitors": {"type": "array", "items": {"type": "string"}},
-        "market_position": {"type": "string"}
+LOCAL_BUSINESS_SOURCES = {
+    # Netherlands
+    "nl": {
+        "name": "Dutch Business Media",
+        "domains": ["fd.nl", "mt.nl", "sprout.nl", "bnr.nl", "emerce.nl", "quotenet.nl", "computable.nl"],
+        "rankings": "FD Gazellen MT500 Deloitte Fast50 Best Managed Companies EY Entrepreneur",
+        "language": "Dutch"
+    },
+    
+    # Germany
+    "de": {
+        "name": "German Business Media",
+        "domains": ["handelsblatt.com", "manager-magazin.de", "wiwo.de", "gruenderszene.de", "t3n.de"],
+        "rankings": "Top 500 Focus Growth Champions Technology Fast 50",
+        "language": "German"
+    },
+    
+    # United Kingdom
+    "uk": {
+        "name": "UK Business Media",
+        "domains": ["ft.com", "cityam.com", "thisismoney.co.uk", "uktech.news", "sifted.eu"],
+        "rankings": "Sunday Times Fast Track Tech Track 100 Deloitte Fast 50 UK",
+        "language": "English"
+    },
+    
+    # United States
+    "us": {
+        "name": "US Business Media",
+        "domains": ["wsj.com", "forbes.com", "fortune.com", "businessinsider.com", "techcrunch.com", "venturebeat.com"],
+        "rankings": "Inc 5000 Forbes Cloud 100 Deloitte Fast 500 Fortune 500",
+        "language": "English"
+    },
+    
+    # France
+    "fr": {
+        "name": "French Business Media",
+        "domains": ["lesechos.fr", "bfmtv.com", "lexpansion.lexpress.fr", "maddyness.com", "frenchweb.fr"],
+        "rankings": "FW500 Champions de la Croissance French Tech 120",
+        "language": "French"
+    },
+    
+    # Belgium
+    "be": {
+        "name": "Belgian Business Media",
+        "domains": ["tijd.be", "lecho.be", "trends.be", "datanews.be"],
+        "rankings": "Trends Gazellen Deloitte Fast 50 Belgium",
+        "language": "Dutch/French"
+    },
+    
+    # Spain
+    "es": {
+        "name": "Spanish Business Media",
+        "domains": ["expansion.com", "cincodias.elpais.com", "eleconomista.es", "elpais.com/economia"],
+        "rankings": "Actualidad Economica 500 Ranking Empresas",
+        "language": "Spanish"
+    },
+    
+    # Italy
+    "it": {
+        "name": "Italian Business Media",
+        "domains": ["ilsole24ore.com", "corriere.it", "startupitalia.eu", "wired.it"],
+        "rankings": "Il Sole 24 Ore Top 500 Italy",
+        "language": "Italian"
+    },
+    
+    # Sweden
+    "se": {
+        "name": "Swedish Business Media",
+        "domains": ["di.se", "breakit.se", "svd.se", "nyteknik.se"],
+        "rankings": "DI Gasell Sweden Fastest Growing",
+        "language": "Swedish"
+    },
+    
+    # Norway
+    "no": {
+        "name": "Norwegian Business Media",
+        "domains": ["dn.no", "e24.no", "shifter.no"],
+        "rankings": "Dagens Naeringsliv Gaselle",
+        "language": "Norwegian"
+    },
+    
+    # Denmark
+    "dk": {
+        "name": "Danish Business Media",
+        "domains": ["borsen.dk", "finans.dk", "techsavvy.media"],
+        "rankings": "Borsen Gazelle Denmark",
+        "language": "Danish"
+    },
+    
+    # Australia
+    "au": {
+        "name": "Australian Business Media",
+        "domains": ["afr.com", "smartcompany.com.au", "businessnewsaustralia.com", "startupdaily.net"],
+        "rankings": "AFR Fast 100 BRW Fast Starters Deloitte Fast 50 Australia",
+        "language": "English"
+    },
+    
+    # Canada
+    "ca": {
+        "name": "Canadian Business Media",
+        "domains": ["bnn.ca", "theglobeandmail.com", "financialpost.com", "betakit.com"],
+        "rankings": "Growth 500 Deloitte Fast 50 Canada",
+        "language": "English"
+    },
+    
+    # Singapore
+    "sg": {
+        "name": "Singapore Business Media",
+        "domains": ["businesstimes.com.sg", "straitstimes.com", "techinasia.com"],
+        "rankings": "Singapore Business Awards Fast Enterprise",
+        "language": "English"
+    },
+    
+    # India
+    "in": {
+        "name": "Indian Business Media",
+        "domains": ["economictimes.indiatimes.com", "business-standard.com", "yourstory.com", "inc42.com"],
+        "rankings": "ET 500 Fortune India 500",
+        "language": "English"
+    },
+    
+    # Default (Global English)
+    "default": {
+        "name": "Global Business Media",
+        "domains": ["reuters.com", "bloomberg.com", "forbes.com", "techcrunch.com", "crunchbase.com"],
+        "rankings": "Global 2000 Unicorn List Forbes Global",
+        "language": "English"
     }
+}
+
+# Country name to code mapping
+COUNTRY_CODE_MAP = {
+    # Netherlands
+    "netherlands": "nl", "nederland": "nl", "nl": "nl", "the netherlands": "nl", "holland": "nl",
+    # Germany
+    "germany": "de", "deutschland": "de", "de": "de", "duitsland": "de",
+    # United Kingdom
+    "united kingdom": "uk", "uk": "uk", "great britain": "uk", "england": "uk", "gb": "uk",
+    # United States
+    "united states": "us", "usa": "us", "us": "us", "america": "us", "united states of america": "us",
+    # France
+    "france": "fr", "fr": "fr", "frankrijk": "fr",
+    # Belgium
+    "belgium": "be", "belgie": "be", "belgië": "be", "be": "be", "belgique": "be",
+    # Spain
+    "spain": "es", "españa": "es", "es": "es", "spanje": "es",
+    # Italy
+    "italy": "it", "italia": "it", "it": "it", "italië": "it",
+    # Sweden
+    "sweden": "se", "sverige": "se", "se": "se", "zweden": "se",
+    # Norway
+    "norway": "no", "norge": "no", "no": "no", "noorwegen": "no",
+    # Denmark
+    "denmark": "dk", "danmark": "dk", "dk": "dk", "denemarken": "dk",
+    # Australia
+    "australia": "au", "au": "au",
+    # Canada
+    "canada": "ca", "ca": "ca",
+    # Singapore
+    "singapore": "sg", "sg": "sg",
+    # India
+    "india": "in", "in": "in",
+    # Other common
+    "austria": "at", "oostenrijk": "at", "at": "at",
+    "switzerland": "ch", "zwitserland": "ch", "ch": "ch", "schweiz": "ch",
+    "poland": "pl", "polen": "pl", "pl": "pl",
+    "portugal": "pt", "pt": "pt",
+    "ireland": "ie", "ierland": "ie", "ie": "ie",
+    "finland": "fi", "fi": "fi",
 }
 
 
@@ -116,414 +214,704 @@ COMPANY_RESEARCH_SCHEMA = {
 # =============================================================================
 
 @dataclass
-class ExecutiveInfo:
-    """Executive/leadership information."""
-    name: str
-    title: str
-    linkedin_url: str = ""
-    background: str = ""
-    is_founder: bool = False
-    department: str = ""
+class SearchTopicResult:
+    """Result from a single search topic."""
+    topic: str
+    success: bool
+    data: str = ""
+    results_count: int = 0
+    error: str = ""
 
 
 @dataclass
-class FundingRound:
-    """Single funding round."""
-    date: str
-    round_type: str
-    amount: str
-    lead_investor: str = ""
-    other_investors: List[str] = field(default_factory=list)
-
-
-@dataclass
-class NewsItem:
-    """News/event item."""
-    date: str
-    headline: str
-    news_type: str = ""
-    source_url: str = ""
-
-
-@dataclass
-class CompanyResearchResult:
-    """Complete company research result."""
+class ComprehensiveResearchResult:
+    """Complete research result from all topics."""
     success: bool = False
-    research_id: str = ""
-    
-    # Company basics
     company_name: str = ""
-    legal_name: str = ""
-    trading_name: str = ""
-    founded: str = ""
-    headquarters: str = ""
-    other_locations: List[str] = field(default_factory=list)
-    industry: str = ""
-    sub_sector: str = ""
-    employee_range: str = ""
-    revenue_estimate: str = ""
-    description: str = ""
-    mission: str = ""
-    website: str = ""
-    linkedin_url: str = ""
+    country: str = ""
     
-    # Leadership
-    c_suite: List[ExecutiveInfo] = field(default_factory=list)
-    senior_leadership: List[ExecutiveInfo] = field(default_factory=list)
-    board_of_directors: List[Dict[str, str]] = field(default_factory=list)
-    leadership_changes: List[Dict[str, str]] = field(default_factory=list)
+    # Section results
+    topics_completed: int = 0
+    topics_failed: int = 0
+    topic_results: Dict[str, SearchTopicResult] = field(default_factory=dict)
     
-    # Ownership & Funding
-    ownership_type: str = ""
-    parent_company: str = ""
-    major_shareholders: List[str] = field(default_factory=list)
-    total_funding_raised: str = ""
-    funding_rounds: List[FundingRound] = field(default_factory=list)
-    key_investors: List[str] = field(default_factory=list)
-    acquisitions: List[str] = field(default_factory=list)
-    
-    # News & Signals
-    recent_news: List[NewsItem] = field(default_factory=list)
-    job_openings_count: str = ""
-    top_hiring_departments: List[str] = field(default_factory=list)
-    hiring_velocity: str = ""
-    growth_signals: List[str] = field(default_factory=list)
-    
-    # Technology
-    crm: str = ""
-    cloud_provider: str = ""
-    other_tools: List[str] = field(default_factory=list)
-    
-    # Competitive
-    main_competitors: List[str] = field(default_factory=list)
-    market_position: str = ""
-    differentiators: List[str] = field(default_factory=list)
+    # Combined markdown output
+    markdown_output: str = ""
     
     # Metadata
-    cost_dollars: float = 0.0
-    num_searches: int = 0
-    num_pages: int = 0
-    reasoning_tokens: int = 0
+    total_results: int = 0
+    execution_time_seconds: float = 0.0
     errors: List[str] = field(default_factory=list)
-    raw_output: Dict[str, Any] = field(default_factory=dict)
 
 
 # =============================================================================
-# Exa Research Service
+# Exa Comprehensive Researcher
 # =============================================================================
 
-class ExaResearchService:
+class ExaComprehensiveResearcher:
     """
-    Service for comprehensive company research using Exa's Research API.
+    Comprehensive B2B research using Exa's Search, Answer, and Contents APIs.
     
-    Replaces Gemini-first architecture with structured JSON output.
+    Uses 30 PARALLEL CALLS for STATE-OF-THE-ART coverage:
+    
+    COMPANY INFORMATION (4):
+    1. company_identity - Name, founded, HQ, industry from LinkedIn/Crunchbase
+    2. business_model - What they do, how they make money (website content)
+    3. products_services - Detailed offerings, pricing
+    4. financials_funding - Revenue, funding, investors
+    
+    PEOPLE (6):
+    5. ceo_founder - CEO/Founder with LinkedIn
+    6. c_suite - CFO, CTO, COO, CMO with LinkedIns
+    7. senior_leadership - VPs, Directors
+    8. board_advisors - Board members, investors
+    9. leadership_changes - Recent hires, departures
+    10. founder_story - Origin story, vision
+    
+    MARKET INTELLIGENCE (5):
+    11. recent_news - Last 90 days
+    12. partnerships_acquisitions - Deals, M&A
+    13. hiring_signals - Job openings, growth
+    14. technology_stack - CRM, cloud, tools
+    15. competition - Competitors, positioning
+    
+    DEEP INSIGHTS (7):
+    16. employee_reviews - Glassdoor, Indeed
+    17. events_speaking - Conferences, webinars
+    18. awards_recognition - Industry awards
+    19. media_interviews - Podcasts, interviews
+    20. customer_reviews - G2, Capterra
+    21. challenges_priorities - Strategy, pain points
+    22. certifications - ISO, SOC2, GDPR
+    
+    STRATEGIC INTELLIGENCE (6):
+    23. key_customers - Named clients, case studies
+    24. risk_signals - Lawsuits, controversies
+    25. future_roadmap - Plans, expansion
+    26. sustainability_esg - ESG, CSR
+    27. patents_innovation - R&D, IP
+    28. vendor_partners - Tech ecosystem
+    
+    LOCAL MARKET (2):
+    29. local_media - Country-specific coverage
+    30. local_rankings - Country-specific rankings
     """
-    
-    BASE_URL = "https://api.exa.ai"
     
     def __init__(self):
-        self._api_key = os.getenv("EXA_API_KEY")
-        self._initialized = self._api_key is not None
+        """Initialize Exa client."""
+        self._client = None
+        self._initialized = False
         
-        if self._initialized:
-            logger.info("[EXA_RESEARCH] Service initialized")
+        api_key = os.getenv("EXA_API_KEY")
+        if api_key:
+            try:
+                from exa_py import Exa
+                self._client = Exa(api_key=api_key)
+                self._initialized = True
+                logger.info("[EXA_COMPREHENSIVE] Service initialized")
+            except ImportError:
+                logger.warning("[EXA_COMPREHENSIVE] Exa SDK not available")
+            except Exception as e:
+                logger.warning(f"[EXA_COMPREHENSIVE] Failed to initialize: {e}")
         else:
-            logger.warning("[EXA_RESEARCH] No API key found - service disabled")
+            logger.info("[EXA_COMPREHENSIVE] No API key configured")
     
     @property
     def is_available(self) -> bool:
         """Check if service is available."""
-        return self._initialized
+        return self._initialized and self._client is not None
     
-    def _build_instructions(
-        self,
-        company_name: str,
-        country: Optional[str] = None,
-        city: Optional[str] = None,
-        linkedin_url: Optional[str] = None,
-        website_url: Optional[str] = None
-    ) -> str:
-        """Build research instructions for Exa. Max 4096 chars."""
-        # Build location context
-        if city and country:
-            location_context = f" ({city}, {country})"
-        elif country:
-            location_context = f" ({country})"
-        elif city:
-            location_context = f" ({city})"
-        else:
-            location_context = ""
-        
-        linkedin_context = f" LinkedIn: {linkedin_url}" if linkedin_url else ""
-        website_context = f" Website: {website_url}" if website_url else ""
-        
-        # Keep under 4096 chars - Exa API limit
-        return f"""Research {company_name}{location_context} for B2B sales.{linkedin_context}{website_context}
-
-Find: 1) Company info (name, founded, HQ, industry, employees, revenue, description)
-2) Leadership with LinkedIn URLs (CEO, CFO, CTO, COO, CMO, VPs, Board members)
-3) Ownership & funding (type, investors, funding rounds with dates/amounts)
-4) Recent news (last 6 months, with source URLs)
-5) Hiring activity and growth signals
-6) Competitors and market position"""
+    def _get_country_code(self, country: Optional[str]) -> str:
+        """Get country code from country name."""
+        if not country:
+            return "default"
+        return COUNTRY_CODE_MAP.get(country.lower().strip(), "default")
     
-    async def start_research(
+    def _get_local_sources(self, country: Optional[str]) -> Dict[str, Any]:
+        """Get local business sources for a country."""
+        code = self._get_country_code(country)
+        return LOCAL_BUSINESS_SOURCES.get(code, LOCAL_BUSINESS_SOURCES["default"])
+    
+    def _get_90_days_ago(self) -> str:
+        """Get ISO date string for 90 days ago."""
+        return (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%dT00:00:00.000Z")
+    
+    def _get_1_year_ago(self) -> str:
+        """Get ISO date string for 1 year ago."""
+        return (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%dT00:00:00.000Z")
+    
+    async def _execute_search(
         self,
-        company_name: str,
-        country: Optional[str] = None,
-        city: Optional[str] = None,
-        linkedin_url: Optional[str] = None,
-        website_url: Optional[str] = None,
-        model: str = "exa-research"
-    ) -> Dict[str, Any]:
+        topic: str,
+        query: str,
+        category: Optional[str] = None,
+        include_domains: Optional[List[str]] = None,
+        exclude_domains: Optional[List[str]] = None,
+        start_published_date: Optional[str] = None,
+        num_results: int = 10,
+        get_contents: bool = False,
+        max_characters: int = 1500
+    ) -> SearchTopicResult:
         """
-        Start an async research task.
+        Execute a single search topic.
         
         Args:
-            company_name: Company to research
-            country: Country for regional context
-            city: City for more specific location
-            linkedin_url: Company LinkedIn URL
-            website_url: Company website URL
-            model: exa-research (faster) or exa-research-pro (more thorough)
+            topic: Topic name for logging/tracking
+            query: Search query
+            category: Exa category filter (people, company, news, etc.)
+            include_domains: Domains to include
+            exclude_domains: Domains to exclude
+            start_published_date: Only results after this date (ISO format)
+            num_results: Number of results to return
+            get_contents: Whether to fetch page contents
+            max_characters: Max characters per result text
             
         Returns:
-            Dict with research_id for polling
+            SearchTopicResult with formatted data
         """
-        if not self.is_available:
-            return {"success": False, "error": "Service not available"}
+        if not self._client:
+            return SearchTopicResult(
+                topic=topic,
+                success=False,
+                error="Client not initialized"
+            )
         
-        instructions = self._build_instructions(
-            company_name, country, city, linkedin_url, website_url
+        try:
+            loop = asyncio.get_event_loop()
+            
+            # Build search kwargs
+            search_kwargs = {
+                "query": query,
+                "type": "auto",
+                "num_results": num_results,
+            }
+            
+            if category:
+                search_kwargs["category"] = category
+            
+            if include_domains:
+                search_kwargs["include_domains"] = include_domains
+            
+            if exclude_domains:
+                search_kwargs["exclude_domains"] = exclude_domains
+            
+            if start_published_date:
+                search_kwargs["start_published_date"] = start_published_date
+            
+            # Execute search
+            if get_contents:
+                search_kwargs["text"] = {"max_characters": max_characters}
+                
+                def do_search():
+                    return self._client.search_and_contents(**search_kwargs)
+            else:
+                def do_search():
+                    return self._client.search(**search_kwargs)
+            
+            response = await loop.run_in_executor(None, do_search)
+            
+            if not response.results:
+                return SearchTopicResult(
+                    topic=topic,
+                    success=True,
+                    data=f"No results found for: {query}",
+                    results_count=0
+                )
+            
+            # Format results as markdown
+            lines = []
+            lines.append(f"### {topic.replace('_', ' ').title()}\n")
+            lines.append(f"*Query: {query}*\n")
+            
+            for i, result in enumerate(response.results, 1):
+                url = getattr(result, 'url', '')
+                title = getattr(result, 'title', 'Untitled')
+                published = getattr(result, 'published_date', None) or getattr(result, 'publishedDate', '')
+                text = getattr(result, 'text', '') if get_contents else ''
+                
+                lines.append(f"\n**{i}. [{title}]({url})**")
+                if published:
+                    lines.append(f"*Published: {published[:10] if len(published) > 10 else published}*")
+                if text:
+                    # Truncate text if too long
+                    text_preview = text[:500] + "..." if len(text) > 500 else text
+                    lines.append(f"\n{text_preview}")
+            
+            return SearchTopicResult(
+                topic=topic,
+                success=True,
+                data="\n".join(lines),
+                results_count=len(response.results)
+            )
+            
+        except Exception as e:
+            logger.error(f"[EXA_COMPREHENSIVE] {topic} search failed: {e}")
+            return SearchTopicResult(
+                topic=topic,
+                success=False,
+                error=str(e)
+            )
+    
+    async def _execute_people_search(
+        self,
+        topic: str,
+        query: str,
+        num_results: int = 10
+    ) -> SearchTopicResult:
+        """
+        Execute a people search (executives, leadership).
+        
+        Uses category="people" for Exa's 1B+ LinkedIn profile index.
+        """
+        return await self._execute_search(
+            topic=topic,
+            query=query,
+            category="people",
+            num_results=num_results,
+            get_contents=False
         )
-        
-        payload = {
-            "model": model,
-            "instructions": instructions,
-            "outputSchema": COMPANY_RESEARCH_SCHEMA
-        }
-        
-        try:
-            logger.info(f"[EXA_RESEARCH] Request payload: model={model}, instructions_len={len(instructions)}")
-            
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.post(
-                    f"{self.BASE_URL}/research/v1",
-                    headers={
-                        "x-api-key": self._api_key,
-                        "Content-Type": "application/json"
-                    },
-                    json=payload
-                )
-                
-                if response.status_code >= 400:
-                    error_body = response.text
-                    logger.error(f"[EXA_RESEARCH] API error {response.status_code}: {error_body}")
-                    return {"success": False, "error": f"{response.status_code}: {error_body}"}
-                
-                data = response.json()
-                
-                research_id = data.get("researchId")
-                status = data.get("status")
-                
-                logger.info(
-                    f"[EXA_RESEARCH] Started research for {company_name}: "
-                    f"id={research_id}, status={status}"
-                )
-                
-                return {
-                    "success": True,
-                    "research_id": research_id,
-                    "status": status,
-                    "company_name": company_name
-                }
-                
-        except httpx.HTTPStatusError as e:
-            logger.error(f"[EXA_RESEARCH] HTTP error starting research: {e}")
-            return {"success": False, "error": str(e)}
-        except Exception as e:
-            logger.error(f"[EXA_RESEARCH] Error starting research: {e}")
-            return {"success": False, "error": str(e)}
     
-    async def get_research_status(self, research_id: str) -> Dict[str, Any]:
-        """
-        Get the status of a research task.
-        
-        Returns:
-            Dict with status (pending/running/completed/failed) and output if complete
-        """
-        if not self.is_available:
-            return {"success": False, "error": "Service not available"}
-        
-        try:
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.get(
-                    f"{self.BASE_URL}/research/v1/{research_id}",
-                    headers={"x-api-key": self._api_key}
-                )
-                response.raise_for_status()
-                return response.json()
-                
-        except Exception as e:
-            logger.error(f"[EXA_RESEARCH] Error getting status: {e}")
-            return {"success": False, "error": str(e), "status": "error"}
-    
-    async def poll_until_complete(
+    async def _execute_news_search(
         self,
-        research_id: str,
-        max_wait_seconds: int = 180,
-        poll_interval: float = 5.0
-    ) -> Dict[str, Any]:
+        topic: str,
+        query: str,
+        days_back: int = 90,
+        num_results: int = 10
+    ) -> SearchTopicResult:
         """
-        Poll research status until complete or timeout.
-        
-        Args:
-            research_id: Research task ID
-            max_wait_seconds: Maximum time to wait
-            poll_interval: Seconds between polls
-            
-        Returns:
-            Complete research result or error
+        Execute a news search with date filtering.
         """
-        start_time = datetime.now()
+        start_date = (datetime.now() - timedelta(days=days_back)).strftime("%Y-%m-%dT00:00:00.000Z")
         
-        while True:
-            elapsed = (datetime.now() - start_time).total_seconds()
-            if elapsed > max_wait_seconds:
-                logger.warning(f"[EXA_RESEARCH] Timeout after {elapsed:.1f}s")
-                return {
-                    "success": False,
-                    "error": f"Timeout after {max_wait_seconds}s",
-                    "status": "timeout"
-                }
-            
-            result = await self.get_research_status(research_id)
-            status = result.get("status")
-            
-            if status == "completed":
-                logger.info(f"[EXA_RESEARCH] Research completed in {elapsed:.1f}s")
-                return result
-            
-            if status == "failed":
-                error = result.get("error", "Unknown error")
-                logger.error(f"[EXA_RESEARCH] Research failed: {error}")
-                return result
-            
-            if status == "canceled":
-                logger.warning("[EXA_RESEARCH] Research was canceled")
-                return result
-            
-            # Still running - wait and poll again
-            logger.debug(f"[EXA_RESEARCH] Status: {status}, elapsed: {elapsed:.1f}s")
-            await asyncio.sleep(poll_interval)
+        return await self._execute_search(
+            topic=topic,
+            query=query,
+            category="news",
+            start_published_date=start_date,
+            num_results=num_results,
+            get_contents=True,
+            max_characters=1000
+        )
     
-    def parse_result(self, raw_result: Dict[str, Any]) -> CompanyResearchResult:
+    async def _execute_domain_search(
+        self,
+        topic: str,
+        query: str,
+        domains: List[str],
+        num_results: int = 5,
+        get_contents: bool = True
+    ) -> SearchTopicResult:
         """
-        Parse raw Exa Research API result into structured dataclass.
-        
-        Args:
-            raw_result: Raw API response (using flattened schema)
-            
-        Returns:
-            CompanyResearchResult with all fields populated
+        Execute a domain-filtered search for quality sources.
         """
-        result = CompanyResearchResult()
-        result.research_id = raw_result.get("researchId", "")
-        result.raw_output = raw_result
+        return await self._execute_search(
+            topic=topic,
+            query=query,
+            include_domains=domains,
+            num_results=num_results,
+            get_contents=get_contents,
+            max_characters=2000
+        )
+    
+    def _build_all_search_tasks(
+        self,
+        company_name: str,
+        country: Optional[str],
+        city: Optional[str],
+        linkedin_url: Optional[str],
+        website_url: Optional[str]
+    ) -> List[tuple]:
+        """
+        Build all 30 search tasks with their parameters.
         
-        # Check for completion
-        if raw_result.get("status") != "completed":
-            result.success = False
-            result.errors.append(raw_result.get("error", "Research not completed"))
-            return result
+        Returns list of (topic, coroutine) tuples.
+        """
+        tasks = []
         
-        # Get output
-        output = raw_result.get("output", {})
-        parsed = output.get("parsed", {})
+        # Location context
+        location_hint = ""
+        if city and country:
+            location_hint = f" {city} {country}"
+        elif country:
+            location_hint = f" {country}"
         
-        if not parsed:
-            # Try to parse from content string
-            content = output.get("content", "")
-            if content:
-                try:
-                    import json
-                    parsed = json.loads(content)
-                except json.JSONDecodeError:
-                    result.errors.append("Could not parse output JSON")
-                    return result
+        # Get local sources
+        local_sources = self._get_local_sources(country)
         
-        result.success = True
+        # =========================================================================
+        # SECTION 1: COMPANY INFORMATION (4 calls)
+        # =========================================================================
         
-        # Cost info
-        cost_info = raw_result.get("costDollars", {})
-        result.cost_dollars = cost_info.get("total", 0)
-        result.num_searches = cost_info.get("numSearches", 0)
-        result.num_pages = cost_info.get("numPages", 0)
-        result.reasoning_tokens = cost_info.get("reasoningTokens", 0)
+        # 1. Company Identity
+        tasks.append((
+            "company_identity",
+            self._execute_domain_search(
+                topic="company_identity",
+                query=f"{company_name} company founded headquarters industry employees",
+                domains=["linkedin.com", "crunchbase.com", "wikipedia.org", "bloomberg.com"],
+                num_results=5,
+                get_contents=True
+            )
+        ))
         
-        # Company basics (flat schema)
-        result.company_name = parsed.get("company_name", "")
-        result.legal_name = parsed.get("legal_name", "")
-        result.founded = parsed.get("founded", "")
-        result.headquarters = parsed.get("headquarters", "")
-        result.industry = parsed.get("industry", "")
-        result.employee_range = parsed.get("employee_range", "")
-        result.revenue_estimate = parsed.get("revenue_estimate", "")
-        result.description = parsed.get("description", "")
-        result.website = parsed.get("website", "")
-        result.linkedin_url = parsed.get("linkedin_url", "")
-        
-        # Leadership - executives array
-        for exec_data in parsed.get("executives", []):
-            result.c_suite.append(ExecutiveInfo(
-                name=exec_data.get("name", ""),
-                title=exec_data.get("title", ""),
-                linkedin_url=exec_data.get("linkedin_url", ""),
-                is_founder=exec_data.get("is_founder", False)
+        # 2. Business Model (website content)
+        if website_url:
+            tasks.append((
+                "business_model",
+                self._execute_domain_search(
+                    topic="business_model",
+                    query=f"{company_name} about services what we do business model",
+                    domains=[website_url.replace("https://", "").replace("http://", "").split("/")[0]],
+                    num_results=5,
+                    get_contents=True
+                )
+            ))
+        else:
+            tasks.append((
+                "business_model",
+                self._execute_search(
+                    topic="business_model",
+                    query=f"{company_name} about us services business model what they do",
+                    num_results=5,
+                    get_contents=True
+                )
             ))
         
-        # Board members
-        for member in parsed.get("board_members", []):
-            result.board_of_directors.append({
-                "name": member.get("name", ""),
-                "role": member.get("role", ""),
-                "affiliation": member.get("affiliation", "")
-            })
+        # 3. Products & Services
+        tasks.append((
+            "products_services",
+            self._execute_search(
+                topic="products_services",
+                query=f"{company_name} products services solutions platform pricing",
+                num_results=8,
+                get_contents=True,
+                max_characters=1500
+            )
+        ))
         
-        # Funding (flat)
-        result.ownership_type = parsed.get("ownership_type", "")
-        result.total_funding_raised = parsed.get("total_funding", "")
-        result.key_investors = parsed.get("key_investors", [])
+        # 4. Financials & Funding
+        tasks.append((
+            "financials_funding",
+            self._execute_domain_search(
+                topic="financials_funding",
+                query=f"{company_name} funding revenue valuation series investment",
+                domains=["crunchbase.com", "pitchbook.com", "techcrunch.com", "forbes.com", "dealroom.co"],
+                num_results=5,
+                get_contents=True
+            )
+        ))
         
-        for round_data in parsed.get("funding_rounds", []):
-            result.funding_rounds.append(FundingRound(
-                date=round_data.get("date", ""),
-                round_type=round_data.get("round_type", ""),
-                amount=round_data.get("amount", ""),
-                lead_investor=round_data.get("investors", "")  # Simplified to single string
+        # =========================================================================
+        # SECTION 2: PEOPLE & LEADERSHIP (6 calls)
+        # =========================================================================
+        
+        # 5. CEO & Founder
+        tasks.append((
+            "ceo_founder",
+            self._execute_people_search(
+                topic="ceo_founder",
+                query=f"CEO founder managing director at {company_name}{location_hint}",
+                num_results=5
+            )
+        ))
+        
+        # 6. C-Suite
+        tasks.append((
+            "c_suite",
+            self._execute_people_search(
+                topic="c_suite",
+                query=f"CFO CTO COO CMO CRO CHRO chief officer at {company_name}{location_hint}",
+                num_results=10
+            )
+        ))
+        
+        # 7. Senior Leadership
+        tasks.append((
+            "senior_leadership",
+            self._execute_people_search(
+                topic="senior_leadership",
+                query=f"VP Vice President Director Head of at {company_name}",
+                num_results=10
+            )
+        ))
+        
+        # 8. Board & Advisors
+        tasks.append((
+            "board_advisors",
+            self._execute_search(
+                topic="board_advisors",
+                query=f"{company_name} board of directors advisory investors shareholders",
+                include_domains=["linkedin.com", "crunchbase.com", "pitchbook.com"],
+                num_results=8,
+                get_contents=True
+            )
+        ))
+        
+        # 9. Leadership Changes
+        tasks.append((
+            "leadership_changes",
+            self._execute_news_search(
+                topic="leadership_changes",
+                query=f"{company_name} new CEO CFO CTO hired appointed joined leadership",
+                days_back=365,
+                num_results=5
+            )
+        ))
+        
+        # 10. Founder Story
+        tasks.append((
+            "founder_story",
+            self._execute_search(
+                topic="founder_story",
+                query=f"{company_name} founder story origin how started why founded vision",
+                num_results=5,
+                get_contents=True
+            )
+        ))
+        
+        # =========================================================================
+        # SECTION 3: MARKET INTELLIGENCE (5 calls)
+        # =========================================================================
+        
+        # 11. Recent News
+        tasks.append((
+            "recent_news",
+            self._execute_news_search(
+                topic="recent_news",
+                query=f"{company_name} news announcement launch",
+                days_back=90,
+                num_results=10
+            )
+        ))
+        
+        # 12. Partnerships & Acquisitions
+        tasks.append((
+            "partnerships_acquisitions",
+            self._execute_search(
+                topic="partnerships_acquisitions",
+                query=f"{company_name} partnership acquisition merger deal alliance",
+                num_results=8,
+                get_contents=True
+            )
+        ))
+        
+        # 13. Hiring Signals
+        tasks.append((
+            "hiring_signals",
+            self._execute_search(
+                topic="hiring_signals",
+                query=f"{company_name} jobs careers hiring vacatures open positions we are hiring",
+                num_results=8,
+                get_contents=True
+            )
+        ))
+        
+        # 14. Technology Stack
+        tasks.append((
+            "technology_stack",
+            self._execute_domain_search(
+                topic="technology_stack",
+                query=f"{company_name} technology stack uses powered by",
+                domains=["stackshare.io", "builtwith.com", "g2.com", "siftery.com"],
+                num_results=5,
+                get_contents=True
+            )
+        ))
+        
+        # 15. Competition
+        tasks.append((
+            "competition",
+            self._execute_search(
+                topic="competition",
+                query=f"{company_name} competitors vs alternative comparison market share",
+                num_results=10,
+                get_contents=True
+            )
+        ))
+        
+        # =========================================================================
+        # SECTION 4: DEEP INSIGHTS (7 calls)
+        # =========================================================================
+        
+        # 16. Employee Reviews
+        tasks.append((
+            "employee_reviews",
+            self._execute_domain_search(
+                topic="employee_reviews",
+                query=f"{company_name} reviews working culture",
+                domains=["glassdoor.com", "indeed.com", "kununu.com", "comparably.com"],
+                num_results=5,
+                get_contents=True
+            )
+        ))
+        
+        # 17. Events & Speaking
+        tasks.append((
+            "events_speaking",
+            self._execute_search(
+                topic="events_speaking",
+                query=f"{company_name} conference speaker event webinar summit presentation",
+                num_results=8,
+                get_contents=True
+            )
+        ))
+        
+        # 18. Awards & Recognition
+        tasks.append((
+            "awards_recognition",
+            self._execute_search(
+                topic="awards_recognition",
+                query=f"{company_name} award winner best ranking fastest growing recognition",
+                num_results=8,
+                get_contents=True
+            )
+        ))
+        
+        # 19. Media & Interviews
+        tasks.append((
+            "media_interviews",
+            self._execute_search(
+                topic="media_interviews",
+                query=f"{company_name} CEO founder interview podcast featured profile",
+                num_results=8,
+                get_contents=True
+            )
+        ))
+        
+        # 20. Customer Reviews
+        tasks.append((
+            "customer_reviews",
+            self._execute_domain_search(
+                topic="customer_reviews",
+                query=f"{company_name} reviews",
+                domains=["g2.com", "capterra.com", "trustpilot.com", "softwareadvice.com", "getapp.com"],
+                num_results=5,
+                get_contents=True
+            )
+        ))
+        
+        # 21. Challenges & Priorities
+        tasks.append((
+            "challenges_priorities",
+            self._execute_search(
+                topic="challenges_priorities",
+                query=f"{company_name} strategy priorities challenges transformation investing focus",
+                num_results=8,
+                get_contents=True
+            )
+        ))
+        
+        # 22. Certifications
+        tasks.append((
+            "certifications",
+            self._execute_search(
+                topic="certifications",
+                query=f"{company_name} ISO SOC2 GDPR certified compliance security certification",
+                num_results=5,
+                get_contents=True
+            )
+        ))
+        
+        # =========================================================================
+        # SECTION 5: STRATEGIC INTELLIGENCE (6 calls)
+        # =========================================================================
+        
+        # 23. Key Customers
+        tasks.append((
+            "key_customers",
+            self._execute_search(
+                topic="key_customers",
+                query=f"{company_name} customers clients case study trusted by success story",
+                num_results=10,
+                get_contents=True
+            )
+        ))
+        
+        # 24. Risk Signals
+        tasks.append((
+            "risk_signals",
+            self._execute_search(
+                topic="risk_signals",
+                query=f"{company_name} lawsuit layoffs controversy scandal problem issue",
+                num_results=5,
+                get_contents=True
+            )
+        ))
+        
+        # 25. Future Roadmap
+        tasks.append((
+            "future_roadmap",
+            self._execute_search(
+                topic="future_roadmap",
+                query=f"{company_name} roadmap strategy 2025 plans expansion future vision",
+                num_results=8,
+                get_contents=True
+            )
+        ))
+        
+        # 26. Sustainability & ESG
+        tasks.append((
+            "sustainability_esg",
+            self._execute_search(
+                topic="sustainability_esg",
+                query=f"{company_name} sustainability ESG carbon CSR duurzaamheid environmental",
+                num_results=5,
+                get_contents=True
+            )
+        ))
+        
+        # 27. Patents & Innovation
+        tasks.append((
+            "patents_innovation",
+            self._execute_search(
+                topic="patents_innovation",
+                query=f"{company_name} patent innovation R&D research technology breakthrough",
+                num_results=5,
+                get_contents=True
+            )
+        ))
+        
+        # 28. Vendor Partners
+        tasks.append((
+            "vendor_partners",
+            self._execute_search(
+                topic="vendor_partners",
+                query=f"{company_name} partner integration vendor ecosystem certified partner",
+                num_results=8,
+                get_contents=True
+            )
+        ))
+        
+        # =========================================================================
+        # SECTION 6: LOCAL MARKET (2 calls - conditional)
+        # =========================================================================
+        
+        # 29. Local Media
+        if local_sources["domains"]:
+            tasks.append((
+                "local_media",
+                self._execute_domain_search(
+                    topic="local_media",
+                    query=f"{company_name}",
+                    domains=local_sources["domains"],
+                    num_results=8,
+                    get_contents=True
+                )
             ))
         
-        # News
-        for news_data in parsed.get("recent_news", []):
-            result.recent_news.append(NewsItem(
-                date=news_data.get("date", ""),
-                headline=news_data.get("headline", ""),
-                source_url=news_data.get("source_url", "")
+        # 30. Local Rankings
+        if local_sources["rankings"]:
+            tasks.append((
+                "local_rankings",
+                self._execute_search(
+                    topic="local_rankings",
+                    query=f"{company_name} {local_sources['rankings']}",
+                    num_results=5,
+                    get_contents=True
+                )
             ))
         
-        # Signals (flat)
-        result.job_openings_count = parsed.get("job_openings", "")
-        result.hiring_velocity = parsed.get("hiring_velocity", "")
-        result.growth_signals = parsed.get("growth_signals", [])
-        
-        # Tech stack (flat array)
-        result.other_tools = parsed.get("tech_stack", [])
-        
-        # Competition (flat)
-        result.main_competitors = parsed.get("competitors", [])
-        result.market_position = parsed.get("market_position", "")
-        
-        return result
+        return tasks
     
     async def research_company(
         self,
@@ -531,210 +919,181 @@ Find: 1) Company info (name, founded, HQ, industry, employees, revenue, descript
         country: Optional[str] = None,
         city: Optional[str] = None,
         linkedin_url: Optional[str] = None,
-        website_url: Optional[str] = None,
-        model: str = "exa-research",
-        max_wait_seconds: int = 180
-    ) -> CompanyResearchResult:
+        website_url: Optional[str] = None
+    ) -> ComprehensiveResearchResult:
         """
-        Complete company research workflow: start, poll, parse.
-        
-        This is the main entry point for company research.
+        Execute comprehensive company research with 30 parallel searches.
         
         Args:
-            company_name: Company to research
-            country: Country for regional context
-            city: City for more specific location
+            company_name: Name of the company to research
+            country: Country for local sources and context
+            city: City for location context
             linkedin_url: Company LinkedIn URL
             website_url: Company website URL
-            model: exa-research or exa-research-pro
-            max_wait_seconds: Maximum time to wait for completion
             
         Returns:
-            CompanyResearchResult with all data
+            ComprehensiveResearchResult with all data
         """
-        logger.info(f"[EXA_RESEARCH] Starting research for {company_name}")
+        if not self.is_available:
+            return ComprehensiveResearchResult(
+                success=False,
+                company_name=company_name,
+                errors=["Service not available"]
+            )
         
-        # Start research
-        start_result = await self.start_research(
-            company_name, country, city, linkedin_url, website_url, model
+        start_time = datetime.now()
+        
+        logger.info(
+            f"[EXA_COMPREHENSIVE] Starting research for {company_name} "
+            f"(country={country}, city={city})"
         )
         
-        if not start_result.get("success"):
-            result = CompanyResearchResult()
-            result.errors.append(start_result.get("error", "Failed to start research"))
-            return result
-        
-        research_id = start_result["research_id"]
-        
-        # Poll until complete
-        raw_result = await self.poll_until_complete(
-            research_id, max_wait_seconds
+        # Build all search tasks
+        task_definitions = self._build_all_search_tasks(
+            company_name=company_name,
+            country=country,
+            city=city,
+            linkedin_url=linkedin_url,
+            website_url=website_url
         )
         
-        # Parse result
-        return self.parse_result(raw_result)
+        logger.info(f"[EXA_COMPREHENSIVE] Executing {len(task_definitions)} parallel searches")
+        
+        # Execute all tasks in parallel
+        coroutines = [task[1] for task in task_definitions]
+        results = await asyncio.gather(*coroutines, return_exceptions=True)
+        
+        # Process results
+        result = ComprehensiveResearchResult(
+            company_name=company_name,
+            country=country or ""
+        )
+        
+        markdown_sections = []
+        markdown_sections.append(f"# COMPREHENSIVE RESEARCH DATA FOR: {company_name}")
+        markdown_sections.append(f"Research Date: {datetime.now().strftime('%d %B %Y')}")
+        markdown_sections.append(f"Location: {city or 'Unknown'}, {country or 'Unknown'}")
+        markdown_sections.append(f"Total Topics Searched: {len(task_definitions)}")
+        markdown_sections.append("")
+        
+        # Section headers
+        section_map = {
+            "company_identity": "COMPANY INFORMATION",
+            "ceo_founder": "PEOPLE & LEADERSHIP",
+            "recent_news": "MARKET INTELLIGENCE",
+            "employee_reviews": "DEEP INSIGHTS",
+            "key_customers": "STRATEGIC INTELLIGENCE",
+            "local_media": "LOCAL MARKET",
+        }
+        
+        current_section = None
+        
+        for i, (topic_name, _) in enumerate(task_definitions):
+            topic_result = results[i]
+            
+            # Check for section header
+            if topic_name in section_map:
+                current_section = section_map[topic_name]
+                markdown_sections.append("")
+                markdown_sections.append("=" * 60)
+                markdown_sections.append(f"## {current_section}")
+                markdown_sections.append("=" * 60)
+                markdown_sections.append("")
+            
+            if isinstance(topic_result, Exception):
+                logger.error(f"[EXA_COMPREHENSIVE] {topic_name} exception: {topic_result}")
+                result.topic_results[topic_name] = SearchTopicResult(
+                    topic=topic_name,
+                    success=False,
+                    error=str(topic_result)
+                )
+                result.topics_failed += 1
+                result.errors.append(f"{topic_name}: {topic_result}")
+                markdown_sections.append(f"\n### {topic_name.replace('_', ' ').title()}")
+                markdown_sections.append(f"*Error: Search failed*\n")
+            elif topic_result.success:
+                result.topic_results[topic_name] = topic_result
+                result.topics_completed += 1
+                result.total_results += topic_result.results_count
+                if topic_result.data:
+                    markdown_sections.append(topic_result.data)
+                    markdown_sections.append("")
+            else:
+                result.topic_results[topic_name] = topic_result
+                result.topics_failed += 1
+                if topic_result.error:
+                    result.errors.append(f"{topic_name}: {topic_result.error}")
+                markdown_sections.append(f"\n### {topic_name.replace('_', ' ').title()}")
+                markdown_sections.append(f"*Error: {topic_result.error}*\n")
+        
+        # Add metadata section
+        execution_time = (datetime.now() - start_time).total_seconds()
+        result.execution_time_seconds = execution_time
+        
+        markdown_sections.append("")
+        markdown_sections.append("---")
+        markdown_sections.append("")
+        markdown_sections.append("## RESEARCH METADATA")
+        markdown_sections.append("")
+        markdown_sections.append("| Metric | Value |")
+        markdown_sections.append("|--------|-------|")
+        markdown_sections.append(f"| Research Date | {datetime.now().strftime('%d %B %Y')} |")
+        markdown_sections.append(f"| Company | {company_name} |")
+        markdown_sections.append(f"| Location | {city or 'Unknown'}, {country or 'Unknown'} |")
+        markdown_sections.append(f"| Total Topics | {len(task_definitions)} |")
+        markdown_sections.append(f"| Successful | {result.topics_completed} |")
+        markdown_sections.append(f"| Failed | {result.topics_failed} |")
+        markdown_sections.append(f"| Total Results | {result.total_results} |")
+        markdown_sections.append(f"| Execution Time | {execution_time:.1f}s |")
+        
+        if result.errors:
+            markdown_sections.append(f"| Errors | {len(result.errors)} |")
+        
+        # Set success and combine output
+        result.success = result.topics_completed > 0
+        result.markdown_output = "\n".join(markdown_sections)
+        
+        logger.info(
+            f"[EXA_COMPREHENSIVE] Research completed for {company_name}: "
+            f"{result.topics_completed}/{len(task_definitions)} topics successful, "
+            f"{result.total_results} total results, "
+            f"{execution_time:.1f}s"
+        )
+        
+        return result
     
-    def format_for_claude(self, result: CompanyResearchResult) -> str:
+    def format_for_claude(self, result: ComprehensiveResearchResult) -> str:
         """
-        Format research result as markdown for Claude synthesis.
+        Format research result for Claude synthesis.
         
-        Args:
-            result: Parsed research result
-            
-        Returns:
-            Markdown formatted string
+        Returns the markdown output which is already formatted.
         """
-        sections = []
-        
-        # Company info
-        sections.append("## COMPANY INFORMATION (from Exa Research)")
-        sections.append("")
-        sections.append(f"**Company**: {result.company_name or result.legal_name}")
-        if result.trading_name and result.trading_name != result.legal_name:
-            sections.append(f"**Trading As**: {result.trading_name}")
-        sections.append(f"**Industry**: {result.industry} - {result.sub_sector}")
-        sections.append(f"**Founded**: {result.founded}")
-        sections.append(f"**Headquarters**: {result.headquarters}")
-        if result.other_locations:
-            sections.append(f"**Other Locations**: {', '.join(result.other_locations)}")
-        sections.append(f"**Employees**: {result.employee_range}")
-        if result.revenue_estimate:
-            sections.append(f"**Revenue Estimate**: {result.revenue_estimate}")
-        sections.append(f"**Website**: {result.website}")
-        sections.append(f"**LinkedIn**: {result.linkedin_url}")
-        sections.append("")
-        sections.append(f"**Description**: {result.description}")
-        if result.mission:
-            sections.append(f"**Mission**: {result.mission}")
-        sections.append("")
-        
-        # Leadership
-        sections.append("## LEADERSHIP TEAM")
-        sections.append("")
-        
-        if result.c_suite:
-            sections.append("### C-Suite Executives")
-            sections.append("| Name | Title | LinkedIn | Founder? |")
-            sections.append("|------|-------|----------|----------|")
-            for exec in result.c_suite:
-                founder = "Yes" if exec.is_founder else ""
-                sections.append(f"| {exec.name} | {exec.title} | {exec.linkedin_url} | {founder} |")
-            sections.append("")
-        
-        if result.senior_leadership:
-            sections.append("### Senior Leadership")
-            sections.append("| Name | Title | Department | LinkedIn |")
-            sections.append("|------|-------|------------|----------|")
-            for exec in result.senior_leadership:
-                sections.append(f"| {exec.name} | {exec.title} | {exec.department} | {exec.linkedin_url} |")
-            sections.append("")
-        
-        if result.board_of_directors:
-            sections.append("### Board of Directors")
-            sections.append("| Name | Role | Affiliation |")
-            sections.append("|------|------|-------------|")
-            for member in result.board_of_directors:
-                sections.append(f"| {member.get('name', '')} | {member.get('role', '')} | {member.get('affiliation', '')} |")
-            sections.append("")
-        
-        if result.leadership_changes:
-            sections.append("### Recent Leadership Changes")
-            for change in result.leadership_changes:
-                sections.append(f"- {change.get('date', '')}: {change.get('type', '')} - {change.get('name', '')} ({change.get('role', '')})")
-            sections.append("")
-        
-        # Funding
-        sections.append("## OWNERSHIP & FUNDING")
-        sections.append("")
-        sections.append(f"**Ownership Type**: {result.ownership_type}")
-        if result.parent_company:
-            sections.append(f"**Parent Company**: {result.parent_company}")
-        if result.major_shareholders:
-            sections.append(f"**Major Shareholders**: {', '.join(result.major_shareholders)}")
-        sections.append(f"**Total Funding Raised**: {result.total_funding_raised}")
-        
-        if result.funding_rounds:
-            sections.append("")
-            sections.append("### Funding Rounds")
-            sections.append("| Date | Round | Amount | Lead Investor |")
-            sections.append("|------|-------|--------|---------------|")
-            for round in result.funding_rounds:
-                sections.append(f"| {round.date} | {round.round_type} | {round.amount} | {round.lead_investor} |")
-        
-        if result.key_investors:
-            sections.append("")
-            sections.append(f"**Key Investors**: {', '.join(result.key_investors)}")
-        
-        if result.acquisitions:
-            sections.append("")
-            sections.append(f"**Acquisitions**: {', '.join(result.acquisitions)}")
-        sections.append("")
-        
-        # News
-        if result.recent_news:
-            sections.append("## RECENT NEWS & EVENTS")
-            sections.append("")
-            sections.append("| Date | Headline | Type | Source |")
-            sections.append("|------|----------|------|--------|")
-            for news in result.recent_news:
-                sections.append(f"| {news.date} | {news.headline} | {news.news_type} | {news.source_url} |")
-            sections.append("")
-        
-        # Signals
-        sections.append("## BUSINESS SIGNALS")
-        sections.append("")
-        sections.append("### Hiring Activity")
-        sections.append(f"- **Job Openings**: {result.job_openings_count}")
-        sections.append(f"- **Hiring Velocity**: {result.hiring_velocity}")
-        if result.top_hiring_departments:
-            sections.append(f"- **Top Hiring Departments**: {', '.join(result.top_hiring_departments)}")
-        
-        if result.growth_signals:
-            sections.append("")
-            sections.append("### Growth Signals")
-            for signal in result.growth_signals:
-                sections.append(f"- {signal}")
-        
-        sections.append("")
-        sections.append("### Technology Stack")
-        if result.crm:
-            sections.append(f"- **CRM**: {result.crm}")
-        if result.cloud_provider:
-            sections.append(f"- **Cloud Provider**: {result.cloud_provider}")
-        if result.other_tools:
-            sections.append(f"- **Other Tools**: {', '.join(result.other_tools)}")
-        sections.append("")
-        
-        # Competitive
-        sections.append("## COMPETITIVE LANDSCAPE")
-        sections.append("")
-        sections.append(f"**Market Position**: {result.market_position}")
-        if result.main_competitors:
-            sections.append(f"**Main Competitors**: {', '.join(result.main_competitors)}")
-        if result.differentiators:
-            sections.append("")
-            sections.append("**Key Differentiators**:")
-            for diff in result.differentiators:
-                sections.append(f"- {diff}")
-        sections.append("")
-        
-        # Metadata
-        sections.append("---")
-        sections.append(f"*Research cost: ${result.cost_dollars:.4f} | Searches: {result.num_searches} | Pages: {result.num_pages}*")
-        
-        return "\n".join(sections)
+        return result.markdown_output
 
 
 # =============================================================================
-# Module-level instance
+# Singleton Instance
 # =============================================================================
 
-_exa_research_service: Optional[ExaResearchService] = None
+_exa_comprehensive_researcher: Optional[ExaComprehensiveResearcher] = None
 
 
-def get_exa_research_service() -> ExaResearchService:
-    """Get or create the Exa Research Service instance."""
-    global _exa_research_service
-    if _exa_research_service is None:
-        _exa_research_service = ExaResearchService()
-    return _exa_research_service
+def get_exa_comprehensive_researcher() -> ExaComprehensiveResearcher:
+    """Get or create the Exa Comprehensive Researcher singleton."""
+    global _exa_comprehensive_researcher
+    if _exa_comprehensive_researcher is None:
+        _exa_comprehensive_researcher = ExaComprehensiveResearcher()
+    return _exa_comprehensive_researcher
+
+
+# =============================================================================
+# Legacy aliases for backwards compatibility
+# =============================================================================
+
+# Keep old class name as alias
+ExaResearchService = ExaComprehensiveResearcher
+
+
+def get_exa_research_service() -> ExaComprehensiveResearcher:
+    """Legacy alias for get_exa_comprehensive_researcher."""
+    return get_exa_comprehensive_researcher()
