@@ -149,6 +149,24 @@ class ContactSearchService:
         if not self.brave_api_key and not self._people_search_provider:
             logger.warning("No search providers available - contact search may fail")
     
+    def _extract_linkedin_slug(self, url: str) -> str:
+        """
+        Extract normalized LinkedIn profile slug from URL for deduplication.
+        
+        Handles: www.linkedin.com, nl.linkedin.com, de.linkedin.com, etc.
+        Returns: "linkedin.com/in/username" (normalized)
+        """
+        if not url:
+            return ""
+        
+        url_lower = url.lower()
+        match = re.search(r'/in/([a-zA-Z0-9\-]+)', url_lower)
+        if match:
+            username = match.group(1).rstrip('-')
+            return f"linkedin.com/in/{username}"
+        
+        return url_lower.rstrip('/')
+    
     async def search_contact(
         self,
         name: str,
@@ -250,13 +268,14 @@ class ContactSearchService:
         # FILTER: Only keep matches that have LinkedIn URLs (the whole point!)
         matches = [m for m in matches if m.linkedin_url]
         
-        # Deduplicate by LinkedIn URL
-        seen_urls = set()
+        # Deduplicate by LinkedIn profile slug (not full URL)
+        # This handles www.linkedin.com vs nl.linkedin.com etc.
+        seen_slugs = set()
         unique_matches = []
         for m in matches:
-            url_lower = m.linkedin_url.lower() if m.linkedin_url else ""
-            if url_lower and url_lower not in seen_urls:
-                seen_urls.add(url_lower)
+            slug = self._extract_linkedin_slug(m.linkedin_url)
+            if slug and slug not in seen_slugs:
+                seen_slugs.add(slug)
                 unique_matches.append(m)
         matches = unique_matches
         
