@@ -592,6 +592,12 @@ async def research_company_v2_fn(ctx, step):
         user_id
     )
     
+    # Add organization_id and custom_intel to seller_context (same as V1)
+    if seller_context:
+        seller_context["organization_id"] = organization_id
+        if custom_intel:
+            seller_context["custom_intel"] = custom_intel
+    
     # Step 3: Exa Research (PRIMARY)
     exa_result = await step.run(
         "exa-research",
@@ -605,7 +611,7 @@ async def research_company_v2_fn(ctx, step):
         kvk_result = await step.run(
             "kvk-lookup",
             run_kvk_lookup,
-            company_name, country
+            company_name, city
         )
     
     # Step 5: Check if Exa succeeded, fallback if not
@@ -616,7 +622,7 @@ async def research_company_v2_fn(ctx, step):
         gemini_result = await step.run(
             "gemini-research-fallback",
             run_gemini_research,
-            company_name, country, city, custom_intel
+            company_name, country, city, linkedin_url, seller_context, language
         )
         
         # Website scraping as fallback
@@ -625,7 +631,7 @@ async def research_company_v2_fn(ctx, step):
             website_result = await step.run(
                 "website-scrape-fallback",
                 run_website_scrape,
-                website_url
+                website_url, company_name
             )
         
         # Claude analysis (full, like V1)
