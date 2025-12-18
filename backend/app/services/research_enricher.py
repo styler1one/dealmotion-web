@@ -829,15 +829,58 @@ class ResearchEnricher:
         
         result = EnrichmentResult()
         
-        # Step 1: Parse executive names from Gemini output
+        # Step 1: Extract existing LinkedIn URLs from Gemini data (these are often correct!)
+        existing_linkedin = self._extract_existing_linkedin_urls(gemini_data)
+        
+        # Step 2: Parse executive names from Gemini output
         executives_to_find = self._parse_executives_from_gemini(gemini_data)
         logger.info(f"[SMART_ENRICHER] Found {len(executives_to_find)} executives in Gemini output")
         
-        # Step 2: Run all enrichment tasks in parallel
+        # Step 3: Check which executives already have LinkedIn URLs from Gemini
+        executives_with_urls = []
+        executives_needing_search = []
+        
+        for name, title in executives_to_find[:10]:
+            # Check if we already have a LinkedIn URL for this person
+            name_lower = name.lower()
+            found_url = None
+            
+            # Try exact match first
+            if name_lower in existing_linkedin:
+                found_url = existing_linkedin[name_lower]
+            else:
+                # Try partial match (first + last name)
+                name_parts = name_lower.split()
+                if len(name_parts) >= 2:
+                    for key, url in existing_linkedin.items():
+                        if name_parts[0] in key and name_parts[-1] in key:
+                            found_url = url
+                            break
+            
+            if found_url:
+                # Already have LinkedIn URL from Gemini
+                executives_with_urls.append(ExecutiveProfile(
+                    name=name,
+                    title=title,
+                    linkedin_url=found_url,
+                    confidence=0.90,  # High confidence - from Gemini
+                    source_url=found_url
+                ))
+                result.sources_used.append("gemini_linkedin")
+            else:
+                # Need to search with Exa
+                executives_needing_search.append((name, title))
+        
+        logger.info(
+            f"[SMART_ENRICHER] {len(executives_with_urls)} executives have LinkedIn from Gemini, "
+            f"{len(executives_needing_search)} need Exa search"
+        )
+        
+        # Step 4: Run enrichment tasks in parallel
         tasks = []
         
-        # LinkedIn URLs for each executive
-        for name, title in executives_to_find[:10]:  # Limit to 10 executives
+        # Only search for executives without LinkedIn URLs
+        for name, title in executives_needing_search:
             tasks.append(self._find_executive_linkedin(name, title, company_name, country))
         
         # Funding data
@@ -856,12 +899,15 @@ class ResearchEnricher:
         try:
             outcomes = await asyncio.gather(*tasks, return_exceptions=True)
             
-            # Process executive LinkedIn results
-            exec_count = len(executives_to_find[:10])
+            # Add executives that already had URLs
+            result.executives.extend(executives_with_urls)
+            
+            # Process Exa LinkedIn search results
+            exec_count = len(executives_needing_search)
             for i, outcome in enumerate(outcomes[:exec_count]):
                 if not isinstance(outcome, Exception) and outcome:
                     result.executives.append(outcome)
-                    result.sources_used.append("linkedin_search")
+                    result.sources_used.append("exa_linkedin_search")
             
             # Process funding
             funding_idx = exec_count
@@ -913,6 +959,46 @@ class ResearchEnricher:
             result.errors.append(str(e))
         
         return result
+    
+    def _extract_existing_linkedin_urls(self, gemini_data: str) -> Dict[str, str]:
+        """
+        Extract LinkedIn URLs that are already in Gemini data.
+        
+        Gemini often finds LinkedIn URLs - we should use those first!
+        
+        Returns dict mapping name -> linkedin_url
+        """
+        import re
+        
+        linkedin_map = {}
+        
+        if not gemini_data:
+            return linkedin_map
+        
+        # Pattern to find LinkedIn URLs with associated names
+        # Pattern 1: [Name](linkedin.com/in/...)
+        link_pattern = r'\[([^\]]+)\]\((https?://(?:www\.)?linkedin\.com/in/[^\)]+)\)'
+        for match in re.finditer(link_pattern, gemini_data):
+            name = match.group(1).strip()
+            url = match.group(2).strip()
+            if name and len(name) > 2:
+                linkedin_map[name.lower()] = url
+        
+        # Pattern 2: Name | Title | linkedin.com/in/... (table format)
+        table_pattern = r'\|\s*([^|]+)\s*\|\s*[^|]+\s*\|\s*(https?://(?:www\.)?linkedin\.com/in/[^\s|]+)'
+        for match in re.finditer(table_pattern, gemini_data):
+            name = match.group(1).strip()
+            url = match.group(2).strip()
+            if name and len(name) > 2:
+                linkedin_map[name.lower()] = url
+        
+        # Pattern 3: Plain LinkedIn URLs near names
+        # First find all LinkedIn URLs
+        url_pattern = r'(https?://(?:www\.)?linkedin\.com/in/[\w\-]+)'
+        urls = re.findall(url_pattern, gemini_data)
+        
+        logger.info(f"[SMART_ENRICHER] Found {len(linkedin_map)} existing LinkedIn URLs in Gemini data")
+        return linkedin_map
     
     def _parse_executives_from_gemini(self, gemini_data: str) -> List[tuple]:
         """
@@ -983,7 +1069,11 @@ class ResearchEnricher:
         """
         Find LinkedIn URL for a specific executive.
         
-        Uses the executive's name + company name for precise matching.
+        Uses Exa's neural search with LinkedIn domain filter for high precision.
+        Strategy:
+        1. First try: Exact name + company + title (most precise)
+        2. Fallback: Name + company only
+        3. Strict matching on name parts
         """
         if not self._client:
             return None
@@ -991,53 +1081,98 @@ class ResearchEnricher:
         try:
             loop = asyncio.get_event_loop()
             
-            # Build precise query with name and company
-            location_hint = f" {country}" if country else ""
-            query = f'"{name}" {company_name}{location_hint}'
+            # Clean the name (remove titles, etc.)
+            clean_name = name.strip()
             
-            logger.info(f"[SMART_ENRICHER] LinkedIn search: {query}")
+            # Build search queries - try multiple strategies
+            queries = [
+                # Strategy 1: Full context with title
+                f"{clean_name} {title} {company_name} LinkedIn",
+                # Strategy 2: Name + company only  
+                f"{clean_name} {company_name} LinkedIn profile",
+            ]
             
-            def do_search():
-                return self._client.search(
-                    query,
-                    type="auto",
-                    category="people",
-                    num_results=5
-                )
-            
-            response = await loop.run_in_executor(None, do_search)
-            
-            if not response.results:
-                return None
-            
-            # Find the best matching LinkedIn profile
-            for result in response.results:
-                url = getattr(result, 'url', '')
-                result_title = getattr(result, 'title', '')
+            for query in queries:
+                logger.info(f"[SMART_ENRICHER] LinkedIn search: {query}")
                 
-                if 'linkedin.com/in/' not in url.lower():
+                def do_search(q=query):
+                    return self._client.search_and_contents(
+                        q,
+                        type="neural",
+                        num_results=10,
+                        include_domains=["linkedin.com"],
+                        text={"max_characters": 500}
+                    )
+                
+                response = await loop.run_in_executor(None, do_search)
+                
+                if not response.results:
                     continue
                 
-                # Check if this is likely the right person
-                # Name should appear in the result title
-                name_parts = name.lower().split()
-                title_lower = result_title.lower()
-                
-                # At least first and last name should match
-                if len(name_parts) >= 2:
-                    first_name = name_parts[0]
-                    last_name = name_parts[-1]
+                # Find the best matching LinkedIn profile
+                for result in response.results:
+                    url = getattr(result, 'url', '')
+                    result_title = getattr(result, 'title', '') or ''
+                    result_text = getattr(result, 'text', '') or ''
                     
-                    if first_name in title_lower and last_name in title_lower:
+                    # Must be a personal LinkedIn profile (not company page)
+                    if '/in/' not in url.lower():
+                        continue
+                    
+                    # Combine title and text for matching
+                    search_content = f"{result_title} {result_text}".lower()
+                    
+                    # Extract name parts (handle Dutch names like "van der Berg")
+                    name_parts = clean_name.lower().split()
+                    
+                    # Get first and last name (skip middle prefixes like "van", "de", "der")
+                    prefixes = {'van', 'de', 'der', 'den', 'het', 'la', 'le'}
+                    first_name = name_parts[0] if name_parts else ""
+                    last_name = name_parts[-1] if name_parts else ""
+                    
+                    # Score the match
+                    score = 0
+                    
+                    # Check first name (required)
+                    if first_name and first_name in search_content:
+                        score += 40
+                    else:
+                        continue  # First name must match
+                    
+                    # Check last name (required)
+                    if last_name and last_name not in prefixes and last_name in search_content:
+                        score += 40
+                    elif last_name in prefixes:
+                        # For names ending in prefix, check second-to-last
+                        if len(name_parts) >= 2:
+                            actual_last = name_parts[-2] if name_parts[-2] not in prefixes else name_parts[-3] if len(name_parts) > 2 else ""
+                            if actual_last and actual_last in search_content:
+                                score += 40
+                    else:
+                        continue  # Last name must match
+                    
+                    # Bonus: Company name appears
+                    if company_name.lower() in search_content:
+                        score += 15
+                    
+                    # Bonus: Title appears
+                    if title.lower() in search_content:
+                        score += 5
+                    
+                    # If good match found, return it
+                    if score >= 80:
+                        confidence = min(score / 100, 0.98)
+                        logger.info(f"[SMART_ENRICHER] Found LinkedIn for {name}: {url} (score={score})")
                         return ExecutiveProfile(
                             name=name,
                             title=title,
                             linkedin_url=url,
                             headline=result_title,
-                            confidence=0.95,
+                            confidence=confidence,
                             source_url=url
                         )
             
+            logger.info(f"[SMART_ENRICHER] No LinkedIn found for {name}")
             return None
             
         except Exception as e:
