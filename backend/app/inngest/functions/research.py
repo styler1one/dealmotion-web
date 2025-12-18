@@ -772,22 +772,26 @@ async def run_claude_synthesis(
     """
     Claude synthesis of Exa research data.
     
-    Unlike V1 (full analysis), this just synthesizes pre-structured data
-    into a sales brief. Much smaller prompt, faster, cheaper.
+    DIRECT API CALL - No nested prompts!
+    
+    Unlike V1 which passes data through analyze_research_data() (adding another
+    350-line template on top), V2 calls Claude directly with ONE clean prompt.
+    This prevents the "lost in the middle" effect from nested templates.
     """
     from datetime import datetime
+    from anthropic import AsyncAnthropic
+    import os
     
     exa_markdown = exa_result.get("markdown", "")
     
     if not exa_markdown:
         return f"# Research Failed: {company_name}\n\nNo research data available."
     
-    # Build supplementary data
-    supplementary = ""
-    
+    # Build KVK section
+    kvk_section = ""
     if kvk_result and kvk_result.get("success"):
         kvk = kvk_result.get("data", {})
-        supplementary += f"""
+        kvk_section = f"""
 
 ## OFFICIAL REGISTRATION DATA (Dutch Chamber of Commerce)
 
@@ -799,41 +803,105 @@ async def run_claude_synthesis(
 | **Address** | {kvk.get('address', 'Unknown')} |
 """
     
-    # Seller context
+    # Build seller context section (detailed, like V1)
     seller_section = ""
-    if seller_context:
+    if seller_context and seller_context.get("has_context"):
+        # Products with benefits
+        products_list = seller_context.get("products", [])
+        if products_list:
+            products_str = ", ".join([
+                p.get("name", "") for p in products_list if p.get("name")
+            ]) or "not specified"
+            all_benefits = []
+            for p in products_list[:3]:
+                all_benefits.extend(p.get("benefits", [])[:2])
+            benefits_str = ", ".join(all_benefits[:5]) if all_benefits else "not specified"
+        else:
+            products_str = "not specified"
+            benefits_str = "not specified"
+        
+        values = ", ".join(seller_context.get("value_propositions", [])[:3]) or "not specified"
+        diffs = ", ".join(seller_context.get("differentiators", [])[:3]) or "not specified"
+        industries = ", ".join(seller_context.get("target_industries", [])[:3]) or "any"
+        company_sizes = ", ".join(seller_context.get("target_company_sizes", [])[:3]) or "any size"
+        pain_points = ", ".join(seller_context.get("ideal_pain_points", [])[:5]) or "not specified"
+        decision_makers = ", ".join(seller_context.get("target_decision_makers", [])[:5]) or "not specified"
+        
         seller_section = f"""
-## SELLER CONTEXT (What {seller_context.get('company_name', 'the seller')} offers)
+## SELLER CONTEXT
 
-{seller_context.get('description', '')}
+Use this to assess FIT and personalize the analysis.
 
-**Target Industries**: {', '.join(seller_context.get('target_industries', []))}
-**Value Proposition**: {seller_context.get('value_proposition', '')}
+**Seller**: {seller_context.get('company_name', 'Unknown')}
+
+| What We Sell | Details |
+|--------------|---------|
+| Products | {products_str} |
+| Key Benefits | {benefits_str} |
+| Value Props | {values} |
+| Differentiators | {diffs} |
+
+| Ideal Customer Profile | Details |
+|------------------------|---------|
+| Target Industries | {industries} |
+| Company Sizes | {company_sizes} |
+| Pain Points We Solve | {pain_points} |
+| Typical Decision Makers | {decision_makers} |
+
+**YOUR MISSION**:
+1. Assess if this prospect FITS our ICP
+2. Find evidence of the pain points we solve
+3. Identify decision makers matching our typical buyers
+4. Suggest use cases based on their situation + our benefits
 """
     
-    current_date = datetime.now().strftime("%Y-%m-%d")
+    current_date = datetime.now().strftime("%d %B %Y")
+    current_year = datetime.now().year
+    lang_instruction = "Generate the report in Dutch." if language == "nl" else "Generate the report in English."
     
-    synthesis_prompt = f"""You are a B2B sales intelligence analyst. Synthesize the following research data into a 360° Prospect Intelligence Report.
+    # Location context
+    location_str = ""
+    if city and country:
+        location_str = f"**Location**: {city}, {country}"
+    elif country:
+        location_str = f"**Country**: {country}"
+    
+    # Single, clean prompt - NO nesting!
+    synthesis_prompt = f"""You are an elite B2B sales intelligence analyst. Your analysis saves sales professionals DAYS of work.
 
-## TODAY'S DATE: {current_date}
+## CRITICAL CONTEXT
+
+**TODAY'S DATE**: {current_date}
+**CURRENT YEAR**: {current_year}
+**TARGET COMPANY**: {company_name}
+{location_str}
 
 {seller_section}
 
-## RESEARCH DATA (from Exa)
+## RESEARCH DATA TO ANALYZE
+
+The following data was collected via comprehensive web research (Exa AI - 30+ parallel searches):
 
 {exa_markdown}
 
-{supplementary}
+{kvk_section}
 
 ## YOUR TASK
 
-Generate a comprehensive sales brief in the EXACT structure below. The research data is already structured - your job is to:
-1. Present it clearly in the brief format
-2. Add sales intelligence insights (opportunity fit, timing, entry strategy)
-3. Connect the data to seller's value proposition
-4. Identify risks and information gaps
+Analyze ALL the research data above and generate a comprehensive 360° PROSPECT INTELLIGENCE REPORT.
 
-Generate the report in {"Dutch" if language == "nl" else "English"}.
+{lang_instruction}
+
+## OUTPUT FORMAT REQUIREMENTS
+
+**CRITICAL**: Use standard Markdown headers (# ## ###) - NOT decorative characters.
+- Use `#` for main title
+- Use `##` for section headers (Section 1, Section 2, etc.)
+- Use `###` for subsection headers
+- Use tables for structured data
+- Use bullet points for lists
+
+Generate the report in this EXACT structure:
 
 # 360° Prospect Intelligence Report: {company_name}
 
@@ -842,53 +910,350 @@ Generate the report in {"Dutch" if language == "nl" else "English"}.
 ---
 
 ## Section 1: Executive Summary
-[Sharp insight + opportunity assessment + timing + quick actions]
+
+### 1.1 In One Sentence
+[A sharp, insight-packed sentence: WHO they are + WHAT makes them interesting + WHY timing might be right]
+
+### 1.2 At a Glance
+
+| Dimension | Assessment | Evidence |
+|-----------|------------|----------|
+| **Opportunity Fit** | 🟢 High / 🟡 Medium / 🔴 Low | [One-line reasoning] |
+| **Timing Signal** | 🟢 Act Now / 🟡 Nurture / 🔴 Wait | [Trigger or reason] |
+| **Company Stage** | 🚀 Startup / 📈 Scale-up / 🏢 SMB / 🏛️ Enterprise | [Evidence] |
+| **Financial Health** | 🟢 Strong / 🟡 Stable / 🔴 Challenged / ⚪ Unknown | [Signals] |
+| **Industry Match** | 🟢 Core Target / 🟡 Adjacent / 🔴 Outside Focus | [Based on seller context] |
+| **Decision Complexity** | Simple / Medium / Complex | [Org size, stakeholders] |
+| **Primary Risk** | [Single biggest obstacle] | |
+
+### 1.3 Why This Company Matters
+[2-3 sentences connecting their situation to what the seller offers]
+
+### 1.4 Quick Actions (Top 3)
+
+| Priority | Action | Why Now | Contact |
+|----------|--------|---------|---------|
+| 1 | [Specific action: Call/Email/Connect with X] | [Trigger that creates urgency] | [Name + best contact method] |
+| 2 | [Second priority action] | [Supporting reason] | [Name if applicable] |
+| 3 | [Third priority action] | [Context for action] | [Resource/preparation needed] |
+
+**Recommended Opening**: [One compelling sentence to start the conversation based on their current situation]
+
+---
 
 ## Section 2: Company Deep Dive
-[Use company data from research]
 
-## Section 3: People & Power (DMU)
-[Use leadership data - present C-suite and senior leadership clearly with LinkedIn URLs]
+### 2.1 Company Identity
 
-## Section 4: What's Happening Now
-[Use news, funding, hiring signals]
+| Element | Details | Source |
+|---------|---------|--------|
+| **Legal Name** | [Name] | |
+| **Trading Name** | [If different] | |
+| **Industry** | [Primary - Sub-sector] | |
+| **Founded** | [Year] | |
+| **Headquarters** | [City, Country] | |
+| **Other Locations** | [List] | |
+| **Website** | [URL] | |
+| **LinkedIn** | [URL] | |
+
+### 2.2 Corporate Structure
+
+| Element | Details |
+|---------|---------|
+| **Ownership Type** | [Private / Public / PE / VC / Family] |
+| **Parent Company** | [If applicable] |
+| **Subsidiaries** | [If any] |
+| **Key Investors** | [If known] |
+
+### 2.3 Company Size & Scale
+
+| Metric | Value | Trend | Source |
+|--------|-------|-------|--------|
+| **Employees** | [Number] | [up/stable/down] | |
+| **Revenue** | [Amount or range] | | |
+| **Funding Raised** | [Total] | | |
+
+### 2.4 Business Model
+
+**What They Do**: [3-4 sentences explaining core business]
+
+**How They Make Money**:
+
+| Revenue Stream | Description | Importance |
+|----------------|-------------|------------|
+| [Stream 1] | [Details] | Primary/Secondary |
+
+**Their Customers**:
+
+| Aspect | Details |
+|--------|---------|
+| **Business Model** | B2B / B2C / B2B2C / SaaS / Services |
+| **Customer Segment** | Enterprise / Mid-market / SMB |
+| **Key Verticals** | [Industries] |
+| **Named Customers** | [If found] |
+
+---
+
+## Section 3: People & Power (Decision Making Unit)
+
+### 3.1 Executive Leadership (C-Suite)
+
+| Name | Title | LinkedIn | Background | Notes |
+|------|-------|----------|------------|-------|
+| [Name] | CEO/MD | [Full URL] | [Background] | [Founder? New?] |
+| [Name] | CFO | [Full URL] | | Budget authority |
+| [Name] | CTO/CIO | [Full URL] | | Tech decisions |
+| [Name] | COO | [Full URL] | | Operations |
+| [Name] | CMO | [Full URL] | | Marketing |
+
+### 3.2 Senior Leadership (VPs, Directors)
+
+| Name | Title | LinkedIn | Potential Relevance |
+|------|-------|----------|---------------------|
+| [Name] | [Title] | [URL] | [Why relevant] |
+
+### 3.3 Board of Directors
+
+| Name | Role | Affiliation |
+|------|------|-------------|
+| [Name] | [Role] | [Company/Fund] |
+
+### 3.4 Decision-Making Dynamics
+
+| Aspect | Assessment | Evidence |
+|--------|------------|----------|
+| **Decision Culture** | Top-down / Consensus / Founder-led | [Signals] |
+| **Budget Authority** | [Who controls spend] | |
+| **Likely Champions** | [Roles aligned with seller's value] | |
+| **Potential Blockers** | [Roles that might resist] | |
+
+### 3.5 Recent Leadership Changes
+
+| Date | Change | Name | Implication |
+|------|--------|------|-------------|
+| [Date] | [New/Departure] | [Name] | [What it means] |
+
+**Coverage Note**: [State if leadership data is limited]
+
+---
+
+## Section 4: What's Happening Now (Triggers & Signals)
+
+### 4.1 Recent News (Last 90 Days)
+
+| Date | Headline | Type | Source |
+|------|----------|------|--------|
+| [Date] | [Title] | [Funding/Growth/People/Product/Partnership/Challenge] | [Publication] |
+
+### 4.2 Funding History
+
+| Date | Round | Amount | Investors |
+|------|-------|--------|-----------|
+| [Date] | [Series] | [Amount] | [Names] |
+
+### 4.3 Hiring Signals
+
+| Department | Roles | What It Signals |
+|------------|-------|-----------------|
+| [Dept] | [Count] | [Meaning] |
+
+**Hiring Velocity**: Aggressive / Steady / Slowing / Freeze
+
+### 4.4 Strategic Initiatives
+- [Initiative 1]
+- [Initiative 2]
+
+### 4.5 Interpretation
+[2-3 sentences: What's really going on? What are their priorities?]
+
+---
 
 ## Section 5: Market & Competitive Position
-[Use competitive landscape data]
+
+### 5.1 Market Position
+
+| Aspect | Assessment |
+|--------|------------|
+| **Market Role** | Leader / Challenger / Niche / Newcomer |
+| **Trajectory** | Growing / Stable / Declining |
+
+### 5.2 Competitive Landscape
+
+| Competitor | Positioning | vs. This Company |
+|------------|-------------|------------------|
+| [Name] | [Position] | [Comparison] |
+
+### 5.3 Technology Stack
+
+| Category | Tools/Vendors |
+|----------|---------------|
+| CRM | [Tools] |
+| ERP | [Tools] |
+| Cloud | [AWS/Azure/GCP] |
+
+---
 
 ## Section 6: Commercial Opportunity Assessment
-[Your analysis: BANT qualification, pain points, triggers]
+
+### 6.1 BANT Qualification
+
+| Signal | Evidence | Score | Confidence |
+|--------|----------|-------|------------|
+| **Budget** | [Signals] | [Green/Yellow/Red/Unknown] | High/Med/Low |
+| **Authority** | [Decision makers found] | [Green/Yellow/Red/Unknown] | |
+| **Need** | [Pain points identified] | [Green/Yellow/Red/Unknown] | |
+| **Timeline** | [Urgency signals] | [Green/Yellow/Red/Unknown] | |
+
+**BANT Summary**: [X/4 strong signals] - [Interpretation]
+
+### 6.2 Potential Pain Points
+
+| Pain Point | Evidence | Connection to Seller |
+|------------|----------|---------------------|
+| [Pain 1] | [Signal] | [How seller helps] |
+
+### 6.3 Opportunity Triggers
+
+| Trigger | Type | Timing |
+|---------|------|--------|
+| [Trigger] | [Category] | [Recent/Imminent] |
+
+### 6.4 Relevant Use Cases
+
+| Use Case | Their Situation | How Seller Helps |
+|----------|-----------------|------------------|
+| [Case 1] | [Context] | [Value] |
+
+---
 
 ## Section 7: Strategic Approach
-[Your recommendations: priority targets, entry strategy, key topics]
+
+### 7.1 Priority Targets
+
+| Priority | Name | Role | Entry Angle |
+|----------|------|------|-------------|
+| 1 | [Name] | [Title] | [Topic to lead with] |
+| 2 | [Name] | [Title] | [Alternative angle] |
+
+### 7.2 Entry Strategy
+
+| Aspect | Recommendation |
+|--------|----------------|
+| **Primary Entry Point** | [Role/Department] |
+| **Why This Entry** | [Reasoning] |
+| **Avoid Starting With** | [Who NOT to approach] |
+
+### 7.3 Key Topics to Explore
+1. [Topic aligned with trigger/news]
+2. [Topic aligned with pain point]
+3. [Topic that differentiates seller]
+
+### 7.4 Validation Questions
+
+| Category | Question | Why Ask |
+|----------|----------|---------|
+| **Situation** | [Question] | [What you're validating] |
+| **Problem** | [Question] | |
+| **Priority** | [Question] | |
+
+---
 
 ## Section 8: Risks, Obstacles & Watchouts
-[Your analysis: obstacles, things to avoid, information gaps]
+
+### 8.1 Potential Obstacles
+
+| Obstacle | Likelihood | Mitigation |
+|----------|------------|------------|
+| [Obstacle] | High/Med/Low | [Strategy] |
+
+### 8.2 Things to Avoid
+
+| Topic/Approach | Why Avoid | Instead Do |
+|----------------|-----------|------------|
+| [Topic] | [Reason] | [Alternative] |
+
+### 8.3 Information Gaps (Must Verify)
+- [ ] [Gap 1]
+- [ ] [Gap 2]
+
+---
 
 ## Section 9: Research Quality & Metadata
-[Data sources used, confidence levels]
+
+### 9.1 Source Coverage
+
+| Source | Status | Quality |
+|--------|--------|---------|
+| Company Website | [Yes/No] | Rich/Basic/Poor |
+| LinkedIn Company | [Yes/No] | |
+| LinkedIn People | [Yes/No] | [X found] |
+| Recent News | [Yes/No] | |
+| Job Postings | [Yes/No] | |
+
+### 9.2 Research Confidence
+
+| Section | Confidence |
+|---------|------------|
+| Company Basics | [High/Medium/Low] |
+| Leadership Mapping | [High/Medium/Low] |
+| Recent Developments | [High/Medium/Low] |
+| Commercial Fit | [High/Medium/Low] |
+
+**Overall Confidence**: High / Medium / Low
+
+### 9.3 Key Recommendations
+1. **Priority Contact**: [Name] - [LinkedIn URL]
+2. **Primary Value Prop**: [What to lead with]
+3. **Timing Verdict**: [Act Now / Nurture / Wait]
+4. **Next Steps**: [Recommended actions]
+
+---
+
+*Report generated: {current_date}*
+
+## QUALITY RULES
+
+1. Include FULL LinkedIn URLs for every person found in the research
+2. Be factual - "Not found" is better than speculation
+3. Use the seller context to assess fit (if provided)
+4. Focus on commercially actionable intelligence
+5. Use standard Markdown (# ## ###) - NO decorative characters like ═══ or ───
+6. PRESERVE all data from the research - do not skip or summarize away details
 """
 
     try:
-        result = await claude_researcher.analyze_research_data(
-            company_name=company_name,
-            gemini_data=synthesis_prompt,  # Use the synthesis prompt as the data
-            country=country,
-            city=city,
-            kvk_data=None,  # Already included in prompt
-            website_data=None,
-            kb_chunks=None,
-            seller_context=None,  # Already included in prompt
-            language=language
+        # Direct Claude API call - NO nested prompts!
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        if not api_key:
+            raise ValueError("ANTHROPIC_API_KEY not set")
+        
+        client = AsyncAnthropic(api_key=api_key)
+        
+        logger.info(f"[V2] Starting Claude synthesis for {company_name} (direct API call)")
+        
+        response = await client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=12000,  # Increased from 8192 for longer reports
+            temperature=0.2,
+            messages=[{
+                "role": "user",
+                "content": synthesis_prompt
+            }]
         )
         
-        if result.get("success"):
-            return result.get("data", "")
-        else:
-            logger.error(f"[V2] Claude synthesis failed: {result.get('error')}")
-            # Return the raw Exa data as fallback
-            return f"# Research Brief: {company_name}\n\n**Note**: Synthesis failed, showing raw data.\n\n{exa_markdown}"
-            
+        result_text = ""
+        for block in response.content:
+            if hasattr(block, 'text'):
+                result_text += block.text
+        
+        usage = response.usage
+        logger.info(
+            f"[V2] Claude synthesis completed for {company_name}. "
+            f"Tokens - Input: {usage.input_tokens}, Output: {usage.output_tokens}"
+        )
+        
+        return result_text
+        
     except Exception as e:
         logger.error(f"[V2] Claude synthesis error: {e}")
         return f"# Research Brief: {company_name}\n\n**Note**: Synthesis failed.\n\n{exa_markdown}"
