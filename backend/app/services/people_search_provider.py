@@ -355,83 +355,131 @@ class PeopleSearchProvider:
         """
         Search using primary neural search provider.
         
-        OPTIMIZED: Light search first, full content only after selection.
-        Cost: ~$0.005 per search (vs $0.025 with full content for all)
+        OPTIMIZED: 
+        - Neural search with LinkedIn domain filter for precision
+        - Multiple query strategies for better recall
+        - Light search first (no content = cheaper)
+        - Full content only after user selection
         
-        Uses semantic search with people category for optimal results.
+        Cost: ~$0.005 per search
         """
-        # Build optimized query for people search
-        query_parts = [f'"{name}"']
-        if role:
-            query_parts.append(role)
+        # Clean the name for better matching
+        clean_name = self._clean_name(name)
+        
+        # Build multiple query strategies for better recall
+        queries = []
+        
+        # Strategy 1: Full context - name + role + company (most precise)
+        if company_name and role:
+            queries.append(f'{clean_name} {role} {company_name} LinkedIn profile')
+        
+        # Strategy 2: Name + company (common case)
         if company_name:
-            query_parts.append(f'at {company_name}')
+            queries.append(f'{clean_name} {company_name} LinkedIn profile')
         
-        query = " ".join(query_parts)
+        # Strategy 3: Name + role (if no company)
+        if role:
+            queries.append(f'{clean_name} {role} LinkedIn profile')
         
-        # Execute LIGHT search (no content = much cheaper)
-        # Full content is fetched later via enrich_profile() after user selects
+        # Strategy 4: Just name (broadest)
+        queries.append(f'{clean_name} LinkedIn profile')
+        
         loop = asyncio.get_event_loop()
+        all_matches = []
+        seen_urls = set()
+        final_query = queries[0]
         
-        def do_search():
-            # Light search: only metadata, no text/summary (saves ~80% cost)
-            return self._primary_client.search(
-                query,
-                type="auto",
-                category="linkedin profile",
-                num_results=max_results * 2,  # Get extra to filter
-            )
-        
-        response = await loop.run_in_executor(None, do_search)
-        
-        # Parse results (light search - no content yet)
-        matches = []
-        for result in response.results:
-            url = result.url or ""
+        for query in queries:
+            if len(all_matches) >= max_results:
+                break
             
-            # Only include LinkedIn profile URLs
-            if "linkedin.com/in/" not in url.lower():
+            logger.info(f"[PEOPLE_SEARCH] Trying query: {query}")
+            
+            def do_search(q=query):
+                # Neural search with LinkedIn domain filter
+                # This is much more effective than category="linkedin profile"
+                return self._primary_client.search_and_contents(
+                    q,
+                    type="neural",
+                    num_results=max_results * 2,
+                    include_domains=["linkedin.com"],
+                    text={"max_characters": 300}  # Minimal text for name matching
+                )
+            
+            try:
+                response = await loop.run_in_executor(None, do_search)
+                
+                for result in response.results:
+                    url = result.url or ""
+                    
+                    # Only include personal LinkedIn profile URLs (not company pages)
+                    if "/in/" not in url.lower():
+                        continue
+                    
+                    # Skip duplicates
+                    url_normalized = url.lower().rstrip('/')
+                    if url_normalized in seen_urls:
+                        continue
+                    seen_urls.add(url_normalized)
+                    
+                    # Get result text for better matching
+                    result_title = result.title or ""
+                    result_text = getattr(result, 'text', '') or ""
+                    combined_text = f"{result_title} {result_text}".lower()
+                    
+                    # Parse name and title from result title
+                    # Typical format: "Name - Title | LinkedIn"
+                    title_parts = result_title.split(" - ")
+                    parsed_name = title_parts[0].strip() if title_parts else name
+                    parsed_title = None
+                    if len(title_parts) > 1:
+                        parsed_title = title_parts[1].split(" | ")[0].strip()
+                    
+                    # Calculate confidence with improved matching
+                    confidence = self._calculate_confidence_v2(
+                        search_name=clean_name,
+                        found_name=parsed_name,
+                        search_company=company_name,
+                        search_role=role,
+                        found_text=combined_text
+                    )
+                    
+                    # Only include if confidence is reasonable
+                    if confidence < 0.4:
+                        continue
+                    
+                    all_matches.append(ProfileMatch(
+                        name=parsed_name,
+                        title=parsed_title,
+                        company=company_name,
+                        location=None,
+                        linkedin_url=url,
+                        headline=parsed_title,
+                        summary=None,
+                        experience_years=None,
+                        skills=None,
+                        confidence=confidence,
+                        match_reason=self._get_match_reason(confidence, company_name),
+                        source="primary",
+                        raw_text=None
+                    ))
+                
+                if all_matches:
+                    final_query = query
+                    logger.info(f"[PEOPLE_SEARCH] Found {len(all_matches)} matches with query: {query}")
+                    break  # Got results, stop trying other queries
+                    
+            except Exception as e:
+                logger.warning(f"[PEOPLE_SEARCH] Query failed: {e}")
                 continue
-            
-            # Parse name and title from result title
-            # Typical format: "Name - Title | LinkedIn"
-            title_parts = (result.title or "").split(" - ")
-            parsed_name = title_parts[0].strip() if title_parts else name
-            parsed_title = None
-            if len(title_parts) > 1:
-                parsed_title = title_parts[1].split(" | ")[0].strip()
-            
-            # Calculate confidence based on name match (no content in light search)
-            confidence = self._calculate_confidence(
-                search_name=name,
-                found_name=parsed_name,
-                search_company=company_name,
-                found_text=result.title or ""
-            )
-            
-            matches.append(ProfileMatch(
-                name=parsed_name,
-                title=parsed_title,
-                company=company_name,
-                location=None,  # Will be enriched after selection
-                linkedin_url=url,
-                headline=parsed_title,
-                summary=None,  # Will be enriched after selection
-                experience_years=None,  # Will be enriched after selection
-                skills=None,  # Will be enriched after selection
-                confidence=confidence,
-                match_reason=self._get_match_reason(confidence, company_name),
-                source="primary",
-                raw_text=None  # Will be enriched after selection
-            ))
         
         # Sort by confidence and limit
-        matches.sort(key=lambda m: m.confidence, reverse=True)
-        matches = matches[:max_results]
+        all_matches.sort(key=lambda m: m.confidence, reverse=True)
+        matches = all_matches[:max_results]
         
         return ProfileSearchResult(
             matches=matches,
-            query_used=query,
+            query_used=final_query,
             source="primary",
             success=True
         )
@@ -543,35 +591,109 @@ class PeopleSearchProvider:
         search_company: Optional[str],
         found_text: str
     ) -> float:
-        """Calculate match confidence score."""
-        confidence = 0.5
+        """Calculate match confidence score (legacy method)."""
+        return self._calculate_confidence_v2(
+            search_name=search_name,
+            found_name=found_name,
+            search_company=search_company,
+            search_role=None,
+            found_text=found_text
+        )
+    
+    def _calculate_confidence_v2(
+        self,
+        search_name: str,
+        found_name: str,
+        search_company: Optional[str],
+        search_role: Optional[str],
+        found_text: str
+    ) -> float:
+        """
+        Calculate match confidence score with improved matching.
         
-        search_lower = search_name.lower()
-        found_lower = found_name.lower()
+        Scoring:
+        - Name match: up to 60 points (required)
+        - Company match: up to 25 points (bonus)
+        - Role match: up to 15 points (bonus)
         
-        # Name matching
-        search_parts = set(search_lower.split())
-        found_parts = set(found_lower.split())
+        Returns confidence as 0.0-1.0 float.
+        """
+        score = 0
         
-        # Remove common non-name words
-        skip_words = {'van', 'de', 'der', 'den', 'het', 'rc', 're', 'mba', 'msc', 'dr', 'mr'}
-        search_parts = search_parts - skip_words
-        found_parts = found_parts - skip_words
+        search_lower = search_name.lower().strip()
+        found_lower = found_name.lower().strip()
+        text_lower = found_text.lower()
         
-        common_parts = search_parts & found_parts
+        # === NAME MATCHING (up to 60 points) ===
+        # Get name parts, handling Dutch names (van, de, der, etc.)
+        prefixes = {'van', 'de', 'der', 'den', 'het', 'la', 'le', 'von'}
+        noise = {'rc', 're', 'mba', 'msc', 'bsc', 'phd', 'dr', 'mr', 'mrs', 'drs', 'ir', 'prof'}
         
+        search_parts = [p for p in search_lower.split() if p not in noise]
+        found_parts = [p for p in found_lower.split() if p not in noise]
+        
+        # Get significant name parts (first name, last name - skip prefixes for matching)
+        search_significant = [p for p in search_parts if p not in prefixes]
+        found_significant = [p for p in found_parts if p not in prefixes]
+        
+        # Exact match
         if search_lower == found_lower:
-            confidence = 0.95
-        elif len(common_parts) >= 2:
-            confidence = 0.90
-        elif len(common_parts) == 1:
-            confidence = 0.70
+            score += 60
         else:
-            confidence = 0.30
+            # Check first name
+            if search_significant and found_significant:
+                if search_significant[0] == found_significant[0]:
+                    score += 25  # First name match
+                elif search_significant[0] in text_lower:
+                    score += 20  # First name found in text
+            
+            # Check last name
+            if len(search_significant) >= 2 and len(found_significant) >= 2:
+                if search_significant[-1] == found_significant[-1]:
+                    score += 25  # Last name match
+                elif search_significant[-1] in text_lower:
+                    score += 20  # Last name found in text
+            elif len(search_significant) >= 2:
+                # Check if last name appears anywhere in found text
+                if search_significant[-1] in text_lower:
+                    score += 20
+            
+            # Bonus for multiple matching parts
+            common = set(search_significant) & set(found_significant)
+            if len(common) >= 2:
+                score += 10
         
-        # Boost if company matches
-        if search_company and search_company.lower() in found_text.lower():
-            confidence = min(1.0, confidence + 0.05)
+        # === COMPANY MATCHING (up to 25 points) ===
+        if search_company:
+            company_lower = search_company.lower()
+            # Exact company match
+            if company_lower in text_lower:
+                score += 25
+            else:
+                # Partial company match (first significant word)
+                company_words = [w for w in company_lower.split() if len(w) > 2]
+                if company_words and company_words[0] in text_lower:
+                    score += 15
+        
+        # === ROLE MATCHING (up to 15 points) ===
+        if search_role:
+            role_lower = search_role.lower()
+            role_keywords = [w for w in role_lower.split() if len(w) > 2]
+            
+            # Check for role keywords in text
+            role_matches = sum(1 for kw in role_keywords if kw in text_lower)
+            if role_matches >= 2:
+                score += 15
+            elif role_matches == 1:
+                score += 10
+        
+        # Convert to 0-1 scale (max score = 100)
+        confidence = min(score / 100.0, 1.0)
+        
+        logger.debug(
+            f"[PEOPLE_SEARCH] Confidence for '{found_name}': {confidence:.2f} "
+            f"(name={search_name}, company={search_company})"
+        )
         
         return round(confidence, 2)
     
