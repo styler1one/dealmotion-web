@@ -1,11 +1,16 @@
 """
 Contact Search Service - Search for LinkedIn profiles matching a contact.
 
-This service uses Gemini with Google Search (primary, much cheaper) or Claude 
-with web search (fallback) to find possible LinkedIn matches for a contact person,
+This service uses a unified people search provider (primary) with Brave Search
+as fallback to find possible LinkedIn matches for a contact person,
 returning multiple results with confidence scores.
 
 Also provides research executives matching to cross-validate contacts.
+
+Architecture:
+- Primary: Neural search provider (semantic matching, 1B+ profiles)
+- Fallback: Brave Search API (keyword-based)
+- Research: Executives extracted from research data (instant, free)
 """
 
 import os
@@ -16,6 +21,14 @@ from typing import Optional, List, Dict, Any
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
+
+# Import people search provider
+try:
+    from app.services.people_search_provider import get_people_search_provider, ProfileMatch
+    HAS_PEOPLE_SEARCH_PROVIDER = True
+except ImportError:
+    HAS_PEOPLE_SEARCH_PROVIDER = False
+    logger.warning("[CONTACT_SEARCH] People search provider not available")
 
 
 class ContactMatch(BaseModel):
@@ -105,18 +118,32 @@ class ContactSearchService:
     """
     Service to search for LinkedIn profiles matching a contact person.
     
-    Uses Gemini with Google Search (primary) or Claude with web search (fallback)
+    Uses a unified people search provider (primary) with Brave Search as fallback
     to find possible matches, returning up to 5 results with confidence scores.
     
     Also extracts known executives from research data for cross-validation.
+    
+    Search priority:
+    1. Research executives (instant, free matching from existing data)
+    2. People search provider (neural/semantic search with 1B+ profiles)
+    3. Brave Search API (keyword-based fallback)
     """
     
     def __init__(self):
         self.brave_api_key = os.getenv("BRAVE_API_KEY")
         self.anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
         
-        if not self.brave_api_key:
-            logger.warning("No BRAVE_API_KEY set - contact search will use Claude fallback")
+        # Initialize people search provider
+        self._people_search_provider = None
+        if HAS_PEOPLE_SEARCH_PROVIDER:
+            try:
+                self._people_search_provider = get_people_search_provider()
+                logger.info("[CONTACT_SEARCH] People search provider initialized")
+            except Exception as e:
+                logger.warning(f"[CONTACT_SEARCH] Could not init people search provider: {e}")
+        
+        if not self.brave_api_key and not self._people_search_provider:
+            logger.warning("No search providers available - contact search may fail")
     
     async def search_contact(
         self,
@@ -131,8 +158,8 @@ class ContactSearchService:
         
         Uses a tiered approach:
         1. First check against known executives from research (instant, free)
-        2. Then use Gemini with Google Search (fast, cheap)
-        3. Fall back to Claude if Gemini fails (slower, more expensive)
+        2. Then use people search provider (semantic matching, 1B+ profiles)
+        3. Fall back to Brave Search if provider fails (keyword-based)
         
         Args:
             name: Contact's full name (required)
@@ -145,12 +172,62 @@ class ContactSearchService:
             ContactSearchResult with up to 5 matches sorted by confidence
         """
         matches: List[ContactMatch] = []
-        search_source = "brave"
-        search_query = f'"{name}" "{company_name or ""}" site:linkedin.com/in'
+        search_source = "none"
+        search_query = f'"{name}" "{company_name or ""}" LinkedIn'
         
-        # Use Brave Search API - $0.003 per search (50x cheaper than Claude)
-        # NO Claude fallback - Brave only
-        if self.brave_api_key:
+        # Priority 1: Check research executives first (instant, free)
+        if research_executives:
+            research_matches = self._match_against_research(
+                name=name,
+                role=role,
+                company_name=company_name,
+                research_executives=research_executives
+            )
+            if research_matches:
+                matches.extend(research_matches)
+                search_source = "research"
+                print(f"[CONTACT_SEARCH] Research found {len(research_matches)} executives", flush=True)
+        
+        # Priority 2: Use people search provider (neural/semantic search)
+        if self._people_search_provider and len(matches) < 5:
+            try:
+                provider_result = await self._people_search_provider.search_person(
+                    name=name,
+                    role=role,
+                    company_name=company_name,
+                    max_results=5
+                )
+                
+                if provider_result.matches:
+                    for pm in provider_result.matches:
+                        # Convert ProfileMatch to ContactMatch
+                        matches.append(ContactMatch(
+                            name=pm.name,
+                            title=pm.title,
+                            company=pm.company or company_name,
+                            location=pm.location,
+                            linkedin_url=pm.linkedin_url,
+                            headline=pm.headline,
+                            confidence=pm.confidence,
+                            match_reason=pm.match_reason,
+                            from_research=False
+                        ))
+                    
+                    if search_source == "none":
+                        search_source = "provider"
+                    else:
+                        search_source = search_source + "+provider"
+                    
+                    print(f"[CONTACT_SEARCH] Provider found {len(provider_result.matches)} profiles", flush=True)
+                else:
+                    print("[CONTACT_SEARCH] Provider found no profiles", flush=True)
+                    
+            except Exception as e:
+                print(f"[CONTACT_SEARCH] Provider failed: {e}", flush=True)
+                logger.warning(f"[CONTACT_SEARCH] Provider error: {e}")
+        
+        # Priority 3: Fallback to Brave Search API
+        if len(matches) == 0 and self.brave_api_key:
             try:
                 brave_matches = await self._search_with_brave(name, role, company_name)
                 if brave_matches:
@@ -161,12 +238,21 @@ class ContactSearchService:
                     print("[CONTACT_SEARCH] Brave found no profiles", flush=True)
             except Exception as e:
                 print(f"[CONTACT_SEARCH] Brave failed: {e}", flush=True)
-        else:
-            print("[CONTACT_SEARCH] No BRAVE_API_KEY configured", flush=True)
         
         # FILTER: Only keep matches that have LinkedIn URLs (the whole point!)
         matches = [m for m in matches if m.linkedin_url]
-        logger.info(f"[CONTACT_SEARCH] {len(matches)} profiles have LinkedIn URLs")
+        
+        # Deduplicate by LinkedIn URL
+        seen_urls = set()
+        unique_matches = []
+        for m in matches:
+            url_lower = m.linkedin_url.lower() if m.linkedin_url else ""
+            if url_lower and url_lower not in seen_urls:
+                seen_urls.add(url_lower)
+                unique_matches.append(m)
+        matches = unique_matches
+        
+        logger.info(f"[CONTACT_SEARCH] {len(matches)} unique profiles with LinkedIn URLs")
         
         # Sort by confidence (highest first) and limit to 5
         matches.sort(key=lambda m: m.confidence, reverse=True)
@@ -174,7 +260,11 @@ class ContactSearchService:
         
         # Update search source if we used research data
         if matches and matches[0].from_research:
-            search_source = "research+" + search_source
+            if "research" not in search_source:
+                search_source = "research+" + search_source
+        
+        if search_source == "none":
+            search_source = "no_results"
         
         logger.info(f"[CONTACT_SEARCH] Final: {len(matches)} matches, source={search_source}")
         

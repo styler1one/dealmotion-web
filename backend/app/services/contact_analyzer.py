@@ -1,8 +1,9 @@
 """
 Contact Person Analyzer - LinkedIn profile analysis for personalized sales approach.
 
-OPTIMIZED ARCHITECTURE (v2):
-- Uses Brave Search for LinkedIn profile discovery (cheap: ~$0.003)
+OPTIMIZED ARCHITECTURE (v3):
+- Uses unified people search provider for LinkedIn profile discovery (semantic matching)
+- Falls back to Brave Search if provider unavailable
 - Uses Claude for analysis only (no web tools = ~$0.03)
 - Total cost: ~$0.035 per contact (85% reduction from $0.23)
 
@@ -32,6 +33,14 @@ from app.i18n.config import DEFAULT_LANGUAGE
 
 logger = logging.getLogger(__name__)
 
+# Import people search provider
+try:
+    from app.services.people_search_provider import get_people_search_provider
+    HAS_PEOPLE_SEARCH_PROVIDER = True
+except ImportError:
+    HAS_PEOPLE_SEARCH_PROVIDER = False
+    logger.warning("[CONTACT_ANALYZER] People search provider not available")
+
 # Common name suffixes to clean before searching
 NAME_CLEAN_PATTERNS = [
     r'\bRc\s*Re\b', r'\bRC\s*RE\b', r'\bRA\b', r'\bAA\b',
@@ -56,7 +65,7 @@ class ContactAnalyzer:
     """Analyze contact persons using AI with company and seller context."""
     
     def __init__(self):
-        """Initialize Claude API, Brave API, and Supabase."""
+        """Initialize Claude API, people search provider, and Supabase."""
         api_key = os.getenv("ANTHROPIC_API_KEY")
         if not api_key:
             raise ValueError("ANTHROPIC_API_KEY not set")
@@ -64,6 +73,15 @@ class ContactAnalyzer:
         self.client = AsyncAnthropic(api_key=api_key)
         self.supabase: Client = get_supabase_service()
         self.brave_api_key = os.getenv("BRAVE_API_KEY")
+        
+        # Initialize people search provider
+        self._people_search_provider = None
+        if HAS_PEOPLE_SEARCH_PROVIDER:
+            try:
+                self._people_search_provider = get_people_search_provider()
+                logger.info("[CONTACT_ANALYZER] People search provider initialized")
+            except Exception as e:
+                logger.warning(f"[CONTACT_ANALYZER] Could not init people search provider: {e}")
     
     async def analyze_contact(
         self,
@@ -177,7 +195,8 @@ class ContactAnalyzer:
         Priority:
         1. User-provided context (most reliable)
         2. Research leadership data (already researched)
-        3. Brave Search (cheap, real-time)
+        3. People search provider (semantic matching, 1B+ profiles)
+        4. Brave Search fallback (keyword-based)
         
         Returns dict with: source, headline, about, experience, recent_activity
         """
@@ -187,7 +206,11 @@ class ContactAnalyzer:
             "about": None,
             "experience": None,
             "recent_activity": None,
-            "background": None
+            "background": None,
+            "location": None,
+            "experience_years": None,
+            "skills": [],
+            "raw_profile_text": None  # Full profile text for Claude analysis
         }
         
         print(f"[CONTACT_ANALYZER] Gathering profile info for: {contact_name} at {company_name}", flush=True)
@@ -222,10 +245,43 @@ class ContactAnalyzer:
                 print(f"[CONTACT_ANALYZER] ✅ Found {contact_name} in research leadership", flush=True)
                 return result
         
-        # Priority 3: Brave Search for LinkedIn profile info
+        # Priority 3: People search provider (semantic matching + full profile data)
+        if self._people_search_provider:
+            print(f"[CONTACT_ANALYZER] 🔍 Starting provider search for {contact_name}...", flush=True)
+            try:
+                provider_info = await self._people_search_provider.get_profile_info(
+                    name=contact_name,
+                    company_name=company_name,
+                    role=contact_role
+                )
+                print(f"[CONTACT_ANALYZER] Provider result: found={provider_info.get('found')}", flush=True)
+                
+                if provider_info.get("found"):
+                    result["source"] = "provider"
+                    result["headline"] = provider_info.get("headline")
+                    result["about"] = provider_info.get("about")  # AI-generated summary
+                    result["location"] = provider_info.get("location")
+                    result["experience_years"] = provider_info.get("experience_years")
+                    result["skills"] = provider_info.get("skills", [])
+                    result["raw_profile_text"] = provider_info.get("raw_text")  # Full text for Claude
+                    if provider_info.get("linkedin_url") and not linkedin_url:
+                        result["linkedin_url"] = provider_info.get("linkedin_url")
+                    
+                    skills_str = ", ".join(provider_info.get("skills", [])[:5]) if provider_info.get("skills") else "none found"
+                    print(f"[CONTACT_ANALYZER] ✅ Found enriched profile via provider:", flush=True)
+                    print(f"    - Headline: {provider_info.get('headline')}", flush=True)
+                    print(f"    - Location: {provider_info.get('location')}", flush=True)
+                    print(f"    - Experience: {provider_info.get('experience_years')} years", flush=True)
+                    print(f"    - Skills: {skills_str}", flush=True)
+                    return result
+            except Exception as e:
+                print(f"[CONTACT_ANALYZER] ⚠️ Provider search failed: {e}", flush=True)
+                logger.warning(f"[CONTACT_ANALYZER] Provider error: {e}")
+        
+        # Priority 4: Brave Search fallback for LinkedIn profile info
         print(f"[CONTACT_ANALYZER] Brave API key available: {bool(self.brave_api_key)}", flush=True)
         if self.brave_api_key:
-            print(f"[CONTACT_ANALYZER] 🔍 Starting Brave search for {contact_name}...", flush=True)
+            print(f"[CONTACT_ANALYZER] 🔍 Fallback: Brave search for {contact_name}...", flush=True)
             brave_info = await self._search_linkedin_with_brave(
                 contact_name=contact_name,
                 contact_role=contact_role,
@@ -240,7 +296,7 @@ class ContactAnalyzer:
                 print(f"[CONTACT_ANALYZER] ✅ Found profile info via Brave: {brave_info.get('headline')}", flush=True)
                 return result
         else:
-            print(f"[CONTACT_ANALYZER] ⚠️ No Brave API key - skipping web search", flush=True)
+            print(f"[CONTACT_ANALYZER] ⚠️ No Brave API key - skipping fallback search", flush=True)
         
         # No additional info found - will rely on role-based inference
         result["source"] = "role_inference"

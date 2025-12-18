@@ -48,3 +48,6 @@ inngest>=0.4.0  # Event-driven workflow orchestration
 
 # Error tracking & monitoring
 sentry-sdk[fastapi]>=2.19.0  # Error tracking with FastAPI integration
+
+# Exa.ai - Neural search for people & company research
+exa_py>=1.0.0  # Exa.ai Python SDK for People Search
