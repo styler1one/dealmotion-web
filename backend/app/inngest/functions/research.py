@@ -26,7 +26,7 @@ from app.database import get_supabase_service
 from app.services.gemini_researcher import GeminiResearcher
 from app.services.claude_researcher import ClaudeResearcher
 from app.services.kvk_api import KVKApi
-from app.services.website_scraper import get_website_scraper
+from app.services.website_content_provider import get_website_content_provider
 from app.services.research_enricher import get_research_enricher
 from app.i18n.config import DEFAULT_LANGUAGE
 
@@ -36,14 +36,19 @@ logger = logging.getLogger(__name__)
 gemini_researcher = GeminiResearcher()
 claude_researcher = ClaudeResearcher()
 kvk_api = KVKApi()
-website_scraper = get_website_scraper()
+website_content_provider = get_website_content_provider()
 research_enricher = get_research_enricher()
 
-# Log enricher availability at module load
+# Log service availability at module load
 if research_enricher.is_available:
     logger.info("[INNGEST_RESEARCH] Research enricher available - enhanced executive discovery enabled")
 else:
     logger.info("[INNGEST_RESEARCH] Research enricher not available - using Gemini only")
+
+if website_content_provider.is_neural_available:
+    logger.info("[INNGEST_RESEARCH] Neural website content extraction available")
+else:
+    logger.info("[INNGEST_RESEARCH] Using fallback website scraper")
 
 # Database client
 supabase = get_supabase_service()
@@ -116,10 +121,10 @@ async def research_company_fn(ctx, step):
     if kvk_api.is_dutch_company(country):
         kvk_result = await step.run("kvk-lookup", run_kvk_lookup, company_name, city)
     
-    # Step 5: Website scraping (conditional - if URL provided)
+    # Step 5: Website content extraction (conditional - if URL provided)
     website_result = None
     if website_url:
-        website_result = await step.run("website-scrape", run_website_scrape, website_url)
+        website_result = await step.run("website-scrape", run_website_scrape, website_url, company_name)
     
     # Step 5b: Research enrichment (executives, funding) - runs if enricher is available
     enrichment_result = None
@@ -329,13 +334,18 @@ async def run_kvk_lookup(company_name: str, city: Optional[str]) -> dict:
         return {"success": False, "error": str(e), "source": "kvk"}
 
 
-async def run_website_scrape(website_url: str) -> dict:
-    """Scrape company website."""
+async def run_website_scrape(website_url: str, company_name: Optional[str] = None) -> dict:
+    """Extract content from company website using neural provider or fallback scraper."""
     try:
-        result = await website_scraper.scrape_website(website_url)
+        result = await website_content_provider.get_website_content(
+            website_url=website_url,
+            company_name=company_name,
+            include_subpages=True,
+            max_subpages=5
+        )
         return result
     except Exception as e:
-        logger.warning(f"Website scrape failed: {e}")
+        logger.warning(f"Website content extraction failed: {e}")
         return {"success": False, "error": str(e), "source": "website"}
 
 

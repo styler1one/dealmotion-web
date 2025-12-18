@@ -26,7 +26,7 @@ from supabase import Client
 from .claude_researcher import ClaudeResearcher
 from .gemini_researcher import GeminiResearcher
 from .kvk_api import KVKApi
-from .website_scraper import get_website_scraper
+from .website_content_provider import get_website_content_provider, WebsiteContentProvider
 from .research_enricher import get_research_enricher, ResearchEnricher
 from app.database import get_supabase_service
 from app.i18n.config import DEFAULT_LANGUAGE
@@ -62,17 +62,22 @@ class ResearchOrchestrator:
         self.claude = ClaudeResearcher()
         self.gemini = GeminiResearcher()
         self.kvk = KVKApi()
-        self.website_scraper = get_website_scraper()
+        self.website_provider: WebsiteContentProvider = get_website_content_provider()
         self.enricher: ResearchEnricher = get_research_enricher()
         
         # Initialize Supabase using centralized module
         self.supabase: Client = get_supabase_service()
         
-        # Log enricher availability
+        # Log service availability
         if self.enricher.is_available:
             logger.info("[RESEARCH_ORCHESTRATOR] Research enricher available - enhanced executive discovery enabled")
         else:
             logger.info("[RESEARCH_ORCHESTRATOR] Research enricher not available - using Gemini only")
+        
+        if self.website_provider.is_neural_available:
+            logger.info("[RESEARCH_ORCHESTRATOR] Neural website content extraction available")
+        else:
+            logger.info("[RESEARCH_ORCHESTRATOR] Using fallback website scraper")
     
     async def research_company(
         self,
@@ -156,9 +161,14 @@ class ResearchOrchestrator:
             tasks.append(self.kvk.search_company(company_name, city))
             task_names.append("kvk")
         
-        # Supplementary: Website scraper if URL provided
+        # Supplementary: Website content extraction if URL provided
         if website_url:
-            tasks.append(self.website_scraper.scrape_website(website_url))
+            tasks.append(self.website_provider.get_website_content(
+                website_url=website_url,
+                company_name=company_name,
+                include_subpages=True,
+                max_subpages=5
+            ))
             task_names.append("website")
         
         # Execute all data collection in parallel
