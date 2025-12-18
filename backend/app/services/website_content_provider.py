@@ -48,7 +48,6 @@ class WebsiteContent:
     products_services: List[str] = field(default_factory=list)
     team_members: List[Dict[str, str]] = field(default_factory=list)
     contact_info: Dict[str, str] = field(default_factory=dict)
-    highlights: List[str] = field(default_factory=list)
     
     # Error handling
     error: Optional[str] = None
@@ -213,15 +212,13 @@ class WebsiteContentProvider:
             ]
             
             def do_get_contents():
+                # Note: highlights feature was removed from Python SDK
+                # Use summary instead for AI-generated insights
                 params = {
                     "urls": [website_url],
                     "text": {"max_characters": 8000},  # Main content
                     "summary": {"query": summary_query},  # AI summary
-                    "highlights": {
-                        "query": "company description mission products leadership team",
-                        "numSentences": 3,
-                        "highlightsPerUrl": 5
-                    }
+                    "livecrawl": "fallback"  # Use cache first, crawl if needed
                 }
                 
                 # Add subpage crawling if requested
@@ -248,7 +245,6 @@ class WebsiteContentProvider:
             main_content = getattr(main_result, 'text', '') or ''
             ai_summary = getattr(main_result, 'summary', '') or ''
             title = getattr(main_result, 'title', '') or ''
-            highlights = getattr(main_result, 'highlights', []) or []
             
             # Count pages (main + subpages)
             pages_scraped = len(response.results)
@@ -277,12 +273,6 @@ class WebsiteContentProvider:
             if ai_summary:
                 summary_parts.append("### AI-Generated Summary")
                 summary_parts.append(ai_summary)
-                summary_parts.append("")
-            
-            if highlights:
-                summary_parts.append("### Key Highlights")
-                for h in highlights[:5]:
-                    summary_parts.append(f"- {h}")
                 summary_parts.append("")
             
             if main_content:
@@ -320,7 +310,6 @@ class WebsiteContentProvider:
                 },
                 "extracted_data": {
                     "ai_summary": ai_summary,
-                    "highlights": highlights,
                     "title": title
                 }
             }

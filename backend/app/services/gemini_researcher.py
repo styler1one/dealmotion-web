@@ -1695,9 +1695,9 @@ If no Dutch coverage found: "No significant coverage found in major Dutch busine
             elif result.get("success"):
                 successful_topics += 1
                 combined_data.append(f"\n\n{'='*60}\n## {topic_name.upper().replace('_', ' ')}\n{'='*60}\n\n{result.get('data', '')}")
-                token_stats = result.get("token_stats", {})
-                total_input_tokens += token_stats.get("input_tokens", 0)
-                total_output_tokens += token_stats.get("output_tokens", 0)
+                token_stats = result.get("token_stats") or {}
+                total_input_tokens += token_stats.get("input_tokens") or 0
+                total_output_tokens += token_stats.get("output_tokens") or 0
             else:
                 failed_topics.append(topic_name)
                 combined_data.append(f"\n\n## {topic_name.upper().replace('_', ' ')}\n\nError: {result.get('data', 'Unknown error')}")
