@@ -373,7 +373,9 @@ Based on the research, these are the 3 most important immediate actions:
 
 | Date | Headline | Type | Source |
 |------|----------|------|--------|
-| [Date] | [Title] | 💰/📈/👥/🚀/🤝/⚠️ | [Publication] |
+| [Date] | [Title](URL) | 💰/📈/👥/🚀/🤝/⚠️ | [Publication] |
+
+**IMPORTANT**: Make headlines clickable links! Format: `[Headline text](https://url)`
 
 **Types**: 💰 Funding | 📈 Growth | 👥 People | 🚀 Product | 🤝 Partnership | ⚠️ Challenge
 

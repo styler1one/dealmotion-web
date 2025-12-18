@@ -1179,7 +1179,11 @@ Generate the report in this EXACT structure:
 
 | Date | Headline | Type | Source |
 |------|----------|------|--------|
-| [Date] | [Title] | [Funding/Growth/People/Product/Partnership/Challenge] | [Publication] |
+| [Date] | [Title](URL) | 💰/📈/👥/🚀/🤝/⚠️ | [Publication] |
+
+**IMPORTANT**: Make headlines clickable links! Format: `[Headline text](https://url)`
+
+**Types**: 💰 Funding | 📈 Growth | 👥 People | 🚀 Product | 🤝 Partnership | ⚠️ Challenge
 
 ### 4.2 Funding History
 
