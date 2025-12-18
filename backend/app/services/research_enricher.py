@@ -141,7 +141,7 @@ class ResearchEnricher:
         
         # Run enrichment tasks in parallel
         tasks = [
-            self._find_executives(company_name, linkedin_url),
+            self._find_executives(company_name, linkedin_url, country),
             self._find_funding(company_name),
         ]
         
@@ -199,29 +199,48 @@ class ResearchEnricher:
     async def _find_executives(
         self,
         company_name: str,
-        linkedin_url: Optional[str] = None
+        linkedin_url: Optional[str] = None,
+        country: Optional[str] = None,
+        city: Optional[str] = None
     ) -> List[ExecutiveProfile]:
         """
         Find executives and leadership team with LinkedIn profiles.
         
         Uses neural people search for high-accuracy LinkedIn discovery.
+        Includes geo-filtering for better accuracy.
         """
         if not self._client:
             return []
         
         executives = []
         
+        # Map country names to ISO 3166-1 alpha-2 codes
+        country_code = self._get_country_code(country)
+        
+        # Build location-aware query
+        location_hint = ""
+        if city:
+            location_hint = f" {city}"
+        elif country:
+            location_hint = f" {country}"
+        
         try:
             loop = asyncio.get_event_loop()
             
-            # Search for executives using people category
+            # Search for executives using people category with geo-filtering
             def do_executive_search():
-                return self._client.search(
-                    f"CEO CFO CTO COO CMO executives at {company_name}",
-                    type="auto",
-                    category="linkedin_company",  # People category for LinkedIn
-                    num_results=15
-                )
+                search_params = {
+                    "query": f"CEO CFO CTO COO CMO executives at {company_name}{location_hint}",
+                    "type": "auto",
+                    "category": "linkedin_company",
+                    "num_results": 15
+                }
+                # Add geo-filter if we have a country code
+                if country_code:
+                    search_params["userLocation"] = country_code
+                    logger.info(f"[RESEARCH_ENRICHER] Using geo-filter: {country_code}")
+                
+                return self._client.search(**search_params)
             
             response = await loop.run_in_executor(None, do_executive_search)
             
@@ -267,7 +286,7 @@ class ResearchEnricher:
             
             # Also do a dedicated C-suite search for better coverage
             if len(executives) < 5:
-                c_suite_results = await self._search_c_suite(company_name)
+                c_suite_results = await self._search_c_suite(company_name, country_code)
                 
                 # Add any new executives not already found
                 existing_urls = {e.linkedin_url for e in executives}
@@ -284,8 +303,8 @@ class ResearchEnricher:
             logger.error(f"[RESEARCH_ENRICHER] Executive search error: {e}")
             return []
     
-    async def _search_c_suite(self, company_name: str) -> List[ExecutiveProfile]:
-        """Dedicated search for C-suite executives."""
+    async def _search_c_suite(self, company_name: str, country_code: Optional[str] = None) -> List[ExecutiveProfile]:
+        """Dedicated search for C-suite executives with geo-filtering."""
         if not self._client:
             return []
         
@@ -302,13 +321,16 @@ class ResearchEnricher:
         
         for short_title, full_title in c_suite_roles:
             try:
-                def do_search(query=f"{short_title} {company_name}"):
-                    return self._client.search(
-                        query,
-                        type="auto",
-                        category="linkedin_company",
-                        num_results=3
-                    )
+                def do_search(query=f"{short_title} {company_name}", cc=country_code):
+                    search_params = {
+                        "query": query,
+                        "type": "auto",
+                        "category": "linkedin_company",
+                        "num_results": 3
+                    }
+                    if cc:
+                        search_params["userLocation"] = cc
+                    return self._client.search(**search_params)
                 
                 response = await loop.run_in_executor(None, do_search)
                 
@@ -461,6 +483,70 @@ class ResearchEnricher:
         except Exception as e:
             logger.error(f"[RESEARCH_ENRICHER] Similar companies search error: {e}")
             return []
+    
+    def _get_country_code(self, country: Optional[str]) -> Optional[str]:
+        """Map country name to ISO 3166-1 alpha-2 code for geo-filtering."""
+        if not country:
+            return None
+        
+        country_lower = country.lower().strip()
+        
+        # Common country name mappings
+        country_map = {
+            # Dutch variations
+            "nederland": "NL",
+            "netherlands": "NL",
+            "the netherlands": "NL",
+            "holland": "NL",
+            "nl": "NL",
+            # Belgian variations
+            "belgie": "BE",
+            "belgium": "BE",
+            "belgië": "BE",
+            "be": "BE",
+            # German variations
+            "duitsland": "DE",
+            "germany": "DE",
+            "deutschland": "DE",
+            "de": "DE",
+            # UK variations
+            "uk": "GB",
+            "united kingdom": "GB",
+            "great britain": "GB",
+            "england": "GB",
+            "gb": "GB",
+            # US variations
+            "us": "US",
+            "usa": "US",
+            "united states": "US",
+            "america": "US",
+            # French variations
+            "france": "FR",
+            "frankrijk": "FR",
+            "fr": "FR",
+            # Other common
+            "spain": "ES",
+            "spanje": "ES",
+            "italy": "IT",
+            "italië": "IT",
+            "ireland": "IE",
+            "ierland": "IE",
+            "sweden": "SE",
+            "zweden": "SE",
+            "norway": "NO",
+            "noorwegen": "NO",
+            "denmark": "DK",
+            "denemarken": "DK",
+            "austria": "AT",
+            "oostenrijk": "AT",
+            "switzerland": "CH",
+            "zwitserland": "CH",
+            "poland": "PL",
+            "polen": "PL",
+            "portugal": "PT",
+        }
+        
+        return country_map.get(country_lower)
     
     def _parse_linkedin_title(self, title: str) -> tuple[Optional[str], Optional[str]]:
         """Parse name and title from LinkedIn title string."""
