@@ -1536,15 +1536,22 @@
     "pricing": {
       "title": "Choose the plan that fits you",
       "titleV2": "Simple pricing for every sales pro",
+      "titleV4": "Professional pricing for serious sales",
       "subtitle": "Start free and upgrade when you're ready. 14 days free trial, no credit card required.",
       "subtitleV2": "Start free with 2 flows. Upgrade when you need more.",
+      "subtitleV4": "Start free, upgrade when you're ready for unlimited power.",
       "flowExplanation": "1 Flow = 1 Research + 1 Prep + 1 Follow-up",
       "monthly": "Monthly",
       "yearly": "Yearly",
+      "perMonth": "month",
+      "forever": "forever",
       "save": "Save {percent}%",
+      "billedYearly": "Billed as {amount}/year",
       "backToDashboard": "Back to dashboard",
-      "popular": "Popular",
+      "popular": "Most Popular",
       "earlyAdopter": "Early Adopter",
+      "launchOffer": "Launch Offer",
+      "launchOfferDescription": "Special launch pricing - lock in these rates forever!",
       "currentPlan": "Current plan",
       "select": "Select",
       "startFree": "Start Free",
@@ -1552,6 +1559,7 @@
       "getStarted": "Get Started",
       "upgrade": "Upgrade",
       "goUnlimited": "Go Unlimited",
+      "goProPlus": "Go Pro+",
       "contactUs": "Contact us",
       "contactSales": "Contact Sales",
       "alreadyFree": "You are already on the free plan.",
@@ -1562,6 +1570,8 @@
       "compareFeatures": "Compare features",
       "feature": "Feature",
       "trustBadges": "🔒 Secure payment via Stripe • 💳 All major cards accepted • ❌ Cancel anytime",
+      "moneyBackTitle": "30-Day Money-Back Guarantee",
+      "moneyBackDescription": "Not satisfied? No problem. Contact us within 30 days and we'll refund your payment in full. No questions asked.",
       "whatIsFlow": "What is a Flow?",
       "flowStep1": "Research",
       "flowStep2": "Preparation",
@@ -1632,6 +1642,24 @@
           "name": "Enterprise",
           "description": "For teams with CRM needs"
         }
+      },
+      "v4": {
+        "free": {
+          "name": "Free",
+          "description": "Test & experience DealMotion"
+        },
+        "pro": {
+          "name": "Pro",
+          "description": "Everything for the modern sales pro"
+        },
+        "proPlus": {
+          "name": "Pro+",
+          "description": "Complete package with AI Notetaker"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "description": "For teams with CRM integrations"
+        }
       }
     },
     "features": {
@@ -1686,6 +1714,32 @@
         "crmZoho": "Zoho CRM",
         "sso": "SSO/SAML",
         "flowPacks": "Buy extra flow packs"
+      },
+      "v4": {
+        "testExperience": "Test & experience the platform",
+        "limitedFlows": "2 flows to get started",
+        "unlimitedFlows": "Unlimited flows",
+        "kb": "Knowledge Base",
+        "transcription": "Meeting transcription",
+        "contacts": "Contact analysis",
+        "pdf": "PDF & DOCX exports",
+        "prioritySupport": "Priority support",
+        "aiNotetaker": "AI Notetaker",
+        "aiNotetakerIncluded": "AI Notetaker Included",
+        "aiNotetakerDescription": "Automatic meeting recording, transcription & notes",
+        "aiNotetakerTitle": "AI Notetaker - Only in Pro+",
+        "aiNotetakerLongDescription": "Let our AI join your meetings to automatically record, transcribe, and create intelligent summaries. Never miss an important detail again.",
+        "notetakerFeature1": "Auto-join meetings",
+        "notetakerFeature2": "Smart summaries",
+        "notetakerFeature3": "Action items",
+        "crm": "CRM integration",
+        "everythingProPlus": "Everything in Pro+",
+        "unlimitedUsers": "Unlimited team members",
+        "crmDynamics": "Microsoft Dynamics 365",
+        "crmSalesforce": "Salesforce CRM",
+        "crmHubspot": "HubSpot CRM",
+        "sso": "SSO / SAML",
+        "dedicatedSupport": "Dedicated account manager"
       },
       "free": {
         "research": "3 research briefs per month",

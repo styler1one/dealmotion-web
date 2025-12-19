@@ -6,6 +6,8 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import { 
   Check, 
   X, 
@@ -17,14 +19,15 @@ import {
   Building2,
   Heart,
   ExternalLink,
-  Infinity
+  Infinity,
+  Mic,
+  Bot
 } from 'lucide-react'
 import { useBilling } from '@/lib/billing-context'
 import { useToast } from '@/components/ui/use-toast'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { Logo } from '@/components/dealmotion-logo'
-import { api } from '@/lib/api'
 
 export default function PricingPage() {
   const router = useRouter()
@@ -33,7 +36,7 @@ export default function PricingPage() {
   const t = useTranslations('billing')
   const tErrors = useTranslations('errors')
   const [loading, setLoading] = useState<string | null>(null)
-  const [flowPackLoading, setFlowPackLoading] = useState(false)
+  const [isYearly, setIsYearly] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null)
   const supabase = createClientComponentClient()
 
@@ -46,49 +49,74 @@ export default function PricingPage() {
     checkAuth()
   }, [supabase])
 
-  // v3 Features - all plans include KB and transcription
+  // Pricing data
+  const pricing = {
+    pro: {
+      monthly: { price: 4995, original: 7995 },      // €49.95 launch, €79.95 regular
+      yearly: { price: 50900, original: 81500 },     // €509 launch, €815 regular
+    },
+    proPlus: {
+      monthly: { price: 6995, original: 9995 },      // €69.95 launch, €99.95 regular
+      yearly: { price: 71300, original: 101900 },    // €713 launch, €1019 regular
+    }
+  }
+
+  // Format price for display
+  const formatPrice = (cents: number) => {
+    const euros = cents / 100
+    return new Intl.NumberFormat('nl-NL', { 
+      style: 'currency', 
+      currency: 'EUR',
+      minimumFractionDigits: euros % 1 === 0 ? 0 : 2,
+      maximumFractionDigits: 2
+    }).format(euros)
+  }
+
+  // Calculate monthly equivalent for yearly plans
+  const getMonthlyEquivalent = (yearlyCents: number) => {
+    return formatPrice(Math.round(yearlyCents / 12))
+  }
+
+  // Features for each plan - v4 structure
   const features = {
     free: [
-      { text: t('features.v3.flows', { count: '2' }), included: true },
-      { text: t('features.v3.kb'), included: true },
-      { text: t('features.v3.transcription'), included: true },
-      { text: t('features.v3.contacts'), included: true },
-      { text: t('features.v3.pdf'), included: true },
-      { text: t('features.v3.user', { count: '1' }), included: true },
-      { text: t('features.v3.flowPacks'), included: true },
-      { text: t('features.v3.crm'), included: false },
+      { text: t('features.v4.testExperience'), included: true },
+      { text: t('features.v4.limitedFlows'), included: true },
+      { text: t('features.v4.kb'), included: true },
+      { text: t('features.v4.transcription'), included: true },
+      { text: t('features.v4.contacts'), included: true },
+      { text: t('features.v4.pdf'), included: true },
+      { text: t('features.v4.aiNotetaker'), included: false, highlight: true },
+      { text: t('features.v4.crm'), included: false },
     ],
-    proSolo: [
-      { text: t('features.v3.flows', { count: '5' }), included: true },
-      { text: t('features.v3.kb'), included: true },
-      { text: t('features.v3.transcription'), included: true },
-      { text: t('features.v3.contacts'), included: true },
-      { text: t('features.v3.pdf'), included: true },
-      { text: t('features.v3.user', { count: '1' }), included: true },
-      { text: t('features.v3.flowPacks'), included: true },
-      { text: t('features.v3.support'), included: true },
-      { text: t('features.v3.crm'), included: false },
+    pro: [
+      { text: t('features.v4.unlimitedFlows'), included: true },
+      { text: t('features.v4.kb'), included: true },
+      { text: t('features.v4.transcription'), included: true },
+      { text: t('features.v4.contacts'), included: true },
+      { text: t('features.v4.pdf'), included: true },
+      { text: t('features.v4.prioritySupport'), included: true },
+      { text: t('features.v4.aiNotetaker'), included: false, highlight: true },
+      { text: t('features.v4.crm'), included: false },
     ],
-    unlimitedSolo: [
-      { text: t('features.v3.flowsUnlimited'), included: true },
-      { text: t('features.v3.kb'), included: true },
-      { text: t('features.v3.transcription'), included: true },
-      { text: t('features.v3.contacts'), included: true },
-      { text: t('features.v3.pdf'), included: true },
-      { text: t('features.v3.user', { count: '1' }), included: true },
-      { text: t('features.v3.prioritySupport'), included: true },
-      { text: t('features.v3.crm'), included: false },
+    proPlus: [
+      { text: t('features.v4.unlimitedFlows'), included: true },
+      { text: t('features.v4.kb'), included: true },
+      { text: t('features.v4.transcription'), included: true },
+      { text: t('features.v4.contacts'), included: true },
+      { text: t('features.v4.pdf'), included: true },
+      { text: t('features.v4.prioritySupport'), included: true },
+      { text: t('features.v4.aiNotetaker'), included: true, highlight: true },
+      { text: t('features.v4.crm'), included: false },
     ],
     enterprise: [
-      { text: t('features.v3.flowsUnlimited'), included: true },
-      { text: t('features.v3.usersUnlimited'), included: true },
-      { text: t('features.v3.crmDynamics'), included: true },
-      { text: t('features.v3.crmSalesforce'), included: true },
-      { text: t('features.v3.crmHubspot'), included: true },
-      { text: t('features.v3.crmPipedrive'), included: true },
-      { text: t('features.v3.crmZoho'), included: true },
-      { text: t('features.v3.sso'), included: true },
-      { text: t('features.v3.dedicatedSupport'), included: true },
+      { text: t('features.v4.everythingProPlus'), included: true },
+      { text: t('features.v4.unlimitedUsers'), included: true },
+      { text: t('features.v4.crmDynamics'), included: true },
+      { text: t('features.v4.crmSalesforce'), included: true },
+      { text: t('features.v4.crmHubspot'), included: true },
+      { text: t('features.v4.sso'), included: true },
+      { text: t('features.v4.dedicatedSupport'), included: true },
     ],
   }
 
@@ -131,7 +159,6 @@ export default function PricingPage() {
   }
 
   const handleDonation = () => {
-    // Donation link is public - no auth required
     const donationUrl = process.env.NEXT_PUBLIC_STRIPE_DONATION_LINK
     if (donationUrl) {
       window.open(donationUrl, '_blank')
@@ -144,43 +171,27 @@ export default function PricingPage() {
     }
   }
 
-  const handleFlowPackPurchase = async () => {
-    // Must be logged in to buy flow packs
-    if (!isLoggedIn) {
-      router.push('/signup')
-      return
-    }
-
-    setFlowPackLoading(true)
-    try {
-      const { data, error } = await api.post<{ checkout_url: string }>('/api/v1/billing/flow-packs/checkout', {
-        pack_id: 'pack_5',
-        success_url: `${window.location.origin}/billing/success`,
-        cancel_url: `${window.location.origin}/pricing`,
-      })
-
-      if (error || !data?.checkout_url) {
-        throw new Error('Failed to create checkout')
-      }
-
-      window.location.href = data.checkout_url
-    } catch (error) {
-      console.error('Flow pack checkout failed:', error)
-      toast({
-        title: tErrors('generic'),
-        description: t('flowPacks.checkoutError'),
-        variant: 'destructive',
-      })
-    } finally {
-      setFlowPackLoading(false)
-    }
-  }
-
   const isCurrentPlan = (planId: string) => {
-    // If not logged in, no plan is "current"
     if (!isLoggedIn) return false
     if (!subscription) return planId === 'free'
+    // Check both monthly and yearly variants
+    if (planId === 'pro') {
+      return subscription.plan_id === 'pro_monthly' || subscription.plan_id === 'pro_yearly'
+    }
+    if (planId === 'pro_plus') {
+      return subscription.plan_id === 'pro_plus_monthly' || subscription.plan_id === 'pro_plus_yearly'
+    }
     return subscription.plan_id === planId
+  }
+
+  const getActualPlanId = (basePlanId: string) => {
+    if (basePlanId === 'pro') {
+      return isYearly ? 'pro_yearly' : 'pro_monthly'
+    }
+    if (basePlanId === 'pro_plus') {
+      return isYearly ? 'pro_plus_yearly' : 'pro_plus_monthly'
+    }
+    return basePlanId
   }
 
   return (
@@ -202,17 +213,48 @@ export default function PricingPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Title */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">
-            {t('pricing.titleV2')}
+            {t('pricing.titleV4')}
           </h1>
           <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-            {t('pricing.subtitleV2')}
+            {t('pricing.subtitleV4')}
           </p>
-          {/* Flow explanation */}
-          <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-full text-sm text-blue-700 dark:text-blue-300">
-            <Sparkles className="h-4 w-4" />
-            {t('pricing.flowExplanation')}
+        </div>
+
+        {/* Billing Toggle */}
+        <div className="flex items-center justify-center gap-4 mb-12">
+          <Label 
+            htmlFor="billing-toggle" 
+            className={`text-sm font-medium cursor-pointer ${!isYearly ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}
+          >
+            {t('pricing.monthly')}
+          </Label>
+          <Switch
+            id="billing-toggle"
+            checked={isYearly}
+            onCheckedChange={setIsYearly}
+            className="data-[state=checked]:bg-indigo-600"
+          />
+          <Label 
+            htmlFor="billing-toggle" 
+            className={`text-sm font-medium cursor-pointer flex items-center gap-2 ${isYearly ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}
+          >
+            {t('pricing.yearly')}
+            <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+              {t('pricing.save', { percent: '15' })}
+            </Badge>
+          </Label>
+        </div>
+
+        {/* Launch Banner */}
+        <div className="max-w-2xl mx-auto mb-12">
+          <div className="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl p-4 text-center text-white">
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <Sparkles className="h-5 w-5" />
+              <span className="font-bold">{t('pricing.launchOffer')}</span>
+            </div>
+            <p className="text-sm text-white/90">{t('pricing.launchOfferDescription')}</p>
           </div>
         </div>
 
@@ -225,12 +267,12 @@ export default function PricingPage() {
                 <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800">
                   <Zap className="h-5 w-5 text-slate-600 dark:text-slate-400" />
                 </div>
-                <CardTitle className="text-lg">{t('plans.free.name')}</CardTitle>
+                <CardTitle className="text-lg">{t('plans.v4.free.name')}</CardTitle>
               </div>
-              <CardDescription className="text-sm">{t('plans.v2.free.description')}</CardDescription>
+              <CardDescription className="text-sm">{t('plans.v4.free.description')}</CardDescription>
               <div className="mt-4">
                 <span className="text-3xl font-bold text-slate-900 dark:text-white">€0</span>
-                <span className="text-slate-500 text-sm">{t('perMonth')}</span>
+                <span className="text-slate-500 text-sm">/{t('pricing.forever')}</span>
               </div>
             </CardHeader>
             <CardContent className="pb-4">
@@ -240,9 +282,9 @@ export default function PricingPage() {
                     {feature.included ? (
                       <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
                     ) : (
-                      <X className="h-4 w-4 text-slate-300 dark:text-slate-600 flex-shrink-0" />
+                      <X className={`h-4 w-4 flex-shrink-0 ${feature.highlight ? 'text-slate-400' : 'text-slate-300 dark:text-slate-600'}`} />
                     )}
-                    <span className={feature.included ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 dark:text-slate-600'}>
+                    <span className={`${feature.included ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 dark:text-slate-600'} ${feature.highlight ? 'font-medium' : ''}`}>
                       {feature.text}
                     </span>
                   </li>
@@ -263,7 +305,6 @@ export default function PricingPage() {
                     : t('pricing.startFree')
                 }
               </Button>
-              {/* Donation button visible for everyone */}
               <Button 
                 variant="ghost" 
                 size="sm"
@@ -276,31 +317,51 @@ export default function PricingPage() {
             </CardFooter>
           </Card>
 
-          {/* Pro Solo Plan */}
+          {/* Pro Plan */}
           <Card className="relative border-2 hover:border-blue-300 dark:hover:border-blue-600 transition-colors">
             <CardHeader className="pb-4">
               <div className="flex items-center gap-2 mb-2">
                 <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
                   <Sparkles className="h-5 w-5 text-blue-600" />
                 </div>
-                <CardTitle className="text-lg">{t('plans.v3.proSolo.name')}</CardTitle>
+                <CardTitle className="text-lg">{t('plans.v4.pro.name')}</CardTitle>
               </div>
-              <CardDescription className="text-sm">{t('plans.v3.proSolo.description')}</CardDescription>
+              <CardDescription className="text-sm">{t('plans.v4.pro.description')}</CardDescription>
               <div className="mt-4">
-                <span className="text-3xl font-bold text-slate-900 dark:text-white">€9,95</span>
-                <span className="text-slate-500 text-sm">{t('perMonth')}</span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-lg text-slate-400 line-through">
+                    {isYearly 
+                      ? getMonthlyEquivalent(pricing.pro.yearly.original)
+                      : formatPrice(pricing.pro.monthly.original)
+                    }
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-bold text-slate-900 dark:text-white">
+                    {isYearly 
+                      ? getMonthlyEquivalent(pricing.pro.yearly.price)
+                      : formatPrice(pricing.pro.monthly.price)
+                    }
+                  </span>
+                  <span className="text-slate-500 text-sm">/{t('pricing.perMonth')}</span>
+                </div>
+                {isYearly && (
+                  <p className="text-xs text-slate-500 mt-1">
+                    {t('pricing.billedYearly', { amount: formatPrice(pricing.pro.yearly.price) })}
+                  </p>
+                )}
               </div>
             </CardHeader>
             <CardContent className="pb-4">
               <ul className="space-y-2">
-                {features.proSolo.map((feature, idx) => (
+                {features.pro.map((feature, idx) => (
                   <li key={idx} className="flex items-center gap-2 text-sm">
                     {feature.included ? (
                       <Check className="h-4 w-4 text-blue-500 flex-shrink-0" />
                     ) : (
-                      <X className="h-4 w-4 text-slate-300 dark:text-slate-600 flex-shrink-0" />
+                      <X className={`h-4 w-4 flex-shrink-0 ${feature.highlight ? 'text-slate-400' : 'text-slate-300 dark:text-slate-600'}`} />
                     )}
-                    <span className={feature.included ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 dark:text-slate-600'}>
+                    <span className={`${feature.included ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 dark:text-slate-600'} ${feature.highlight ? 'font-medium' : ''}`}>
                       {feature.text}
                     </span>
                   </li>
@@ -311,14 +372,14 @@ export default function PricingPage() {
               <Button 
                 className="w-full"
                 variant="outline"
-                onClick={() => handleSelectPlan('light_solo')}
-                disabled={loading === 'light_solo' || isCurrentPlan('light_solo')}
+                onClick={() => handleSelectPlan(getActualPlanId('pro'))}
+                disabled={loading === getActualPlanId('pro') || isCurrentPlan('pro')}
               >
-                {loading === 'light_solo' ? (
+                {loading === getActualPlanId('pro') ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 ) : !isLoggedIn ? (
                   t('pricing.getStarted')
-                ) : isCurrentPlan('light_solo') ? (
+                ) : isCurrentPlan('pro') ? (
                   t('pricing.currentPlan')
                 ) : (
                   t('pricing.upgrade')
@@ -327,11 +388,11 @@ export default function PricingPage() {
             </CardFooter>
           </Card>
 
-          {/* Unlimited Solo Plan - Featured */}
+          {/* Pro+ Plan - Featured */}
           <Card className="relative border-2 border-indigo-500 shadow-lg shadow-indigo-500/10">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
               <Badge className="bg-gradient-to-r from-indigo-500 to-purple-500 px-3 text-xs">
-                {t('pricing.earlyAdopter')}
+                {t('pricing.popular')}
               </Badge>
             </div>
             <CardHeader className="pb-4">
@@ -339,25 +400,54 @@ export default function PricingPage() {
                 <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
                   <Crown className="h-5 w-5 text-indigo-600" />
                 </div>
-                <CardTitle className="text-lg">{t('plans.v3.unlimitedSolo.name')}</CardTitle>
+                <CardTitle className="text-lg">{t('plans.v4.proPlus.name')}</CardTitle>
               </div>
-              <CardDescription className="text-sm">{t('plans.v3.unlimitedSolo.description')}</CardDescription>
+              <CardDescription className="text-sm">{t('plans.v4.proPlus.description')}</CardDescription>
               <div className="mt-4">
-                <span className="text-lg text-slate-400 line-through">€99,95</span>
-                <span className="text-3xl font-bold text-slate-900 dark:text-white ml-2">€49,95</span>
-                <span className="text-slate-500 text-sm">{t('perMonth')}</span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-lg text-slate-400 line-through">
+                    {isYearly 
+                      ? getMonthlyEquivalent(pricing.proPlus.yearly.original)
+                      : formatPrice(pricing.proPlus.monthly.original)
+                    }
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-bold text-slate-900 dark:text-white">
+                    {isYearly 
+                      ? getMonthlyEquivalent(pricing.proPlus.yearly.price)
+                      : formatPrice(pricing.proPlus.monthly.price)
+                    }
+                  </span>
+                  <span className="text-slate-500 text-sm">/{t('pricing.perMonth')}</span>
+                </div>
+                {isYearly && (
+                  <p className="text-xs text-slate-500 mt-1">
+                    {t('pricing.billedYearly', { amount: formatPrice(pricing.proPlus.yearly.price) })}
+                  </p>
+                )}
               </div>
             </CardHeader>
             <CardContent className="pb-4">
+              {/* AI Notetaker highlight */}
+              <div className="mb-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-200 dark:border-indigo-800">
+                <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300">
+                  <Bot className="h-5 w-5" />
+                  <span className="font-semibold text-sm">{t('features.v4.aiNotetakerIncluded')}</span>
+                </div>
+                <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-1">
+                  {t('features.v4.aiNotetakerDescription')}
+                </p>
+              </div>
               <ul className="space-y-2">
-                {features.unlimitedSolo.map((feature, idx) => (
+                {features.proPlus.map((feature, idx) => (
                   <li key={idx} className="flex items-center gap-2 text-sm">
                     {feature.included ? (
-                      <Check className="h-4 w-4 text-indigo-500 flex-shrink-0" />
+                      <Check className={`h-4 w-4 flex-shrink-0 ${feature.highlight ? 'text-indigo-500' : 'text-indigo-500'}`} />
                     ) : (
                       <X className="h-4 w-4 text-slate-300 dark:text-slate-600 flex-shrink-0" />
                     )}
-                    <span className={feature.included ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 dark:text-slate-600'}>
+                    <span className={`${feature.included ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 dark:text-slate-600'} ${feature.highlight ? 'font-semibold text-indigo-700 dark:text-indigo-300' : ''}`}>
                       {feature.text}
                     </span>
                   </li>
@@ -367,22 +457,22 @@ export default function PricingPage() {
             <CardFooter>
               <Button 
                 className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
-                onClick={() => handleSelectPlan('unlimited_solo')}
-                disabled={loading === 'unlimited_solo' || isCurrentPlan('unlimited_solo')}
+                onClick={() => handleSelectPlan(getActualPlanId('pro_plus'))}
+                disabled={loading === getActualPlanId('pro_plus') || isCurrentPlan('pro_plus')}
               >
-                {loading === 'unlimited_solo' ? (
+                {loading === getActualPlanId('pro_plus') ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 ) : !isLoggedIn ? (
                   <>
                     <Infinity className="h-4 w-4 mr-2" />
                     {t('pricing.getStarted')}
                   </>
-                ) : isCurrentPlan('unlimited_solo') ? (
+                ) : isCurrentPlan('pro_plus') ? (
                   t('pricing.currentPlan')
                 ) : (
                   <>
                     <Infinity className="h-4 w-4 mr-2" />
-                    {t('pricing.goUnlimited')}
+                    {t('pricing.goProPlus')}
                   </>
                 )}
               </Button>
@@ -396,9 +486,9 @@ export default function PricingPage() {
                 <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
                   <Building2 className="h-5 w-5 text-purple-600" />
                 </div>
-                <CardTitle className="text-lg">{t('plans.v3.enterprise.name')}</CardTitle>
+                <CardTitle className="text-lg">{t('plans.v4.enterprise.name')}</CardTitle>
               </div>
-              <CardDescription className="text-sm">{t('plans.v3.enterprise.description')}</CardDescription>
+              <CardDescription className="text-sm">{t('plans.v4.enterprise.description')}</CardDescription>
               <div className="mt-4">
                 <span className="text-xl font-bold text-slate-900 dark:text-white">{t('pricing.contactSales')}</span>
               </div>
@@ -426,13 +516,46 @@ export default function PricingPage() {
           </Card>
         </div>
 
+        {/* AI Notetaker Feature Highlight */}
+        <div className="mt-16 max-w-3xl mx-auto">
+          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-8 border border-indigo-200 dark:border-indigo-800">
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white">
+                <Bot className="h-8 w-8" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                  {t('features.v4.aiNotetakerTitle')}
+                </h3>
+                <p className="text-slate-600 dark:text-slate-400 mb-4">
+                  {t('features.v4.aiNotetakerLongDescription')}
+                </p>
+                <div className="grid sm:grid-cols-3 gap-4">
+                  <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                    <Mic className="h-4 w-4 text-indigo-500" />
+                    <span>{t('features.v4.notetakerFeature1')}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                    <Sparkles className="h-4 w-4 text-indigo-500" />
+                    <span>{t('features.v4.notetakerFeature2')}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                    <Zap className="h-4 w-4 text-indigo-500" />
+                    <span>{t('features.v4.notetakerFeature3')}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* What is a Flow? */}
         <div className="mt-16 max-w-2xl mx-auto text-center">
           <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
             {t('pricing.whatIsFlow')}
           </h2>
           <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-6">
-            <div className="flex items-center justify-center gap-4 text-sm">
+            <div className="flex items-center justify-center gap-4 text-sm flex-wrap">
               <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
                 <span className="font-semibold text-blue-600">1</span>
                 <span>{t('pricing.flowStep1')}</span>
@@ -458,43 +581,23 @@ export default function PricingPage() {
           </div>
         </div>
 
-        {/* Flow Pack Section */}
-        <div className="mt-16 max-w-md mx-auto">
-          <Card className="border-2 border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
-            <CardHeader className="text-center pb-2">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Zap className="h-5 w-5 text-amber-500" />
-                <CardTitle className="text-lg">{t('flowPacks.title')}</CardTitle>
-              </div>
-              <CardDescription>{t('flowPacks.description')}</CardDescription>
-            </CardHeader>
-            <CardContent className="text-center">
-              <div className="inline-flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-slate-900 dark:text-white">€9,95</span>
-                <span className="text-slate-500 text-sm">/ 5 flows</span>
-              </div>
-              <p className="text-xs text-slate-500 mt-1">{t('flowPacks.pack5.pricePerFlow')}</p>
-            </CardContent>
-            <CardFooter className="justify-center">
-              <Button 
-                variant="outline"
-                className="border-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20"
-                onClick={() => handleFlowPackPurchase()}
-                disabled={flowPackLoading}
-              >
-                {flowPackLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : (
-                  <Zap className="h-4 w-4 mr-2 text-amber-500" />
-                )}
-                {t('flowPacks.buy')}
-              </Button>
-            </CardFooter>
-          </Card>
+        {/* Money-Back Guarantee */}
+        <div className="mt-16 max-w-2xl mx-auto">
+          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-6 text-center">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <span className="text-2xl">💯</span>
+              <h3 className="text-lg font-bold text-green-800 dark:text-green-300">
+                {t('pricing.moneyBackTitle')}
+              </h3>
+            </div>
+            <p className="text-green-700 dark:text-green-400 text-sm">
+              {t('pricing.moneyBackDescription')}
+            </p>
+          </div>
         </div>
 
         {/* Trust Section */}
-        <div className="mt-16 text-center">
+        <div className="mt-8 text-center">
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {t('pricing.trustBadges')}
           </p>

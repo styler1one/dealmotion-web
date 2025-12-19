@@ -811,39 +811,75 @@ CREATE TABLE IF NOT EXISTS subscription_plans (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Insert v3 plans (Pricing v3 - December 2025)
+-- Insert v4 plans (Pricing v4 - December 2025 - High-End Model)
+-- Free: Test & Experience
+-- Pro: Everything EXCEPT AI Notetaker (€79.95 regular, €49.95 launch)
+-- Pro+: Everything INCLUDING AI Notetaker (€99.95 regular, €69.95 launch)
+-- Enterprise: Teams with CRM integrations
 INSERT INTO subscription_plans (id, name, description, price_cents, original_price_cents, billing_interval, features, display_order, is_active) VALUES
-('free', 'Free', 'Start gratis met 2 flows', 0, NULL, NULL, '{
+('free', 'Free', 'Test & experience DealMotion', 0, NULL, NULL, '{
   "flow_limit": 2,
   "user_limit": 1,
+  "ai_notetaker": false,
+  "knowledge_base": true,
+  "transcription": true,
   "crm_integration": false,
   "team_sharing": false,
   "priority_support": false
 }'::jsonb, 1, true),
-('pro_solo', 'Pro Solo', 'For the active sales pro', 995, NULL, 'month', '{
-  "flow_limit": 5,
-  "user_limit": 1,
-  "crm_integration": false,
-  "team_sharing": false,
-  "priority_support": false
-}'::jsonb, 2, true),
-('unlimited_solo', 'Unlimited Solo', 'Unlimited for early adopters', 4995, 9995, 'month', '{
+('pro_monthly', 'Pro', 'Everything for the modern sales professional', 4995, 7995, 'month', '{
   "flow_limit": -1,
   "user_limit": 1,
+  "ai_notetaker": false,
+  "knowledge_base": true,
+  "transcription": true,
+  "crm_integration": false,
+  "team_sharing": false,
+  "priority_support": true
+}'::jsonb, 2, true),
+('pro_yearly', 'Pro', 'Everything for the modern sales professional', 50900, 81500, 'year', '{
+  "flow_limit": -1,
+  "user_limit": 1,
+  "ai_notetaker": false,
+  "knowledge_base": true,
+  "transcription": true,
   "crm_integration": false,
   "team_sharing": false,
   "priority_support": true
 }'::jsonb, 3, true),
+('pro_plus_monthly', 'Pro+', 'Complete package with AI Notetaker', 6995, 9995, 'month', '{
+  "flow_limit": -1,
+  "user_limit": 1,
+  "ai_notetaker": true,
+  "knowledge_base": true,
+  "transcription": true,
+  "crm_integration": false,
+  "team_sharing": false,
+  "priority_support": true
+}'::jsonb, 4, true),
+('pro_plus_yearly', 'Pro+', 'Complete package with AI Notetaker', 71300, 101900, 'year', '{
+  "flow_limit": -1,
+  "user_limit": 1,
+  "ai_notetaker": true,
+  "knowledge_base": true,
+  "transcription": true,
+  "crm_integration": false,
+  "team_sharing": false,
+  "priority_support": true
+}'::jsonb, 5, true),
 ('enterprise', 'Enterprise', 'For teams with CRM integrations', NULL, NULL, NULL, '{
   "flow_limit": -1,
   "user_limit": -1,
+  "ai_notetaker": true,
+  "knowledge_base": true,
+  "transcription": true,
   "crm_integration": true,
+  "crm_providers": ["dynamics", "salesforce", "hubspot", "pipedrive", "zoho"],
   "team_sharing": true,
   "priority_support": true,
-  "crm_providers": ["dynamics", "salesforce", "hubspot", "pipedrive", "zoho"],
   "sso": true,
   "dedicated_support": true
-}'::jsonb, 4, true)
+}'::jsonb, 6, true)
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================

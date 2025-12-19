@@ -20,15 +20,20 @@ stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 supabase = get_supabase_service()
 
 # Stripe Price IDs (set via environment variables after creating in Stripe)
-# v3 pricing model (December 2025)
+# v4 pricing model (December 2025) - High-end pricing
 STRIPE_PRICES = {
-    # v3 plans
-    "pro_solo": os.getenv("STRIPE_PRICE_PRO_SOLO"),
-    "unlimited_solo": os.getenv("STRIPE_PRICE_UNLIMITED_SOLO"),
-    # Legacy aliases (for backwards compatibility)
-    "light_solo": os.getenv("STRIPE_PRICE_PRO_SOLO"),  # Renamed to pro_solo
-    "solo_monthly": os.getenv("STRIPE_PRICE_PRO_SOLO"),  # Legacy
-    "solo_yearly": os.getenv("STRIPE_PRICE_SOLO_YEARLY"),  # Legacy
+    # v4 plans - Pro (without AI Notetaker)
+    "pro_monthly": os.getenv("STRIPE_PRICE_PRO_MONTHLY"),
+    "pro_yearly": os.getenv("STRIPE_PRICE_PRO_YEARLY"),
+    # v4 plans - Pro+ (with AI Notetaker)
+    "pro_plus_monthly": os.getenv("STRIPE_PRICE_PRO_PLUS_MONTHLY"),
+    "pro_plus_yearly": os.getenv("STRIPE_PRICE_PRO_PLUS_YEARLY"),
+    # Legacy aliases (for backwards compatibility with existing subscriptions)
+    "pro_solo": os.getenv("STRIPE_PRICE_PRO_MONTHLY"),
+    "unlimited_solo": os.getenv("STRIPE_PRICE_PRO_PLUS_MONTHLY"),
+    "light_solo": os.getenv("STRIPE_PRICE_PRO_MONTHLY"),
+    "solo_monthly": os.getenv("STRIPE_PRICE_PRO_MONTHLY"),
+    "solo_yearly": os.getenv("STRIPE_PRICE_PRO_YEARLY"),
 }
 
 # Stripe Donation Link (for free users)
