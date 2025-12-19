@@ -33,7 +33,9 @@ interface MeetingHistoryItem {
 interface PreparationFormProps {
   // Pre-filled values (from Hub context)
   initialCompanyName?: string
-  initialContacts?: ProspectContact[]  // Pre-loaded contacts from Hub
+  initialProspectId?: string            // Pre-select prospect by ID
+  initialContacts?: ProspectContact[]   // Pre-loaded contacts from Hub
+  initialSelectedContactIds?: string[]  // Pre-select specific contacts
   initialDeals?: Deal[]                 // Pre-loaded deals from Hub
   calendarMeetingId?: string | null     // Link to calendar meeting
   
@@ -47,7 +49,9 @@ interface PreparationFormProps {
 
 export function PreparationForm({
   initialCompanyName = '',
+  initialProspectId,
   initialContacts = [],
+  initialSelectedContactIds = [],
   initialDeals = [],
   calendarMeetingId: initialCalendarMeetingId = null,
   onSuccess,
@@ -70,7 +74,7 @@ export function PreparationForm({
   
   // Contact persons state
   const [availableContacts, setAvailableContacts] = useState<ProspectContact[]>(initialContacts)
-  const [selectedContactIds, setSelectedContactIds] = useState<string[]>([])
+  const [selectedContactIds, setSelectedContactIds] = useState<string[]>(initialSelectedContactIds)
   const [contactsLoading, setContactsLoading] = useState(false)
   
   // Deal linking state
@@ -140,7 +144,19 @@ export function PreparationForm({
 
         // Set contacts
         if (!contactsResult.error && contactsResult.data) {
-          setAvailableContacts(contactsResult.data.contacts || [])
+          const contacts = contactsResult.data.contacts || []
+          setAvailableContacts(contacts)
+          
+          // If initialSelectedContactIds was provided, apply it now that contacts are loaded
+          if (initialSelectedContactIds.length > 0) {
+            // Only select contacts that exist in the loaded contacts
+            const validIds = initialSelectedContactIds.filter(id => 
+              contacts.some(c => c.id === id)
+            )
+            if (validIds.length > 0) {
+              setSelectedContactIds(validIds)
+            }
+          }
         } else {
           setAvailableContacts([])
         }

@@ -91,6 +91,7 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
   const researchId = proposal.context_data?.research_id as string | undefined
   const prospectId = proposal.context_data?.prospect_id as string | undefined
   const companyName = proposal.context_data?.company_name as string | undefined
+  const contactId = proposal.context_data?.contact_id as string | undefined
   
   // Determine which inline action to use
   const isAddContactsAction = flowStep === 'add_contacts'
@@ -277,6 +278,8 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
           <div className="mt-4">
             <PreparationForm
               initialCompanyName={companyName || ''}
+              initialProspectId={prospectId}
+              initialSelectedContactIds={contactId ? [contactId] : []}
               onSuccess={() => handleInlineActionComplete()}
               onCancel={() => setShowPrepSheet(false)}
               isSheet={true}
