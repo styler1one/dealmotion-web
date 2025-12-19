@@ -77,6 +77,7 @@ import {
     XCircle,
     MoreHorizontal,
     Package,
+    Lock,
 } from 'lucide-react'
 
 // Custom Google Icon (official colors)
@@ -260,4 +261,5 @@ export const Icons = {
     xCircle: XCircle,
     moreHorizontal: MoreHorizontal,
     package: Package,
+    lock: Lock,
 }
