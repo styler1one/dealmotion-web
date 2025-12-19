@@ -92,10 +92,16 @@ export function AutoRecordSettings() {
   const [preview, setPreview] = useState<PreviewResult | null>(null)
   const [showPreview, setShowPreview] = useState(false)
 
-  // Fetch settings on mount
+  // Fetch settings on mount - only if feature is available
   useEffect(() => {
-    fetchSettings()
-  }, [])
+    // Wait for billing to load, then only fetch if feature is available
+    if (!billingLoading && hasAiNotetaker) {
+      fetchSettings()
+    } else if (!billingLoading && !hasAiNotetaker) {
+      // Feature not available, stop loading
+      setLoading(false)
+    }
+  }, [billingLoading, hasAiNotetaker])
 
   // Track changes
   useEffect(() => {
