@@ -375,12 +375,8 @@ export default function PricingPage() {
               <ul className="space-y-2">
                 {features.pro.map((feature, idx) => (
                   <li key={idx} className="flex items-center gap-2 text-sm">
-                    {feature.included ? (
-                      <Check className="h-4 w-4 text-blue-500 flex-shrink-0" />
-                    ) : (
-                      <X className={`h-4 w-4 flex-shrink-0 ${feature.highlight ? 'text-slate-400' : 'text-slate-300 dark:text-slate-600'}`} />
-                    )}
-                    <span className={`${feature.included ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 dark:text-slate-600'} ${feature.highlight ? 'font-medium' : ''}`}>
+                    <Check className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                    <span className="text-slate-700 dark:text-slate-300">
                       {feature.text}
                     </span>
                   </li>
