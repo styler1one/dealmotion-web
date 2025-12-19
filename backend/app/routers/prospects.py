@@ -731,6 +731,93 @@ async def update_prospect_status(
 
 
 # =====================================================
+# Meeting Planned Action
+# =====================================================
+class MarkMeetingPlannedRequest(BaseModel):
+    prep_id: Optional[str] = None
+    contact_name: Optional[str] = None
+
+
+@router.post("/{prospect_id}/mark-meeting-planned", response_model=Dict[str, Any])
+async def mark_meeting_planned(
+    prospect_id: str,
+    request: MarkMeetingPlannedRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Mark that a meeting has been planned for this prospect.
+    
+    Actions:
+    1. Updates prospect status to 'meeting_scheduled'
+    2. Logs activity to prospect_activities timeline
+    3. Updates last_activity_at
+    """
+    try:
+        organization_id = get_organization_id(current_user)
+        user_id = current_user.get("sub")
+        
+        # Verify prospect exists and get company name
+        prospect = supabase.table("prospects").select("id, company_name").eq(
+            "id", prospect_id
+        ).eq(
+            "organization_id", organization_id
+        ).limit(1).execute()
+        
+        if not prospect.data:
+            raise HTTPException(status_code=404, detail="Prospect not found")
+        
+        company_name = prospect.data[0].get("company_name", "Unknown")
+        
+        # 1. Update prospect status to 'meeting_scheduled'
+        supabase.table("prospects").update({
+            "status": "meeting_scheduled",
+            "last_activity_at": "now()"
+        }).eq(
+            "id", prospect_id
+        ).eq(
+            "organization_id", organization_id
+        ).execute()
+        
+        # 2. Log activity to timeline
+        activity_title = f"Meeting gepland met {company_name}"
+        if request.contact_name:
+            activity_title = f"Meeting gepland met {request.contact_name} ({company_name})"
+        
+        activity_data = {
+            "prospect_id": prospect_id,
+            "organization_id": organization_id,
+            "activity_type": "meeting_planned",
+            "activity_id": request.prep_id,  # Link to prep if available
+            "title": activity_title,
+            "description": "Meeting uitnodiging verstuurd via Autopilot",
+            "icon": "calendar",
+            "created_by": user_id,
+            "metadata": {
+                "prep_id": request.prep_id,
+                "contact_name": request.contact_name,
+                "source": "autopilot_meeting_request"
+            }
+        }
+        
+        supabase.table("prospect_activities").insert(activity_data).execute()
+        
+        logger.info(f"Marked meeting planned for prospect {prospect_id}")
+        
+        return {
+            "success": True,
+            "prospect_id": prospect_id,
+            "status": "meeting_scheduled",
+            "activity_logged": True
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error marking meeting planned: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# =====================================================
 # Notes CRUD
 # =====================================================
 @router.get("/{prospect_id}/notes", response_model=List[Dict[str, Any]])

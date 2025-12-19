@@ -307,12 +307,29 @@ Met vriendelijke groet,
     window.open(url, '_blank')
   }
 
-  const handleComplete = () => {
-    toast({
-      title: t('meetingPlanned') || 'Meeting gepland!',
-      description: t('proposalCompleted') || 'Het voorstel is afgerond.',
-    })
-    onComplete()
+  const handleComplete = async () => {
+    try {
+      // Call backend to mark meeting as planned
+      // This updates prospect status and logs activity
+      await api.post(`/api/v1/prospects/${prospectId}/mark-meeting-planned`, {
+        prep_id: prepId,
+        contact_name: selectedContact?.name || null,
+      })
+      
+      toast({
+        title: t('meetingPlanned') || 'Meeting gepland!',
+        description: t('proposalCompleted') || 'Het voorstel is afgerond.',
+      })
+      onComplete()
+    } catch (error) {
+      console.error('Failed to mark meeting planned:', error)
+      // Still complete the action even if logging fails
+      toast({
+        title: t('meetingPlanned') || 'Meeting gepland!',
+        description: t('proposalCompleted') || 'Het voorstel is afgerond.',
+      })
+      onComplete()
+    }
   }
 
   // Extract prep highlights from brief_content
