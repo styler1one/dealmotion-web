@@ -77,16 +77,21 @@ export default function PricingPage() {
     return formatPrice(Math.round(yearlyCents / 12))
   }
 
+  // Calculate yearly savings
+  const getYearlySavings = (plan: 'pro' | 'proPlus') => {
+    const monthlyTotal = pricing[plan].monthly.price * 12
+    const yearlyPrice = pricing[plan].yearly.price
+    return monthlyTotal - yearlyPrice
+  }
+
   // Features for each plan - v4 structure with value-driven descriptions
   const features = {
     free: [
-      { text: t('features.v4.value.tryComplete'), included: true },
       { text: t('features.v4.value.twoFlows'), included: true },
       { text: t('features.v4.value.prospectIntel'), included: true },
-      { text: t('features.v4.value.contactAnalysis'), included: true },
       { text: t('features.v4.value.meetingPrep'), included: true },
       { text: t('features.v4.value.followupAnalysis'), included: true },
-      { text: t('features.v4.aiNotetaker'), included: false, highlight: true },
+      { text: t('pricing.noCardRequired'), included: true },
     ],
     pro: [
       { text: t('features.v4.value.unlimited'), included: true },
@@ -257,11 +262,24 @@ export default function PricingPage() {
               <span className="font-bold">{t('pricing.launchOffer')}</span>
             </div>
             <p className="text-sm text-white/90">{t('pricing.launchOfferDescription')}</p>
+            <p className="text-xs text-white/70 mt-1 font-medium">{t('pricing.launchEnds')}</p>
           </div>
           {/* Subtle money-back guarantee */}
           <div className="flex items-center justify-center gap-2 mt-3 text-sm text-slate-600 dark:text-slate-400">
             <span className="text-green-600">✓</span>
             <span>{t('pricing.moneyBackInline')}</span>
+          </div>
+        </div>
+
+        {/* Testimonial - Social Proof */}
+        <div className="max-w-2xl mx-auto mb-8">
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 text-center">
+            <p className="text-slate-700 dark:text-slate-300 italic mb-2">
+              "{t('pricing.testimonial.quote')}"
+            </p>
+            <p className="text-sm text-slate-500">
+              — {t('pricing.testimonial.author')}, {t('pricing.testimonial.company')}
+            </p>
           </div>
         </div>
 
@@ -382,9 +400,14 @@ export default function PricingPage() {
                   <span className="text-slate-500 text-sm">/{t('pricing.perMonth')}</span>
                 </div>
                 {isYearly && (
-                  <p className="text-xs text-slate-500 mt-1">
-                    {t('pricing.billedYearly', { amount: formatPrice(pricing.pro.yearly.price) })}
-                  </p>
+                  <div className="mt-1">
+                    <p className="text-xs text-slate-500">
+                      {t('pricing.billedYearly', { amount: formatPrice(pricing.pro.yearly.price) })}
+                    </p>
+                    <p className="text-xs text-green-600 font-medium">
+                      {t('pricing.saveAmount', { amount: formatPrice(getYearlySavings('pro')) })}
+                    </p>
+                  </div>
                 )}
               </div>
             </CardHeader>
@@ -458,9 +481,14 @@ export default function PricingPage() {
                   <span className="text-slate-500 text-sm">/{t('pricing.perMonth')}</span>
                 </div>
                 {isYearly && (
-                  <p className="text-xs text-slate-500 mt-1">
-                    {t('pricing.billedYearly', { amount: formatPrice(pricing.proPlus.yearly.price) })}
-                  </p>
+                  <div className="mt-1">
+                    <p className="text-xs text-slate-500">
+                      {t('pricing.billedYearly', { amount: formatPrice(pricing.proPlus.yearly.price) })}
+                    </p>
+                    <p className="text-xs text-green-600 font-medium">
+                      {t('pricing.saveAmount', { amount: formatPrice(getYearlySavings('proPlus')) })}
+                    </p>
+                  </div>
                 )}
               </div>
             </CardHeader>

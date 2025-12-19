@@ -1536,10 +1536,10 @@
     "pricing": {
       "title": "Choose the plan that fits you",
       "titleV2": "Simple pricing for every sales pro",
-      "titleV4": "Professional pricing for serious sales",
+      "titleV4": "Close more deals, prepare less",
       "subtitle": "Start free and upgrade when you're ready. 14 days free trial, no credit card required.",
       "subtitleV2": "Start free with 2 flows. Upgrade when you need more.",
-      "subtitleV4": "Start free, upgrade when you're ready for unlimited power.",
+      "subtitleV4": "AI that researches, prepares, and follows up — so you can focus on selling",
       "flowExplanation": "1 Flow = 1 Research + 1 Prep + 1 Follow-up",
       "monthly": "Monthly",
       "yearly": "Yearly",
@@ -1554,12 +1554,13 @@
       "launchOfferDescription": "Special launch pricing - lock in these rates forever!",
       "currentPlan": "Current plan",
       "select": "Select",
-      "startFree": "Start Free",
+      "startFree": "Try 2 Free Flows",
       "startTrial": "Start 14-day trial",
-      "getStarted": "Get Started",
-      "upgrade": "Upgrade",
+      "getStarted": "Start Free",
+      "upgrade": "Unlock Unlimited",
       "goUnlimited": "Go Unlimited",
-      "goProPlus": "Go Pro+",
+      "goProPlus": "Get Complete Package",
+      "tryFirstResearch": "Try Your First Research",
       "contactUs": "Contact us",
       "contactSales": "Contact Sales",
       "alreadyFree": "You are already on the free plan.",
@@ -1572,7 +1573,15 @@
       "trustBadges": "🔒 Secure payment via Stripe • 💳 All major cards accepted • ❌ Cancel anytime",
       "moneyBackTitle": "30-Day Money-Back Guarantee",
       "moneyBackDescription": "Not satisfied? No problem. Contact us within 30 days and we'll refund your payment in full. No questions asked.",
-      "moneyBackInline": "30-day money-back guarantee • No questions asked",
+      "moneyBackInline": "30-day money-back guarantee • Cancel anytime • No questions asked",
+      "launchEnds": "Launch pricing ends January 31st",
+      "saveAmount": "Save {amount}/year",
+      "noCardRequired": "No credit card required",
+      "testimonial": {
+        "quote": "DealMotion saves me 2+ hours per prospect. The AI knows exactly what I need.",
+        "author": "Sales Professional",
+        "company": "Beta User"
+      },
       "value": {
         "research": {
           "title": "Prospect Intelligence",
@@ -1666,19 +1675,19 @@
       "v4": {
         "free": {
           "name": "Free",
-          "description": "Test & experience DealMotion"
+          "description": "See the magic in 2 complete sales cycles"
         },
         "pro": {
           "name": "Pro",
-          "description": "Everything for the modern sales pro"
+          "description": "Stop wasting hours on research & prep"
         },
         "proPlus": {
           "name": "Pro+",
-          "description": "Complete package with AI Notetaker"
+          "description": "Never take notes again — AI does it for you"
         },
         "enterprise": {
           "name": "Enterprise",
-          "description": "For teams with CRM integrations"
+          "description": "Your entire team, synced with your CRM"
         }
       }
     },
