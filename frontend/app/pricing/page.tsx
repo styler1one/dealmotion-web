@@ -390,10 +390,10 @@ export default function PricingPage() {
               >
                 {loading === getActualPlanId('pro') ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : !isLoggedIn ? (
-                  t('pricing.getStarted')
                 ) : isCurrentPlan('pro') ? (
                   t('pricing.currentPlan')
+                ) : !isLoggedIn ? (
+                  t('pricing.choosePro')
                 ) : (
                   t('pricing.upgrade')
                 )}
@@ -480,17 +480,12 @@ export default function PricingPage() {
               >
                 {loading === getActualPlanId('pro_plus') ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : !isLoggedIn ? (
-                  <>
-                    <Infinity className="h-4 w-4 mr-2" />
-                    {t('pricing.getStarted')}
-                  </>
                 ) : isCurrentPlan('pro_plus') ? (
                   t('pricing.currentPlan')
                 ) : (
                   <>
                     <Infinity className="h-4 w-4 mr-2" />
-                    {t('pricing.goProPlus')}
+                    {!isLoggedIn ? t('pricing.chooseProPlus') : t('pricing.goProPlus')}
                   </>
                 )}
               </Button>
