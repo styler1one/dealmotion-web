@@ -1523,24 +1523,33 @@
     "pricing": {
       "title": "Kies het plan dat bij je past",
       "titleV2": "Simpele prijzen voor elke sales pro",
+      "titleV4": "Sluit meer deals, bereid minder voor",
       "subtitle": "Start gratis en upgrade wanneer je klaar bent. 14 dagen gratis proberen, geen creditcard nodig.",
       "subtitleV2": "Start gratis met 2 flows. Upgrade wanneer je meer nodig hebt.",
+      "subtitleV4": "AI die onderzoekt, voorbereidt en opvolgt — zodat jij kunt focussen op verkopen",
       "flowExplanation": "1 Flow = 1 Research + 1 Prep + 1 Follow-up",
       "monthly": "Maandelijks",
       "yearly": "Jaarlijks",
+      "perMonth": "maand",
+      "forever": "altijd",
       "save": "Bespaar {percent}%",
+      "billedYearly": "Jaarlijks gefactureerd: {amount}",
       "backToDashboard": "Terug naar dashboard",
-      "popular": "Populair",
+      "popular": "Populairste keuze",
       "earlyAdopter": "Early Adopter",
+      "launchOffer": "Lanceringsaanbieding",
+      "launchOfferDescription": "Speciale lanceringsprijs — voor altijd geldig!",
       "currentPlan": "Huidig plan",
       "select": "Selecteer",
-      "startFree": "Start Gratis",
+      "startFree": "Probeer 2 gratis flows",
       "startTrial": "Start 14 dagen trial",
-      "getStarted": "Aan de slag",
-      "upgrade": "Upgraden",
+      "getStarted": "Gratis starten",
+      "upgrade": "Ontgrendel onbeperkt",
       "goUnlimited": "Ga Unlimited",
+      "goProPlus": "Neem het complete pakket",
+      "tryFirstResearch": "Doe je eerste research",
       "contactUs": "Neem contact op",
-      "contactSales": "Contact Sales",
+      "contactSales": "Neem contact op",
       "alreadyFree": "Je hebt al het gratis plan.",
       "donate": "Steun ons ❤️",
       "perYear": "per jaar",
@@ -1548,7 +1557,37 @@
       "custom": "Op maat",
       "compareFeatures": "Vergelijk features",
       "feature": "Feature",
-      "trustBadges": "🔒 Veilig betalen via Stripe • 💳 iDEAL, creditcard, Bancontact • ❌ Opzeggen wanneer je wilt",
+      "trustBadges": "🔒 Veilig betalen via Stripe • 💳 iDEAL, creditcard, Bancontact • ❌ Altijd opzegbaar",
+      "moneyBackTitle": "30 dagen niet-goed-geld-terug",
+      "moneyBackDescription": "Niet tevreden? Geen probleem. Neem binnen 30 dagen contact op en je krijgt je geld volledig terug. Geen vragen.",
+      "moneyBackInline": "30 dagen geld terug • Altijd opzegbaar • Geen gedoe",
+      "launchEnds": "Lanceringsaanbieding eindigt 31 januari",
+      "saveAmount": "Bespaar {amount}/jaar",
+      "noCardRequired": "Geen creditcard nodig",
+      "testimonial": {
+        "quote": "DealMotion bespaart me 4+ uur per prospect. De AI weet precies wat ik nodig heb.",
+        "author": "Sales Professional",
+        "company": "Beta Gebruiker"
+      },
+      "value": {
+        "research": {
+          "title": "Prospect Onderzoek",
+          "description": "Compleet bedrijfs- en contactonderzoek in minuten"
+        },
+        "prep": {
+          "title": "Slimme Voorbereiding",
+          "description": "Gepersonaliseerde gespreksstrategie op basis van jouw stijl"
+        },
+        "meeting": {
+          "title": "Gesprek Analyse",
+          "description": "AI registreert alles zodat jij kunt focussen op verkopen"
+        },
+        "followup": {
+          "title": "Directe Opvolging",
+          "description": "Professionele gespreksverslagen, e-mails en actiepunten"
+        },
+        "personalized": "Allemaal aangedreven door AI die jouw bedrijf, producten en verkoopstijl kent"
+      },
       "whatIsFlow": "Wat is een Flow?",
       "flowStep1": "Research",
       "flowStep2": "Voorbereiding",
@@ -1600,6 +1639,24 @@
         "enterprise": {
           "name": "Enterprise",
           "description": "Voor teams met CRM behoeften"
+        }
+      },
+      "v4": {
+        "free": {
+          "name": "Gratis",
+          "description": "Ervaar de magie in 2 complete salescycli"
+        },
+        "pro": {
+          "name": "Pro",
+          "description": "Stop met urenlang voorbereiden"
+        },
+        "proPlus": {
+          "name": "Pro+",
+          "description": "Nooit meer noteren — AI doet het voor je"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "description": "Je hele team, gekoppeld aan je CRM"
         }
       }
     },
@@ -1673,6 +1730,47 @@
         "crmZoho": "Zoho CRM",
         "sso": "SSO/SAML",
         "flowPacks": "Koop extra flow packs"
+      },
+      "v4": {
+        "testExperience": "Ervaar het complete platform",
+        "limitedFlows": "2 flows om te starten",
+        "unlimitedFlows": "Onbeperkt flows",
+        "kb": "Knowledge Base",
+        "transcription": "Gesprekstranscriptie",
+        "contacts": "Contactpersoon analyse",
+        "pdf": "PDF & DOCX exports",
+        "prioritySupport": "Prioriteit support",
+        "aiNotetaker": "AI Notetaker",
+        "aiNotetakerIncluded": "AI Notetaker inbegrepen",
+        "aiNotetakerDescription": "AI sluit aan bij je meetings om op te nemen, transcriberen en samen te vatten",
+        "aiNotetakerTitle": "AI Notetaker — alleen in Pro+",
+        "aiNotetakerLongDescription": "Laat onze AI automatisch je meetings opnemen, transcriberen en slimme samenvattingen maken. Mis nooit meer een belangrijk detail.",
+        "notetakerFeature1": "Auto-join meetings",
+        "notetakerFeature2": "Slimme samenvattingen",
+        "notetakerFeature3": "Actiepunten",
+        "crm": "CRM integratie",
+        "everythingProPlus": "Alles in Pro+",
+        "unlimitedUsers": "Onbeperkt teamleden",
+        "crmDynamics": "Microsoft Dynamics 365",
+        "crmSalesforce": "Salesforce CRM",
+        "crmHubspot": "HubSpot CRM",
+        "sso": "SSO / SAML",
+        "dedicatedSupport": "Dedicated account manager",
+        "value": {
+          "tryComplete": "Ervaar de complete workflow",
+          "twoFlows": "2 complete salescycli inbegrepen",
+          "unlimited": "Onbeperkt prospects en meetings",
+          "prospectIntel": "360° prospect onderzoek en inzichten",
+          "contactAnalysis": "Diepgaande analyse van beslissers",
+          "meetingPrep": "Gepersonaliseerde gespreksvoorbereiding",
+          "followupAnalysis": "AI-gestuurde gesprek analyse",
+          "meetingReport": "Professioneel gespreksverslag om te delen met klanten",
+          "dealAnalysis": "Commerciële deal analyse met winnende strategie",
+          "emailsDealNotes": "Follow-up e-mails en CRM-ready deal notities",
+          "salesCoach": "Luna — Jouw AI sales coach",
+          "crmSync": "Sync met je CRM",
+          "teamSharing": "Deel inzichten met je team"
+        }
       },
       "free": {
         "research": "3 research briefs per maand",
