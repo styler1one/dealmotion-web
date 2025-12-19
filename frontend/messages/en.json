@@ -1548,6 +1548,7 @@
       "save": "Save {percent}%",
       "billedYearly": "Billed as {amount}/year",
       "backToDashboard": "Back to dashboard",
+      "backToHome": "Back",
       "popular": "Most Popular",
       "earlyAdopter": "Early Adopter",
       "launchOffer": "Launch Offer",

@@ -207,9 +207,12 @@ export default function PricingPage() {
       <div className="border-b bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/dashboard" className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+            <Link 
+              href={isLoggedIn ? "/dashboard" : "/"} 
+              className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+            >
               <ArrowLeft className="h-4 w-4" />
-              {t('pricing.backToDashboard')}
+              {isLoggedIn ? t('pricing.backToDashboard') : t('pricing.backToHome')}
             </Link>
             <Link href="/">
               <Logo />
