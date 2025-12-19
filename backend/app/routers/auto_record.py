@@ -1,19 +1,24 @@
 """
 Auto-Record Settings Router - API endpoints for AI Notetaker auto-recording
 SPEC-043: Calendar Integration with Auto-Record
+
+Requires: Pro+ subscription (ai_notetaker feature)
 """
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional, List, Tuple
 import logging
 
-from app.deps import get_user_org
+from app.deps import get_user_org, require_feature
 from app.database import get_supabase_service
 
 supabase = get_supabase_service()
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/auto-record", tags=["auto-record"])
+
+# Feature check dependency for AI Notetaker (auto-record is part of it)
+require_ai_notetaker = require_feature("ai_notetaker")
 
 
 # =============================================================================
@@ -85,11 +90,14 @@ DEFAULT_EXCLUDE_KEYWORDS = [
 
 @router.get("/settings", response_model=AutoRecordSettingsResponse)
 async def get_settings(
-    user_org: Tuple[str, str] = Depends(get_user_org)
+    user_org: Tuple[str, str] = Depends(get_user_org),
+    _feature_check: None = Depends(require_ai_notetaker)
 ):
     """
     Get auto-record settings for the current user.
     Returns defaults if no settings exist yet.
+    
+    Requires: Pro+ subscription (ai_notetaker feature)
     """
     user_id, organization_id = user_org
     
@@ -132,11 +140,14 @@ async def get_settings(
 @router.put("/settings", response_model=AutoRecordSettingsResponse)
 async def update_settings(
     request: UpdateAutoRecordRequest,
-    user_org: Tuple[str, str] = Depends(get_user_org)
+    user_org: Tuple[str, str] = Depends(get_user_org),
+    _feature_check: None = Depends(require_ai_notetaker)
 ):
     """
     Update auto-record settings for the current user.
     Creates settings if they don't exist (upsert).
+    
+    Requires: Pro+ subscription (ai_notetaker feature)
     """
     user_id, organization_id = user_org
     
@@ -219,10 +230,13 @@ async def update_settings(
 
 @router.post("/settings/reset-keywords")
 async def reset_keywords(
-    user_org: Tuple[str, str] = Depends(get_user_org)
+    user_org: Tuple[str, str] = Depends(get_user_org),
+    _feature_check: None = Depends(require_ai_notetaker)
 ):
     """
     Reset keywords to defaults.
+    
+    Requires: Pro+ subscription (ai_notetaker feature)
     """
     user_id, organization_id = user_org
     
@@ -259,11 +273,14 @@ async def reset_keywords(
 
 @router.get("/preview")
 async def preview_auto_record(
-    user_org: Tuple[str, str] = Depends(get_user_org)
+    user_org: Tuple[str, str] = Depends(get_user_org),
+    _feature_check: None = Depends(require_ai_notetaker)
 ):
     """
     Preview which upcoming meetings would be auto-recorded based on current settings.
     Useful for users to test their keyword configuration.
+    
+    Requires: Pro+ subscription (ai_notetaker feature)
     """
     user_id, organization_id = user_org
     
@@ -334,11 +351,14 @@ async def preview_auto_record(
 
 @router.post("/trigger")
 async def trigger_auto_record(
-    user_org: Tuple[str, str] = Depends(get_user_org)
+    user_org: Tuple[str, str] = Depends(get_user_org),
+    _feature_check: None = Depends(require_ai_notetaker)
 ):
     """
     Manually trigger auto-record processing for the current user.
     Useful for testing and debugging.
+    
+    Requires: Pro+ subscription (ai_notetaker feature)
     """
     user_id, organization_id = user_org
     
@@ -359,11 +379,14 @@ async def trigger_auto_record(
 
 @router.get("/debug/meetings")
 async def debug_meetings(
-    user_org: Tuple[str, str] = Depends(get_user_org)
+    user_org: Tuple[str, str] = Depends(get_user_org),
+    _feature_check: None = Depends(require_ai_notetaker)
 ):
     """
     Debug endpoint: Show all upcoming calendar meetings with their auto-record eligibility.
     Shows why meetings might not be eligible for auto-recording.
+    
+    Requires: Pro+ subscription (ai_notetaker feature)
     """
     user_id, organization_id = user_org
     

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
@@ -17,12 +18,15 @@ import {
   Check,
   AlertCircle,
   Users,
-  Clock
+  Clock,
+  Lock,
+  Zap
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useToast } from '@/components/ui/use-toast'
 import { api } from '@/lib/api'
 import { logger } from '@/lib/logger'
+import { useBilling } from '@/lib/billing-context'
 
 interface AutoRecordSettings {
   id?: string
@@ -56,8 +60,13 @@ interface PreviewResult {
 
 export function AutoRecordSettings() {
   const t = useTranslations('settings.autoRecord')
+  const tAiNotetaker = useTranslations('aiNotetaker')
   const tCommon = useTranslations('common')
   const { toast } = useToast()
+  const { isFeatureAvailable, loading: billingLoading } = useBilling()
+
+  // Check if AI Notetaker feature is available (Pro+ only)
+  const hasAiNotetaker = isFeatureAvailable('ai_notetaker')
 
   const [settings, setSettings] = useState<AutoRecordSettings>({
     enabled: false,
@@ -225,13 +234,50 @@ export function AutoRecordSettings() {
     }
   }
 
-  if (loading) {
+  if (loading || billingLoading) {
     return (
       <Card>
         <CardContent className="py-8">
           <div className="flex items-center justify-center gap-2">
             <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
             <span className="text-sm text-slate-500">{tCommon('loading')}</span>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Show upgrade prompt if AI Notetaker feature is not available (Pro+ only)
+  if (!hasAiNotetaker) {
+    return (
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Mic className="h-5 w-5 text-orange-500" />
+            <CardTitle>{t('title')}</CardTitle>
+          </div>
+          <CardDescription>
+            {t('description')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col items-center justify-center py-8 text-center bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 rounded-lg border border-orange-200 dark:border-orange-800/50">
+            <Lock className="h-10 w-10 text-orange-400 mb-3" />
+            <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-2">
+              {tAiNotetaker('proPlus.title')}
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 max-w-sm px-4">
+              {tAiNotetaker('proPlus.description')}
+            </p>
+            <Link href="/pricing">
+              <Button className="bg-orange-600 hover:bg-orange-700 gap-2">
+                <Zap className="h-4 w-4" />
+                {tAiNotetaker('proPlus.upgrade')}
+              </Button>
+            </Link>
+            <p className="text-xs text-slate-400 mt-3">
+              {tAiNotetaker('proPlus.alternative')}
+            </p>
           </div>
         </CardContent>
       </Card>
