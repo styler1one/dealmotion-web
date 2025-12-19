@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import Link from 'next/link'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,6 +15,7 @@ import { Icons } from '@/components/icons'
 import { useToast } from '@/components/ui/use-toast'
 import { api } from '@/lib/api'
 import { logger } from '@/lib/logger'
+import { useBilling } from '@/lib/billing-context'
 import { 
   ScheduleRecordingRequest, 
   ScheduleRecordingResponse,
@@ -49,6 +51,10 @@ export function AINotetakerSheet({
   const tCommon = useTranslations('common')
   const { toast } = useToast()
   const supabase = createClientComponentClient()
+  const { isFeatureAvailable, loading: billingLoading } = useBilling()
+
+  // Check if AI Notetaker feature is available (Pro+ only)
+  const hasAiNotetaker = isFeatureAvailable('ai_notetaker')
 
   // Form state
   const [meetingUrl, setMeetingUrl] = useState('')
@@ -266,6 +272,35 @@ export function AINotetakerSheet({
           </SheetDescription>
         </SheetHeader>
 
+        {/* Show upgrade prompt if AI Notetaker feature is not available */}
+        {!billingLoading && !hasAiNotetaker ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mb-4">
+              <Icons.lock className="h-8 w-8 text-orange-500" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+              {t('proPlus.title')}
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-sm">
+              {t('proPlus.description')}
+            </p>
+            <div className="space-y-3">
+              <Link href="/pricing">
+                <Button className="bg-orange-600 hover:bg-orange-700">
+                  <Icons.zap className="h-4 w-4 mr-2" />
+                  {t('proPlus.upgrade')}
+                </Button>
+              </Link>
+              <p className="text-xs text-slate-400">
+                {t('proPlus.alternative')}
+              </p>
+            </div>
+          </div>
+        ) : billingLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Icons.spinner className="h-8 w-8 animate-spin text-slate-400" />
+          </div>
+        ) : (
         <div className="space-y-6">
           {/* Meeting URL */}
           <div className="space-y-2">
@@ -513,6 +548,7 @@ export function AINotetakerSheet({
             </div>
           </div>
         </div>
+        )}
       </SheetContent>
     </Sheet>
   )

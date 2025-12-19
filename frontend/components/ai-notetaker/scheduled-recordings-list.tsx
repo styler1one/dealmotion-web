@@ -3,11 +3,13 @@
 import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Icons } from '@/components/icons'
 import { useToast } from '@/components/ui/use-toast'
 import { api } from '@/lib/api'
 import { logger } from '@/lib/logger'
+import { useBilling } from '@/lib/billing-context'
 import { 
   ScheduledRecording, 
   ScheduledRecordingsResponse,
@@ -41,6 +43,7 @@ export function ScheduledRecordingsList({
   const tCommon = useTranslations('common')
   const router = useRouter()
   const { toast } = useToast()
+  const { isFeatureAvailable, loading: billingLoading } = useBilling()
 
   const [recordings, setRecordings] = useState<ScheduledRecording[]>([])
   const [loading, setLoading] = useState(true)
@@ -48,8 +51,16 @@ export function ScheduledRecordingsList({
   const [recordingToCancel, setRecordingToCancel] = useState<ScheduledRecording | null>(null)
   const [cancelling, setCancelling] = useState(false)
 
-  // Fetch scheduled recordings
+  // Check if AI Notetaker feature is available (Pro+ only)
+  const hasAiNotetaker = isFeatureAvailable('ai_notetaker')
+
+  // Fetch scheduled recordings (only if feature is available)
   const fetchRecordings = async () => {
+    if (!hasAiNotetaker) {
+      setLoading(false)
+      return
+    }
+    
     try {
       const { data } = await api.get<ScheduledRecordingsResponse>('/api/v1/ai-notetaker/scheduled')
       if (data?.recordings) {
@@ -62,10 +73,12 @@ export function ScheduledRecordingsList({
     }
   }
 
-  // Fetch on mount and when refreshTrigger changes
+  // Fetch on mount and when refreshTrigger changes (only if feature available)
   useEffect(() => {
-    fetchRecordings()
-  }, [refreshTrigger])
+    if (!billingLoading) {
+      fetchRecordings()
+    }
+  }, [refreshTrigger, hasAiNotetaker, billingLoading])
   
   // Auto-refresh for active recordings
   useEffect(() => {
@@ -135,10 +148,41 @@ export function ScheduledRecordingsList({
     return <Icon className={`h-3 w-3 ${info.animate ? 'animate-spin' : ''}`} />
   }
 
-  if (loading) {
+  if (loading || billingLoading) {
     return (
       <div className="p-4 text-center">
         <Icons.spinner className="h-5 w-5 animate-spin mx-auto text-slate-400" />
+      </div>
+    )
+  }
+
+  // Show upgrade prompt if AI Notetaker feature is not available
+  if (!hasAiNotetaker) {
+    return (
+      <div className="space-y-3">
+        <h3 className="font-medium text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
+          <Icons.calendar className="h-4 w-4" />
+          {t('scheduled.title')}
+        </h3>
+        <div className="text-center py-4 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 rounded-lg border border-orange-200 dark:border-orange-800/50">
+          <Icons.lock className="h-8 w-8 text-orange-400 mx-auto mb-2" />
+          <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+            {t('proPlus.title')}
+          </p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 px-2">
+            {t('proPlus.description')}
+          </p>
+          <Link href="/pricing">
+            <Button
+              variant="default"
+              size="sm"
+              className="text-xs bg-orange-600 hover:bg-orange-700"
+            >
+              <Icons.zap className="h-3 w-3 mr-1" />
+              {t('proPlus.upgrade')}
+            </Button>
+          </Link>
+        </div>
       </div>
     )
   }

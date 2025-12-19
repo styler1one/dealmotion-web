@@ -2633,6 +2633,12 @@
       "complete": "Voltooid",
       "error": "Fout",
       "cancelled": "Geannuleerd"
+    },
+    "proPlus": {
+      "title": "AI Notetaker alleen in Pro+",
+      "description": "Upgrade naar Pro+ om AI automatisch je meetings te laten opnemen en analyseren. Mis nooit meer een belangrijk detail.",
+      "upgrade": "Upgrade naar Pro+",
+      "alternative": "Pro gebruikers kunnen opnames handmatig uploaden"
     }
   }
 }

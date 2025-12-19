@@ -2647,6 +2647,12 @@
       "complete": "Complete",
       "error": "Error",
       "cancelled": "Cancelled"
+    },
+    "proPlus": {
+      "title": "AI Notetaker is Pro+ Only",
+      "description": "Upgrade to Pro+ to let AI automatically join, record, and analyze your meetings. Never miss an important detail again.",
+      "upgrade": "Upgrade to Pro+",
+      "alternative": "Pro users can upload recordings manually"
     }
   }
 }

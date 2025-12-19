@@ -270,3 +270,86 @@ async def get_optional_admin(
         )
     except Exception:
         return None
+
+
+# ============================================================
+# Feature Access Dependencies
+# ============================================================
+
+async def get_subscription_features(org_id: str) -> dict:
+    """
+    Get subscription features for an organization.
+    
+    Returns:
+        Dict with feature flags (e.g., {"ai_notetaker": true, "crm_integration": false})
+    """
+    supabase = _get_supabase()
+    
+    # Get subscription with plan features
+    result = supabase.table("organization_subscriptions").select(
+        "plan_id, subscription_plans(features)"
+    ).eq("organization_id", org_id).maybe_single().execute()
+    
+    if not result.data:
+        # No subscription = free plan defaults
+        return {
+            "flow_limit": 2,
+            "ai_notetaker": False,
+            "crm_integration": False,
+            "team_sharing": False,
+            "priority_support": False
+        }
+    
+    plan_data = result.data.get("subscription_plans", {})
+    return plan_data.get("features", {}) if plan_data else {}
+
+
+def require_feature(feature_name: str):
+    """
+    Dependency factory that requires a specific subscription feature.
+    
+    Usage:
+        @router.post("/schedule")
+        async def schedule_recording(
+            user_org: tuple = Depends(get_user_org),
+            _: None = Depends(require_feature("ai_notetaker"))
+        ):
+            ...
+    
+    Args:
+        feature_name: The feature flag to check (e.g., "ai_notetaker", "crm_integration")
+    
+    Returns:
+        Dependency that validates org has the required feature
+        
+    Raises:
+        HTTPException 403: If organization doesn't have the feature
+    """
+    async def dependency(user_org: tuple = Depends(get_user_org)) -> None:
+        user_id, org_id = user_org
+        features = await get_subscription_features(org_id)
+        
+        if not features.get(feature_name, False):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"This feature requires an upgraded subscription. Missing: {feature_name}"
+            )
+        return None
+    return dependency
+
+
+async def check_feature(org_id: str, feature_name: str) -> bool:
+    """
+    Check if an organization has a specific feature.
+    
+    Use this in business logic where you need to check features without raising exceptions.
+    
+    Args:
+        org_id: Organization ID
+        feature_name: Feature to check
+        
+    Returns:
+        True if feature is available, False otherwise
+    """
+    features = await get_subscription_features(org_id)
+    return features.get(feature_name, False)
