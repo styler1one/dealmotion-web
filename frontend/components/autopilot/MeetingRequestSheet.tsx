@@ -21,11 +21,6 @@ import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible'
-import {
   Mail,
   Phone,
   Linkedin,
@@ -39,7 +34,7 @@ import {
   RefreshCw,
   Loader2,
 } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
+import { useToast } from '@/components/ui/use-toast'
 import { api } from '@/lib/api'
 import type { ProspectContact, MeetingPrep } from '@/types'
 
@@ -484,19 +479,21 @@ Met vriendelijke groet,
         </div>
       </div>
 
-      {/* Section 4: Prep Highlights (Collapsible) */}
+      {/* Section 4: Prep Highlights (Toggle) */}
       {prep && (
-        <Collapsible open={prepExpanded} onOpenChange={setPrepExpanded}>
-          <CollapsibleTrigger asChild>
-            <Button variant="ghost" className="w-full justify-between p-3 h-auto">
-              <span className="flex items-center gap-2 text-sm font-medium text-slate-900 dark:text-white">
-                <FileText className="w-4 h-4" />
-                {t('prepHighlights') || 'Prep highlights'}
-              </span>
-              <ChevronDown className={`w-4 h-4 transition-transform ${prepExpanded ? 'rotate-180' : ''}`} />
-            </Button>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
+        <div>
+          <Button 
+            variant="ghost" 
+            className="w-full justify-between p-3 h-auto"
+            onClick={() => setPrepExpanded(!prepExpanded)}
+          >
+            <span className="flex items-center gap-2 text-sm font-medium text-slate-900 dark:text-white">
+              <FileText className="w-4 h-4" />
+              {t('prepHighlights') || 'Prep highlights'}
+            </span>
+            <ChevronDown className={`w-4 h-4 transition-transform ${prepExpanded ? 'rotate-180' : ''}`} />
+          </Button>
+          {prepExpanded && (
             <Card className="p-4 mt-2 bg-slate-50 dark:bg-slate-800/50">
               <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
                 {getPrepHighlights().map((highlight, i) => (
@@ -516,8 +513,8 @@ Met vriendelijke groet,
                 <ExternalLink className="w-3 h-3 ml-1" />
               </Button>
             </Card>
-          </CollapsibleContent>
-        </Collapsible>
+          )}
+        </div>
       )}
 
       {/* Section 5: Complete Button */}
