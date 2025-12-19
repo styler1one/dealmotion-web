@@ -2640,6 +2640,31 @@
       "upgrade": "Upgrade naar Pro+",
       "alternative": "Pro gebruikers kunnen opnames handmatig uploaden"
     }
+  },
+  "autopilot": {
+    "meetingRequest": {
+      "contacts": "Contactpersonen",
+      "noContacts": "Geen contactpersonen gevonden. Voeg eerst een contact toe.",
+      "moreContacts": "meer contacten",
+      "emailTemplate": "Meeting uitnodiging",
+      "to": "Aan",
+      "regenerate": "Hergenereer",
+      "copyEmail": "Kopieer",
+      "openEmail": "Email",
+      "call": "Bel",
+      "copyTemplate": "Kopieer tekst",
+      "openInEmail": "Open in email",
+      "planInCalendar": "Plan in je agenda",
+      "prepHighlights": "Prep highlights",
+      "viewFullPrep": "Bekijk volledige prep",
+      "meetingPlannedButton": "Meeting gepland - Markeer als afgerond",
+      "meetingPlanned": "Meeting gepland!",
+      "proposalCompleted": "Het voorstel is afgerond.",
+      "emailCopied": "Email gekopieerd",
+      "templateCopied": "Email template gekopieerd",
+      "pasteInEmail": "Plak in je email client",
+      "cancel": "Annuleren"
+    }
   }
 }
 

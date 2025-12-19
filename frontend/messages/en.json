@@ -2654,6 +2654,31 @@
       "upgrade": "Upgrade to Pro+",
       "alternative": "Pro users can upload recordings manually"
     }
+  },
+  "autopilot": {
+    "meetingRequest": {
+      "contacts": "Contacts",
+      "noContacts": "No contacts found. Add a contact first.",
+      "moreContacts": "more contacts",
+      "emailTemplate": "Meeting invitation",
+      "to": "To",
+      "regenerate": "Regenerate",
+      "copyEmail": "Copy",
+      "openEmail": "Email",
+      "call": "Call",
+      "copyTemplate": "Copy text",
+      "openInEmail": "Open in email",
+      "planInCalendar": "Add to your calendar",
+      "prepHighlights": "Prep highlights",
+      "viewFullPrep": "View full prep",
+      "meetingPlannedButton": "Meeting planned - Mark as complete",
+      "meetingPlanned": "Meeting planned!",
+      "proposalCompleted": "The proposal has been completed.",
+      "emailCopied": "Email copied",
+      "templateCopied": "Email template copied",
+      "pasteInEmail": "Paste in your email client",
+      "cancel": "Cancel"
+    }
   }
 }
 

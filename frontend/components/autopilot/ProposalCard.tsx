@@ -29,7 +29,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Check, X, Clock, RefreshCw, Loader2, UserPlus, FileText, Mic } from 'lucide-react'
+import { Check, X, Clock, RefreshCw, Loader2, UserPlus, FileText, Mic, Calendar } from 'lucide-react'
 import type { AutopilotProposal } from '@/types/autopilot'
 import {
   PROPOSAL_STATUS_COLORS,
@@ -41,6 +41,7 @@ import { useAutopilot } from './AutopilotProvider'
 import { ContactSearchModal } from '@/components/contacts/contact-search-modal'
 import { PreparationForm } from '@/components/forms/PreparationForm'
 import { FollowupUploadForm } from '@/components/forms/FollowupUploadForm'
+import { MeetingRequestSheet } from './MeetingRequestSheet'
 
 // Simple relative time formatter (native JS, no external deps)
 function formatRelativeTime(date: Date): string {
@@ -81,6 +82,7 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
   const [showContactModal, setShowContactModal] = useState(false)
   const [showPrepSheet, setShowPrepSheet] = useState(false)
   const [showFollowupSheet, setShowFollowupSheet] = useState(false)
+  const [showMeetingSheet, setShowMeetingSheet] = useState(false)
   
   const isActionable = proposal.status === 'proposed'
   const isFailed = proposal.status === 'failed'
@@ -92,12 +94,14 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
   const prospectId = proposal.context_data?.prospect_id as string | undefined
   const companyName = proposal.context_data?.company_name as string | undefined
   const contactId = proposal.context_data?.contact_id as string | undefined
+  const prepId = proposal.context_data?.prep_id as string | undefined
   
   // Determine which inline action to use
   const isAddContactsAction = flowStep === 'add_contacts'
   const isCreatePrepAction = flowStep === 'create_prep'
   const isMeetingAnalysisAction = flowStep === 'meeting_analysis'
-  const hasInlineAction = isAddContactsAction || isCreatePrepAction || isMeetingAnalysisAction
+  const isPlanMeetingAction = flowStep === 'plan_meeting'
+  const hasInlineAction = isAddContactsAction || isCreatePrepAction || isMeetingAnalysisAction || isPlanMeetingAction
   
   const handleAccept = async () => {
     // For inline actions, open the appropriate modal/sheet
@@ -116,6 +120,11 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
       return
     }
     
+    if (isPlanMeetingAction && prospectId && prepId) {
+      setShowMeetingSheet(true)
+      return
+    }
+    
     // Default: trigger backend execution
     setIsProcessing(true)
     try {
@@ -130,6 +139,7 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
     setShowContactModal(false)
     setShowPrepSheet(false)
     setShowFollowupSheet(false)
+    setShowMeetingSheet(false)
     
     // Mark proposal as completed directly (skip Inngest execution)
     setIsProcessing(true)
@@ -151,6 +161,9 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
     }
     if (isMeetingAnalysisAction) {
       return { icon: <Mic className="w-4 h-4 mr-1" />, label: 'Upload recording' }
+    }
+    if (isPlanMeetingAction) {
+      return { icon: <Calendar className="w-4 h-4 mr-1" />, label: 'Plan meeting' }
     }
     return { icon: <Check className="w-4 h-4 mr-1" />, label: 'Ja, doe maar' }
   }
@@ -307,6 +320,32 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
               onCancel={() => setShowFollowupSheet(false)}
               isSheet={true}
             />
+          </div>
+        </SheetContent>
+      </Sheet>
+      
+      {/* Meeting Request Sheet for plan_meeting proposals */}
+      <Sheet open={showMeetingSheet} onOpenChange={setShowMeetingSheet}>
+        <SheetContent side="right" className="sm:max-w-lg overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-green-600" />
+              Meeting plannen
+            </SheetTitle>
+            <SheetDescription>
+              Plan een meeting met {companyName || 'dit bedrijf'}
+            </SheetDescription>
+          </SheetHeader>
+          <div className="mt-4">
+            {prospectId && prepId && (
+              <MeetingRequestSheet
+                prospectId={prospectId}
+                prepId={prepId}
+                companyName={companyName || 'Onbekend'}
+                onComplete={() => handleInlineActionComplete()}
+                onCancel={() => setShowMeetingSheet(false)}
+              />
+            )}
           </div>
         </SheetContent>
       </Sheet>
