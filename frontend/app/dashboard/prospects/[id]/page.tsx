@@ -45,6 +45,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '
 import { ResearchForm, PreparationForm, FollowupUploadForm } from '@/components/forms'
 import { ContactSearchModal } from '@/components/contacts'
 import { AINotetakerSheet } from '@/components/ai-notetaker/ai-notetaker-sheet'
+import { MeetingRequestSheet } from '@/components/autopilot/MeetingRequestSheet'
 import { logger } from '@/lib/logger'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -107,6 +108,7 @@ export default function ProspectHubPage() {
   const [followupSheetOpen, setFollowupSheetOpen] = useState(false)
   const [contactModalOpen, setContactModalOpen] = useState(false)
   const [aiNotetakerSheetOpen, setAiNotetakerSheetOpen] = useState(false)
+  const [meetingSheetOpen, setMeetingSheetOpen] = useState(false)
   
   // Contact detail view state
   const [selectedContact, setSelectedContact] = useState<ProspectContact | null>(null)
@@ -315,6 +317,26 @@ export default function ProspectHubPage() {
   }
   
   const { prospect, research, contacts, preparations, followups, stats, recent_activities } = hubData
+  
+  // Get most recent completed prep for "Plan Meeting" action
+  const completedPreps = preparations.filter(p => p.status === 'completed')
+  const mostRecentPrep = completedPreps.length > 0 
+    ? completedPreps.sort((a, b) => new Date(b.completed_at || b.created_at).getTime() - new Date(a.completed_at || a.created_at).getTime())[0]
+    : null
+  
+  // Handler for "Plan Meeting" button
+  const handlePlanMeeting = () => {
+    if (mostRecentPrep) {
+      setMeetingSheetOpen(true)
+    } else {
+      // No prep available, open prep sheet instead with a toast hint
+      toast({
+        title: t('hints.createPrepFirst') || 'Maak eerst een prep',
+        description: t('hints.prepNeededForMeeting') || 'Een voorbereiding is nodig om een meeting te plannen.',
+      })
+      setPrepSheetOpen(true)
+    }
+  }
   
   // Determine journey progress
   // Check if any meeting has passed (is_now or end_time < now)
@@ -691,15 +713,26 @@ export default function ProspectHubPage() {
                       <span className="text-slate-400 font-normal">({upcomingMeetings.length})</span>
                     )}
                   </CardTitle>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => router.push(`/dashboard/meetings?prospect_id=${prospectId}`)}
-                    className="text-purple-600"
-                  >
-                    {t('actions.viewAll')}
-                    <ChevronRight className="w-4 h-4 ml-1" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={handlePlanMeeting}
+                      className="text-green-600 border-green-200 hover:bg-green-50 dark:border-green-800 dark:hover:bg-green-900/20"
+                    >
+                      <Plus className="w-3.5 h-3.5 mr-1" />
+                      {t('actions.planMeeting') || 'Plan Meeting'}
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => router.push(`/dashboard/meetings?prospect_id=${prospectId}`)}
+                      className="text-purple-600"
+                    >
+                      {t('actions.viewAll')}
+                      <ChevronRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
@@ -1305,6 +1338,39 @@ export default function ProspectHubPage() {
           prefilledProspectId={prospectId}
           prefilledMeetingTitle={prospect.company_name}
         />
+        
+        {/* Plan Meeting Sheet */}
+        <Sheet open={meetingSheetOpen} onOpenChange={setMeetingSheetOpen}>
+          <SheetContent side="right" className="sm:max-w-lg overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-green-600" />
+                {t('sheets.planMeeting') || 'Meeting plannen'}
+              </SheetTitle>
+              <SheetDescription>
+                {t('sheets.planMeetingDesc') || 'Plan een meeting met'} {prospect.company_name}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="mt-4">
+              {mostRecentPrep && (
+                <MeetingRequestSheet
+                  prospectId={prospectId}
+                  prepId={mostRecentPrep.id}
+                  companyName={prospect.company_name}
+                  onComplete={() => {
+                    setMeetingSheetOpen(false)
+                    refetchHubData()
+                    toast({
+                      title: t('toast.meetingPlanned') || 'Meeting gepland!',
+                      description: t('toast.meetingPlannedDesc') || 'Vergeet niet de uitnodiging te versturen.',
+                    })
+                  }}
+                  onCancel={() => setMeetingSheetOpen(false)}
+                />
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     </DashboardLayout>
   )

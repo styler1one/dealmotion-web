@@ -1465,7 +1465,8 @@
       "viewAll": "View All",
       "viewPrep": "View Prep",
       "viewFollowup": "View Analysis",
-      "prepareNow": "Prepare Now"
+      "prepareNow": "Prepare Now",
+      "planMeeting": "Plan Meeting"
     },
     "documentStatus": {
       "pending": "Pending",
@@ -1500,13 +1501,21 @@
       "createPrep": "Create Meeting Preparation",
       "createPrepDesc": "Prepare for your meeting with {company}.",
       "uploadFollowup": "Upload Meeting Recording",
-      "uploadFollowupDesc": "Upload audio or transcript from your meeting with {company}."
+      "uploadFollowupDesc": "Upload audio or transcript from your meeting with {company}.",
+      "planMeeting": "Plan Meeting",
+      "planMeetingDesc": "Plan a meeting with"
+    },
+    "hints": {
+      "createPrepFirst": "Create a prep first",
+      "prepNeededForMeeting": "A preparation is needed to plan a meeting."
     },
     "toast": {
       "researchStarted": "Research started successfully",
       "prepStarted": "Preparation generation started",
       "followupStarted": "Follow-up processing started",
-      "contactAdded": "Contact added successfully"
+      "contactAdded": "Contact added successfully",
+      "meetingPlanned": "Meeting planned!",
+      "meetingPlannedDesc": "Don't forget to send the invitation."
     },
     "contactDetail": {
       "profileBrief": "Profile Analysis",

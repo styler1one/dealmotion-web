@@ -1452,7 +1452,8 @@
       "viewAll": "Bekijk Alles",
       "viewPrep": "Bekijk Prep",
       "viewFollowup": "Bekijk Analyse",
-      "prepareNow": "Nu Voorbereiden"
+      "prepareNow": "Nu Voorbereiden",
+      "planMeeting": "Plan Meeting"
     },
     "documentStatus": {
       "pending": "Wachtend",
@@ -1487,13 +1488,21 @@
       "createPrep": "Maak Meeting Voorbereiding",
       "createPrepDesc": "Bereid je meeting met {company} voor.",
       "uploadFollowup": "Upload Meeting Opname",
-      "uploadFollowupDesc": "Upload audio of transcript van je meeting met {company}."
+      "uploadFollowupDesc": "Upload audio of transcript van je meeting met {company}.",
+      "planMeeting": "Meeting plannen",
+      "planMeetingDesc": "Plan een meeting met"
+    },
+    "hints": {
+      "createPrepFirst": "Maak eerst een prep",
+      "prepNeededForMeeting": "Een voorbereiding is nodig om een meeting te plannen."
     },
     "toast": {
       "researchStarted": "Research succesvol gestart",
       "prepStarted": "Voorbereiding generatie gestart",
       "followupStarted": "Follow-up verwerking gestart",
-      "contactAdded": "Contact succesvol toegevoegd"
+      "contactAdded": "Contact succesvol toegevoegd",
+      "meetingPlanned": "Meeting gepland!",
+      "meetingPlannedDesc": "Vergeet niet de uitnodiging te versturen."
     },
     "contactDetail": {
       "profileBrief": "Profiel Analyse",
