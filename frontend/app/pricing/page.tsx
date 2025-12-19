@@ -229,87 +229,45 @@ export default function PricingPage() {
           </p>
         </div>
 
-        {/* Billing Toggle */}
-        <div className="flex items-center justify-center gap-4 mb-12">
-          <Label 
-            htmlFor="billing-toggle" 
-            className={`text-sm font-medium cursor-pointer ${!isYearly ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}
-          >
-            {t('pricing.monthly')}
-          </Label>
-          <Switch
-            id="billing-toggle"
-            checked={isYearly}
-            onCheckedChange={setIsYearly}
-            className="data-[state=checked]:bg-indigo-600"
-          />
-          <Label 
-            htmlFor="billing-toggle" 
-            className={`text-sm font-medium cursor-pointer flex items-center gap-2 ${isYearly ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}
-          >
-            {t('pricing.yearly')}
-            <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-              {t('pricing.save', { percent: '15' })}
-            </Badge>
-          </Label>
-        </div>
-
-        {/* Launch Banner + Money-Back Guarantee */}
-        <div className="max-w-3xl mx-auto mb-8">
-          <div className="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl p-4 text-center text-white">
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <Sparkles className="h-5 w-5" />
-              <span className="font-bold">{t('pricing.launchOffer')}</span>
-            </div>
-            <p className="text-sm text-white/90">{t('pricing.launchOfferDescription')}</p>
-            <p className="text-xs text-white/70 mt-1 font-medium">{t('pricing.launchEnds')}</p>
+        {/* Compact: Toggle + Launch Badge + Guarantee - all in one line */}
+        <div className="flex flex-col items-center gap-4 mb-8">
+          {/* Billing Toggle */}
+          <div className="flex items-center gap-4">
+            <Label 
+              htmlFor="billing-toggle" 
+              className={`text-sm font-medium cursor-pointer ${!isYearly ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}
+            >
+              {t('pricing.monthly')}
+            </Label>
+            <Switch
+              id="billing-toggle"
+              checked={isYearly}
+              onCheckedChange={setIsYearly}
+              className="data-[state=checked]:bg-indigo-600"
+            />
+            <Label 
+              htmlFor="billing-toggle" 
+              className={`text-sm font-medium cursor-pointer flex items-center gap-2 ${isYearly ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}
+            >
+              {t('pricing.yearly')}
+              <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                {t('pricing.save', { percent: '15' })}
+              </Badge>
+            </Label>
           </div>
-          {/* Subtle money-back guarantee */}
-          <div className="flex items-center justify-center gap-2 mt-3 text-sm text-slate-600 dark:text-slate-400">
-            <span className="text-green-600">✓</span>
-            <span>{t('pricing.moneyBackInline')}</span>
+          
+          {/* Compact trust indicators */}
+          <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-slate-600 dark:text-slate-400">
+            <span className="flex items-center gap-1">
+              <Sparkles className="h-4 w-4 text-indigo-500" />
+              <span className="text-indigo-600 dark:text-indigo-400 font-medium">{t('pricing.launchOffer')}</span>
+            </span>
+            <span className="text-slate-300 dark:text-slate-600">•</span>
+            <span className="flex items-center gap-1">
+              <span className="text-green-600">✓</span>
+              {t('pricing.moneyBackInline')}
+            </span>
           </div>
-        </div>
-
-        {/* Testimonial - Social Proof */}
-        <div className="max-w-2xl mx-auto mb-8">
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 text-center">
-            <p className="text-slate-700 dark:text-slate-300 italic mb-2">
-              "{t('pricing.testimonial.quote')}"
-            </p>
-            <p className="text-sm text-slate-500">
-              — {t('pricing.testimonial.author')}, {t('pricing.testimonial.company')}
-            </p>
-          </div>
-        </div>
-
-        {/* Value Proposition - What You Actually Get */}
-        <div className="max-w-4xl mx-auto mb-12">
-          <div className="grid md:grid-cols-4 gap-4 text-center">
-            <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
-              <div className="text-2xl mb-2">🔍</div>
-              <h4 className="font-semibold text-slate-900 dark:text-white text-sm mb-1">{t('pricing.value.research.title')}</h4>
-              <p className="text-xs text-slate-600 dark:text-slate-400">{t('pricing.value.research.description')}</p>
-            </div>
-            <div className="p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800">
-              <div className="text-2xl mb-2">🎯</div>
-              <h4 className="font-semibold text-slate-900 dark:text-white text-sm mb-1">{t('pricing.value.prep.title')}</h4>
-              <p className="text-xs text-slate-600 dark:text-slate-400">{t('pricing.value.prep.description')}</p>
-            </div>
-            <div className="p-4 rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800">
-              <div className="text-2xl mb-2">🎙️</div>
-              <h4 className="font-semibold text-slate-900 dark:text-white text-sm mb-1">{t('pricing.value.meeting.title')}</h4>
-              <p className="text-xs text-slate-600 dark:text-slate-400">{t('pricing.value.meeting.description')}</p>
-            </div>
-            <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800">
-              <div className="text-2xl mb-2">✨</div>
-              <h4 className="font-semibold text-slate-900 dark:text-white text-sm mb-1">{t('pricing.value.followup.title')}</h4>
-              <p className="text-xs text-slate-600 dark:text-slate-400">{t('pricing.value.followup.description')}</p>
-            </div>
-          </div>
-          <p className="text-center text-sm text-slate-500 dark:text-slate-400 mt-4">
-            {t('pricing.value.personalized')}
-          </p>
         </div>
 
         {/* Pricing Cards - 4 columns */}
@@ -576,73 +534,49 @@ export default function PricingPage() {
           </Card>
         </div>
 
-        {/* AI Notetaker Feature Highlight */}
-        <div className="mt-16 max-w-3xl mx-auto">
-          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-8 border border-indigo-200 dark:border-indigo-800">
-            <div className="flex items-start gap-4">
-              <div className="p-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white">
-                <Bot className="h-8 w-8" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                  {t('features.v4.aiNotetakerTitle')}
-                </h3>
-                <p className="text-slate-600 dark:text-slate-400 mb-4">
-                  {t('features.v4.aiNotetakerLongDescription')}
-                </p>
-                <div className="grid sm:grid-cols-3 gap-4">
-                  <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-                    <Mic className="h-4 w-4 text-indigo-500" />
-                    <span>{t('features.v4.notetakerFeature1')}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-                    <Sparkles className="h-4 w-4 text-indigo-500" />
-                    <span>{t('features.v4.notetakerFeature2')}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-                    <Zap className="h-4 w-4 text-indigo-500" />
-                    <span>{t('features.v4.notetakerFeature3')}</span>
-                  </div>
-                </div>
-              </div>
+        {/* Value Proposition - What You Actually Get */}
+        <div className="mt-16 max-w-4xl mx-auto">
+          <h3 className="text-center text-lg font-semibold text-slate-900 dark:text-white mb-6">
+            {t('pricing.value.personalized')}
+          </h3>
+          <div className="grid md:grid-cols-4 gap-4 text-center">
+            <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
+              <div className="text-2xl mb-2">🔍</div>
+              <h4 className="font-semibold text-slate-900 dark:text-white text-sm mb-1">{t('pricing.value.research.title')}</h4>
+              <p className="text-xs text-slate-600 dark:text-slate-400">{t('pricing.value.research.description')}</p>
+            </div>
+            <div className="p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800">
+              <div className="text-2xl mb-2">🎯</div>
+              <h4 className="font-semibold text-slate-900 dark:text-white text-sm mb-1">{t('pricing.value.prep.title')}</h4>
+              <p className="text-xs text-slate-600 dark:text-slate-400">{t('pricing.value.prep.description')}</p>
+            </div>
+            <div className="p-4 rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800">
+              <div className="text-2xl mb-2">🎙️</div>
+              <h4 className="font-semibold text-slate-900 dark:text-white text-sm mb-1">{t('pricing.value.meeting.title')}</h4>
+              <p className="text-xs text-slate-600 dark:text-slate-400">{t('pricing.value.meeting.description')}</p>
+            </div>
+            <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800">
+              <div className="text-2xl mb-2">✨</div>
+              <h4 className="font-semibold text-slate-900 dark:text-white text-sm mb-1">{t('pricing.value.followup.title')}</h4>
+              <p className="text-xs text-slate-600 dark:text-slate-400">{t('pricing.value.followup.description')}</p>
             </div>
           </div>
         </div>
 
-        {/* What is a Flow? */}
-        <div className="mt-16 max-w-2xl mx-auto text-center">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
-            {t('pricing.whatIsFlow')}
-          </h2>
-          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-6">
-            <div className="flex items-center justify-center gap-4 text-sm flex-wrap">
-              <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
-                <span className="font-semibold text-blue-600">1</span>
-                <span>{t('pricing.flowStep1')}</span>
-              </div>
-              <span className="text-slate-400">+</span>
-              <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
-                <span className="font-semibold text-green-600">1</span>
-                <span>{t('pricing.flowStep2')}</span>
-              </div>
-              <span className="text-slate-400">+</span>
-              <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
-                <span className="font-semibold text-purple-600">1</span>
-                <span>{t('pricing.flowStep3')}</span>
-              </div>
-              <span className="text-slate-400">=</span>
-              <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg shadow-sm font-semibold">
-                1 Flow
-              </div>
-            </div>
-            <p className="mt-4 text-sm text-slate-600 dark:text-slate-400">
-              {t('pricing.flowDescription')}
+        {/* Testimonial */}
+        <div className="mt-12 max-w-2xl mx-auto">
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 text-center">
+            <p className="text-slate-700 dark:text-slate-300 italic text-lg mb-3">
+              "{t('pricing.testimonial.quote')}"
+            </p>
+            <p className="text-sm text-slate-500">
+              — {t('pricing.testimonial.author')}, {t('pricing.testimonial.company')}
             </p>
           </div>
         </div>
 
         {/* Trust Section */}
-        <div className="mt-16 text-center">
+        <div className="mt-12 text-center">
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {t('pricing.trustBadges')}
           </p>
