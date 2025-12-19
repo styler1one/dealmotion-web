@@ -709,14 +709,20 @@ export default function SettingsPage() {
     if (subscription.is_trialing) {
       return <Badge className="bg-amber-500">Trial</Badge>
     }
-    // v2 plans
-    if (subscription.plan_id === 'light_solo') {
-      return <Badge className="bg-gradient-to-r from-blue-500 to-indigo-500">Light Solo</Badge>
+    // v4 plans
+    if (subscription.plan_id === 'pro_monthly' || subscription.plan_id === 'pro_yearly') {
+      return <Badge className="bg-gradient-to-r from-blue-500 to-indigo-500">Pro</Badge>
+    }
+    if (subscription.plan_id === 'pro_plus_monthly' || subscription.plan_id === 'pro_plus_yearly') {
+      return <Badge className="bg-gradient-to-r from-indigo-500 to-purple-500">Pro+</Badge>
+    }
+    // Legacy v2/v3 plans
+    if (subscription.plan_id === 'light_solo' || subscription.plan_id === 'pro_solo') {
+      return <Badge className="bg-gradient-to-r from-blue-500 to-indigo-500">Pro (Legacy)</Badge>
     }
     if (subscription.plan_id === 'unlimited_solo') {
-      return <Badge className="bg-gradient-to-r from-indigo-500 to-purple-500">Unlimited Solo</Badge>
+      return <Badge className="bg-gradient-to-r from-indigo-500 to-purple-500">Pro+ (Legacy)</Badge>
     }
-    // v1 legacy plans
     if (subscription.plan_id.startsWith('solo')) {
       return <Badge className="bg-gradient-to-r from-blue-500 to-indigo-500">Solo</Badge>
     }
@@ -1176,20 +1182,23 @@ export default function SettingsPage() {
                           {tBilling('upgradePlan')}
                         </h4>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          {/* Pro Solo Card */}
+                          {/* Pro Card */}
                           <div className="relative p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:border-blue-300 dark:hover:border-blue-700 transition-colors">
                             <div className="flex items-center gap-2 mb-2">
                               <Zap className="h-5 w-5 text-blue-500" />
-                              <span className="font-semibold text-slate-900 dark:text-white">Pro Solo</span>
+                              <span className="font-semibold text-slate-900 dark:text-white">Pro</span>
                             </div>
                             <div className="mb-3">
-                              <span className="text-2xl font-bold text-slate-900 dark:text-white">€9,95</span>
-                              <span className="text-sm text-slate-500">/mo</span>
+                              <div className="text-xs text-slate-400 line-through">€79,95</div>
+                              <div className="flex items-baseline gap-0.5">
+                                <span className="text-2xl font-bold text-slate-900 dark:text-white">€49,95</span>
+                                <span className="text-sm text-slate-500">/mo</span>
+                              </div>
                             </div>
-                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">5 flows per month</p>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">{tBilling('plans.v4.pro.description') || 'Unlimited flows'}</p>
                             <Button 
                               size="sm"
-                              onClick={() => handleUpgradeToPlan('pro_solo')}
+                              onClick={() => handleUpgradeToPlan('pro_monthly')}
                               disabled={billingActionLoading}
                               className="w-full gap-2"
                             >
@@ -1198,30 +1207,30 @@ export default function SettingsPage() {
                               ) : (
                                 <ArrowRight className="h-4 w-4" />
                               )}
-                              Upgrade
+                              {tBilling('pricing.choosePro') || 'Choose Pro'}
                             </Button>
                           </div>
                           
-                          {/* Unlimited Solo Card */}
+                          {/* Pro+ Card */}
                           <div className="relative p-4 rounded-lg border-2 border-purple-300 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/20 hover:border-purple-400 dark:hover:border-purple-600 transition-colors">
                             <div className="absolute -top-2 right-3">
-                              <Badge className="bg-purple-500 text-white text-xs">Popular</Badge>
+                              <Badge className="bg-purple-500 text-white text-xs">{tBilling('pricing.popular') || 'Popular'}</Badge>
                             </div>
                             <div className="flex items-center gap-2 mb-2">
-                              <Infinity className="h-5 w-5 text-purple-500" />
-                              <span className="font-semibold text-slate-900 dark:text-white">Unlimited Solo</span>
+                              <Crown className="h-5 w-5 text-purple-500" />
+                              <span className="font-semibold text-slate-900 dark:text-white">Pro+</span>
                             </div>
                             <div className="mb-3">
                               <div className="text-xs text-slate-400 line-through">€99,95</div>
                               <div className="flex items-baseline gap-0.5">
-                                <span className="text-2xl font-bold text-slate-900 dark:text-white">€49,95</span>
+                                <span className="text-2xl font-bold text-slate-900 dark:text-white">€69,95</span>
                                 <span className="text-sm text-slate-500">/mo</span>
                               </div>
                             </div>
-                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">Unlimited flows</p>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">{tBilling('plans.v4.proPlus.description') || 'Includes AI Notetaker'}</p>
                             <Button 
                               size="sm"
-                              onClick={() => handleUpgradeToPlan('unlimited_solo')}
+                              onClick={() => handleUpgradeToPlan('pro_plus_monthly')}
                               disabled={billingActionLoading}
                               className="w-full gap-2 bg-purple-600 hover:bg-purple-700"
                             >
@@ -1230,7 +1239,7 @@ export default function SettingsPage() {
                               ) : (
                                 <Sparkles className="h-4 w-4" />
                               )}
-                              Upgrade
+                              {tBilling('pricing.chooseProPlus') || 'Choose Pro+'}
                             </Button>
                           </div>
                         </div>
@@ -1240,13 +1249,13 @@ export default function SettingsPage() {
                           onClick={() => router.push('/pricing')}
                           className="gap-2 text-slate-500"
                         >
-                          Compare all features <ArrowRight className="h-3 w-3" />
+                          {tBilling('pricing.compareFeatures') || 'Compare all features'} <ArrowRight className="h-3 w-3" />
                         </Button>
                       </div>
                     )}
 
-                    {/* PRO SOLO USERS: Show upgrade to Unlimited + Manage */}
-                    {subscription?.is_paid && subscription.plan_id === 'pro_solo' && (
+                    {/* PRO USERS: Show upgrade to Pro+ + Manage */}
+                    {subscription?.is_paid && (subscription.plan_id === 'pro_monthly' || subscription.plan_id === 'pro_yearly' || subscription.plan_id === 'pro_solo' || subscription.plan_id === 'light_solo') && (
                       <div className="space-y-4">
                         <div className="flex flex-wrap gap-3">
                           <Button 
@@ -1263,23 +1272,26 @@ export default function SettingsPage() {
                             {tBilling('manageSubscription')}
                           </Button>
                           <Button 
-                            onClick={() => handleUpgradeToPlan('unlimited_solo')}
+                            onClick={() => handleUpgradeToPlan('pro_plus_monthly')}
                             disabled={billingActionLoading}
                             className="gap-2 bg-purple-600 hover:bg-purple-700"
                           >
                             {billingActionLoading ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
-                              <Infinity className="h-4 w-4" />
+                              <Crown className="h-4 w-4" />
                             )}
-                            Upgrade to Unlimited
+                            {tBilling('pricing.goProPlus') || 'Upgrade to Pro+'}
                           </Button>
                         </div>
+                        <p className="text-xs text-slate-500">
+                          Pro+ includes AI Notetaker — automatically joins & records your meetings
+                        </p>
                       </div>
                     )}
 
-                    {/* UNLIMITED USERS: Only Manage */}
-                    {subscription?.is_paid && subscription.plan_id === 'unlimited_solo' && (
+                    {/* PRO+ USERS: Only Manage */}
+                    {subscription?.is_paid && (subscription.plan_id === 'pro_plus_monthly' || subscription.plan_id === 'pro_plus_yearly' || subscription.plan_id === 'unlimited_solo') && (
                       <div className="flex items-center gap-3">
                         <Button 
                           variant="outline" 
@@ -1296,7 +1308,7 @@ export default function SettingsPage() {
                         </Button>
                         <span className="text-sm text-green-600 dark:text-green-400 flex items-center gap-1">
                           <Check className="h-4 w-4" />
-                          You have the best plan!
+                          {tBilling('pricing.bestPlan') || 'You have the complete package!'}
                         </span>
                       </div>
                     )}
