@@ -1572,6 +1572,26 @@
       "trustBadges": "🔒 Secure payment via Stripe • 💳 All major cards accepted • ❌ Cancel anytime",
       "moneyBackTitle": "30-Day Money-Back Guarantee",
       "moneyBackDescription": "Not satisfied? No problem. Contact us within 30 days and we'll refund your payment in full. No questions asked.",
+      "moneyBackInline": "30-day money-back guarantee • No questions asked",
+      "value": {
+        "research": {
+          "title": "Prospect Intelligence",
+          "description": "Complete company & contact research in minutes"
+        },
+        "prep": {
+          "title": "Smart Preparation",
+          "description": "Personalized meeting strategy based on your style"
+        },
+        "meeting": {
+          "title": "Meeting Analysis",
+          "description": "AI captures everything so you can focus on selling"
+        },
+        "followup": {
+          "title": "Instant Follow-up",
+          "description": "Emails, action items & deal notes generated for you"
+        },
+        "personalized": "All powered by AI that knows your company, your products, and your selling style"
+      },
       "whatIsFlow": "What is a Flow?",
       "flowStep1": "Research",
       "flowStep2": "Preparation",
@@ -1726,7 +1746,7 @@
         "prioritySupport": "Priority support",
         "aiNotetaker": "AI Notetaker",
         "aiNotetakerIncluded": "AI Notetaker Included",
-        "aiNotetakerDescription": "Automatic meeting recording, transcription & notes",
+        "aiNotetakerDescription": "AI joins your meetings to record, transcribe & summarize",
         "aiNotetakerTitle": "AI Notetaker - Only in Pro+",
         "aiNotetakerLongDescription": "Let our AI join your meetings to automatically record, transcribe, and create intelligent summaries. Never miss an important detail again.",
         "notetakerFeature1": "Auto-join meetings",
@@ -1739,7 +1759,20 @@
         "crmSalesforce": "Salesforce CRM",
         "crmHubspot": "HubSpot CRM",
         "sso": "SSO / SAML",
-        "dedicatedSupport": "Dedicated account manager"
+        "dedicatedSupport": "Dedicated account manager",
+        "value": {
+          "tryComplete": "Experience the full workflow",
+          "twoFlows": "2 complete sales cycles included",
+          "unlimited": "Unlimited prospects & meetings",
+          "prospectIntel": "360° prospect research & insights",
+          "contactAnalysis": "Deep analysis of decision-makers",
+          "meetingPrep": "Personalized meeting preparation",
+          "followupAnalysis": "AI-powered conversation analysis",
+          "emailsDealNotes": "Auto-generated emails & deal updates",
+          "salesCoach": "Luna - Your AI sales coach",
+          "crmSync": "Sync with your CRM",
+          "teamSharing": "Share insights across your team"
+        }
       },
       "free": {
         "research": "3 research briefs per month",

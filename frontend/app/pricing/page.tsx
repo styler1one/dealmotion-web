@@ -77,44 +77,42 @@ export default function PricingPage() {
     return formatPrice(Math.round(yearlyCents / 12))
   }
 
-  // Features for each plan - v4 structure
+  // Features for each plan - v4 structure with value-driven descriptions
   const features = {
     free: [
-      { text: t('features.v4.testExperience'), included: true },
-      { text: t('features.v4.limitedFlows'), included: true },
-      { text: t('features.v4.kb'), included: true },
-      { text: t('features.v4.transcription'), included: true },
-      { text: t('features.v4.contacts'), included: true },
-      { text: t('features.v4.pdf'), included: true },
+      { text: t('features.v4.value.tryComplete'), included: true },
+      { text: t('features.v4.value.twoFlows'), included: true },
+      { text: t('features.v4.value.prospectIntel'), included: true },
+      { text: t('features.v4.value.contactAnalysis'), included: true },
+      { text: t('features.v4.value.meetingPrep'), included: true },
+      { text: t('features.v4.value.followupAnalysis'), included: true },
       { text: t('features.v4.aiNotetaker'), included: false, highlight: true },
-      { text: t('features.v4.crm'), included: false },
     ],
     pro: [
-      { text: t('features.v4.unlimitedFlows'), included: true },
-      { text: t('features.v4.kb'), included: true },
-      { text: t('features.v4.transcription'), included: true },
-      { text: t('features.v4.contacts'), included: true },
-      { text: t('features.v4.pdf'), included: true },
-      { text: t('features.v4.prioritySupport'), included: true },
+      { text: t('features.v4.value.unlimited'), included: true },
+      { text: t('features.v4.value.prospectIntel'), included: true },
+      { text: t('features.v4.value.contactAnalysis'), included: true },
+      { text: t('features.v4.value.meetingPrep'), included: true },
+      { text: t('features.v4.value.followupAnalysis'), included: true },
+      { text: t('features.v4.value.emailsDealNotes'), included: true },
+      { text: t('features.v4.value.salesCoach'), included: true },
       { text: t('features.v4.aiNotetaker'), included: false, highlight: true },
-      { text: t('features.v4.crm'), included: false },
     ],
     proPlus: [
-      { text: t('features.v4.unlimitedFlows'), included: true },
-      { text: t('features.v4.kb'), included: true },
-      { text: t('features.v4.transcription'), included: true },
-      { text: t('features.v4.contacts'), included: true },
-      { text: t('features.v4.pdf'), included: true },
-      { text: t('features.v4.prioritySupport'), included: true },
+      { text: t('features.v4.value.unlimited'), included: true },
+      { text: t('features.v4.value.prospectIntel'), included: true },
+      { text: t('features.v4.value.contactAnalysis'), included: true },
+      { text: t('features.v4.value.meetingPrep'), included: true },
+      { text: t('features.v4.value.followupAnalysis'), included: true },
+      { text: t('features.v4.value.emailsDealNotes'), included: true },
+      { text: t('features.v4.value.salesCoach'), included: true },
       { text: t('features.v4.aiNotetaker'), included: true, highlight: true },
-      { text: t('features.v4.crm'), included: false },
     ],
     enterprise: [
       { text: t('features.v4.everythingProPlus'), included: true },
       { text: t('features.v4.unlimitedUsers'), included: true },
-      { text: t('features.v4.crmDynamics'), included: true },
-      { text: t('features.v4.crmSalesforce'), included: true },
-      { text: t('features.v4.crmHubspot'), included: true },
+      { text: t('features.v4.value.crmSync'), included: true },
+      { text: t('features.v4.value.teamSharing'), included: true },
       { text: t('features.v4.sso'), included: true },
       { text: t('features.v4.dedicatedSupport'), included: true },
     ],
@@ -247,8 +245,8 @@ export default function PricingPage() {
           </Label>
         </div>
 
-        {/* Launch Banner */}
-        <div className="max-w-2xl mx-auto mb-12">
+        {/* Launch Banner + Money-Back Guarantee */}
+        <div className="max-w-3xl mx-auto mb-8">
           <div className="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl p-4 text-center text-white">
             <div className="flex items-center justify-center gap-2 mb-1">
               <Sparkles className="h-5 w-5" />
@@ -256,6 +254,40 @@ export default function PricingPage() {
             </div>
             <p className="text-sm text-white/90">{t('pricing.launchOfferDescription')}</p>
           </div>
+          {/* Subtle money-back guarantee */}
+          <div className="flex items-center justify-center gap-2 mt-3 text-sm text-slate-600 dark:text-slate-400">
+            <span className="text-green-600">✓</span>
+            <span>{t('pricing.moneyBackInline')}</span>
+          </div>
+        </div>
+
+        {/* Value Proposition - What You Actually Get */}
+        <div className="max-w-4xl mx-auto mb-12">
+          <div className="grid md:grid-cols-4 gap-4 text-center">
+            <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
+              <div className="text-2xl mb-2">🔍</div>
+              <h4 className="font-semibold text-slate-900 dark:text-white text-sm mb-1">{t('pricing.value.research.title')}</h4>
+              <p className="text-xs text-slate-600 dark:text-slate-400">{t('pricing.value.research.description')}</p>
+            </div>
+            <div className="p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800">
+              <div className="text-2xl mb-2">🎯</div>
+              <h4 className="font-semibold text-slate-900 dark:text-white text-sm mb-1">{t('pricing.value.prep.title')}</h4>
+              <p className="text-xs text-slate-600 dark:text-slate-400">{t('pricing.value.prep.description')}</p>
+            </div>
+            <div className="p-4 rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800">
+              <div className="text-2xl mb-2">🎙️</div>
+              <h4 className="font-semibold text-slate-900 dark:text-white text-sm mb-1">{t('pricing.value.meeting.title')}</h4>
+              <p className="text-xs text-slate-600 dark:text-slate-400">{t('pricing.value.meeting.description')}</p>
+            </div>
+            <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800">
+              <div className="text-2xl mb-2">✨</div>
+              <h4 className="font-semibold text-slate-900 dark:text-white text-sm mb-1">{t('pricing.value.followup.title')}</h4>
+              <p className="text-xs text-slate-600 dark:text-slate-400">{t('pricing.value.followup.description')}</p>
+            </div>
+          </div>
+          <p className="text-center text-sm text-slate-500 dark:text-slate-400 mt-4">
+            {t('pricing.value.personalized')}
+          </p>
         </div>
 
         {/* Pricing Cards - 4 columns */}
@@ -581,23 +613,8 @@ export default function PricingPage() {
           </div>
         </div>
 
-        {/* Money-Back Guarantee */}
-        <div className="mt-16 max-w-2xl mx-auto">
-          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-6 text-center">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <span className="text-2xl">💯</span>
-              <h3 className="text-lg font-bold text-green-800 dark:text-green-300">
-                {t('pricing.moneyBackTitle')}
-              </h3>
-            </div>
-            <p className="text-green-700 dark:text-green-400 text-sm">
-              {t('pricing.moneyBackDescription')}
-            </p>
-          </div>
-        </div>
-
         {/* Trust Section */}
-        <div className="mt-8 text-center">
+        <div className="mt-16 text-center">
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {t('pricing.trustBadges')}
           </p>
