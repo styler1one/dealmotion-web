@@ -133,7 +133,7 @@ export async function exportAsDocx(
     })
   )
   
-  // Subtitle - gray text
+  // Subtitle - gray text with blue underline
   children.push(
     new Paragraph({
       children: [
@@ -143,32 +143,26 @@ export async function exportAsDocx(
           color: '64748b', // Gray
         }),
       ],
-      spacing: { after: 200 },
+      spacing: { after: 120 },
       border: {
         bottom: { style: BorderStyle.SINGLE, size: 8, color: '3b82f6' }
       }
     })
   )
   
-  // Parse content
+  // Parse content - skip empty lines entirely, use element spacing instead
   const lines = content.split('\n')
   let i = 0
-  let lastWasEmpty = false
   
   while (i < lines.length) {
     const line = lines[i]
     const trimmedLine = line.trim()
     
-    // Empty line - skip consecutive empties
+    // Skip empty lines entirely - spacing is handled by elements
     if (!trimmedLine) {
-      if (!lastWasEmpty) {
-        children.push(new Paragraph({ spacing: { after: 80 } }))
-      }
-      lastWasEmpty = true
       i++
       continue
     }
-    lastWasEmpty = false
     
     // Skip horizontal rules
     if (/^-{3,}$/.test(trimmedLine) || /^\*{3,}$/.test(trimmedLine)) {
@@ -185,17 +179,15 @@ export async function exportAsDocx(
         i++
       }
       
-      // Create Word table
+      // Create Word table - no extra paragraphs needed
       const table = createWordTable(tableLines)
       if (table) {
-        children.push(new Paragraph({ spacing: { after: 40 } })) // Minimal space before
         children.push(table)
-        children.push(new Paragraph({ spacing: { after: 80 } })) // Minimal space after
       }
       continue
     }
     
-    // H1
+    // H1 - main section headers
     if (trimmedLine.startsWith('# ') && !trimmedLine.startsWith('## ')) {
       children.push(
         new Paragraph({
@@ -208,11 +200,11 @@ export async function exportAsDocx(
             }),
           ],
           heading: HeadingLevel.HEADING_1,
-          spacing: { before: 200, after: 80 },
+          spacing: { before: 120, after: 40 },
         })
       )
     }
-    // H2
+    // H2 - subsection headers with underline
     else if (trimmedLine.startsWith('## ') && !trimmedLine.startsWith('### ')) {
       children.push(
         new Paragraph({
@@ -225,14 +217,14 @@ export async function exportAsDocx(
             }),
           ],
           heading: HeadingLevel.HEADING_2,
-          spacing: { before: 160, after: 60 },
+          spacing: { before: 100, after: 30 },
           border: {
             bottom: { style: BorderStyle.SINGLE, size: 4, color: 'e2e8f0' }
           }
         })
       )
     }
-    // H3
+    // H3 - minor headers
     else if (trimmedLine.startsWith('### ')) {
       children.push(
         new Paragraph({
@@ -245,11 +237,11 @@ export async function exportAsDocx(
             }),
           ],
           heading: HeadingLevel.HEADING_3,
-          spacing: { before: 120, after: 40 },
+          spacing: { before: 80, after: 20 },
         })
       )
     }
-    // H4
+    // H4 - smallest headers
     else if (trimmedLine.startsWith('#### ')) {
       children.push(
         new Paragraph({
@@ -261,22 +253,22 @@ export async function exportAsDocx(
               color: '64748b',
             }),
           ],
-          spacing: { before: 100, after: 40 },
+          spacing: { before: 60, after: 20 },
         })
       )
     }
-    // Bullet point
+    // Bullet point - tight spacing
     else if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ')) {
       children.push(
         new Paragraph({
           children: parseFormattedText(trimmedLine.slice(2)),
           bullet: { level: 0 },
-          spacing: { after: 20 },
+          spacing: { after: 0 }, // No spacing between list items
           indent: { left: convertInchesToTwip(0.2) },
         })
       )
     }
-    // Numbered list
+    // Numbered list - tight spacing
     else if (/^\d+\.\s/.test(trimmedLine)) {
       const num = trimmedLine.match(/^\d+/)?.[0] || '1'
       const text = trimmedLine.replace(/^\d+\.\s/, '')
@@ -286,17 +278,17 @@ export async function exportAsDocx(
             new TextRun({ text: num + '. ', bold: true, size: 22 }),
             ...parseFormattedText(text),
           ],
-          spacing: { after: 20 },
+          spacing: { after: 0 }, // No spacing between list items
           indent: { left: convertInchesToTwip(0.2) },
         })
       )
     }
-    // Regular paragraph
+    // Regular paragraph - minimal spacing
     else {
       children.push(
         new Paragraph({
           children: parseFormattedText(trimmedLine),
-          spacing: { after: 60 },
+          spacing: { after: 40 },
         })
       )
     }
@@ -304,10 +296,7 @@ export async function exportAsDocx(
     i++
   }
   
-  // Spacer before footer
-  children.push(new Paragraph({ spacing: { before: 200 } }))
-  
-  // Footer - centered, gray, italic
+  // Footer - centered, gray, italic (no spacer, just top border)
   children.push(
     new Paragraph({
       children: [
@@ -319,6 +308,7 @@ export async function exportAsDocx(
         }),
       ],
       alignment: AlignmentType.CENTER,
+      spacing: { before: 120 },
       border: {
         top: { style: BorderStyle.SINGLE, size: 4, color: 'e2e8f0' }
       }
