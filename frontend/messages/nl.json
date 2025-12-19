@@ -1538,8 +1538,8 @@
       "backToHome": "Terug",
       "popular": "Populairste keuze",
       "earlyAdopter": "Early Adopter",
-      "launchOffer": "Lanceringsaanbieding",
-      "launchOfferDescription": "Speciale lanceringsprijs — voor altijd geldig!",
+      "launchOffer": "Early Bird Korting",
+      "launchOfferDescription": "Speciale lanceringsprijs voor early adopters — voor altijd geldig!",
       "currentPlan": "Huidig plan",
       "select": "Selecteer",
       "startFree": "Probeer 2 gratis flows",
@@ -1568,7 +1568,7 @@
       "saveAmount": "Bespaar {amount}/jaar",
       "noCardRequired": "Geen creditcard nodig",
       "testimonial": {
-        "quote": "DealMotion bespaart me 4+ uur per prospect. De AI weet precies wat ik nodig heb.",
+        "quote": "DealMotion bespaart me 4+ uur per meeting. Makkelijk! De AI weet precies wat ik nodig heb.",
         "author": "Sales Professional",
         "company": "Beta Gebruiker"
       },
@@ -1647,7 +1647,7 @@
       "v4": {
         "free": {
           "name": "Gratis",
-          "description": "Ervaar de magie in 2 complete salescycli"
+          "description": "Alles inbegrepen — probeer 2 complete salescycli"
         },
         "pro": {
           "name": "Pro",
@@ -1762,7 +1762,9 @@
         "value": {
           "tryComplete": "Ervaar de complete workflow",
           "twoFlows": "2 complete salescycli inbegrepen",
-          "unlimited": "Onbeperkt prospects en meetings",
+          "unlimited": "Onbeperkt prospects en meetings*",
+          "unlimitedNote": "*Fair use policy",
+          "uploadTranscripts": "Upload je eigen opnames en transcripts",
           "prospectIntel": "360° prospect onderzoek en inzichten",
           "contactAnalysis": "Diepgaande analyse van beslissers",
           "meetingPrep": "Gepersonaliseerde gespreksvoorbereiding",

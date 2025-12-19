@@ -1551,8 +1551,8 @@
       "backToHome": "Back",
       "popular": "Most Popular",
       "earlyAdopter": "Early Adopter",
-      "launchOffer": "Launch Offer",
-      "launchOfferDescription": "Special launch pricing - lock in these rates forever!",
+      "launchOffer": "Early Bird Discount",
+      "launchOfferDescription": "Special launch pricing for early adopters - lock in these rates forever!",
       "currentPlan": "Current plan",
       "select": "Select",
       "startFree": "Try 2 Free Flows",
@@ -1581,7 +1581,7 @@
       "saveAmount": "Save {amount}/year",
       "noCardRequired": "No credit card required",
       "testimonial": {
-        "quote": "DealMotion saves me 4+ hours per prospect. The AI knows exactly what I need.",
+        "quote": "DealMotion saves me 4+ hours per meeting. Easy! The AI knows exactly what I need.",
         "author": "Sales Professional",
         "company": "Beta User"
       },
@@ -1678,7 +1678,7 @@
       "v4": {
         "free": {
           "name": "Free",
-          "description": "See the magic in 2 complete sales cycles"
+          "description": "Everything included — try 2 complete sales cycles"
         },
         "pro": {
           "name": "Pro",
@@ -1775,7 +1775,9 @@
         "value": {
           "tryComplete": "Experience the full workflow",
           "twoFlows": "2 complete sales cycles included",
-          "unlimited": "Unlimited prospects & meetings",
+          "unlimited": "Unlimited prospects & meetings*",
+          "unlimitedNote": "*Fair use policy",
+          "uploadTranscripts": "Upload your own recordings & transcripts",
           "prospectIntel": "360° prospect research & insights",
           "contactAnalysis": "Deep analysis of decision-makers",
           "meetingPrep": "Personalized meeting preparation",
