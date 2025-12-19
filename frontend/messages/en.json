@@ -1588,7 +1588,7 @@
         },
         "followup": {
           "title": "Instant Follow-up",
-          "description": "Emails, action items & deal notes generated for you"
+          "description": "Professional meeting reports, emails & action items"
         },
         "personalized": "All powered by AI that knows your company, your products, and your selling style"
       },
@@ -1768,7 +1768,8 @@
           "contactAnalysis": "Deep analysis of decision-makers",
           "meetingPrep": "Personalized meeting preparation",
           "followupAnalysis": "AI-powered conversation analysis",
-          "emailsDealNotes": "Auto-generated emails & deal updates",
+          "meetingReport": "Professional meeting report to share with clients",
+          "emailsDealNotes": "Follow-up emails & CRM-ready deal notes",
           "salesCoach": "Luna - Your AI sales coach",
           "crmSync": "Sync with your CRM",
           "teamSharing": "Share insights across your team"
