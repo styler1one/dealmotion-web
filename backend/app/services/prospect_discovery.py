@@ -334,7 +334,9 @@ class ProspectDiscoveryService:
                     error="Failed to generate search queries"
                 )
             
-            logger.info(f"[PROSPECT_DISCOVERY] Generated {len(queries)} queries")
+            print(f"[PROSPECT_DISCOVERY] 📝 GENERATED {len(queries)} QUERIES:", flush=True)
+            for i, q in enumerate(queries[:3], 1):
+                print(f"  Query {i}: {q[:100]}...", flush=True)
             
             # Step 3: Execute Exa searches
             raw_results = await self._execute_discovery_searches(
@@ -553,7 +555,7 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
         
         async def search_query(query: str) -> List[Dict[str, Any]]:
             try:
-                logger.info(f"[PROSPECT_DISCOVERY] 🔍 Calling Exa API with query: {query[:80]}...")
+                print(f"[PROSPECT_DISCOVERY] 🔍 EXA CALL: {query[:80]}...", flush=True)
                 
                 def do_search():
                     return self._exa.search_and_contents(
@@ -576,7 +578,7 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
                         "matched_query": query
                     })
                 
-                logger.info(f"[PROSPECT_DISCOVERY] ✅ Exa returned {len(results)} results for query")
+                print(f"[PROSPECT_DISCOVERY] ✅ EXA RETURNED: {len(results)} results", flush=True)
                 return results
                 
             except Exception as e:
@@ -584,7 +586,7 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
                 return []
         
         # Execute with small delay between queries (rate limiting)
-        logger.info(f"[PROSPECT_DISCOVERY] Starting Exa discovery with {len(queries)} queries")
+        print(f"[PROSPECT_DISCOVERY] 🚀 STARTING EXA with {len(queries)} queries", flush=True)
         for i, query in enumerate(queries):
             results = await search_query(query)
             all_results.extend(results)
