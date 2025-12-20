@@ -712,10 +712,9 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
         
         all_results = []
         
-        # Date filter: last 18 months
-        start_date = (datetime.now() - timedelta(days=540)).strftime("%Y-%m-%dT00:00:00.000Z")
+        # Note: When using category="company", date filters are NOT supported
+        # Recency is handled by the scoring prompt instead
         
-        # Execute searches in parallel (with rate limiting)
         loop = asyncio.get_event_loop()
         
         async def search_query(query: str) -> List[Dict[str, Any]]:
@@ -723,13 +722,13 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
                 print(f"[PROSPECT_DISCOVERY] 🔍 EXA CALL: {query[:80]}...", flush=True)
                 
                 def do_search():
+                    # Note: category="company" does NOT support date filters or exclude_domains
+                    # We rely on scoring to filter out non-prospects
                     return self._exa.search_and_contents(
                         query=query,
                         type="auto",
-                        category="company",  # Focus on company websites!
+                        category="company",  # Focus on company websites & LinkedIn
                         num_results=15,
-                        start_published_date=start_date,
-                        exclude_domains=self.EXCLUDE_DOMAINS,
                         text={"max_characters": 1500}
                     )
                 
