@@ -689,6 +689,13 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
             
             content = response.content[0].text.strip()
             
+            # Strip markdown code blocks if present
+            if content.startswith("```"):
+                lines = content.split("\n")
+                # Remove first line (```json) and last line (```)
+                lines = [l for l in lines if not l.startswith("```")]
+                content = "\n".join(lines)
+            
             # Parse JSON
             scores = json.loads(content)
             
@@ -710,6 +717,10 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
             
             return prospects
             
+        except json.JSONDecodeError as e:
+            logger.error(f"[PROSPECT_DISCOVERY] Scoring JSON parse failed: {e}")
+            logger.error(f"[PROSPECT_DISCOVERY] Raw content was: {content[:500] if content else 'EMPTY'}")
+            return prospects
         except Exception as e:
             logger.error(f"[PROSPECT_DISCOVERY] Scoring failed: {e}")
             return prospects
@@ -908,7 +919,7 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
                         "source_url": p.source_url,
                         "source_title": p.source_title,
                         "source_snippet": p.source_snippet,
-                        "source_published_date": p.source_published_date,
+                        "source_published_date": p.source_published_date if p.source_published_date else None,
                         "matched_query": p.matched_query
                     }
                     for p in result.prospects
