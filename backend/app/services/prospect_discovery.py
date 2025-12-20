@@ -104,7 +104,7 @@ QUERY_GENERATION_PROMPT = """You are a B2B sales intelligence expert specializin
 
 ## CRITICAL INSIGHT
 
-Companies actively "seeking solutions" or "implementing technology" are ALREADY in buying mode - competitors are likely already engaged. We need to find companies BEFORE they start actively searching.
+Companies actively "seeking solutions" or "buying products" are ALREADY in buying mode - competitors are likely engaged. We need to find companies BEFORE they start actively searching.
 
 Your task: Generate queries that find companies experiencing TRIGGER EVENTS that CREATE the need for what the seller offers.
 
@@ -121,56 +121,51 @@ Your task: Generate queries that find companies experiencing TRIGGER EVENTS that
 - Target Role: {target_role}
 - Pain Point/Urgency: {pain_point}
 {reference_section}
-## TRIGGER SIGNALS TO SEARCH FOR
 
-Instead of searching for companies "looking for solutions", search for these TRIGGER EVENTS:
+## TRIGGER CATEGORIES (adapt to the sector!)
 
-**1. Leadership Changes** (New decision makers = new priorities)
-- "appointed new CTO" / "new Chief Digital Officer" / "new CEO announces"
-- "leadership transition" / "executive team changes"
+Think about what creates urgency in **{sector}** specifically. Consider these universal trigger categories, but USE SECTOR-SPECIFIC language and roles:
 
-**2. Financial Pressure** (Creates urgency for efficiency)
-- "cost reduction program" / "efficiency initiative announced"
-- "profit warning" / "margin pressure" / "operational restructuring"
-
-**3. Operational Pain** (Visible problems)
-- "customer complaints about" / "service delays" / "processing backlog"
-- "regulatory fine" / "compliance issues" / "audit findings"
-
-**4. Growth Triggers** (Scaling challenges)
-- "expansion into new markets" / "acquisition announced" / "merger integration"
-- "record growth creates challenges" / "scaling operations"
-
-**5. Competitive Pressure** (Market forces)
-- "competitor launches" / "market disruption" / "losing market share"
-- "industry consolidation" / "new entrant threatens"
-
-**6. Technology Debt Signals** (Legacy system pain)
-- "legacy system outage" / "IT infrastructure challenges"
-- "hiring difficulties in IT" / "technology talent shortage"
+1. **Leadership Changes**: New decision makers bring new priorities
+   - Think: Who are the key decision makers in {sector}? (NOT just CTO - could be CMO, COO, Medical Director, Partner, etc.)
+   
+2. **Regulatory/Compliance Pressure**: External forces requiring action
+   - Think: What regulations affect {sector}? What audits or certifications matter?
+   
+3. **Operational Challenges**: Visible problems that need solving
+   - Think: What operational pain is common in {sector}? What do customers complain about?
+   
+4. **Growth/Change Events**: Scaling creates new needs
+   - Think: How do {sector} companies grow? Acquisitions, new markets, new products?
+   
+5. **Competitive/Market Pressure**: External market forces
+   - Think: What disrupts {sector}? New entrants, technology shifts, consolidation?
 
 ## YOUR TASK
 
-Generate exactly 5 semantic search queries that find companies in {region} / {sector} experiencing TRIGGER EVENTS that would create need for: {proposition}
+Generate exactly 5 semantic search queries for {region} / {sector} / {company_size} companies.
 
-**GOOD Queries (find triggers, not buyers):**
-- "{sector} companies in {region} appointing new technology leadership {current_year}"
-- "{sector} firms announcing cost optimization or efficiency programs"
-- "{region} {sector} companies facing regulatory scrutiny or compliance challenges"
-- "{sector} organizations in {region} reporting operational challenges or customer complaints"
-- "{sector} companies {region} struggling with talent acquisition in key roles"
+**CRITICAL RULES:**
+1. Each query MUST be specific to **{sector}** - use industry terminology and relevant roles
+2. Target the role **{target_role}** or related decision makers in that sector
+3. Focus on triggers that would create need for: **{proposition}**
+4. Address the pain point: **{pain_point}**
+5. Include {region} in queries for geographic relevance
+6. Add "{current_year}" to at least one query for recency
 
-**BAD Queries (too late - they're already buying):**
-- "companies seeking digital transformation solutions" ❌
-- "organizations implementing AI platforms" ❌
-- "businesses looking for analytics tools" ❌
+**BAD Queries (too generic or too late):**
+- "companies seeking [solution type]" ❌ (already buying)
+- "organizations implementing [technology]" ❌ (already decided)
+- Generic queries that ignore the specific sector ❌
+
+**GOOD Queries find TRIGGER EVENTS before the buying process starts.**
 
 ## OUTPUT FORMAT
 
 Return ONLY a JSON array with exactly 5 query strings:
 ["query 1", "query 2", "query 3", "query 4", "query 5"]
 
-Each query should target a DIFFERENT trigger signal category. No explanation, no markdown, just the JSON array.
+Each query should target a DIFFERENT trigger category, adapted to {sector}. No explanation, no markdown, just the JSON array.
 """
 
 REFERENCE_CONTEXT_PROMPT = """You are a B2B sales intelligence expert. Analyze these reference customers to understand what they have in common that makes them ideal customers.
@@ -214,6 +209,7 @@ SCORING_PROMPT = """You are a B2B sales intelligence expert specializing in EARL
 - Proposition: {proposition}
 - Target Role: {target_role}
 - Pain Point: {pain_point}
+- Sector: {sector}
 
 ## DISCOVERED COMPANIES
 
@@ -224,9 +220,10 @@ SCORING_PROMPT = """You are a B2B sales intelligence expert specializing in EARL
 We're looking for companies experiencing TRIGGER EVENTS - situations that CREATE the need for what we sell. This is BEFORE they start actively looking for solutions.
 
 **High-value triggers (score higher):**
-- New leadership (CTO, CDO, CEO) = new priorities coming
+- New leadership in relevant roles = new priorities coming (consider {target_role} and related roles)
 - Cost pressure / efficiency mandates = urgency for ROI
 - Operational problems (complaints, delays, fines) = pain is visible
+- Regulatory/compliance pressure = forced to act
 - Growth/expansion announcements = scaling challenges ahead
 - Competitor moves = pressure to respond
 
@@ -234,17 +231,19 @@ We're looking for companies experiencing TRIGGER EVENTS - situations that CREATE
 - Already implementing solutions = too late, competitors engaged
 - Generic company descriptions = no trigger visible
 - Old news (>12 months) = situation may have changed
+- Irrelevant to the proposition or sector
 
 ## YOUR TASK
 
-For each company, provide:
+For each company, evaluate relevance to **{sector}** and **{proposition}**:
+
 1. **fit_score** (0-100): Overall likelihood this is a good EARLY-STAGE prospect
-2. **proposition_fit** (0-100): Would our offering solve a problem this trigger creates?
-3. **seller_fit** (0-100): Does this match the seller's target profile?
+2. **proposition_fit** (0-100): Would our offering ({proposition}) solve a problem this trigger creates?
+3. **seller_fit** (0-100): Does this match the seller's target profile for {sector}?
 4. **intent_score** (0-100): How strong is the TRIGGER signal? (NOT buying intent - trigger strength)
 5. **recency_score** (0-100): How recent is the trigger? (<3mo=90+, 3-6mo=70-90, 6-12mo=50-70, >12mo=<50)
 6. **fit_reason**: One sentence: What trigger creates the need for our offering?
-7. **key_signal**: The specific trigger event found (leadership change, cost program, etc.)
+7. **key_signal**: The specific trigger event found (be specific to what you found)
 8. **inferred_sector**: Best guess for their industry
 9. **inferred_size**: Best guess for size (startup/SMB/mid-market/enterprise)
 
@@ -259,9 +258,9 @@ Return a JSON array with one object per company:
     "seller_fit": 70,
     "intent_score": 85,
     "recency_score": 90,
-    "fit_reason": "New CTO appointed recently, likely to review technology stack",
-    "key_signal": "Appointed new CTO from tech-forward competitor",
-    "inferred_sector": "insurance",
+    "fit_reason": "Recent leadership change creates opportunity to review current approach",
+    "key_signal": "Appointed new [relevant role] who announced focus on [relevant area]",
+    "inferred_sector": "example sector",
     "inferred_size": "mid-market"
   }}
 ]
@@ -780,6 +779,7 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
             proposition=input.proposition or "Not specified",
             target_role=input.target_role or "Not specified",
             pain_point=input.pain_point or "Not specified",
+            sector=input.sector or "Not specified",
             prospects_json=prospects_json
         )
         
