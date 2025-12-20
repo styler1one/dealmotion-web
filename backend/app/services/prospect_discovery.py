@@ -247,15 +247,23 @@ We're looking for companies experiencing TRIGGER EVENTS that create the need for
 - Generic company descriptions = no trigger visible
 - Old news (>12 months) = situation may have changed
 
-**NOT A PROSPECT (score 0-10):**
-- Media/publishing companies (news sites, magazines, blogs)
-- Consultancies and system integrators (they are competitors, not buyers)
-- Technology vendors (software companies selling to the same market)
-- Regulators and government agencies
-- Industry associations (unless they ARE the target sector)
-- Academic institutions and research organizations
+**CRITICAL: Is this a potential BUYER?**
 
-If the company is NOT a potential buyer of {proposition}, score them 0-10 regardless of how interesting the content is.
+Ask yourself: "Would this organization actually BUY {proposition}?"
+
+Score 0-15 if the result is:
+- A news article or blog POST about companies (not the company itself)
+- A case study or whitepaper FROM a vendor (the vendor is not the prospect)
+- A regulatory body or government agency (unless {sector} is government)
+- An academic paper or research publication
+- A job posting or career page
+
+The key question is: Does the URL represent the company's OWN website/content, or is it content ABOUT them from a third party?
+
+Examples:
+- "achmea.nl/nieuws/..." = ✅ Achmea's own site = potential prospect
+- "consultancy.nl/nieuws/achmea-..." = ❌ News article ABOUT Achmea = score 0-15
+- "mckinsey.com/case-study/insurance..." = ❌ Consultancy content = score 0-15 (unless selling TO consultancies)
 
 ## YOUR TASK
 
@@ -669,27 +677,21 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
             logger.error(f"[PROSPECT_DISCOVERY] Reference context extraction failed: {e}")
             return None
     
-    # Domains to exclude - media, consultancies, competitors
+    # Universal domains to exclude - only truly universal non-prospects
+    # NOTE: We keep this minimal because:
+    # - Consultancies CAN be prospects (if selling to them)
+    # - Country-specific media should be handled by scoring, not hardcoded
     EXCLUDE_DOMAINS = [
-        # Media & Publishing
-        "computable.nl", "amweb.nl", "infinance.nl", "banken.nl",
-        "consultancy.nl", "riskenbusiness.nl", "schade-magazine.nl",
-        "mt.nl", "sprout.nl", "emerce.nl", "twinkle.nl",
-        # Consultancies & Competitors
-        "mckinsey.com", "bcg.com", "bain.com", "kpmg.com", "kpmg.nl",
-        "ey.com", "deloitte.com", "deloitte.nl", "pwc.com", "pwc.nl",
-        "accenture.com", "capgemini.com", "sparkoptimus.com",
-        # Regulators & Government
-        "dnb.nl", "afm.nl", "autoriteitpersoonsgegevens.nl",
-        "rijksoverheid.nl", "overheid.nl",
-        # Technology vendors (potential competitors)
-        "salesforce.com", "microsoft.com", "oracle.com", "sap.com",
-        # Academic & Research
-        "researchgate.net", "academia.edu", "sciencedirect.com",
-        # Job sites
-        "linkedin.com", "indeed.com", "glassdoor.com",
-        # General news
-        "nos.nl", "rtv.nl", "nu.nl", "ad.nl", "telegraaf.nl",
+        # Job/Career sites (never prospects, just noise)
+        "indeed.com", "glassdoor.com", "monster.com", "ziprecruiter.com",
+        # Academic aggregators (not companies)
+        "researchgate.net", "academia.edu", "sciencedirect.com", "springer.com",
+        # Wikipedia and general reference
+        "wikipedia.org", "wikimedia.org",
+        # Social media (use category="company" instead)
+        "twitter.com", "facebook.com", "instagram.com", "tiktok.com",
+        # Generic news aggregators
+        "news.google.com", "apple.news",
     ]
     
     async def _execute_discovery_searches(
