@@ -551,6 +551,8 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
         
         async def search_query(query: str) -> List[Dict[str, Any]]:
             try:
+                logger.info(f"[PROSPECT_DISCOVERY] 🔍 Calling Exa API with query: {query[:80]}...")
+                
                 def do_search():
                     return self._exa.search_and_contents(
                         query=query,
@@ -572,13 +574,15 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
                         "matched_query": query
                     })
                 
+                logger.info(f"[PROSPECT_DISCOVERY] ✅ Exa returned {len(results)} results for query")
                 return results
                 
             except Exception as e:
-                logger.error(f"[PROSPECT_DISCOVERY] Search failed for query: {e}")
+                logger.error(f"[PROSPECT_DISCOVERY] ❌ Exa search failed for query: {e}")
                 return []
         
         # Execute with small delay between queries (rate limiting)
+        logger.info(f"[PROSPECT_DISCOVERY] Starting Exa discovery with {len(queries)} queries")
         for i, query in enumerate(queries):
             results = await search_query(query)
             all_results.extend(results)
