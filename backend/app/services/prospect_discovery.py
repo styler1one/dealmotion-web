@@ -221,6 +221,63 @@ SECTOR_TRIGGERS = {
     },
 }
 
+# =============================================================================
+# Local Language Sector Terms
+# =============================================================================
+# Maps English sector names to local language equivalents per region.
+# This ensures queries find companies using local terminology.
+
+SECTOR_LOCAL_TERMS = {
+    # Netherlands (Dutch)
+    "nederland": {
+        "accountancy": ["accountantskantoor", "accountantskantoren", "registeraccountant", "AA-kantoor", "accountantsfirma", "accountants"],
+        "accounting": ["accountantskantoor", "accountantskantoren", "registeraccountant", "boekhouder", "administratiekantoor"],
+        "insurance": ["verzekeraar", "verzekeraars", "verzekeringsmaatschappij", "assurantie", "verzekeringsbedrijf"],
+        "schadeverzekeraars": ["schadeverzekeraar", "schadeverzekeraars", "schadeverzekering", "VNAB", "Verbond van Verzekeraars"],
+        "banking": ["bank", "banken", "financiële dienstverlening", "kredietverstrekker", "financiële instelling"],
+        "legal": ["advocatenkantoor", "advocatenkantoren", "juridisch advies", "notariskantoor", "advocaten"],
+        "consulting": ["adviesbureau", "consultancy", "managementadvies", "organisatieadvies", "adviesbureaus"],
+        "healthcare": ["zorginstelling", "ziekenhuis", "zorgorganisatie", "gezondheidszorg", "GGZ", "thuiszorg"],
+        "manufacturing": ["productiebedrijf", "fabrikant", "maakindustrie", "industrieel bedrijf", "producent"],
+        "logistics": ["logistiek bedrijf", "transportbedrijf", "supply chain", "distributie", "expediteur"],
+        "retail": ["retailer", "winkelketen", "detailhandel", "winkelbedrijf", "winkelformule"],
+        "technology": ["IT-bedrijf", "softwarebedrijf", "techbedrijf", "ICT-dienstverlener", "softwareontwikkelaar"],
+        "real estate": ["vastgoed", "makelaar", "vastgoedbedrijf", "woningcorporatie", "projectontwikkelaar"],
+        "construction": ["bouwbedrijf", "aannemer", "bouwonderneming", "constructiebedrijf"],
+        "energy": ["energiebedrijf", "energieleverancier", "nutsbedrijf", "duurzame energie"],
+    },
+    # Germany (German)
+    "germany": {
+        "accountancy": ["Wirtschaftsprüfer", "Steuerberater", "Wirtschaftsprüfungsgesellschaft", "Steuerkanzlei", "WP-Gesellschaft"],
+        "accounting": ["Wirtschaftsprüfer", "Steuerberater", "Buchhaltung", "Steuerkanzlei", "Buchhalter"],
+        "insurance": ["Versicherung", "Versicherer", "Versicherungsgesellschaft", "Versicherungsunternehmen"],
+        "banking": ["Bank", "Kreditinstitut", "Finanzdienstleister", "Sparkasse", "Volksbank"],
+        "legal": ["Rechtsanwalt", "Anwaltskanzlei", "Rechtsberatung", "Kanzlei"],
+        "consulting": ["Unternehmensberatung", "Beratung", "Managementberatung", "Consulting"],
+        "healthcare": ["Krankenhaus", "Klinik", "Gesundheitswesen", "Pflegeeinrichtung"],
+        "manufacturing": ["Hersteller", "Produzent", "Fertigungsunternehmen", "Maschinenbau"],
+    },
+    # Belgium (Dutch/French mix)
+    "belgium": {
+        "accountancy": ["accountantskantoor", "boekhouder", "bedrijfsrevisor", "expert-comptable", "réviseur d'entreprises"],
+        "accounting": ["accountantskantoor", "comptable", "boekhouding", "fiduciaire"],
+        "insurance": ["verzekeraar", "assureur", "verzekering", "assurance"],
+        "legal": ["advocatenkantoor", "cabinet d'avocats", "notaris"],
+    },
+    # DACH region (German-speaking)
+    "dach": {
+        "accountancy": ["Wirtschaftsprüfer", "Steuerberater", "Treuhand", "Revisionsgesellschaft"],
+        "insurance": ["Versicherung", "Versicherer", "Assekuranz"],
+        "banking": ["Bank", "Finanzinstitut", "Kreditinstitut"],
+    },
+    # UK (English but with local terms)
+    "uk": {
+        "accountancy": ["accountancy firm", "chartered accountants", "audit firm", "accounting practice"],
+        "insurance": ["insurer", "insurance company", "underwriter", "Lloyd's"],
+        "legal": ["law firm", "solicitors", "barristers", "legal practice"],
+    }
+}
+
 def get_sector_context(sector: str) -> Optional[Dict[str, Any]]:
     """
     Get sector-specific trigger context for query generation.
@@ -242,6 +299,49 @@ def get_sector_context(sector: str) -> Optional[Dict[str, Any]]:
             return value
     
     return None
+
+
+def get_local_sector_terms(sector: str, region: str) -> List[str]:
+    """
+    Get local language sector terms for a given sector and region.
+    
+    Returns list of local terms, or empty list if no mapping exists.
+    This enables queries to find companies using their local terminology.
+    """
+    if not sector or not region:
+        return []
+    
+    sector_lower = sector.lower().strip()
+    region_lower = region.lower().strip()
+    
+    # Determine region key
+    region_key = None
+    if "nederland" in region_lower or "netherlands" in region_lower or "dutch" in region_lower:
+        region_key = "nederland"
+    elif "germany" in region_lower or "deutschland" in region_lower or "german" in region_lower:
+        region_key = "germany"
+    elif "belgium" in region_lower or "belgie" in region_lower or "belgique" in region_lower:
+        region_key = "belgium"
+    elif "dach" in region_lower or "austria" in region_lower or "switzerland" in region_lower:
+        region_key = "dach"
+    elif "uk" in region_lower or "united kingdom" in region_lower or "britain" in region_lower:
+        region_key = "uk"
+    
+    if not region_key or region_key not in SECTOR_LOCAL_TERMS:
+        return []
+    
+    region_terms = SECTOR_LOCAL_TERMS[region_key]
+    
+    # Direct match
+    if sector_lower in region_terms:
+        return region_terms[sector_lower]
+    
+    # Partial match
+    for key, terms in region_terms.items():
+        if key in sector_lower or sector_lower in key:
+            return terms
+    
+    return []
 
 
 # =============================================================================
@@ -773,14 +873,31 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
         # Build sector-specific context section
         sector_context_section = ""
         sector_data = get_sector_context(input.sector)
-        if sector_data:
+        local_terms = get_local_sector_terms(input.sector, input.region) if input.sector and input.region else []
+        
+        if sector_data or local_terms:
             sector_context_section = f"""
 **Sector-Specific Intelligence (for {input.sector}):**
-- Key Decision Makers: {', '.join(sector_data.get('decision_makers', [])[:4])}
+"""
+            if sector_data:
+                sector_context_section += f"""- Key Decision Makers: {', '.join(sector_data.get('decision_makers', [])[:4])}
 - Relevant Regulations/Triggers: {', '.join(sector_data.get('regulations', [])[:4])}
 - Common Events: {', '.join(sector_data.get('events', [])[:4])}
 - Typical Pain Points: {', '.join(sector_data.get('pain_points', [])[:4])}
+"""
+            
+            if local_terms:
+                sector_context_section += f"""
+**LOCAL LANGUAGE TERMS FOR {input.region.upper()} - USE THESE IN YOUR QUERIES:**
+The sector "{input.sector}" is called in {input.region}: {', '.join(local_terms)}
 
+IMPORTANT: Use these local terms instead of English! For example:
+- Instead of "{input.sector}" → use "{local_terms[0]}"
+- Combine with triggers: "{local_terms[0]} fusie overname 2025" or "{local_terms[0]} digitale transformatie"
+"""
+                print(f"[PROSPECT_DISCOVERY] 🌍 Using local terms for '{input.sector}' in '{input.region}': {local_terms[:3]}", flush=True)
+            
+            sector_context_section += """
 USE these sector-specific terms in your queries instead of generic tech terms!
 """
             print(f"[PROSPECT_DISCOVERY] 📚 Using sector-specific context for '{input.sector}'", flush=True)
@@ -855,73 +972,13 @@ USE these sector-specific terms in your queries instead of generic tech terms!
         not just companies with visible trigger signals.
         
         Uses LOCAL LANGUAGE terms for better coverage of regional companies.
+        Uses the global SECTOR_LOCAL_TERMS mapping via get_local_sector_terms().
         """
         if not input.sector:
             return []
         
-        # Sector synonyms per region - LOCAL LANGUAGE terms
-        # This maps English sector names to local equivalents
-        sector_local_terms = {
-            # Netherlands (Dutch)
-            "nederland": {
-                "accountancy": ["accountantskantoor", "accountantskantoren", "registeraccountant", "AA-kantoor", "accountantsfirma"],
-                "accounting": ["accountantskantoor", "accountantskantoren", "registeraccountant", "accountants"],
-                "insurance": ["verzekeraar", "verzekeraars", "verzekeringsmaatschappij", "assurantie"],
-                "banking": ["bank", "banken", "financiële dienstverlening", "kredietverstrekker"],
-                "legal": ["advocatenkantoor", "advocatenkantoren", "juridisch advies", "notariskantoor"],
-                "consulting": ["adviesbureau", "consultancy", "managementadvies", "organisatieadvies"],
-                "healthcare": ["zorginstelling", "ziekenhuis", "zorgorganisatie", "gezondheidszorg"],
-                "manufacturing": ["productiebedrijf", "fabrikant", "maakindustrie", "industrieel"],
-                "logistics": ["logistiek bedrijf", "transportbedrijf", "supply chain", "distributie"],
-                "retail": ["retailer", "winkelketen", "detailhandel", "e-commerce"],
-                "technology": ["IT-bedrijf", "softwarebedrijf", "techbedrijf", "ICT"],
-                "real estate": ["vastgoed", "makelaar", "vastgoedbedrijf", "woningcorporatie"],
-            },
-            # Germany (German)
-            "germany": {
-                "accountancy": ["Wirtschaftsprüfer", "Steuerberater", "Wirtschaftsprüfungsgesellschaft", "Buchhalter"],
-                "accounting": ["Wirtschaftsprüfer", "Steuerberater", "Buchhaltung", "Steuerkanzlei"],
-                "insurance": ["Versicherung", "Versicherer", "Versicherungsgesellschaft"],
-                "banking": ["Bank", "Kreditinstitut", "Finanzdienstleister"],
-                "legal": ["Rechtsanwalt", "Anwaltskanzlei", "Rechtsberatung"],
-                "consulting": ["Unternehmensberatung", "Beratung", "Managementberatung"],
-                "healthcare": ["Krankenhaus", "Klinik", "Gesundheitswesen"],
-                "manufacturing": ["Hersteller", "Produzent", "Fertigungsunternehmen"],
-            },
-            # Belgium (Dutch/French mix)
-            "belgium": {
-                "accountancy": ["accountantskantoor", "boekhouder", "bedrijfsrevisor", "expert-comptable"],
-                "accounting": ["accountantskantoor", "comptable", "boekhouding"],
-                "insurance": ["verzekeraar", "assureur", "verzekering"],
-            },
-            # DACH region
-            "dach": {
-                "accountancy": ["Wirtschaftsprüfer", "Steuerberater", "Treuhand"],
-                "insurance": ["Versicherung", "Versicherer"],
-            }
-        }
-        
-        # Determine region key
-        region_lower = (input.region or "").lower()
-        region_key = None
-        if "nederland" in region_lower or "netherlands" in region_lower or "nl" in region_lower:
-            region_key = "nederland"
-        elif "germany" in region_lower or "deutschland" in region_lower or "de" in region_lower:
-            region_key = "germany"
-        elif "belgium" in region_lower or "belgie" in region_lower or "belgique" in region_lower:
-            region_key = "belgium"
-        elif "dach" in region_lower or "austria" in region_lower or "switzerland" in region_lower:
-            region_key = "dach"
-        
-        # Get local sector terms
-        sector_lower = input.sector.lower()
-        local_terms = []
-        
-        if region_key and region_key in sector_local_terms:
-            for eng_sector, local_list in sector_local_terms[region_key].items():
-                if eng_sector in sector_lower or sector_lower in eng_sector:
-                    local_terms = local_list
-                    break
+        # Get local sector terms using the shared helper function
+        local_terms = get_local_sector_terms(input.sector, input.region) if input.region else []
         
         # Build size descriptor
         size_terms = {
