@@ -78,6 +78,8 @@ import {
     MoreHorizontal,
     Package,
     Lock,
+    Radar,
+    SearchX,
 } from 'lucide-react'
 
 // Custom Google Icon (official colors)
@@ -262,4 +264,6 @@ export const Icons = {
     moreHorizontal: MoreHorizontal,
     package: Package,
     lock: Lock,
+    radar: Radar,
+    searchX: SearchX,
 }

@@ -125,6 +125,7 @@
     "dashboard": "Dashboard",
     "prospects": "Prospects",
     "research": "Research",
+    "prospecting": "Prospect Discovery",
     "preparation": "Preparation",
     "meetings": "Meetings",
     "followup": "Meeting Analysis",
@@ -2687,6 +2688,86 @@
       "templateCopied": "Email template copied",
       "pasteInEmail": "Paste in your email client",
       "cancel": "Cancel"
+    }
+  },
+  "prospecting": {
+    "title": "Prospect Discovery",
+    "subtitle": "Find new prospects that match your profile and offering using AI-powered contextual search",
+    "loading": "Loading prospecting...",
+    "setup": {
+      "title": "Complete your profile for better results",
+      "createProfile": "Create Sales Profile",
+      "addCompany": "Add Company Profile"
+    },
+    "form": {
+      "title": "Search Criteria",
+      "description": "Describe who you're looking for. Our AI will find matching prospects.",
+      "region": "Region or Country",
+      "regionPlaceholder": "e.g., Netherlands, DACH, Benelux",
+      "sector": "Sector or Domain",
+      "sectorPlaceholder": "e.g., logistics, manufacturing, professional services",
+      "companySize": "Company Size",
+      "companySizePlaceholder": "e.g., mid-sized, enterprise, SMB",
+      "proposition": "What do we sell?",
+      "propositionPlaceholder": "Describe your offering in one sentence...",
+      "targetRole": "For whom is this relevant?",
+      "targetRolePlaceholder": "e.g., CFO, CTO, Supply Chain Director",
+      "painPoint": "Where is pain or urgency?",
+      "painPointPlaceholder": "What challenges are they facing?",
+      "referenceCustomers": "Reference Customers",
+      "referenceCustomersPlaceholder": "e.g., Bol.com, Coolblue, Picnic",
+      "referenceCustomersHelp": "Enter companies that are 100% fit. We'll find similar companies based on shared signals and situations.",
+      "optional": "Optional",
+      "searchButton": "Find Prospects",
+      "searching": "Searching..."
+    },
+    "history": {
+      "title": "Recent Searches",
+      "results": "results"
+    },
+    "searching": {
+      "title": "Discovering Prospects",
+      "description": "Analyzing your criteria and searching for matching companies...",
+      "step1": "Generating semantic search queries..."
+    },
+    "results": {
+      "found": "Found {count} potential prospects",
+      "time": "Completed in {seconds}s",
+      "showQueries": "Show search queries used",
+      "fitScore": "Fit",
+      "imported": "Imported",
+      "import": "Import",
+      "view": "View",
+      "viewSource": "View source",
+      "scoreBreakdown": "Show score breakdown",
+      "propFit": "Proposition",
+      "sellerFit": "Seller",
+      "intent": "Intent",
+      "recency": "Recency",
+      "noResults": "No prospects found",
+      "noResultsDesc": "Try broadening your search criteria or adjusting the region/sector.",
+      "referenceContext": "Based on your reference customers:"
+    },
+    "empty": {
+      "title": "Contextual Prospect Discovery",
+      "description": "Use AI to find companies that match your seller profile and offering. This is not a database search - it's intelligent discovery based on public signals.",
+      "howItWorks": "How it works:",
+      "step1": "Enter your search criteria (region, sector, offering)",
+      "step2": "AI generates semantic queries and searches for signals",
+      "step3": "Review scored prospects and import the best fits"
+    },
+    "errors": {
+      "missingFields": "Missing required fields",
+      "missingFieldsDesc": "Please enter at least a sector or proposition to search."
+    },
+    "toast": {
+      "searchComplete": "Search completed",
+      "searchCompleteDesc": "Found {count} potential prospects",
+      "searchFailed": "Search failed",
+      "searchFailedDesc": "Failed to search for prospects. Please try again.",
+      "imported": "Prospect imported",
+      "importedDesc": "The prospect has been added to your list.",
+      "importFailed": "Import failed"
     }
   }
 }

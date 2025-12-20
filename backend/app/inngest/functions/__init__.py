@@ -26,6 +26,7 @@ from .autopilot_detection import (
     expire_proposals_fn,
 )
 from .autopilot_execution import execute_proposal_fn
+from .prospecting import process_prospecting_discovery_fn
 
 # All functions to register with Inngest
 all_functions = [
@@ -54,6 +55,8 @@ all_functions = [
     detect_incomplete_actions_fn,
     expire_proposals_fn,
     execute_proposal_fn,
+    # Prospecting
+    process_prospecting_discovery_fn,
 ]
 
 __all__ = [
@@ -83,5 +86,7 @@ __all__ = [
     "detect_incomplete_actions_fn",
     "expire_proposals_fn",
     "execute_proposal_fn",
+    # Prospecting
+    "process_prospecting_discovery_fn",
 ]
 

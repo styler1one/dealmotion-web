@@ -41,6 +41,13 @@ const navigationItems = [
     color: 'text-blue-500',
   },
   {
+    key: 'prospecting',
+    href: '/dashboard/prospecting',
+    icon: Icons.radar,
+    color: 'text-violet-500',
+    badge: 'Beta',
+  },
+  {
     key: 'preparation',
     href: '/dashboard/preparation',
     icon: Icons.fileText,
@@ -199,6 +206,11 @@ export function Sidebar({ className }: SidebarProps) {
                     {showBadge && (
                       <span className="flex-shrink-0 bg-purple-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
                         {pendingCount > 99 ? '99+' : pendingCount}
+                      </span>
+                    )}
+                    {(item as any).badge && (
+                      <span className="flex-shrink-0 bg-violet-500/20 text-violet-400 text-xs font-medium px-1.5 py-0.5 rounded">
+                        {(item as any).badge}
                       </span>
                     )}
                   </>
