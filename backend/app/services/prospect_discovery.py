@@ -221,63 +221,6 @@ SECTOR_TRIGGERS = {
     },
 }
 
-# =============================================================================
-# Local Language Sector Terms
-# =============================================================================
-# Maps English sector names to local language equivalents per region.
-# This ensures queries find companies using local terminology.
-
-SECTOR_LOCAL_TERMS = {
-    # Netherlands (Dutch)
-    "nederland": {
-        "accountancy": ["accountantskantoor", "accountantskantoren", "registeraccountant", "AA-kantoor", "accountantsfirma", "accountants"],
-        "accounting": ["accountantskantoor", "accountantskantoren", "registeraccountant", "boekhouder", "administratiekantoor"],
-        "insurance": ["verzekeraar", "verzekeraars", "verzekeringsmaatschappij", "assurantie", "verzekeringsbedrijf"],
-        "schadeverzekeraars": ["schadeverzekeraar", "schadeverzekeraars", "schadeverzekering", "VNAB", "Verbond van Verzekeraars"],
-        "banking": ["bank", "banken", "financiële dienstverlening", "kredietverstrekker", "financiële instelling"],
-        "legal": ["advocatenkantoor", "advocatenkantoren", "juridisch advies", "notariskantoor", "advocaten"],
-        "consulting": ["adviesbureau", "consultancy", "managementadvies", "organisatieadvies", "adviesbureaus"],
-        "healthcare": ["zorginstelling", "ziekenhuis", "zorgorganisatie", "gezondheidszorg", "GGZ", "thuiszorg"],
-        "manufacturing": ["productiebedrijf", "fabrikant", "maakindustrie", "industrieel bedrijf", "producent"],
-        "logistics": ["logistiek bedrijf", "transportbedrijf", "supply chain", "distributie", "expediteur"],
-        "retail": ["retailer", "winkelketen", "detailhandel", "winkelbedrijf", "winkelformule"],
-        "technology": ["IT-bedrijf", "softwarebedrijf", "techbedrijf", "ICT-dienstverlener", "softwareontwikkelaar"],
-        "real estate": ["vastgoed", "makelaar", "vastgoedbedrijf", "woningcorporatie", "projectontwikkelaar"],
-        "construction": ["bouwbedrijf", "aannemer", "bouwonderneming", "constructiebedrijf"],
-        "energy": ["energiebedrijf", "energieleverancier", "nutsbedrijf", "duurzame energie"],
-    },
-    # Germany (German)
-    "germany": {
-        "accountancy": ["Wirtschaftsprüfer", "Steuerberater", "Wirtschaftsprüfungsgesellschaft", "Steuerkanzlei", "WP-Gesellschaft"],
-        "accounting": ["Wirtschaftsprüfer", "Steuerberater", "Buchhaltung", "Steuerkanzlei", "Buchhalter"],
-        "insurance": ["Versicherung", "Versicherer", "Versicherungsgesellschaft", "Versicherungsunternehmen"],
-        "banking": ["Bank", "Kreditinstitut", "Finanzdienstleister", "Sparkasse", "Volksbank"],
-        "legal": ["Rechtsanwalt", "Anwaltskanzlei", "Rechtsberatung", "Kanzlei"],
-        "consulting": ["Unternehmensberatung", "Beratung", "Managementberatung", "Consulting"],
-        "healthcare": ["Krankenhaus", "Klinik", "Gesundheitswesen", "Pflegeeinrichtung"],
-        "manufacturing": ["Hersteller", "Produzent", "Fertigungsunternehmen", "Maschinenbau"],
-    },
-    # Belgium (Dutch/French mix)
-    "belgium": {
-        "accountancy": ["accountantskantoor", "boekhouder", "bedrijfsrevisor", "expert-comptable", "réviseur d'entreprises"],
-        "accounting": ["accountantskantoor", "comptable", "boekhouding", "fiduciaire"],
-        "insurance": ["verzekeraar", "assureur", "verzekering", "assurance"],
-        "legal": ["advocatenkantoor", "cabinet d'avocats", "notaris"],
-    },
-    # DACH region (German-speaking)
-    "dach": {
-        "accountancy": ["Wirtschaftsprüfer", "Steuerberater", "Treuhand", "Revisionsgesellschaft"],
-        "insurance": ["Versicherung", "Versicherer", "Assekuranz"],
-        "banking": ["Bank", "Finanzinstitut", "Kreditinstitut"],
-    },
-    # UK (English but with local terms)
-    "uk": {
-        "accountancy": ["accountancy firm", "chartered accountants", "audit firm", "accounting practice"],
-        "insurance": ["insurer", "insurance company", "underwriter", "Lloyd's"],
-        "legal": ["law firm", "solicitors", "barristers", "legal practice"],
-    }
-}
-
 def get_sector_context(sector: str) -> Optional[Dict[str, Any]]:
     """
     Get sector-specific trigger context for query generation.
@@ -299,49 +242,6 @@ def get_sector_context(sector: str) -> Optional[Dict[str, Any]]:
             return value
     
     return None
-
-
-def get_local_sector_terms(sector: str, region: str) -> List[str]:
-    """
-    Get local language sector terms for a given sector and region.
-    
-    Returns list of local terms, or empty list if no mapping exists.
-    This enables queries to find companies using their local terminology.
-    """
-    if not sector or not region:
-        return []
-    
-    sector_lower = sector.lower().strip()
-    region_lower = region.lower().strip()
-    
-    # Determine region key
-    region_key = None
-    if "nederland" in region_lower or "netherlands" in region_lower or "dutch" in region_lower:
-        region_key = "nederland"
-    elif "germany" in region_lower or "deutschland" in region_lower or "german" in region_lower:
-        region_key = "germany"
-    elif "belgium" in region_lower or "belgie" in region_lower or "belgique" in region_lower:
-        region_key = "belgium"
-    elif "dach" in region_lower or "austria" in region_lower or "switzerland" in region_lower:
-        region_key = "dach"
-    elif "uk" in region_lower or "united kingdom" in region_lower or "britain" in region_lower:
-        region_key = "uk"
-    
-    if not region_key or region_key not in SECTOR_LOCAL_TERMS:
-        return []
-    
-    region_terms = SECTOR_LOCAL_TERMS[region_key]
-    
-    # Direct match
-    if sector_lower in region_terms:
-        return region_terms[sector_lower]
-    
-    # Partial match
-    for key, terms in region_terms.items():
-        if key in sector_lower or sector_lower in key:
-            return terms
-    
-    return []
 
 
 # =============================================================================
@@ -402,41 +302,48 @@ Think about what creates urgency for **{proposition}** in **{sector}** specifica
 
 ## STEP 3: GENERATE QUERIES
 
-Generate exactly 5 semantic search queries for {region} / {sector} / {company_size} companies.
+Generate exactly 7 semantic search queries for {region} / {sector} / {company_size} companies.
 
-**CRITICAL RULES:**
-1. Each query targets a trigger that creates need for **{proposition}** specifically
-2. Use {sector}-specific terminology and the relevant decision makers for THIS type of purchase
-3. The target role is **{target_role}** - find triggers that would concern THIS role
-4. Consider the pain point: **{pain_point}**
-5. Include {region} for geographic relevance
-6. Add "{current_year}" to at least one query for recency
+**QUERY TYPES TO GENERATE:**
 
-**LANGUAGE RULE - VERY IMPORTANT:**
-- Use the LOCAL LANGUAGE of the target region for your queries!
-- For Netherlands: Use Dutch terms (e.g., "accountantskantoor" not "accountancy", "fusie" not "merger", "overname" not "acquisition")
-- For Germany: Use German terms (e.g., "Wirtschaftsprüfer" not "accountant", "Übernahme" not "acquisition")
-- For Belgium: Use Dutch or French depending on the region specified
-- Local language queries find LOCAL companies that may not rank for English terms
-- Include BOTH local synonyms and common variations:
-  * Dutch accountancy: accountantskantoor, registeraccountant, AA-kantoor, accountantsfirma, accountants
-  * German finance: Finanzdienstleister, Wirtschaftsprüfungsgesellschaft, Steuerberater
-  * etc.
+**Queries 1-5: TRIGGER-BASED DISCOVERY**
+- Each targets a DIFFERENT trigger category from Step 2
+- Focus on events that CREATE need for {proposition}
+- Include {region} for geographic relevance
+- Add "{current_year}" to at least one query for recency
 
-**BAD Queries (too generic or too late):**
+**Queries 6-7: MARKET LEADERS DISCOVERY**
+- These find the TOP PLAYERS in {sector} in {region}
+- Query 6: "biggest/largest/top [local sector term] in [region]"
+- Query 7: "[local sector term] [region] overview list major players"
+- These ensure we don't miss established companies without recent trigger signals
+
+**LANGUAGE RULE - CRITICAL:**
+- Use the LOCAL LANGUAGE of the target region for ALL queries!
+- YOU must figure out the correct local terminology for the sector
+- Examples:
+  * Netherlands "accountancy" → "accountantskantoor", "registeraccountant", "accountantsfirma"
+  * Netherlands "insurance" → "verzekeraar", "verzekeraars", "verzekeringsmaatschappij"
+  * Germany "accountancy" → "Wirtschaftsprüfer", "Steuerberater", "Steuerkanzlei"
+  * Germany "consulting" → "Unternehmensberatung", "Beratung"
+  * Belgium may use Dutch OR French depending on region
+- Think: "What do locals call this sector? What terms would be on their website?"
+- Local language queries find LOCAL companies that don't rank for English terms
+
+**BAD Queries:**
 - "companies seeking [solution type]" ❌ (already buying)
 - "organizations implementing [technology]" ❌ (already decided)
+- English terms for non-English regions ❌ (e.g., "accountancy Netherlands" instead of "accountantskantoor Nederland")
 - Generic queries that ignore the specific sector ❌
-- English-only queries for non-English regions ❌
 
-**GOOD Queries find TRIGGER EVENTS before the buying process starts, in the LOCAL LANGUAGE.**
+**GOOD Queries find TRIGGER EVENTS and MARKET LEADERS in the LOCAL LANGUAGE.**
 
 ## OUTPUT FORMAT
 
-Return ONLY a JSON array with exactly 5 query strings:
-["query 1", "query 2", "query 3", "query 4", "query 5"]
+Return ONLY a JSON array with exactly 7 query strings:
+["trigger query 1", "trigger query 2", "trigger query 3", "trigger query 4", "trigger query 5", "market leaders query 6", "market leaders query 7"]
 
-Each query should target a DIFFERENT trigger category, adapted to {sector}. No explanation, no markdown, just the JSON array.
+Queries 1-5 target different trigger categories. Queries 6-7 find top players. No explanation, no markdown, just the JSON array.
 """
 
 REFERENCE_CONTEXT_PROMPT = """You are a B2B sales intelligence expert. Analyze these reference customers to understand what they have in common that makes them ideal customers.
@@ -743,16 +650,13 @@ class ProspectDiscoveryService:
                     error="Failed to generate search queries"
                 )
             
-            # Step 2.5: Add market leaders queries based on user input
-            market_leader_queries = self._build_market_leaders_queries(input)
-            for mlq in market_leader_queries:
-                queries.append(mlq)
-            if market_leader_queries:
-                print(f"[PROSPECT_DISCOVERY] 🏢 Added {len(market_leader_queries)} market leaders queries", flush=True)
+            # Note: Market leaders queries are now generated by Claude as part of the 7 queries
+            # (queries 6-7 are market leaders, queries 1-5 are trigger-based)
             
-            print(f"[PROSPECT_DISCOVERY] 📝 TOTAL {len(queries)} QUERIES:", flush=True)
-            for i, q in enumerate(queries[:4], 1):
-                print(f"  Query {i}: {q[:100]}...", flush=True)
+            print(f"[PROSPECT_DISCOVERY] 📝 TOTAL {len(queries)} QUERIES (including 2 market leaders):", flush=True)
+            for i, q in enumerate(queries, 1):
+                query_type = "MARKET LEADER" if i > 5 else "TRIGGER"
+                print(f"  Query {i} [{query_type}]: {q[:80]}...", flush=True)
             
             # Step 3: Execute Exa searches (multi-layer)
             raw_results = await self._execute_discovery_searches(
@@ -870,34 +774,19 @@ The seller provided reference customers (companies that are 100% fit). Based on 
 Use these patterns to find SIMILAR companies with SIMILAR signals and situations.
 """
         
-        # Build sector-specific context section
+        # Build sector-specific context section (triggers, decision makers, etc.)
+        # Note: Local language sector terms are NO LONGER hardcoded - Claude figures these out
         sector_context_section = ""
         sector_data = get_sector_context(input.sector)
-        local_terms = get_local_sector_terms(input.sector, input.region) if input.sector and input.region else []
         
-        if sector_data or local_terms:
+        if sector_data:
             sector_context_section = f"""
 **Sector-Specific Intelligence (for {input.sector}):**
-"""
-            if sector_data:
-                sector_context_section += f"""- Key Decision Makers: {', '.join(sector_data.get('decision_makers', [])[:4])}
+- Key Decision Makers: {', '.join(sector_data.get('decision_makers', [])[:4])}
 - Relevant Regulations/Triggers: {', '.join(sector_data.get('regulations', [])[:4])}
 - Common Events: {', '.join(sector_data.get('events', [])[:4])}
 - Typical Pain Points: {', '.join(sector_data.get('pain_points', [])[:4])}
-"""
-            
-            if local_terms:
-                sector_context_section += f"""
-**LOCAL LANGUAGE TERMS FOR {input.region.upper()} - USE THESE IN YOUR QUERIES:**
-The sector "{input.sector}" is called in {input.region}: {', '.join(local_terms)}
 
-IMPORTANT: Use these local terms instead of English! For example:
-- Instead of "{input.sector}" → use "{local_terms[0]}"
-- Combine with triggers: "{local_terms[0]} fusie overname 2025" or "{local_terms[0]} digitale transformatie"
-"""
-                print(f"[PROSPECT_DISCOVERY] 🌍 Using local terms for '{input.sector}' in '{input.region}': {local_terms[:3]}", flush=True)
-            
-            sector_context_section += """
 USE these sector-specific terms in your queries instead of generic tech terms!
 """
             print(f"[PROSPECT_DISCOVERY] 📚 Using sector-specific context for '{input.sector}'", flush=True)
@@ -944,7 +833,7 @@ USE these sector-specific terms in your queries instead of generic tech terms!
             
             if isinstance(queries, list) and len(queries) > 0:
                 print(f"[PROSPECT_DISCOVERY] ✅ Generated {len(queries)} queries", flush=True)
-                return queries[:5]  # Max 5 queries
+                return queries[:7]  # Max 7 queries (5 trigger + 2 market leaders)
             
             logger.warning(f"[PROSPECT_DISCOVERY] No valid queries in response")
             return []
@@ -958,79 +847,6 @@ USE these sector-specific terms in your queries instead of generic tech terms!
             logger.error(f"[PROSPECT_DISCOVERY] Query generation failed: {e}")
             print(f"[PROSPECT_DISCOVERY] ❌ Query generation error: {e}", flush=True)
             return []
-    
-    def _build_market_leaders_queries(self, input: DiscoveryInput) -> List[str]:
-        """
-        Build queries to find market leaders in the specified segment.
-        
-        Returns MULTIPLE queries to maximize coverage of top players:
-        1. Leading companies query (local language)
-        2. Top/list overview query (local language)
-        3. Major players query (English fallback)
-        
-        This ensures we always include the top players in the sector,
-        not just companies with visible trigger signals.
-        
-        Uses LOCAL LANGUAGE terms for better coverage of regional companies.
-        Uses the global SECTOR_LOCAL_TERMS mapping via get_local_sector_terms().
-        """
-        if not input.sector:
-            return []
-        
-        # Get local sector terms using the shared helper function
-        local_terms = get_local_sector_terms(input.sector, input.region) if input.region else []
-        
-        # Build size descriptor
-        size_terms = {
-            "enterprise": "grootste leading",
-            "mid-market": "gevestigde toonaangevende",
-            "mid-sized": "gevestigde toonaangevende", 
-            "midmarket": "gevestigde toonaangevende",
-            "smb": "bekende succesvolle",
-            "sme": "bekende succesvolle",
-        }
-        
-        size_input = (input.company_size or "").lower().strip()
-        size_descriptor = "leading prominent"
-        
-        for key, desc in size_terms.items():
-            if key in size_input:
-                size_descriptor = desc
-                break
-        
-        # Build region part
-        region_part = f"in {input.region}" if input.region else ""
-        
-        queries = []
-        
-        # Query 1: LOCAL LANGUAGE - sector terms
-        if local_terms:
-            # Use first 2 local terms for the primary query
-            local_sector = " ".join(local_terms[:2])
-            q1 = f"grootste {local_sector} {region_part}".strip()
-            queries.append(" ".join(q1.split()))
-            
-            # Query 2: Top list in local language
-            q2 = f"top {local_terms[0]} {region_part} overzicht lijst".strip()
-            queries.append(" ".join(q2.split()))
-        else:
-            # Fallback to English if no local terms available
-            q1 = f"{size_descriptor} {input.sector} companies {region_part}".strip()
-            queries.append(" ".join(q1.split()))
-            
-            q2 = f"top {input.sector} {region_part} list overview".strip()
-            queries.append(" ".join(q2.split()))
-        
-        # Query 3: English fallback (catches international companies with English sites)
-        q3 = f"biggest largest {input.sector} organizations {region_part}".strip()
-        queries.append(" ".join(q3.split()))
-        
-        # Log what we generated
-        print(f"[PROSPECT_DISCOVERY] 🌍 Market leader queries (local terms: {local_terms[:2] if local_terms else 'none'}):", flush=True)
-        for q in queries:
-            print(f"  → {q}", flush=True)
-        
-        return queries
     
     async def _extract_reference_context(
         self,
