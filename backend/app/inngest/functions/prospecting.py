@@ -7,6 +7,7 @@ Used for larger searches or when we want to process in the background.
 
 import logging
 from datetime import datetime
+from inngest import TriggerEvent
 
 from app.inngest import inngest_client
 from app.database import get_supabase_service
@@ -20,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 @inngest_client.create_function(
     fn_id="prospecting-discovery",
-    trigger=inngest_client.TriggerEvent(event="prospecting/discover"),
+    trigger=TriggerEvent(event="prospecting/discover"),
     retries=1,
 )
 async def process_prospecting_discovery_fn(ctx, step):

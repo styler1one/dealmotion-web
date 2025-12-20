@@ -165,7 +165,7 @@ export default function ProspectingPage() {
       })
       
       if (error) {
-        throw new Error(error)
+        throw new Error(error.message || String(error))
       }
       
       if (data) {
@@ -199,7 +199,7 @@ export default function ProspectingPage() {
       })
       
       if (error) {
-        throw new Error(error)
+        throw new Error(error.message || String(error))
       }
       
       if (data?.success && data.prospect_id) {
