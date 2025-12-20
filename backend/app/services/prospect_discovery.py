@@ -865,6 +865,51 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
             
             await asyncio.sleep(0.3)
         
+        # =====================================================================
+        # LAYER 4: Company Search (Market Leaders with category="company")
+        # =====================================================================
+        # This finds actual company websites, not news articles about them
+        # Note: category="company" doesn't support date filters, but that's OK
+        # for market leaders - we want established companies
+        market_leader_queries = [q for q in queries if any(
+            term in q.lower() for term in ['leading', 'prominent', 'top', 'biggest', 'largest', 'major']
+        )]
+        
+        if market_leader_queries:
+            print(f"[PROSPECT_DISCOVERY] 🏢 LAYER 4: Company search for {len(market_leader_queries)} market leader queries", flush=True)
+            
+            for query in market_leader_queries:
+                try:
+                    def do_company_search():
+                        return self._exa.search_and_contents(
+                            query=query,
+                            type="auto",
+                            category="company",  # Find actual company websites!
+                            num_results=20,
+                            # Note: no date filter - not supported with category="company"
+                            text={"max_characters": 1000}
+                        )
+                    
+                    print(f"[PROSPECT_DISCOVERY] 🔍 COMPANY: {query[:60]}...", flush=True)
+                    response = await loop.run_in_executor(None, do_company_search)
+                    
+                    for r in response.results:
+                        all_results.append({
+                            "url": getattr(r, 'url', ''),
+                            "title": getattr(r, 'title', ''),
+                            "text": getattr(r, 'text', ''),
+                            "published_date": None,  # Company category doesn't return dates
+                            "matched_query": query,
+                            "source_type": "company"  # Mark as company result
+                        })
+                    
+                    print(f"[PROSPECT_DISCOVERY] ✅ COMPANY returned {len(response.results)} results", flush=True)
+                    
+                except Exception as e:
+                    logger.warning(f"[PROSPECT_DISCOVERY] Layer 4 company search failed for query: {e}")
+                
+                await asyncio.sleep(0.3)
+        
         print(f"[PROSPECT_DISCOVERY] 📊 TOTAL raw results: {len(all_results)}", flush=True)
         return all_results
     
@@ -931,12 +976,23 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
         
         Extracts company names from URLs and content,
         deduplicates by domain/company name.
+        
+        IMPORTANT: Prioritizes "company" and "similar" source types over "news"
+        to ensure we find actual company websites, not just news articles.
         """
         seen_domains = set()
         seen_companies = set()
         prospects = []
         
-        for r in raw_results:
+        # Sort results to prioritize company/similar sources over news
+        # This ensures company websites are processed first
+        source_priority = {"company": 0, "similar": 1, "direct": 2, "news": 3}
+        sorted_results = sorted(
+            raw_results,
+            key=lambda r: source_priority.get(r.get("source_type", "news"), 3)
+        )
+        
+        for r in sorted_results:
             url = r.get("url", "")
             title = r.get("title", "")
             text = r.get("text", "")
