@@ -411,6 +411,90 @@ async def delete_search(
     return {"success": True, "message": "Search deleted"}
 
 
+class RejectProspectRequest(BaseModel):
+    """Request to reject a discovered prospect."""
+    result_id: str = Field(..., description="ID of the prospecting result to reject")
+    reason: Optional[str] = Field(None, description="Reason for rejection (for ML training)")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "result_id": "uuid-here",
+                "reason": "wrong sector - this is a government agency"
+            }
+        }
+
+
+class RejectProspectResponse(BaseModel):
+    """Response when rejecting a prospect."""
+    success: bool
+    message: str
+
+
+@router.post("/reject", response_model=RejectProspectResponse)
+async def reject_prospect(
+    request: RejectProspectRequest,
+    user_org: tuple = Depends(get_user_org)
+):
+    """
+    Reject a discovered prospect.
+    
+    This marks the prospect as rejected, which:
+    1. Removes it from the active results display
+    2. Records the rejection reason for ML training
+    3. Helps improve future prospecting accuracy
+    
+    Rejection reasons help train the model to reduce false positives:
+    - "wrong sector" - sector mismatch
+    - "too small" / "too large" - size mismatch
+    - "wrong region" - geographic mismatch
+    - "already customer" - existing relationship
+    - "competitor" - not a potential customer
+    - "not relevant" - general mismatch
+    """
+    user_id, organization_id = user_org
+    
+    supabase = get_supabase_service()
+    
+    # Verify result exists and belongs to org
+    result = supabase.table("prospecting_results")\
+        .select("id, organization_id, rejected_at")\
+        .eq("id", request.result_id)\
+        .eq("organization_id", organization_id)\
+        .single()\
+        .execute()
+    
+    if not result.data:
+        raise HTTPException(status_code=404, detail="Prospect result not found")
+    
+    if result.data.get("rejected_at"):
+        return RejectProspectResponse(
+            success=False,
+            message="Prospect was already rejected"
+        )
+    
+    # Update with rejection
+    update_data = {
+        "rejected_at": datetime.utcnow().isoformat(),
+        "feedback_type": "rejected"
+    }
+    
+    if request.reason:
+        update_data["rejection_reason"] = request.reason
+    
+    supabase.table("prospecting_results")\
+        .update(update_data)\
+        .eq("id", request.result_id)\
+        .execute()
+    
+    logger.info(f"[PROSPECTING] User {user_id} rejected prospect {request.result_id}, reason: {request.reason}")
+    
+    return RejectProspectResponse(
+        success=True,
+        message="Prospect rejected"
+    )
+
+
 @router.get("/check")
 async def check_prospecting_available(
     user_org: tuple = Depends(get_user_org)

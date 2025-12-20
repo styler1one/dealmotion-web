@@ -74,12 +74,17 @@ class DiscoveredProspect:
     fit_reason: Optional[str] = None
     key_signal: Optional[str] = None
     
-    # Source
+    # Primary source (best quality source - company website preferred)
     source_url: str = ""
     source_title: Optional[str] = None
     source_snippet: Optional[str] = None
     source_published_date: Optional[str] = None
     matched_query: Optional[str] = None
+    source_type: Optional[str] = None  # company, similar, direct, news
+    
+    # Additional signals from other sources (merged during deduplication)
+    # Each signal is a dict with: {source_type, title, snippet, url, date}
+    additional_signals: List[Dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass
@@ -94,6 +99,149 @@ class DiscoveryResult:
     
     execution_time_seconds: float = 0.0
     error: Optional[str] = None
+
+
+# =============================================================================
+# Sector-Specific Trigger Library
+# =============================================================================
+# This library provides sector-specific knowledge to improve query generation.
+# Each sector has:
+# - decision_makers: Roles that typically buy solutions in this sector
+# - regulations: Relevant compliance/regulatory triggers
+# - events: Common trigger events that create buying need
+# - pain_points: Typical challenges that signal opportunity
+
+SECTOR_TRIGGERS = {
+    # Financial Services
+    "insurance": {
+        "decision_makers": ["Chief Claims Officer", "Chief Underwriting Officer", "Chief Digital Officer", "CIO", "Chief Risk Officer"],
+        "regulations": ["Solvency II", "IFRS 17", "PSD2", "DORA", "ESG reporting"],
+        "events": ["fusie", "overname", "claims processing optimization", "digitalisering", "InsurTech partnership"],
+        "pain_points": ["schade-afhandeling", "legacy systems", "customer experience", "fraude detectie", "operational efficiency"],
+    },
+    "verzekeraars": {
+        "decision_makers": ["Chief Claims Officer", "Chief Underwriting Officer", "Chief Digital Officer", "CIO"],
+        "regulations": ["Solvency II", "IFRS 17", "DNB regelgeving", "AFM toezicht"],
+        "events": ["fusie", "overname", "digitale transformatie", "nieuwe directie"],
+        "pain_points": ["claims verwerking", "legacy systemen", "klantervaring", "fraude"],
+    },
+    "schadeverzekeraars": {
+        "decision_makers": ["Chief Claims Officer", "Directeur Schade", "CIO", "COO"],
+        "regulations": ["Solvency II", "Wft", "GDPR/AVG", "Kifid klachten"],
+        "events": ["schade-optimalisatie", "automatisering", "AI implementatie", "nieuwe CEO"],
+        "pain_points": ["doorlooptijd schades", "handmatige processen", "klachten AFM", "concurrentie InsurTech"],
+    },
+    "banking": {
+        "decision_makers": ["CIO", "Chief Digital Officer", "Chief Risk Officer", "CFO"],
+        "regulations": ["Basel IV", "PSD2", "AML/KYC", "DORA"],
+        "events": ["digital banking", "fintech partnership", "core banking replacement"],
+        "pain_points": ["legacy systems", "customer onboarding", "compliance costs"],
+    },
+    
+    # Professional Services
+    "accountancy": {
+        "decision_makers": ["Managing Partner", "Head of Audit", "IT Director", "Partner"],
+        "regulations": ["NBA", "AFM toezicht", "ESG rapportage", "CSRD"],
+        "events": ["private equity investering", "fusie", "kantoor overname", "partner uittreding"],
+        "pain_points": ["Big Four concurrentie", "talent shortage", "audit automation", "digitalisering"],
+    },
+    "accounting": {
+        "decision_makers": ["Managing Partner", "CFO", "Head of Tax", "IT Director"],
+        "regulations": ["SOX compliance", "ESG reporting", "CSRD", "audit requirements"],
+        "events": ["merger", "PE investment", "digital transformation", "new leadership"],
+        "pain_points": ["talent retention", "automation", "competition", "efficiency"],
+    },
+    "legal": {
+        "decision_makers": ["Managing Partner", "CIO", "COO", "Head of Innovation"],
+        "regulations": ["GDPR", "legal tech regulations", "billing compliance"],
+        "events": ["merger", "new practice area", "office expansion", "leadership change"],
+        "pain_points": ["matter management", "document review", "billing efficiency", "client portals"],
+    },
+    "consultancy": {
+        "decision_makers": ["Managing Director", "Partner", "Head of Digital", "CTO"],
+        "regulations": ["industry certifications", "compliance frameworks"],
+        "events": ["market expansion", "new service line", "acquisition", "leadership"],
+        "pain_points": ["knowledge management", "resource planning", "competitive positioning"],
+    },
+    
+    # Healthcare
+    "healthcare": {
+        "decision_makers": ["Medical Director", "CIO", "CFO", "Chief Nursing Officer"],
+        "regulations": ["HIPAA", "FDA", "EPD requirements", "Zorgverzekeringswet"],
+        "events": ["EMR implementation", "hospital merger", "new facility", "digital health initiative"],
+        "pain_points": ["patient experience", "staff shortage", "interoperability", "costs"],
+    },
+    "zorg": {
+        "decision_makers": ["Bestuurder", "CIO", "Medisch Directeur", "Hoofd ICT"],
+        "regulations": ["NEN 7510", "AVG", "Wkkgz", "Wmcz"],
+        "events": ["fusie ziekenhuizen", "EPD implementatie", "digitale zorg", "nieuwe bestuurder"],
+        "pain_points": ["personeelstekort", "wachtlijsten", "administratieve last", "EPD frustratie"],
+    },
+    
+    # Manufacturing & Logistics
+    "manufacturing": {
+        "decision_makers": ["COO", "VP Operations", "Plant Manager", "CIO"],
+        "regulations": ["ISO certifications", "environmental", "safety"],
+        "events": ["factory expansion", "automation project", "supply chain disruption", "new CEO"],
+        "pain_points": ["supply chain", "quality control", "operational efficiency", "sustainability"],
+    },
+    "logistics": {
+        "decision_makers": ["COO", "VP Supply Chain", "CIO", "Head of Operations"],
+        "regulations": ["customs", "transport regulations", "sustainability mandates"],
+        "events": ["warehouse expansion", "fleet modernization", "M&A", "new contracts"],
+        "pain_points": ["visibility", "last mile", "capacity planning", "driver shortage"],
+    },
+    
+    # Technology
+    "technology": {
+        "decision_makers": ["CTO", "VP Engineering", "CIO", "Head of Product"],
+        "regulations": ["SOC 2", "GDPR", "industry-specific"],
+        "events": ["funding round", "product launch", "international expansion", "new CTO"],
+        "pain_points": ["scaling", "technical debt", "talent", "security"],
+    },
+    "saas": {
+        "decision_makers": ["CTO", "VP Engineering", "Head of Product", "CEO"],
+        "regulations": ["SOC 2", "GDPR", "ISO 27001"],
+        "events": ["Series A/B/C", "international launch", "enterprise pivot", "new leadership"],
+        "pain_points": ["churn", "scaling infrastructure", "enterprise readiness", "integration"],
+    },
+    
+    # Retail & E-commerce
+    "retail": {
+        "decision_makers": ["CDO", "CIO", "Head of E-commerce", "CMO"],
+        "regulations": ["consumer protection", "GDPR", "accessibility"],
+        "events": ["omnichannel initiative", "store closures", "new CEO", "PE acquisition"],
+        "pain_points": ["online competition", "inventory", "customer experience", "personalization"],
+    },
+    "ecommerce": {
+        "decision_makers": ["CTO", "Head of Operations", "CMO", "CEO"],
+        "regulations": ["consumer law", "GDPR", "payment regulations"],
+        "events": ["marketplace launch", "international expansion", "funding", "acquisition"],
+        "pain_points": ["conversion", "fulfillment", "returns", "customer acquisition cost"],
+    },
+}
+
+def get_sector_context(sector: str) -> Optional[Dict[str, Any]]:
+    """
+    Get sector-specific trigger context for query generation.
+    
+    Returns None if sector not found - query generation will use generic approach.
+    """
+    if not sector:
+        return None
+    
+    sector_lower = sector.lower().strip()
+    
+    # Direct match
+    if sector_lower in SECTOR_TRIGGERS:
+        return SECTOR_TRIGGERS[sector_lower]
+    
+    # Partial match (e.g., "non-life insurance" matches "insurance")
+    for key, value in SECTOR_TRIGGERS.items():
+        if key in sector_lower or sector_lower in key:
+            return value
+    
+    return None
 
 
 # =============================================================================
@@ -121,6 +269,7 @@ Your task: Generate queries that find companies experiencing TRIGGER EVENTS that
 - Target Role: {target_role}
 - Pain Point/Urgency: {pain_point}
 {reference_section}
+{sector_context_section}
 
 **IMPORTANT**: If any search input field says "Not specified", use the corresponding information from the Seller Profile above. The seller profile contains their default proposition, target sectors, ideal customer profile, and typical pain points.
 
@@ -225,6 +374,16 @@ SCORING_PROMPT = """You are a B2B sales intelligence expert specializing in EARL
 
 {prospects_json}
 
+## DATA STRUCTURE
+
+Each company has:
+- **primary_source**: The main source (company website preferred)
+- **additional_signals** (optional): Other sources where this company was found (news articles, etc.)
+
+When scoring, consider ALL signals for a company. Multiple signals = stronger evidence.
+- A company found via their own website + a news article about their new CTO = VERY strong (2 signals)
+- A company only found via a generic directory listing = weaker (1 weak signal)
+
 ## SCORING PHILOSOPHY
 
 We're looking for companies experiencing TRIGGER EVENTS that create the need for **{proposition}** specifically.
@@ -311,6 +470,60 @@ Return ONLY the JSON array, no explanation.
 # =============================================================================
 # Prospect Discovery Service
 # =============================================================================
+
+# =============================================================================
+# Query Cache for Market Leader Queries
+# =============================================================================
+# Cache Exa search results for frequently-used queries like "leading [sector] companies in [region]"
+# These queries are identical across users with the same sector/region, so caching saves API calls.
+
+import hashlib
+from datetime import datetime as dt
+from typing import TypedDict
+
+class CacheEntry(TypedDict):
+    results: List[Dict[str, Any]]
+    timestamp: float
+    query: str
+
+# Module-level cache (persists across requests in same process)
+_QUERY_CACHE: Dict[str, CacheEntry] = {}
+_CACHE_TTL_SECONDS = 3600 * 24  # 24 hours - market leaders don't change daily
+
+
+def _get_cache_key(query: str, search_type: str = "company") -> str:
+    """Generate cache key for a query."""
+    normalized = query.lower().strip()
+    return hashlib.md5(f"{search_type}:{normalized}".encode()).hexdigest()
+
+
+def _get_cached_results(query: str, search_type: str = "company") -> Optional[List[Dict[str, Any]]]:
+    """Get cached results if available and not expired."""
+    key = _get_cache_key(query, search_type)
+    
+    if key not in _QUERY_CACHE:
+        return None
+    
+    entry = _QUERY_CACHE[key]
+    age = dt.now().timestamp() - entry["timestamp"]
+    
+    if age > _CACHE_TTL_SECONDS:
+        # Expired, remove from cache
+        del _QUERY_CACHE[key]
+        return None
+    
+    return entry["results"]
+
+
+def _cache_results(query: str, results: List[Dict[str, Any]], search_type: str = "company") -> None:
+    """Cache query results."""
+    key = _get_cache_key(query, search_type)
+    _QUERY_CACHE[key] = {
+        "results": results,
+        "timestamp": dt.now().timestamp(),
+        "query": query
+    }
+
 
 class ProspectDiscoveryService:
     """
@@ -545,6 +758,21 @@ The seller provided reference customers (companies that are 100% fit). Based on 
 Use these patterns to find SIMILAR companies with SIMILAR signals and situations.
 """
         
+        # Build sector-specific context section
+        sector_context_section = ""
+        sector_data = get_sector_context(input.sector)
+        if sector_data:
+            sector_context_section = f"""
+**Sector-Specific Intelligence (for {input.sector}):**
+- Key Decision Makers: {', '.join(sector_data.get('decision_makers', [])[:4])}
+- Relevant Regulations/Triggers: {', '.join(sector_data.get('regulations', [])[:4])}
+- Common Events: {', '.join(sector_data.get('events', [])[:4])}
+- Typical Pain Points: {', '.join(sector_data.get('pain_points', [])[:4])}
+
+USE these sector-specific terms in your queries instead of generic tech terms!
+"""
+            print(f"[PROSPECT_DISCOVERY] 📚 Using sector-specific context for '{input.sector}'", flush=True)
+        
         prompt = QUERY_GENERATION_PROMPT.format(
             seller_context=seller_context,
             region=input.region or "Not specified",
@@ -554,6 +782,7 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
             target_role=input.target_role or "Not specified",
             pain_point=input.pain_point or "Not specified",
             reference_section=reference_section,
+            sector_context_section=sector_context_section,
             current_year=datetime.now().year
         )
         
@@ -756,6 +985,16 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
         "news.google.com", "apple.news",
     ]
     
+    # Text patterns to EXCLUDE from search results (filters noise at API level)
+    # Exa supports only 1 string up to 5 words, so we use most common job-related term
+    EXCLUDE_TEXT_PATTERNS = ["vacature"]  # Dutch for "vacancy/job posting"
+    
+    # Common job-related terms to detect in content (for additional filtering)
+    JOB_POSTING_INDICATORS = [
+        "vacature", "vacatures", "job opening", "careers", "we're hiring",
+        "join our team", "solliciteer", "apply now", "open positions"
+    ]
+    
     async def _execute_discovery_searches(
         self,
         queries: List[str],
@@ -826,17 +1065,35 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
                         num_results=20,  # Increased from 10
                         start_published_date=start_date,
                         exclude_domains=self.EXCLUDE_DOMAINS,
-                        text={"max_characters": 1200}
+                        exclude_text=self.EXCLUDE_TEXT_PATTERNS,  # Filter job postings
+                        text={"max_characters": 1200},
+                        # Request highlights for better signal extraction
+                        # Focus on trigger events like appointments, changes, announcements
+                        highlights={
+                            "num_sentences": 2,
+                            "highlights_per_url": 2,
+                            "query": "announcement appointment change new strategy"
+                        }
                     )
                 
                 print(f"[PROSPECT_DISCOVERY] 🔍 NEWS: {query[:60]}...", flush=True)
                 response = await loop.run_in_executor(None, do_news_search)
                 
                 for r in response.results:
+                    # Get highlights if available (better signal extraction)
+                    highlights = getattr(r, 'highlights', None) or []
+                    highlight_text = " | ".join(highlights) if highlights else ""
+                    
+                    # Prefer highlights over raw text for news (more relevant snippets)
+                    text_content = getattr(r, 'text', '') or ""
+                    best_snippet = highlight_text if highlight_text else text_content
+                    
                     all_results.append({
                         "url": getattr(r, 'url', ''),
                         "title": getattr(r, 'title', ''),
-                        "text": getattr(r, 'text', ''),
+                        "text": best_snippet,
+                        "full_text": text_content,  # Keep full text for backup
+                        "highlights": highlights,
                         "published_date": getattr(r, 'published_date', None) or getattr(r, 'publishedDate', ''),
                         "matched_query": query,
                         "source_type": "news"
@@ -850,41 +1107,63 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
             await asyncio.sleep(0.3)
         
         # =====================================================================
-        # LAYER 3: Direct Search (Broad Discovery)
+        # LAYER 3: Direct Search (Broad Discovery) - PARALLELIZED
         # =====================================================================
-        print(f"[PROSPECT_DISCOVERY] 🌐 LAYER 3: Direct search (broad)", flush=True)
+        # Run direct searches in parallel with rate limiting for better performance
+        print(f"[PROSPECT_DISCOVERY] 🌐 LAYER 3: Direct search (broad) - {len(queries)} queries parallel", flush=True)
         
-        for query in queries:  # Use all queries
-            try:
-                def do_direct_search():
-                    return self._exa.search_and_contents(
-                        query=query,
-                        type="auto",  # No category = broader results
-                        num_results=15,  # Increased from 10
-                        start_published_date=start_date,
-                        exclude_domains=self.EXCLUDE_DOMAINS,
-                        text={"max_characters": 1200}
-                    )
-                
-                print(f"[PROSPECT_DISCOVERY] 🔍 DIRECT: {query[:60]}...", flush=True)
-                response = await loop.run_in_executor(None, do_direct_search)
-                
-                for r in response.results:
-                    all_results.append({
-                        "url": getattr(r, 'url', ''),
-                        "title": getattr(r, 'title', ''),
-                        "text": getattr(r, 'text', ''),
-                        "published_date": getattr(r, 'published_date', None) or getattr(r, 'publishedDate', ''),
-                        "matched_query": query,
-                        "source_type": "direct"
-                    })
-                
-                print(f"[PROSPECT_DISCOVERY] ✅ DIRECT returned {len(response.results)} results", flush=True)
-                
-            except Exception as e:
-                logger.warning(f"[PROSPECT_DISCOVERY] Layer 3 direct search failed: {e}")
-            
-            await asyncio.sleep(0.3)
+        # Semaphore to limit concurrent requests (Exa rate limiting)
+        MAX_CONCURRENT = 4
+        semaphore = asyncio.Semaphore(MAX_CONCURRENT)
+        
+        async def do_direct_search_parallel(query: str, idx: int) -> List[Dict[str, Any]]:
+            """Execute a single direct search with rate limiting."""
+            async with semaphore:
+                try:
+                    def do_search():
+                        return self._exa.search_and_contents(
+                            query=query,
+                            type="auto",
+                            num_results=15,
+                            start_published_date=start_date,
+                            exclude_domains=self.EXCLUDE_DOMAINS,
+                            exclude_text=self.EXCLUDE_TEXT_PATTERNS,
+                            text={"max_characters": 1200}
+                        )
+                    
+                    response = await loop.run_in_executor(None, do_search)
+                    
+                    results = []
+                    for r in response.results:
+                        results.append({
+                            "url": getattr(r, 'url', ''),
+                            "title": getattr(r, 'title', ''),
+                            "text": getattr(r, 'text', ''),
+                            "published_date": getattr(r, 'published_date', None) or getattr(r, 'publishedDate', ''),
+                            "matched_query": query,
+                            "source_type": "direct"
+                        })
+                    
+                    return results
+                    
+                except Exception as e:
+                    logger.warning(f"[PROSPECT_DISCOVERY] Direct search {idx} failed: {e}")
+                    return []
+        
+        # Execute all direct searches in parallel
+        direct_tasks = [
+            do_direct_search_parallel(query, idx) 
+            for idx, query in enumerate(queries)
+        ]
+        direct_results_lists = await asyncio.gather(*direct_tasks)
+        
+        # Flatten and add to all_results
+        direct_count = 0
+        for results_list in direct_results_lists:
+            all_results.extend(results_list)
+            direct_count += len(results_list)
+        
+        print(f"[PROSPECT_DISCOVERY] ✅ DIRECT returned {direct_count} total results from {len(queries)} parallel queries", flush=True)
         
         # =====================================================================
         # LAYER 4: Company Search (Market Leaders with category="company")
@@ -892,6 +1171,9 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
         # This finds actual company websites, not news articles about them
         # Note: category="company" doesn't support date filters, but that's OK
         # for market leaders - we want established companies
+        # 
+        # CACHING: These queries are identical for all users with same sector/region
+        # so we cache results to save API calls and improve response time
         market_leader_queries = [q for q in queries if any(
             term in q.lower() for term in ['leading', 'prominent', 'top', 'biggest', 'largest', 'major']
         )]
@@ -899,8 +1181,18 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
         if market_leader_queries:
             print(f"[PROSPECT_DISCOVERY] 🏢 LAYER 4: Company search for {len(market_leader_queries)} market leader queries", flush=True)
             
+            cache_hits = 0
             for query in market_leader_queries:
                 try:
+                    # Check cache first
+                    cached = _get_cached_results(query, "company")
+                    if cached is not None:
+                        all_results.extend(cached)
+                        cache_hits += 1
+                        print(f"[PROSPECT_DISCOVERY] 💾 CACHE HIT: {query[:60]}... ({len(cached)} results)", flush=True)
+                        continue
+                    
+                    # Not in cache, fetch from Exa
                     def do_company_search():
                         return self._exa.search_and_contents(
                             query=query,
@@ -914,22 +1206,32 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
                     print(f"[PROSPECT_DISCOVERY] 🔍 COMPANY: {query[:60]}...", flush=True)
                     response = await loop.run_in_executor(None, do_company_search)
                     
+                    # Process and cache results
+                    query_results = []
                     for r in response.results:
-                        all_results.append({
+                        result = {
                             "url": getattr(r, 'url', ''),
                             "title": getattr(r, 'title', ''),
                             "text": getattr(r, 'text', ''),
                             "published_date": None,  # Company category doesn't return dates
                             "matched_query": query,
                             "source_type": "company"  # Mark as company result
-                        })
+                        }
+                        query_results.append(result)
+                        all_results.append(result)
                     
-                    print(f"[PROSPECT_DISCOVERY] ✅ COMPANY returned {len(response.results)} results", flush=True)
+                    # Cache the results for future queries
+                    _cache_results(query, query_results, "company")
+                    
+                    print(f"[PROSPECT_DISCOVERY] ✅ COMPANY returned {len(response.results)} results (cached)", flush=True)
                     
                 except Exception as e:
                     logger.warning(f"[PROSPECT_DISCOVERY] Layer 4 company search failed for query: {e}")
                 
                 await asyncio.sleep(0.3)
+            
+            if cache_hits > 0:
+                print(f"[PROSPECT_DISCOVERY] 💾 Cache saved {cache_hits} Exa API calls", flush=True)
         
         print(f"[PROSPECT_DISCOVERY] 📊 TOTAL raw results: {len(all_results)}", flush=True)
         return all_results
@@ -998,33 +1300,33 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
         Extracts company names from URLs and content,
         deduplicates by domain/company name.
         
-        IMPORTANT: Prioritizes "company" and "similar" source types over "news"
-        to ensure we find actual company websites, not just news articles.
+        IMPORTANT: 
+        - Prioritizes "company" and "similar" source types over "news"
+        - MERGES signals from multiple sources for the same company
+          (e.g., company website + news article = richer context for scoring)
         """
-        seen_domains = set()
-        seen_companies = set()
-        prospects = []
+        # Phase 1: Group all results by company (domain-based)
+        company_groups: Dict[str, List[Dict[str, Any]]] = {}
+        domain_to_company: Dict[str, str] = {}
         
-        # Sort results to prioritize company/similar sources over news
-        # This ensures company websites are processed first
         source_priority = {"company": 0, "similar": 1, "direct": 2, "news": 3}
-        sorted_results = sorted(
-            raw_results,
-            key=lambda r: source_priority.get(r.get("source_type", "news"), 3)
-        )
         
-        for r in sorted_results:
+        for r in raw_results:
             url = r.get("url", "")
             title = r.get("title", "")
             text = r.get("text", "")
             
             # Extract domain
             domain = self._extract_domain(url)
-            if not domain or domain in seen_domains:
+            if not domain:
                 continue
             
             # Skip common news/aggregator sites
             if self._is_aggregator_domain(domain):
+                continue
+            
+            # Skip job postings (additional check beyond Exa's excludeText)
+            if self._is_job_posting(title, text):
                 continue
             
             # Try to extract company name
@@ -1032,28 +1334,85 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
             if not company_name:
                 continue
             
-            # Normalize company name for deduplication
+            # Normalize company name for grouping
             normalized_name = company_name.lower().strip()
-            if normalized_name in seen_companies:
-                continue
             
-            seen_domains.add(domain)
-            seen_companies.add(normalized_name)
+            # Check if we've seen this domain or company name before
+            # Use domain as primary key, company name as secondary
+            group_key = domain_to_company.get(domain) or normalized_name
             
-            # Infer region from URL/content
-            inferred_region = self._infer_region(url, text)
+            if group_key not in company_groups:
+                company_groups[group_key] = []
+                domain_to_company[domain] = group_key
             
-            prospects.append(DiscoveredProspect(
-                company_name=company_name,
-                website=f"https://{domain}" if not url.startswith("http") else self._get_root_url(url),
-                linkedin_url=self._extract_linkedin(text),
+            # Add result to group with metadata
+            company_groups[group_key].append({
+                "url": url,
+                "domain": domain,
+                "title": title,
+                "text": text,
+                "published_date": r.get("published_date"),
+                "matched_query": r.get("matched_query"),
+                "source_type": r.get("source_type", "direct"),
+                "company_name": company_name,
+                "priority": source_priority.get(r.get("source_type", "direct"), 2)
+            })
+        
+        # Phase 2: For each company, pick best primary source and merge signals
+        prospects = []
+        
+        for group_key, results in company_groups.items():
+            # Sort by priority (company > similar > direct > news)
+            results.sort(key=lambda x: x["priority"])
+            
+            # Best result becomes primary source
+            primary = results[0]
+            
+            # Extract additional signals from other sources
+            additional_signals = []
+            seen_snippets = {primary["text"][:200] if primary["text"] else ""}
+            
+            for r in results[1:]:  # Skip primary
+                snippet = r["text"][:500] if r["text"] else ""
+                snippet_key = snippet[:200] if snippet else ""
+                
+                # Skip if snippet is too similar to one we've seen
+                if snippet_key and snippet_key not in seen_snippets:
+                    seen_snippets.add(snippet_key)
+                    additional_signals.append({
+                        "source_type": r["source_type"],
+                        "title": r["title"],
+                        "snippet": snippet,
+                        "url": r["url"],
+                        "date": r["published_date"],
+                        "query": r["matched_query"]
+                    })
+            
+            # Infer region from best source
+            inferred_region = self._infer_region(primary["url"], primary["text"])
+            
+            # Create prospect with merged signals
+            prospect = DiscoveredProspect(
+                company_name=primary["company_name"],
+                website=f"https://{primary['domain']}" if not primary["url"].startswith("http") else self._get_root_url(primary["url"]),
+                linkedin_url=self._extract_linkedin(primary["text"]),
                 inferred_region=inferred_region,
-                source_url=url,
-                source_title=title,
-                source_snippet=text[:500] if text else None,
-                source_published_date=r.get("published_date"),
-                matched_query=r.get("matched_query")
-            ))
+                source_url=primary["url"],
+                source_title=primary["title"],
+                source_snippet=primary["text"][:500] if primary["text"] else None,
+                source_published_date=primary["published_date"],
+                matched_query=primary["matched_query"],
+                source_type=primary["source_type"],
+                additional_signals=additional_signals
+            )
+            
+            prospects.append(prospect)
+        
+        # Log signal merging stats
+        multi_signal_count = sum(1 for p in prospects if len(p.additional_signals) > 0)
+        total_signals = sum(1 + len(p.additional_signals) for p in prospects)
+        if multi_signal_count > 0:
+            print(f"[PROSPECT_DISCOVERY] 🔗 Merged signals: {multi_signal_count}/{len(prospects)} companies have multiple signals ({total_signals} total)", flush=True)
         
         return prospects
     
@@ -1063,23 +1422,85 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
         input: DiscoveryInput,
         seller_context: str
     ) -> List[DiscoveredProspect]:
-        """Score prospects using Claude for fit analysis."""
+        """
+        Score prospects using Claude for fit analysis.
+        
+        Uses batch processing to handle large sets without truncation:
+        - Batch size of 25 prospects per API call
+        - Parallel processing of batches for speed
+        - Merges results from all batches
+        """
         if not prospects or not self._anthropic:
             return prospects
         
-        # Prepare prospects for scoring
-        prospects_data = [
-            {
-                "company_name": p.company_name,
-                "website": p.website,
-                "source_title": p.source_title,
-                "source_snippet": p.source_snippet,
-                "source_published_date": p.source_published_date
-            }
-            for p in prospects
+        import json
+        
+        # Batch configuration
+        BATCH_SIZE = 25  # Safe size to avoid response truncation
+        
+        # Split into batches
+        batches = [
+            prospects[i:i + BATCH_SIZE] 
+            for i in range(0, len(prospects), BATCH_SIZE)
         ]
         
+        if len(batches) > 1:
+            print(f"[PROSPECT_DISCOVERY] 📦 Scoring {len(prospects)} prospects in {len(batches)} batches of {BATCH_SIZE}", flush=True)
+        
+        # Score each batch
+        all_scored = []
+        for batch_idx, batch in enumerate(batches):
+            try:
+                scored_batch = await self._score_batch(
+                    batch, input, seller_context, batch_idx + 1, len(batches)
+                )
+                all_scored.extend(scored_batch)
+            except Exception as e:
+                logger.error(f"[PROSPECT_DISCOVERY] Batch {batch_idx + 1} scoring failed: {e}")
+                # Return unscored batch items
+                all_scored.extend(batch)
+        
+        return all_scored
+    
+    async def _score_batch(
+        self,
+        prospects: List[DiscoveredProspect],
+        input: DiscoveryInput,
+        seller_context: str,
+        batch_num: int = 1,
+        total_batches: int = 1
+    ) -> List[DiscoveredProspect]:
+        """Score a single batch of prospects."""
         import json
+        
+        # Prepare prospects for scoring - include all signals for richer context
+        prospects_data = []
+        for p in prospects:
+            prospect_data = {
+                "company_name": p.company_name,
+                "website": p.website,
+                "primary_source": {
+                    "type": p.source_type or "unknown",
+                    "title": p.source_title,
+                    "snippet": p.source_snippet,
+                    "date": p.source_published_date
+                }
+            }
+            
+            # Add additional signals if available (merged from multiple sources)
+            if p.additional_signals:
+                prospect_data["additional_signals"] = [
+                    {
+                        "type": s.get("source_type"),
+                        "title": s.get("title"),
+                        "snippet": s.get("snippet", "")[:300],  # Limit to save tokens
+                        "date": s.get("date")
+                    }
+                    for s in p.additional_signals[:3]  # Max 3 additional signals
+                ]
+            
+            prospects_data.append(prospect_data)
+        
         prospects_json = json.dumps(prospects_data, indent=2)
         
         prompt = SCORING_PROMPT.format(
@@ -1094,7 +1515,7 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
         try:
             response = self._anthropic.messages.create(
                 model="claude-sonnet-4-20250514",
-                max_tokens=16000,  # Increased from 4096 to handle 50+ prospects
+                max_tokens=8000,  # Sufficient for 25 prospects
                 messages=[{"role": "user", "content": prompt}]
             )
             
@@ -1103,7 +1524,6 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
             # Strip markdown code blocks if present
             if content.startswith("```"):
                 lines = content.split("\n")
-                # Remove first line (```json) and last line (```)
                 lines = [l for l in lines if not l.startswith("```")]
                 content = "\n".join(lines)
             
@@ -1113,6 +1533,7 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
             # Apply scores to prospects
             score_map = {s["company_name"]: s for s in scores}
             
+            scored_count = 0
             for p in prospects:
                 if p.company_name in score_map:
                     s = score_map[p.company_name]
@@ -1125,63 +1546,76 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
                     p.key_signal = s.get("key_signal")
                     p.inferred_sector = s.get("inferred_sector")
                     p.inferred_size = s.get("inferred_size")
+                    scored_count += 1
+            
+            if total_batches > 1:
+                print(f"[PROSPECT_DISCOVERY] ✅ Batch {batch_num}/{total_batches}: scored {scored_count}/{len(prospects)}", flush=True)
             
             return prospects
             
         except json.JSONDecodeError as e:
-            logger.error(f"[PROSPECT_DISCOVERY] Scoring JSON parse failed: {e}")
+            logger.error(f"[PROSPECT_DISCOVERY] Batch {batch_num} JSON parse failed: {e}")
             logger.error(f"[PROSPECT_DISCOVERY] Raw content was: {content[:500] if content else 'EMPTY'}")
             
-            # Try to recover partial JSON - find the last complete object
-            try:
-                # Find all complete JSON objects in the response
-                import re
-                # Match complete objects: {...}
-                complete_objects = []
-                brace_count = 0
-                start_idx = None
-                
-                for i, char in enumerate(content):
-                    if char == '{':
-                        if brace_count == 0:
-                            start_idx = i
-                        brace_count += 1
-                    elif char == '}':
-                        brace_count -= 1
-                        if brace_count == 0 and start_idx is not None:
-                            obj_str = content[start_idx:i+1]
-                            try:
-                                obj = json.loads(obj_str)
-                                complete_objects.append(obj)
-                            except:
-                                pass
-                            start_idx = None
-                
-                if complete_objects:
-                    print(f"[PROSPECT_DISCOVERY] ⚠️ Recovered {len(complete_objects)} scored prospects from truncated response", flush=True)
-                    score_map = {s["company_name"]: s for s in complete_objects}
-                    
-                    for p in prospects:
-                        if p.company_name in score_map:
-                            s = score_map[p.company_name]
-                            p.fit_score = s.get("fit_score", 0)
-                            p.proposition_fit = s.get("proposition_fit", 0)
-                            p.seller_fit = s.get("seller_fit", 0)
-                            p.intent_score = s.get("intent_score", 0)
-                            p.recency_score = s.get("recency_score", 0)
-                            p.fit_reason = s.get("fit_reason")
-                            p.key_signal = s.get("key_signal")
-                            p.inferred_sector = s.get("inferred_sector")
-                            p.inferred_size = s.get("inferred_size")
-                    
-                    return prospects
-            except Exception as recovery_error:
-                logger.error(f"[PROSPECT_DISCOVERY] Recovery also failed: {recovery_error}")
+            # Try to recover partial JSON
+            return self._recover_partial_scores(prospects, content)
             
-            return prospects
         except Exception as e:
-            logger.error(f"[PROSPECT_DISCOVERY] Scoring failed: {e}")
+            logger.error(f"[PROSPECT_DISCOVERY] Batch {batch_num} scoring failed: {e}")
             return prospects
+    
+    def _recover_partial_scores(
+        self,
+        prospects: List[DiscoveredProspect],
+        content: str
+    ) -> List[DiscoveredProspect]:
+        """Attempt to recover scores from truncated JSON response."""
+        import json
+        
+        try:
+            # Find all complete JSON objects in the response
+            complete_objects = []
+            brace_count = 0
+            start_idx = None
+            
+            for i, char in enumerate(content):
+                if char == '{':
+                    if brace_count == 0:
+                        start_idx = i
+                    brace_count += 1
+                elif char == '}':
+                    brace_count -= 1
+                    if brace_count == 0 and start_idx is not None:
+                        obj_str = content[start_idx:i+1]
+                        try:
+                            obj = json.loads(obj_str)
+                            if "company_name" in obj:  # Validate it's a score object
+                                complete_objects.append(obj)
+                        except:
+                            pass
+                        start_idx = None
+            
+            if complete_objects:
+                print(f"[PROSPECT_DISCOVERY] ⚠️ Recovered {len(complete_objects)} scored prospects from truncated response", flush=True)
+                score_map = {s["company_name"]: s for s in complete_objects}
+                
+                for p in prospects:
+                    if p.company_name in score_map:
+                        s = score_map[p.company_name]
+                        p.fit_score = s.get("fit_score", 0)
+                        p.proposition_fit = s.get("proposition_fit", 0)
+                        p.seller_fit = s.get("seller_fit", 0)
+                        p.intent_score = s.get("intent_score", 0)
+                        p.recency_score = s.get("recency_score", 0)
+                        p.fit_reason = s.get("fit_reason")
+                        p.key_signal = s.get("key_signal")
+                        p.inferred_sector = s.get("inferred_sector")
+                        p.inferred_size = s.get("inferred_size")
+                
+        except Exception as recovery_error:
+            logger.error(f"[PROSPECT_DISCOVERY] Recovery also failed: {recovery_error}")
+        
+        return prospects
     
     # =========================================================================
     # Helper Methods
@@ -1195,63 +1629,157 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
         """
         Filter prospects to only include those matching the target region.
         
-        Uses URL TLD and inferred_region to determine if prospect is in target region.
+        Uses multiple signals:
+        1. URL TLD (.nl, .de, etc.)
+        2. Keywords in content/URL
+        3. Language detection (Dutch content = likely NL company)
+        4. Inferred region from LLM
         """
-        # Map of region names to acceptable TLDs and country indicators
-        region_indicators = {
+        # Map of region names to acceptable TLDs, keywords, and languages
+        region_config = {
             # Netherlands
-            "nederland": [".nl", "netherlands", "nederland", "dutch", "amsterdam", "rotterdam"],
-            "netherlands": [".nl", "netherlands", "nederland", "dutch", "amsterdam", "rotterdam"],
-            "nl": [".nl", "netherlands", "nederland", "dutch"],
+            "nederland": {
+                "tlds": [".nl"],
+                "keywords": ["netherlands", "nederland", "dutch", "amsterdam", "rotterdam", "utrecht", "eindhoven"],
+                "languages": ["nl"],  # Dutch
+            },
+            "netherlands": {
+                "tlds": [".nl"],
+                "keywords": ["netherlands", "nederland", "dutch", "amsterdam", "rotterdam"],
+                "languages": ["nl"],
+            },
+            "nl": {
+                "tlds": [".nl"],
+                "keywords": ["netherlands", "nederland", "dutch"],
+                "languages": ["nl"],
+            },
             # Germany
-            "germany": [".de", "germany", "deutschland", "german", "munich", "berlin"],
-            "deutschland": [".de", "germany", "deutschland", "german"],
-            "dach": [".de", ".at", ".ch", "germany", "austria", "switzerland", "deutschland"],
+            "germany": {
+                "tlds": [".de"],
+                "keywords": ["germany", "deutschland", "german", "munich", "berlin", "hamburg"],
+                "languages": ["de"],
+            },
+            "deutschland": {
+                "tlds": [".de"],
+                "keywords": ["germany", "deutschland", "german"],
+                "languages": ["de"],
+            },
+            "dach": {
+                "tlds": [".de", ".at", ".ch"],
+                "keywords": ["germany", "austria", "switzerland", "deutschland", "österreich", "schweiz"],
+                "languages": ["de"],
+            },
             # Belgium
-            "belgium": [".be", "belgium", "belgie", "belgian", "brussels"],
-            "belgie": [".be", "belgium", "belgie", "belgian"],
+            "belgium": {
+                "tlds": [".be"],
+                "keywords": ["belgium", "belgie", "belgian", "brussels", "bruxelles"],
+                "languages": ["nl", "fr"],  # Both Dutch and French
+            },
+            "belgie": {
+                "tlds": [".be"],
+                "keywords": ["belgium", "belgie", "belgian"],
+                "languages": ["nl", "fr"],
+            },
             # Benelux
-            "benelux": [".nl", ".be", ".lu", "netherlands", "belgium", "luxembourg"],
+            "benelux": {
+                "tlds": [".nl", ".be", ".lu"],
+                "keywords": ["netherlands", "belgium", "luxembourg", "nederland", "belgie"],
+                "languages": ["nl", "fr"],
+            },
             # UK
-            "uk": [".uk", ".co.uk", "united kingdom", "british", "london"],
-            "united kingdom": [".uk", ".co.uk", "united kingdom", "british"],
+            "uk": {
+                "tlds": [".uk", ".co.uk"],
+                "keywords": ["united kingdom", "british", "london", "england", "scotland"],
+                "languages": ["en"],  # Note: en is too broad, so we rely more on TLD/keywords
+            },
+            "united kingdom": {
+                "tlds": [".uk", ".co.uk"],
+                "keywords": ["united kingdom", "british", "london"],
+                "languages": ["en"],
+            },
             # France
-            "france": [".fr", "france", "french", "paris"],
-            # USA
-            "usa": [".com", ".us", "united states", "american"],  # .com is tricky, be careful
-            "us": [".com", ".us", "united states", "american"],
+            "france": {
+                "tlds": [".fr"],
+                "keywords": ["france", "french", "paris", "lyon", "marseille"],
+                "languages": ["fr"],
+            },
         }
         
         # Normalize target region
         target_lower = target_region.lower().strip()
         
-        # Get indicators for this region
-        indicators = region_indicators.get(target_lower, [target_lower])
+        # Get config for this region
+        config = region_config.get(target_lower)
+        if not config:
+            # Unknown region, be permissive
+            logger.warning(f"[PROSPECT_DISCOVERY] Unknown region '{target_region}', skipping filter")
+            return prospects
+        
+        tlds = config["tlds"]
+        keywords = config["keywords"]
+        expected_languages = config["languages"]
         
         # Filter prospects
         filtered = []
         for p in prospects:
-            # Check URL TLD
             url = (p.website or p.source_url or "").lower()
             
-            # Check if any indicator matches
-            matches = False
-            for indicator in indicators:
-                if indicator.startswith("."):
-                    # TLD check
-                    if indicator in url:
-                        matches = True
-                        break
-                else:
-                    # Region name check in URL or inferred_region
-                    if indicator in url or (p.inferred_region and indicator in p.inferred_region.lower()):
-                        matches = True
-                        break
-            
-            if matches:
+            # Check 1: TLD match (strongest signal)
+            tld_match = any(url.endswith(tld) or f"{tld}/" in url for tld in tlds)
+            if tld_match:
                 filtered.append(p)
+                continue
+            
+            # Check 2: Keywords in URL or inferred_region
+            keyword_match = False
+            for keyword in keywords:
+                if keyword in url:
+                    keyword_match = True
+                    break
+                if p.inferred_region and keyword in p.inferred_region.lower():
+                    keyword_match = True
+                    break
+            
+            if keyword_match:
+                filtered.append(p)
+                continue
+            
+            # Check 3: Language detection (for .com domains that might be local companies)
+            # Only check if we have content and didn't match by TLD/keyword
+            if p.source_snippet and len(p.source_snippet) > 50:
+                detected_lang = self._detect_language(p.source_snippet)
+                if detected_lang and detected_lang in expected_languages:
+                    # Language matches, but be careful with English (too common)
+                    if detected_lang != "en":  # Non-English languages are strong signals
+                        filtered.append(p)
+                        continue
         
         return filtered
+    
+    def _detect_language(self, text: str) -> Optional[str]:
+        """
+        Detect the language of text content.
+        
+        Returns ISO 639-1 language code (e.g., 'nl', 'de', 'en', 'fr').
+        Returns None if detection fails or text is too short.
+        """
+        if not text or len(text) < 50:
+            return None
+        
+        try:
+            from langdetect import detect, LangDetectException
+            # Use first 500 chars for faster detection
+            sample = text[:500]
+            return detect(sample)
+        except LangDetectException:
+            return None
+        except ImportError:
+            # langdetect not installed, skip language detection
+            logger.warning("[PROSPECT_DISCOVERY] langdetect not installed, skipping language detection")
+            return None
+        except Exception as e:
+            logger.debug(f"[PROSPECT_DISCOVERY] Language detection failed: {e}")
+            return None
     
     def _extract_domain(self, url: str) -> Optional[str]:
         """Extract domain from URL."""
@@ -1294,6 +1822,40 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
         for agg in aggregators:
             if domain.endswith(agg):
                 return True
+        return False
+    
+    def _is_job_posting(self, title: str, text: str) -> bool:
+        """
+        Check if content appears to be a job posting rather than company info.
+        
+        Job postings are filtered because:
+        1. They're not trigger events for buying
+        2. They pollute results with recruitment noise
+        3. The "company" is often just looking for staff, not solutions
+        """
+        combined = f"{title} {text}".lower()
+        
+        # Strong indicators this is a job posting
+        job_indicators = self.JOB_POSTING_INDICATORS
+        
+        # URL patterns that indicate career pages
+        career_url_patterns = [
+            "/careers", "/jobs", "/vacatures", "/werken-bij",
+            "/job/", "/vacancy/", "/solliciteer"
+        ]
+        
+        # Check for job indicators in content
+        job_matches = sum(1 for ind in job_indicators if ind in combined)
+        
+        # If 2+ job indicators found, likely a job posting
+        if job_matches >= 2:
+            return True
+        
+        # Check if title strongly indicates job posting
+        title_lower = title.lower() if title else ""
+        if any(ind in title_lower for ind in ["vacature", "job opening", "we're hiring", "join our"]):
+            return True
+        
         return False
     
     def _extract_company_name(
