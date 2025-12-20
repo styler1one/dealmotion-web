@@ -392,12 +392,18 @@ class ProspectDiscoveryService:
             
             # Step 1.5: If reference customers provided, extract context from them
             if input.reference_customers and len(input.reference_customers) > 0:
+                print(f"[PROSPECT_DISCOVERY] 📚 Reference customers provided: {input.reference_customers}", flush=True)
                 logger.info(f"[PROSPECT_DISCOVERY] Processing {len(input.reference_customers)} reference customers")
                 reference_context = await self._extract_reference_context(
                     reference_customers=input.reference_customers
                 )
                 if reference_context:
+                    print(f"[PROSPECT_DISCOVERY] 📚 Reference context extracted: {reference_context[:150]}...", flush=True)
                     logger.info(f"[PROSPECT_DISCOVERY] Extracted reference context: {reference_context[:100]}...")
+                else:
+                    print(f"[PROSPECT_DISCOVERY] ⚠️ No reference context could be extracted", flush=True)
+            else:
+                print(f"[PROSPECT_DISCOVERY] 📚 No reference customers provided", flush=True)
             
             # Step 2: Generate search queries
             queries = await self._generate_queries(
@@ -453,10 +459,19 @@ class ProspectDiscoveryService:
             # Sort by fit score
             scored.sort(key=lambda p: p.fit_score, reverse=True)
             
+            # Filter out low-scoring results (non-prospects)
+            MIN_FIT_SCORE = 35  # Results below this are likely not real prospects
+            before_filter = len(scored)
+            scored = [p for p in scored if p.fit_score >= MIN_FIT_SCORE]
+            filtered_out = before_filter - len(scored)
+            
+            if filtered_out > 0:
+                print(f"[PROSPECT_DISCOVERY] 🗑️ Filtered out {filtered_out} low-scoring results (< {MIN_FIT_SCORE})", flush=True)
+            
             execution_time = (datetime.now() - start_time).total_seconds()
             
             logger.info(
-                f"[PROSPECT_DISCOVERY] Completed: {len(scored)} prospects, "
+                f"[PROSPECT_DISCOVERY] Completed: {len(scored)} prospects (filtered {filtered_out}), "
                 f"{execution_time:.1f}s"
             )
             
