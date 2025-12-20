@@ -425,7 +425,7 @@ export default function ProspectingPage() {
                   <Button 
                     type="submit" 
                     className="w-full"
-                    disabled={searching || !serviceCheck?.available}
+                    disabled={searching || loading}
                   >
                     {searching ? (
                       <>
