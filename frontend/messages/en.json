@@ -2747,6 +2747,7 @@
       "imported": "Imported",
       "import": "Import",
       "research": "Research",
+      "reject": "Not relevant",
       "view": "View",
       "viewSource": "View source",
       "scoreBreakdown": "Show score breakdown",
@@ -2777,7 +2778,10 @@
       "searchFailedDesc": "Failed to search for prospects. Please try again.",
       "imported": "Prospect imported",
       "importedDesc": "The prospect has been added to your list.",
-      "importFailed": "Import failed"
+      "importFailed": "Import failed",
+      "rejected": "Prospect rejected",
+      "rejectedDesc": "The prospect has been removed from results.",
+      "rejectFailed": "Reject failed"
     }
   }
 }

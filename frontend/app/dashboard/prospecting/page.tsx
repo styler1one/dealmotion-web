@@ -108,6 +108,7 @@ export default function ProspectingPage() {
   const [results, setResults] = useState<SearchResult | null>(null)
   const [history, setHistory] = useState<SearchHistoryItem[]>([])
   const [importingId, setImportingId] = useState<string | null>(null)
+  const [rejectingId, setRejectingId] = useState<string | null>(null)
   
   // Delete dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -287,6 +288,49 @@ export default function ProspectingPage() {
       })
     } finally {
       setImportingId(null)
+    }
+  }
+
+  // Reject a prospect (mark as not relevant)
+  const handleReject = async (resultId: string) => {
+    setRejectingId(resultId)
+    
+    try {
+      const { data, error } = await api.post<{ success: boolean; message: string }>('/api/v1/prospecting/reject', {
+        result_id: resultId,
+      })
+      
+      if (error) {
+        throw new Error(error.message || String(error))
+      }
+      
+      if (data?.success) {
+        // Remove from local state
+        setResults(prev => {
+          if (!prev) return prev
+          return {
+            ...prev,
+            prospects: prev.prospects.filter(p => p.id !== resultId),
+            total_count: prev.total_count - 1
+          }
+        })
+        
+        toast({
+          title: t('toast.rejected'),
+          description: t('toast.rejectedDesc'),
+        })
+      } else {
+        throw new Error(data?.message || 'Reject failed')
+      }
+    } catch (error: any) {
+      logger.error('Reject failed', error)
+      toast({
+        variant: "destructive",
+        title: t('toast.rejectFailed'),
+        description: error.message,
+      })
+    } finally {
+      setRejectingId(null)
     }
   }
 
@@ -796,6 +840,24 @@ export default function ProspectingPage() {
                                 <Icons.search className="h-4 w-4 mr-1" />
                                 {t('results.research')}
                               </Button>
+                              
+                              {/* Reject button - only show if not imported */}
+                              {!prospect.prospect_id && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => prospect.id && handleReject(prospect.id)}
+                                  disabled={rejectingId === prospect.id}
+                                  className="text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                  title={t('results.reject')}
+                                >
+                                  {rejectingId === prospect.id ? (
+                                    <Icons.spinner className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Icons.x className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              )}
                               
                               {prospect.website && (
                                 <Button
