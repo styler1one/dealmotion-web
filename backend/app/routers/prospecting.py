@@ -217,7 +217,7 @@ async def start_prospecting_search(
     
     # Trigger Inngest event for async processing
     await send_event(
-        name="prospecting/discover",
+        event_name="prospecting/discover",
         data={
             "search_id": search_id,
             "user_id": user_id,
