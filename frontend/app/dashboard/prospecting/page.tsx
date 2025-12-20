@@ -17,6 +17,16 @@ import { logger } from '@/lib/logger'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import type { User } from '@supabase/supabase-js'
 
 interface DiscoveredProspect {
@@ -98,6 +108,11 @@ export default function ProspectingPage() {
   const [results, setResults] = useState<SearchResult | null>(null)
   const [history, setHistory] = useState<SearchHistoryItem[]>([])
   const [importingId, setImportingId] = useState<string | null>(null)
+  
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [searchToDelete, setSearchToDelete] = useState<SearchHistoryItem | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   // Get user
   useEffect(() => {
@@ -289,6 +304,52 @@ export default function ProspectingPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Delete a search
+  const handleDeleteSearch = async () => {
+    if (!searchToDelete) return
+    
+    setDeleting(true)
+    
+    try {
+      const { error } = await api.delete(`/api/v1/prospecting/searches/${searchToDelete.id}`)
+      
+      if (error) {
+        throw new Error(error.message || String(error))
+      }
+      
+      // Remove from history
+      setHistory(prev => prev.filter(h => h.id !== searchToDelete.id))
+      
+      // Clear results if we just deleted the currently viewed search
+      if (results?.search_id === searchToDelete.id) {
+        setResults(null)
+      }
+      
+      toast({
+        title: t('history.deleteSuccess'),
+        description: t('history.deleteSuccessDesc'),
+      })
+    } catch (error: any) {
+      logger.error('Failed to delete search', error)
+      toast({
+        variant: "destructive",
+        title: t('history.deleteFailed'),
+        description: error.message,
+      })
+    } finally {
+      setDeleting(false)
+      setDeleteDialogOpen(false)
+      setSearchToDelete(null)
+    }
+  }
+
+  // Open delete confirmation
+  const confirmDeleteSearch = (item: SearchHistoryItem, e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent loading the search
+    setSearchToDelete(item)
+    setDeleteDialogOpen(true)
   }
 
   // Get fit score color
@@ -506,23 +567,34 @@ export default function ProspectingPage() {
                     </h4>
                     <div className="space-y-2">
                       {history.slice(0, 5).map((item) => (
-                        <button
+                        <div
                           key={item.id}
-                          onClick={() => loadSearch(item.id)}
-                          className="w-full text-left p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                          className="group flex items-center gap-2"
                         >
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                              {item.sector || item.proposition?.slice(0, 30) || 'Search'}
+                          <button
+                            onClick={() => loadSearch(item.id)}
+                            className="flex-1 text-left p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate">
+                                {item.sector || item.proposition?.slice(0, 30) || 'Search'}
+                              </span>
+                              <Badge variant="secondary" className="text-xs flex-shrink-0">
+                                {item.results_count} {t('history.results')}
+                              </Badge>
+                            </div>
+                            <span className="text-xs text-slate-500">
+                              {new Date(item.created_at).toLocaleDateString()}
                             </span>
-                            <Badge variant="secondary" className="text-xs">
-                              {item.results_count} {t('history.results')}
-                            </Badge>
-                          </div>
-                          <span className="text-xs text-slate-500">
-                            {new Date(item.created_at).toLocaleDateString()}
-                          </span>
-                        </button>
+                          </button>
+                          <button
+                            onClick={(e) => confirmDeleteSearch(item, e)}
+                            className="p-1.5 rounded-md opacity-0 group-hover:opacity-100 hover:bg-red-100 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-600 transition-all"
+                            title={t('history.delete')}
+                          >
+                            <Icons.trash className="h-4 w-4" />
+                          </button>
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -821,6 +893,35 @@ export default function ProspectingPage() {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('history.deleteConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('history.deleteConfirmDescription')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>
+              {t('history.deleteCancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteSearch}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {deleting ? (
+                <Icons.spinner className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Icons.trash className="h-4 w-4 mr-2" />
+              )}
+              {t('history.deleteConfirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   )
 }

@@ -2724,7 +2724,15 @@
     },
     "history": {
       "title": "Recent Searches",
-      "results": "results"
+      "results": "results",
+      "delete": "Delete",
+      "deleteConfirmTitle": "Delete Search?",
+      "deleteConfirmDescription": "This will permanently delete this search and its results. This action cannot be undone.",
+      "deleteCancel": "Cancel",
+      "deleteConfirm": "Delete",
+      "deleteSuccess": "Search deleted",
+      "deleteSuccessDesc": "The search has been removed.",
+      "deleteFailed": "Failed to delete search"
     },
     "searching": {
       "title": "Discovering Prospects",
