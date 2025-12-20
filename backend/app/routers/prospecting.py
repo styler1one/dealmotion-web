@@ -40,6 +40,7 @@ class ProspectingSearchRequest(BaseModel):
     target_role: Optional[str] = Field(None, description="Who is this relevant for?")
     pain_point: Optional[str] = Field(None, description="Where is pain/urgency?")
     reference_customers: Optional[List[str]] = Field(None, description="Companies that are 100% fit (for context enrichment)")
+    max_results: int = Field(25, ge=10, le=100, description="Maximum number of results (10-100)")
     
     class Config:
         json_schema_extra = {
@@ -198,7 +199,7 @@ async def start_prospecting_search(
         user_id=user_id,
         organization_id=organization_id,
         input=input,
-        max_results=20
+        max_results=request.max_results
     )
     
     if not result.success:

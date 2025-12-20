@@ -91,6 +91,7 @@ export default function ProspectingPage() {
   const [targetRole, setTargetRole] = useState('')
   const [painPoint, setPainPoint] = useState('')
   const [referenceCustomers, setReferenceCustomers] = useState('')  // Comma-separated
+  const [maxResults, setMaxResults] = useState(25)  // Default 25 results
   
   // Results state
   const [results, setResults] = useState<SearchResult | null>(null)
@@ -162,6 +163,7 @@ export default function ProspectingPage() {
         reference_customers: referenceCustomers 
           ? referenceCustomers.split(',').map(c => c.trim()).filter(c => c)
           : undefined,
+        max_results: maxResults,
       })
       
       if (error) {
@@ -422,6 +424,23 @@ export default function ProspectingPage() {
                     />
                   </div>
                   
+                  {/* Max Results Selector */}
+                  <div className="flex items-center justify-between pt-2">
+                    <Label htmlFor="maxResults" className="text-sm text-slate-600 dark:text-slate-400">
+                      {t('form.maxResults')}
+                    </Label>
+                    <select
+                      id="maxResults"
+                      value={maxResults}
+                      onChange={(e) => setMaxResults(Number(e.target.value))}
+                      className="text-sm border rounded-md px-2 py-1 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                    >
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                  </div>
+                  
                   <Button 
                     type="submit" 
                     className="w-full"
@@ -652,6 +671,21 @@ export default function ProspectingPage() {
                                   )}
                                 </Button>
                               )}
+                              
+                              {/* Research button */}
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  const params = new URLSearchParams()
+                                  params.set('company', prospect.company_name)
+                                  if (prospect.website) params.set('website', prospect.website)
+                                  router.push(`/dashboard/research?${params.toString()}`)
+                                }}
+                              >
+                                <Icons.search className="h-4 w-4 mr-1" />
+                                {t('results.research')}
+                              </Button>
                               
                               {prospect.website && (
                                 <Button

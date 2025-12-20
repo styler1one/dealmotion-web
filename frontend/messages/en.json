@@ -2718,6 +2718,7 @@
       "referenceCustomersPlaceholder": "e.g., Bol.com, Coolblue, Picnic",
       "referenceCustomersHelp": "Enter companies that are 100% fit. We'll find similar companies based on shared signals and situations.",
       "optional": "Optional",
+      "maxResults": "Max results",
       "searchButton": "Find Prospects",
       "searching": "Searching..."
     },
@@ -2737,6 +2738,7 @@
       "fitScore": "Fit",
       "imported": "Imported",
       "import": "Import",
+      "research": "Research",
       "view": "View",
       "viewSource": "View source",
       "scoreBreakdown": "Show score breakdown",
