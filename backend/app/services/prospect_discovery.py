@@ -498,18 +498,40 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
             )
             
             content = response.content[0].text.strip()
+            print(f"[PROSPECT_DISCOVERY] 📝 Raw Claude response: {content[:300]}...", flush=True)
+            
+            # Strip markdown code blocks if present (```json ... ```)
+            if content.startswith("```"):
+                lines = content.split("\n")
+                # Remove first line (```json) and last line (```)
+                lines = [l for l in lines if not l.startswith("```")]
+                content = "\n".join(lines).strip()
+            
+            # Also handle case where response starts with [ but has trailing text
+            if "[" in content:
+                start = content.index("[")
+                end = content.rindex("]") + 1
+                content = content[start:end]
             
             # Parse JSON array
             import json
             queries = json.loads(content)
             
             if isinstance(queries, list) and len(queries) > 0:
+                print(f"[PROSPECT_DISCOVERY] ✅ Generated {len(queries)} queries", flush=True)
                 return queries[:5]  # Max 5 queries
             
+            logger.warning(f"[PROSPECT_DISCOVERY] No valid queries in response")
             return []
             
+        except json.JSONDecodeError as e:
+            logger.error(f"[PROSPECT_DISCOVERY] Query generation JSON parse failed: {e}")
+            logger.error(f"[PROSPECT_DISCOVERY] Raw content was: {content[:500] if content else 'EMPTY'}")
+            print(f"[PROSPECT_DISCOVERY] ❌ JSON parse failed: {content[:200] if content else 'EMPTY'}", flush=True)
+            return []
         except Exception as e:
             logger.error(f"[PROSPECT_DISCOVERY] Query generation failed: {e}")
+            print(f"[PROSPECT_DISCOVERY] ❌ Query generation error: {e}", flush=True)
             return []
     
     def _build_market_leaders_query(self, input: DiscoveryInput) -> Optional[str]:
