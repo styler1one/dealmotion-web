@@ -312,12 +312,24 @@ Generate exactly 5 semantic search queries for {region} / {sector} / {company_si
 5. Include {region} for geographic relevance
 6. Add "{current_year}" to at least one query for recency
 
+**LANGUAGE RULE - VERY IMPORTANT:**
+- Use the LOCAL LANGUAGE of the target region for your queries!
+- For Netherlands: Use Dutch terms (e.g., "accountantskantoor" not "accountancy", "fusie" not "merger", "overname" not "acquisition")
+- For Germany: Use German terms (e.g., "Wirtschaftsprüfer" not "accountant", "Übernahme" not "acquisition")
+- For Belgium: Use Dutch or French depending on the region specified
+- Local language queries find LOCAL companies that may not rank for English terms
+- Include BOTH local synonyms and common variations:
+  * Dutch accountancy: accountantskantoor, registeraccountant, AA-kantoor, accountantsfirma, accountants
+  * German finance: Finanzdienstleister, Wirtschaftsprüfungsgesellschaft, Steuerberater
+  * etc.
+
 **BAD Queries (too generic or too late):**
 - "companies seeking [solution type]" ❌ (already buying)
 - "organizations implementing [technology]" ❌ (already decided)
 - Generic queries that ignore the specific sector ❌
+- English-only queries for non-English regions ❌
 
-**GOOD Queries find TRIGGER EVENTS before the buying process starts.**
+**GOOD Queries find TRIGGER EVENTS before the buying process starts, in the LOCAL LANGUAGE.**
 
 ## OUTPUT FORMAT
 
@@ -835,26 +847,90 @@ USE these sector-specific terms in your queries instead of generic tech terms!
         Build queries to find market leaders in the specified segment.
         
         Returns MULTIPLE queries to maximize coverage of top players:
-        1. Leading companies query
-        2. Top/list overview query  
-        3. Major players query
+        1. Leading companies query (local language)
+        2. Top/list overview query (local language)
+        3. Major players query (English fallback)
         
         This ensures we always include the top players in the sector,
         not just companies with visible trigger signals.
+        
+        Uses LOCAL LANGUAGE terms for better coverage of regional companies.
         """
         if not input.sector:
             return []
         
+        # Sector synonyms per region - LOCAL LANGUAGE terms
+        # This maps English sector names to local equivalents
+        sector_local_terms = {
+            # Netherlands (Dutch)
+            "nederland": {
+                "accountancy": ["accountantskantoor", "accountantskantoren", "registeraccountant", "AA-kantoor", "accountantsfirma"],
+                "accounting": ["accountantskantoor", "accountantskantoren", "registeraccountant", "accountants"],
+                "insurance": ["verzekeraar", "verzekeraars", "verzekeringsmaatschappij", "assurantie"],
+                "banking": ["bank", "banken", "financiële dienstverlening", "kredietverstrekker"],
+                "legal": ["advocatenkantoor", "advocatenkantoren", "juridisch advies", "notariskantoor"],
+                "consulting": ["adviesbureau", "consultancy", "managementadvies", "organisatieadvies"],
+                "healthcare": ["zorginstelling", "ziekenhuis", "zorgorganisatie", "gezondheidszorg"],
+                "manufacturing": ["productiebedrijf", "fabrikant", "maakindustrie", "industrieel"],
+                "logistics": ["logistiek bedrijf", "transportbedrijf", "supply chain", "distributie"],
+                "retail": ["retailer", "winkelketen", "detailhandel", "e-commerce"],
+                "technology": ["IT-bedrijf", "softwarebedrijf", "techbedrijf", "ICT"],
+                "real estate": ["vastgoed", "makelaar", "vastgoedbedrijf", "woningcorporatie"],
+            },
+            # Germany (German)
+            "germany": {
+                "accountancy": ["Wirtschaftsprüfer", "Steuerberater", "Wirtschaftsprüfungsgesellschaft", "Buchhalter"],
+                "accounting": ["Wirtschaftsprüfer", "Steuerberater", "Buchhaltung", "Steuerkanzlei"],
+                "insurance": ["Versicherung", "Versicherer", "Versicherungsgesellschaft"],
+                "banking": ["Bank", "Kreditinstitut", "Finanzdienstleister"],
+                "legal": ["Rechtsanwalt", "Anwaltskanzlei", "Rechtsberatung"],
+                "consulting": ["Unternehmensberatung", "Beratung", "Managementberatung"],
+                "healthcare": ["Krankenhaus", "Klinik", "Gesundheitswesen"],
+                "manufacturing": ["Hersteller", "Produzent", "Fertigungsunternehmen"],
+            },
+            # Belgium (Dutch/French mix)
+            "belgium": {
+                "accountancy": ["accountantskantoor", "boekhouder", "bedrijfsrevisor", "expert-comptable"],
+                "accounting": ["accountantskantoor", "comptable", "boekhouding"],
+                "insurance": ["verzekeraar", "assureur", "verzekering"],
+            },
+            # DACH region
+            "dach": {
+                "accountancy": ["Wirtschaftsprüfer", "Steuerberater", "Treuhand"],
+                "insurance": ["Versicherung", "Versicherer"],
+            }
+        }
+        
+        # Determine region key
+        region_lower = (input.region or "").lower()
+        region_key = None
+        if "nederland" in region_lower or "netherlands" in region_lower or "nl" in region_lower:
+            region_key = "nederland"
+        elif "germany" in region_lower or "deutschland" in region_lower or "de" in region_lower:
+            region_key = "germany"
+        elif "belgium" in region_lower or "belgie" in region_lower or "belgique" in region_lower:
+            region_key = "belgium"
+        elif "dach" in region_lower or "austria" in region_lower or "switzerland" in region_lower:
+            region_key = "dach"
+        
+        # Get local sector terms
+        sector_lower = input.sector.lower()
+        local_terms = []
+        
+        if region_key and region_key in sector_local_terms:
+            for eng_sector, local_list in sector_local_terms[region_key].items():
+                if eng_sector in sector_lower or sector_lower in eng_sector:
+                    local_terms = local_list
+                    break
+        
         # Build size descriptor
         size_terms = {
-            "enterprise": "largest major leading",
-            "mid-market": "established prominent growing",
-            "mid-sized": "established prominent growing", 
-            "midmarket": "established prominent growing",
-            "smb": "notable successful emerging",
-            "sme": "notable successful emerging",
-            "startup": "innovative fast-growing emerging",
-            "scale-up": "fast-growing successful scaling",
+            "enterprise": "grootste leading",
+            "mid-market": "gevestigde toonaangevende",
+            "mid-sized": "gevestigde toonaangevende", 
+            "midmarket": "gevestigde toonaangevende",
+            "smb": "bekende succesvolle",
+            "sme": "bekende succesvolle",
         }
         
         size_input = (input.company_size or "").lower().strip()
@@ -870,17 +946,32 @@ USE these sector-specific terms in your queries instead of generic tech terms!
         
         queries = []
         
-        # Query 1: Leading companies
-        q1 = f"{size_descriptor} {input.sector} companies {region_part}".strip()
-        queries.append(" ".join(q1.split()))
+        # Query 1: LOCAL LANGUAGE - sector terms
+        if local_terms:
+            # Use first 2 local terms for the primary query
+            local_sector = " ".join(local_terms[:2])
+            q1 = f"grootste {local_sector} {region_part}".strip()
+            queries.append(" ".join(q1.split()))
+            
+            # Query 2: Top list in local language
+            q2 = f"top {local_terms[0]} {region_part} overzicht lijst".strip()
+            queries.append(" ".join(q2.split()))
+        else:
+            # Fallback to English if no local terms available
+            q1 = f"{size_descriptor} {input.sector} companies {region_part}".strip()
+            queries.append(" ".join(q1.split()))
+            
+            q2 = f"top {input.sector} {region_part} list overview".strip()
+            queries.append(" ".join(q2.split()))
         
-        # Query 2: Top/list overview (helps find directory-style pages)
-        q2 = f"top {input.sector} {region_part} list overview major players".strip()
-        queries.append(" ".join(q2.split()))
-        
-        # Query 3: Sector-specific with "largest" or "biggest"
+        # Query 3: English fallback (catches international companies with English sites)
         q3 = f"biggest largest {input.sector} organizations {region_part}".strip()
         queries.append(" ".join(q3.split()))
+        
+        # Log what we generated
+        print(f"[PROSPECT_DISCOVERY] 🌍 Market leader queries (local terms: {local_terms[:2] if local_terms else 'none'}):", flush=True)
+        for q in queries:
+            print(f"  → {q}", flush=True)
         
         return queries
     
