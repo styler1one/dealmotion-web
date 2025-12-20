@@ -102,151 +102,11 @@ class DiscoveryResult:
 
 
 # =============================================================================
-# Sector-Specific Trigger Library
-# =============================================================================
-# This library provides sector-specific knowledge to improve query generation.
-# Each sector has:
-# - decision_makers: Roles that typically buy solutions in this sector
-# - regulations: Relevant compliance/regulatory triggers
-# - events: Common trigger events that create buying need
-# - pain_points: Typical challenges that signal opportunity
-
-SECTOR_TRIGGERS = {
-    # Financial Services
-    "insurance": {
-        "decision_makers": ["Chief Claims Officer", "Chief Underwriting Officer", "Chief Digital Officer", "CIO", "Chief Risk Officer"],
-        "regulations": ["Solvency II", "IFRS 17", "PSD2", "DORA", "ESG reporting"],
-        "events": ["fusie", "overname", "claims processing optimization", "digitalisering", "InsurTech partnership"],
-        "pain_points": ["schade-afhandeling", "legacy systems", "customer experience", "fraude detectie", "operational efficiency"],
-    },
-    "verzekeraars": {
-        "decision_makers": ["Chief Claims Officer", "Chief Underwriting Officer", "Chief Digital Officer", "CIO"],
-        "regulations": ["Solvency II", "IFRS 17", "DNB regelgeving", "AFM toezicht"],
-        "events": ["fusie", "overname", "digitale transformatie", "nieuwe directie"],
-        "pain_points": ["claims verwerking", "legacy systemen", "klantervaring", "fraude"],
-    },
-    "schadeverzekeraars": {
-        "decision_makers": ["Chief Claims Officer", "Directeur Schade", "CIO", "COO"],
-        "regulations": ["Solvency II", "Wft", "GDPR/AVG", "Kifid klachten"],
-        "events": ["schade-optimalisatie", "automatisering", "AI implementatie", "nieuwe CEO"],
-        "pain_points": ["doorlooptijd schades", "handmatige processen", "klachten AFM", "concurrentie InsurTech"],
-    },
-    "banking": {
-        "decision_makers": ["CIO", "Chief Digital Officer", "Chief Risk Officer", "CFO"],
-        "regulations": ["Basel IV", "PSD2", "AML/KYC", "DORA"],
-        "events": ["digital banking", "fintech partnership", "core banking replacement"],
-        "pain_points": ["legacy systems", "customer onboarding", "compliance costs"],
-    },
-    
-    # Professional Services
-    "accountancy": {
-        "decision_makers": ["Managing Partner", "Head of Audit", "IT Director", "Partner"],
-        "regulations": ["NBA", "AFM toezicht", "ESG rapportage", "CSRD"],
-        "events": ["private equity investering", "fusie", "kantoor overname", "partner uittreding"],
-        "pain_points": ["Big Four concurrentie", "talent shortage", "audit automation", "digitalisering"],
-    },
-    "accounting": {
-        "decision_makers": ["Managing Partner", "CFO", "Head of Tax", "IT Director"],
-        "regulations": ["SOX compliance", "ESG reporting", "CSRD", "audit requirements"],
-        "events": ["merger", "PE investment", "digital transformation", "new leadership"],
-        "pain_points": ["talent retention", "automation", "competition", "efficiency"],
-    },
-    "legal": {
-        "decision_makers": ["Managing Partner", "CIO", "COO", "Head of Innovation"],
-        "regulations": ["GDPR", "legal tech regulations", "billing compliance"],
-        "events": ["merger", "new practice area", "office expansion", "leadership change"],
-        "pain_points": ["matter management", "document review", "billing efficiency", "client portals"],
-    },
-    "consultancy": {
-        "decision_makers": ["Managing Director", "Partner", "Head of Digital", "CTO"],
-        "regulations": ["industry certifications", "compliance frameworks"],
-        "events": ["market expansion", "new service line", "acquisition", "leadership"],
-        "pain_points": ["knowledge management", "resource planning", "competitive positioning"],
-    },
-    
-    # Healthcare
-    "healthcare": {
-        "decision_makers": ["Medical Director", "CIO", "CFO", "Chief Nursing Officer"],
-        "regulations": ["HIPAA", "FDA", "EPD requirements", "Zorgverzekeringswet"],
-        "events": ["EMR implementation", "hospital merger", "new facility", "digital health initiative"],
-        "pain_points": ["patient experience", "staff shortage", "interoperability", "costs"],
-    },
-    "zorg": {
-        "decision_makers": ["Bestuurder", "CIO", "Medisch Directeur", "Hoofd ICT"],
-        "regulations": ["NEN 7510", "AVG", "Wkkgz", "Wmcz"],
-        "events": ["fusie ziekenhuizen", "EPD implementatie", "digitale zorg", "nieuwe bestuurder"],
-        "pain_points": ["personeelstekort", "wachtlijsten", "administratieve last", "EPD frustratie"],
-    },
-    
-    # Manufacturing & Logistics
-    "manufacturing": {
-        "decision_makers": ["COO", "VP Operations", "Plant Manager", "CIO"],
-        "regulations": ["ISO certifications", "environmental", "safety"],
-        "events": ["factory expansion", "automation project", "supply chain disruption", "new CEO"],
-        "pain_points": ["supply chain", "quality control", "operational efficiency", "sustainability"],
-    },
-    "logistics": {
-        "decision_makers": ["COO", "VP Supply Chain", "CIO", "Head of Operations"],
-        "regulations": ["customs", "transport regulations", "sustainability mandates"],
-        "events": ["warehouse expansion", "fleet modernization", "M&A", "new contracts"],
-        "pain_points": ["visibility", "last mile", "capacity planning", "driver shortage"],
-    },
-    
-    # Technology
-    "technology": {
-        "decision_makers": ["CTO", "VP Engineering", "CIO", "Head of Product"],
-        "regulations": ["SOC 2", "GDPR", "industry-specific"],
-        "events": ["funding round", "product launch", "international expansion", "new CTO"],
-        "pain_points": ["scaling", "technical debt", "talent", "security"],
-    },
-    "saas": {
-        "decision_makers": ["CTO", "VP Engineering", "Head of Product", "CEO"],
-        "regulations": ["SOC 2", "GDPR", "ISO 27001"],
-        "events": ["Series A/B/C", "international launch", "enterprise pivot", "new leadership"],
-        "pain_points": ["churn", "scaling infrastructure", "enterprise readiness", "integration"],
-    },
-    
-    # Retail & E-commerce
-    "retail": {
-        "decision_makers": ["CDO", "CIO", "Head of E-commerce", "CMO"],
-        "regulations": ["consumer protection", "GDPR", "accessibility"],
-        "events": ["omnichannel initiative", "store closures", "new CEO", "PE acquisition"],
-        "pain_points": ["online competition", "inventory", "customer experience", "personalization"],
-    },
-    "ecommerce": {
-        "decision_makers": ["CTO", "Head of Operations", "CMO", "CEO"],
-        "regulations": ["consumer law", "GDPR", "payment regulations"],
-        "events": ["marketplace launch", "international expansion", "funding", "acquisition"],
-        "pain_points": ["conversion", "fulfillment", "returns", "customer acquisition cost"],
-    },
-}
-
-def get_sector_context(sector: str) -> Optional[Dict[str, Any]]:
-    """
-    Get sector-specific trigger context for query generation.
-    
-    Returns None if sector not found - query generation will use generic approach.
-    """
-    if not sector:
-        return None
-    
-    sector_lower = sector.lower().strip()
-    
-    # Direct match
-    if sector_lower in SECTOR_TRIGGERS:
-        return SECTOR_TRIGGERS[sector_lower]
-    
-    # Partial match (e.g., "non-life insurance" matches "insurance")
-    for key, value in SECTOR_TRIGGERS.items():
-        if key in sector_lower or sector_lower in key:
-            return value
-    
-    return None
-
-
-# =============================================================================
 # Prompt Templates
 # =============================================================================
+# Note: Sector-specific knowledge (decision makers, influencers, regulations,
+# trigger events) is now generated DYNAMICALLY by Claude based on the sector
+# and proposition. This is more flexible and works for ALL sectors.
 
 QUERY_GENERATION_PROMPT = """You are a B2B sales intelligence expert specializing in EARLY-STAGE prospect identification.
 
@@ -269,30 +129,33 @@ Your task: Generate queries that find companies experiencing TRIGGER EVENTS that
 - Target Role: {target_role}
 - Pain Point/Urgency: {pain_point}
 {reference_section}
-{sector_context_section}
 
 **IMPORTANT**: If any search input field says "Not specified", use the corresponding information from the Seller Profile above. The seller profile contains their default proposition, target sectors, ideal customer profile, and typical pain points.
 
-## STEP 1: ANALYZE THE PROPOSITION
+## STEP 1: ANALYZE THE PROPOSITION AND SECTOR
 
-Before generating queries, think about what "{proposition}" means:
-- What PROBLEM does this solve?
-- What SITUATION creates the need for this?
-- WHO typically buys this? (which roles have budget/authority?)
-- What EVENTS would make someone suddenly need this?
+Before generating queries, think deeply about:
+
+1. **What we sell**: What PROBLEM does "{proposition}" solve?
+2. **Who buys this in {sector}**:
+   - **Decision Makers**: Who has BUDGET and signs the contract? (CFO, CIO, Managing Partner, CEO, etc.)
+   - **Influencers**: Who ADVISES the decision? (Innovation Manager, Head of Data, Senior Architect, Team Lead, etc.)
+3. **What regulations/compliance affect {sector}** that relate to {proposition}?
+4. **What events create urgency** for {proposition} in {sector}?
 
 ## STEP 2: IDENTIFY RELEVANT TRIGGERS (sector + proposition specific!)
 
 Think about what creates urgency for **{proposition}** in **{sector}** specifically:
 
-1. **Leadership Changes**: Which NEW leaders would prioritize {proposition}?
-   - In {sector}, who decides on this? (NOT always CTO - could be COO, CFO, Chief Claims Officer, Medical Director, Partner, etc.)
+1. **Leadership Changes**: Which NEW leaders (decision makers OR influencers) would prioritize {proposition}?
+   - Decision makers in {sector} for this type of purchase: YOU identify them (NOT always CTO!)
+   - Influencers who would champion this: YOU identify them (data leads, innovation heads, architects...)
    
 2. **Regulatory/Compliance Pressure**: What regulations CREATE need for {proposition}?
-   - What audits, certifications, or mandates affect {sector} that relate to what we sell?
+   - YOU identify the relevant regulations for {sector} (e.g., CSRD for accountancy, Solvency II for insurance, GDPR for tech, etc.)
    
 3. **Operational Challenges**: What visible problems would {proposition} solve?
-   - What customer complaints, delays, or inefficiencies in {sector} relate to our offering?
+   - What {sector}-specific complaints, delays, or inefficiencies relate to our offering?
    
 4. **Growth/Change Events**: How does growth create need for {proposition}?
    - Acquisitions, market expansion, volume increases that strain current capabilities?
@@ -388,6 +251,7 @@ SCORING_PROMPT = """You are a B2B sales intelligence expert specializing in EARL
 - Target Role: {target_role}
 - Pain Point: {pain_point}
 - Sector: {sector}
+- **Target Region: {region}**
 
 ## DISCOVERED COMPANIES
 
@@ -438,7 +302,20 @@ Score 0-15 if the result is:
 
 The key question is: Does the URL represent the company's OWN website/content, or is it content ABOUT them from a third party?
 
+**CRITICAL: REGION CHECK**
+
+The target region is **{region}**. Score 0-20 if the company is clearly NOT in {region}:
+- Check the website domain (.nl = Netherlands, .de = Germany, .be = Belgium, etc.)
+- Check the content language and city mentions
+- Note: .com domains CAN be local companies - check the content!
+
 Examples:
+- "achmea.nl" for region "Nederland" = ✅ Dutch TLD = likely match
+- "deloitte.com" with Dutch content mentioning Amsterdam = ✅ Still a match despite .com
+- "pinnacle-uk.co.uk" for region "Nederland" = ❌ UK company = score 0-20
+- "majorplayers.co.uk" for region "Nederland" = ❌ UK company = score 0-20
+
+Examples for company content:
 - "achmea.nl/nieuws/..." = ✅ Achmea's own site = potential prospect
 - "consultancy.nl/nieuws/achmea-..." = ❌ News article ABOUT Achmea = score 0-15
 - "mckinsey.com/case-study/insurance..." = ❌ Consultancy content = score 0-15 (unless selling TO consultancies)
@@ -774,22 +651,9 @@ The seller provided reference customers (companies that are 100% fit). Based on 
 Use these patterns to find SIMILAR companies with SIMILAR signals and situations.
 """
         
-        # Build sector-specific context section (triggers, decision makers, etc.)
-        # Note: Local language sector terms are NO LONGER hardcoded - Claude figures these out
-        sector_context_section = ""
-        sector_data = get_sector_context(input.sector)
-        
-        if sector_data:
-            sector_context_section = f"""
-**Sector-Specific Intelligence (for {input.sector}):**
-- Key Decision Makers: {', '.join(sector_data.get('decision_makers', [])[:4])}
-- Relevant Regulations/Triggers: {', '.join(sector_data.get('regulations', [])[:4])}
-- Common Events: {', '.join(sector_data.get('events', [])[:4])}
-- Typical Pain Points: {', '.join(sector_data.get('pain_points', [])[:4])}
-
-USE these sector-specific terms in your queries instead of generic tech terms!
-"""
-            print(f"[PROSPECT_DISCOVERY] 📚 Using sector-specific context for '{input.sector}'", flush=True)
+        # Note: Sector-specific knowledge (decision makers, influencers, regulations, 
+        # trigger events) is now generated DYNAMICALLY by Claude based on the sector.
+        # No hardcoded sector mapping needed!
         
         prompt = QUERY_GENERATION_PROMPT.format(
             seller_context=seller_context,
@@ -800,7 +664,6 @@ USE these sector-specific terms in your queries instead of generic tech terms!
             target_role=input.target_role or "Not specified",
             pain_point=input.pain_point or "Not specified",
             reference_section=reference_section,
-            sector_context_section=sector_context_section,
             current_year=datetime.now().year
         )
         
@@ -1473,6 +1336,7 @@ USE these sector-specific terms in your queries instead of generic tech terms!
             target_role=input.target_role or "Not specified",
             pain_point=input.pain_point or "Not specified",
             sector=input.sector or "Not specified",
+            region=input.region or "Not specified",
             prospects_json=prospects_json
         )
         
@@ -1591,159 +1455,73 @@ USE these sector-specific terms in your queries instead of generic tech terms!
         target_region: str
     ) -> List[DiscoveredProspect]:
         """
-        Filter prospects to only include those matching the target region.
+        Pre-filter prospects by TLD to remove obvious non-matches.
         
-        Uses multiple signals:
-        1. URL TLD (.nl, .de, etc.)
-        2. Keywords in content/URL
-        3. Language detection (Dutch content = likely NL company)
-        4. Inferred region from LLM
+        SIMPLIFIED: Only checks website TLD. More nuanced region checking
+        is now done by Claude in the SCORING_PROMPT (e.g., .com sites that 
+        are actually Dutch companies).
+        
+        This is a fast pre-filter, not the final word on region matching.
         """
-        # Map of region names to acceptable TLDs, keywords, and languages
-        region_config = {
+        # Map region names to acceptable TLDs
+        # Note: .com is always allowed (international companies may use .com)
+        region_tlds = {
             # Netherlands
-            "nederland": {
-                "tlds": [".nl"],
-                "keywords": ["netherlands", "nederland", "dutch", "amsterdam", "rotterdam", "utrecht", "eindhoven"],
-                "languages": ["nl"],  # Dutch
-            },
-            "netherlands": {
-                "tlds": [".nl"],
-                "keywords": ["netherlands", "nederland", "dutch", "amsterdam", "rotterdam"],
-                "languages": ["nl"],
-            },
-            "nl": {
-                "tlds": [".nl"],
-                "keywords": ["netherlands", "nederland", "dutch"],
-                "languages": ["nl"],
-            },
-            # Germany
-            "germany": {
-                "tlds": [".de"],
-                "keywords": ["germany", "deutschland", "german", "munich", "berlin", "hamburg"],
-                "languages": ["de"],
-            },
-            "deutschland": {
-                "tlds": [".de"],
-                "keywords": ["germany", "deutschland", "german"],
-                "languages": ["de"],
-            },
-            "dach": {
-                "tlds": [".de", ".at", ".ch"],
-                "keywords": ["germany", "austria", "switzerland", "deutschland", "österreich", "schweiz"],
-                "languages": ["de"],
-            },
+            "nederland": [".nl"],
+            "netherlands": [".nl"],
+            "nl": [".nl"],
+            # Germany  
+            "germany": [".de"],
+            "deutschland": [".de"],
+            # DACH
+            "dach": [".de", ".at", ".ch"],
             # Belgium
-            "belgium": {
-                "tlds": [".be"],
-                "keywords": ["belgium", "belgie", "belgian", "brussels", "bruxelles"],
-                "languages": ["nl", "fr"],  # Both Dutch and French
-            },
-            "belgie": {
-                "tlds": [".be"],
-                "keywords": ["belgium", "belgie", "belgian"],
-                "languages": ["nl", "fr"],
-            },
+            "belgium": [".be"],
+            "belgie": [".be"],
             # Benelux
-            "benelux": {
-                "tlds": [".nl", ".be", ".lu"],
-                "keywords": ["netherlands", "belgium", "luxembourg", "nederland", "belgie"],
-                "languages": ["nl", "fr"],
-            },
+            "benelux": [".nl", ".be", ".lu"],
             # UK
-            "uk": {
-                "tlds": [".uk", ".co.uk"],
-                "keywords": ["united kingdom", "british", "london", "england", "scotland"],
-                "languages": ["en"],  # Note: en is too broad, so we rely more on TLD/keywords
-            },
-            "united kingdom": {
-                "tlds": [".uk", ".co.uk"],
-                "keywords": ["united kingdom", "british", "london"],
-                "languages": ["en"],
-            },
+            "uk": [".uk", ".co.uk"],
+            "united kingdom": [".uk", ".co.uk"],
             # France
-            "france": {
-                "tlds": [".fr"],
-                "keywords": ["france", "french", "paris", "lyon", "marseille"],
-                "languages": ["fr"],
-            },
+            "france": [".fr"],
         }
         
         # Normalize target region
         target_lower = target_region.lower().strip()
         
-        # Get config for this region
-        config = region_config.get(target_lower)
-        if not config:
-            # Unknown region, be permissive
-            logger.warning(f"[PROSPECT_DISCOVERY] Unknown region '{target_region}', skipping filter")
+        # Get TLDs for this region
+        acceptable_tlds = region_tlds.get(target_lower)
+        if not acceptable_tlds:
+            # Unknown region - don't filter, let scoring handle it
             return prospects
         
-        tlds = config["tlds"]
-        keywords = config["keywords"]
-        expected_languages = config["languages"]
-        
-        # Filter prospects
+        # Pre-filter: keep prospects with matching TLD OR .com (could be local)
         filtered = []
         for p in prospects:
             url = (p.website or p.source_url or "").lower()
             
-            # Check 1: TLD match (strongest signal)
-            tld_match = any(url.endswith(tld) or f"{tld}/" in url for tld in tlds)
-            if tld_match:
+            # Always allow: matching TLD
+            if any(f".{tld.strip('.')}" in url for tld in acceptable_tlds):
                 filtered.append(p)
                 continue
             
-            # Check 2: Keywords in URL or inferred_region
-            keyword_match = False
-            for keyword in keywords:
-                if keyword in url:
-                    keyword_match = True
-                    break
-                if p.inferred_region and keyword in p.inferred_region.lower():
-                    keyword_match = True
-                    break
-            
-            if keyword_match:
+            # Always allow: .com domains (many local companies use .com)
+            # Claude will evaluate if they're actually in the target region
+            if ".com" in url:
                 filtered.append(p)
                 continue
             
-            # Check 3: Language detection (for .com domains that might be local companies)
-            # Only check if we have content and didn't match by TLD/keyword
-            if p.source_snippet and len(p.source_snippet) > 50:
-                detected_lang = self._detect_language(p.source_snippet)
-                if detected_lang and detected_lang in expected_languages:
-                    # Language matches, but be careful with English (too common)
-                    if detected_lang != "en":  # Non-English languages are strong signals
-                        filtered.append(p)
-                        continue
+            # Also allow if no clear TLD (might be from content extraction)
+            if "." not in url[-10:]:  # No TLD-like pattern at end
+                filtered.append(p)
+                continue
+        
+        filter_count = len(prospects) - len(filtered)
+        if filter_count > 0:
+            print(f"[PROSPECT_DISCOVERY] 🌍 Pre-filtered {filter_count} non-{target_region} by TLD", flush=True)
         
         return filtered
-    
-    def _detect_language(self, text: str) -> Optional[str]:
-        """
-        Detect the language of text content.
-        
-        Returns ISO 639-1 language code (e.g., 'nl', 'de', 'en', 'fr').
-        Returns None if detection fails or text is too short.
-        """
-        if not text or len(text) < 50:
-            return None
-        
-        try:
-            from langdetect import detect, LangDetectException
-            # Use first 500 chars for faster detection
-            sample = text[:500]
-            return detect(sample)
-        except LangDetectException:
-            return None
-        except ImportError:
-            # langdetect not installed, skip language detection
-            logger.warning("[PROSPECT_DISCOVERY] langdetect not installed, skipping language detection")
-            return None
-        except Exception as e:
-            logger.debug(f"[PROSPECT_DISCOVERY] Language detection failed: {e}")
-            return None
     
     def _extract_domain(self, url: str) -> Optional[str]:
         """Extract domain from URL."""

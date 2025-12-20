@@ -51,6 +51,3 @@ sentry-sdk[fastapi]>=2.19.0  # Error tracking with FastAPI integration
 
 # Exa.ai - Neural search for people & company research
 exa_py>=1.0.0  # Exa.ai Python SDK for People Search
-
-# Language detection for region filtering
-langdetect>=1.0.9  # Detect content language for better region filtering
