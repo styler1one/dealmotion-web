@@ -428,10 +428,11 @@ class ProspectDiscoveryService:
             for i, q in enumerate(queries[:4], 1):
                 print(f"  Query {i}: {q[:100]}...", flush=True)
             
-            # Step 3: Execute Exa searches
+            # Step 3: Execute Exa searches (multi-layer)
             raw_results = await self._execute_discovery_searches(
                 queries=queries,
-                region=input.region
+                region=input.region,
+                reference_customers=input.reference_customers
             )
             
             if not raw_results:
@@ -712,71 +713,189 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
     async def _execute_discovery_searches(
         self,
         queries: List[str],
-        region: Optional[str] = None
+        region: Optional[str] = None,
+        reference_customers: Optional[List[str]] = None
     ) -> List[Dict[str, Any]]:
         """
-        Execute discovery searches using Exa.
+        Execute multi-layer discovery searches using Exa.
         
-        Uses different settings than company research:
-        - Focus on COMPANY websites (not news articles about companies)
-        - Recent content only (last 12-18 months)
-        - Exclude media, consultancies, and competitors
+        STRATEGY: Use multiple search approaches for best coverage:
+        
+        Layer 1: Find Similar (if reference customers provided)
+                 → Uses /findSimilar to find companies similar to references
+                 
+        Layer 2: News Search (with date filters)
+                 → Uses category="news" to find articles about companies with triggers
+                 
+        Layer 3: Direct Search (no category, broad)
+                 → Uses type="auto" for general discovery
         """
         if not self._exa:
             return []
         
         all_results = []
-        
-        # Note: When using category="company", date filters are NOT supported
-        # Recency is handled by the scoring prompt instead
-        
         loop = asyncio.get_event_loop()
         
-        async def search_query(query: str) -> List[Dict[str, Any]]:
-            try:
-                print(f"[PROSPECT_DISCOVERY] 🔍 EXA CALL: {query[:80]}...", flush=True)
+        # Date filter for news search (last 18 months)
+        start_date = (datetime.now() - timedelta(days=540)).strftime("%Y-%m-%dT00:00:00.000Z")
+        
+        # =====================================================================
+        # LAYER 1: Find Similar (Reference-Based Discovery)
+        # =====================================================================
+        if reference_customers and len(reference_customers) > 0:
+            print(f"[PROSPECT_DISCOVERY] 🎯 LAYER 1: Finding similar to {len(reference_customers)} reference customers", flush=True)
+            
+            for ref_company in reference_customers[:3]:  # Max 3 references
+                try:
+                    # First, find the reference company's website
+                    ref_url = await self._find_company_website(ref_company, loop)
+                    
+                    if ref_url:
+                        print(f"[PROSPECT_DISCOVERY] 🔗 Found {ref_company} at {ref_url}", flush=True)
+                        
+                        # Use findSimilar to get companies in same semantic space
+                        similar_results = await self._find_similar_companies(ref_url, loop)
+                        all_results.extend(similar_results)
+                        print(f"[PROSPECT_DISCOVERY] ✅ findSimilar returned {len(similar_results)} results for {ref_company}", flush=True)
+                    else:
+                        print(f"[PROSPECT_DISCOVERY] ⚠️ Could not find website for {ref_company}", flush=True)
+                        
+                except Exception as e:
+                    logger.warning(f"[PROSPECT_DISCOVERY] Layer 1 failed for {ref_company}: {e}")
                 
-                def do_search():
-                    # Note: category="company" does NOT support date filters or exclude_domains
-                    # We rely on scoring to filter out non-prospects
+                await asyncio.sleep(0.3)
+        
+        # =====================================================================
+        # LAYER 2: News Search (Trigger-Based Discovery)
+        # =====================================================================
+        print(f"[PROSPECT_DISCOVERY] 📰 LAYER 2: News search for triggers", flush=True)
+        
+        for query in queries[:3]:  # Use first 3 queries for news
+            try:
+                def do_news_search():
                     return self._exa.search_and_contents(
                         query=query,
                         type="auto",
-                        category="company",  # Focus on company websites & LinkedIn
-                        num_results=15,
-                        text={"max_characters": 1500}
+                        category="news",  # News articles with date support
+                        num_results=10,
+                        start_published_date=start_date,
+                        exclude_domains=self.EXCLUDE_DOMAINS,
+                        text={"max_characters": 1200}
                     )
                 
-                response = await loop.run_in_executor(None, do_search)
+                print(f"[PROSPECT_DISCOVERY] 🔍 NEWS: {query[:60]}...", flush=True)
+                response = await loop.run_in_executor(None, do_news_search)
                 
-                results = []
                 for r in response.results:
-                    results.append({
+                    all_results.append({
                         "url": getattr(r, 'url', ''),
                         "title": getattr(r, 'title', ''),
                         "text": getattr(r, 'text', ''),
                         "published_date": getattr(r, 'published_date', None) or getattr(r, 'publishedDate', ''),
-                        "matched_query": query
+                        "matched_query": query,
+                        "source_type": "news"
                     })
                 
-                print(f"[PROSPECT_DISCOVERY] ✅ EXA RETURNED: {len(results)} results", flush=True)
-                return results
+                print(f"[PROSPECT_DISCOVERY] ✅ NEWS returned {len(response.results)} results", flush=True)
                 
             except Exception as e:
-                logger.error(f"[PROSPECT_DISCOVERY] ❌ Exa search failed for query: {e}")
-                return []
-        
-        # Execute with small delay between queries (rate limiting)
-        print(f"[PROSPECT_DISCOVERY] 🚀 STARTING EXA with {len(queries)} queries", flush=True)
-        for i, query in enumerate(queries):
-            results = await search_query(query)
-            all_results.extend(results)
+                logger.warning(f"[PROSPECT_DISCOVERY] Layer 2 news search failed: {e}")
             
-            # Small delay between queries
-            if i < len(queries) - 1:
-                await asyncio.sleep(0.5)
+            await asyncio.sleep(0.3)
         
+        # =====================================================================
+        # LAYER 3: Direct Search (Broad Discovery)
+        # =====================================================================
+        print(f"[PROSPECT_DISCOVERY] 🌐 LAYER 3: Direct search (broad)", flush=True)
+        
+        for query in queries:  # Use all queries
+            try:
+                def do_direct_search():
+                    return self._exa.search_and_contents(
+                        query=query,
+                        type="auto",  # No category = broader results
+                        num_results=10,
+                        start_published_date=start_date,
+                        exclude_domains=self.EXCLUDE_DOMAINS,
+                        text={"max_characters": 1200}
+                    )
+                
+                print(f"[PROSPECT_DISCOVERY] 🔍 DIRECT: {query[:60]}...", flush=True)
+                response = await loop.run_in_executor(None, do_direct_search)
+                
+                for r in response.results:
+                    all_results.append({
+                        "url": getattr(r, 'url', ''),
+                        "title": getattr(r, 'title', ''),
+                        "text": getattr(r, 'text', ''),
+                        "published_date": getattr(r, 'published_date', None) or getattr(r, 'publishedDate', ''),
+                        "matched_query": query,
+                        "source_type": "direct"
+                    })
+                
+                print(f"[PROSPECT_DISCOVERY] ✅ DIRECT returned {len(response.results)} results", flush=True)
+                
+            except Exception as e:
+                logger.warning(f"[PROSPECT_DISCOVERY] Layer 3 direct search failed: {e}")
+            
+            await asyncio.sleep(0.3)
+        
+        print(f"[PROSPECT_DISCOVERY] 📊 TOTAL raw results: {len(all_results)}", flush=True)
         return all_results
+    
+    async def _find_company_website(self, company_name: str, loop) -> Optional[str]:
+        """Find the main website URL for a company using Exa search."""
+        try:
+            def do_search():
+                return self._exa.search(
+                    query=f'"{company_name}" official website homepage',
+                    type="auto",
+                    num_results=3
+                )
+            
+            response = await loop.run_in_executor(None, do_search)
+            
+            if response.results:
+                # Return the first result's URL (most relevant)
+                url = response.results[0].url
+                # Extract root domain
+                return self._get_root_url(url)
+            
+            return None
+            
+        except Exception as e:
+            logger.warning(f"[PROSPECT_DISCOVERY] Could not find website for {company_name}: {e}")
+            return None
+    
+    async def _find_similar_companies(self, reference_url: str, loop) -> List[Dict[str, Any]]:
+        """Find companies similar to the reference URL using Exa findSimilar."""
+        try:
+            def do_find_similar():
+                return self._exa.find_similar_and_contents(
+                    url=reference_url,
+                    num_results=15,
+                    exclude_domains=self.EXCLUDE_DOMAINS,  # Works with findSimilar!
+                    text={"max_characters": 1000}
+                )
+            
+            response = await loop.run_in_executor(None, do_find_similar)
+            
+            results = []
+            for r in response.results:
+                results.append({
+                    "url": getattr(r, 'url', ''),
+                    "title": getattr(r, 'title', ''),
+                    "text": getattr(r, 'text', ''),
+                    "published_date": getattr(r, 'published_date', None) or getattr(r, 'publishedDate', ''),
+                    "matched_query": f"Similar to: {reference_url}",
+                    "source_type": "similar"
+                })
+            
+            return results
+            
+        except Exception as e:
+            logger.warning(f"[PROSPECT_DISCOVERY] findSimilar failed for {reference_url}: {e}")
+            return []
     
     def _normalize_results(
         self,
