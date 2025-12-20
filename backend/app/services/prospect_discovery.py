@@ -418,11 +418,12 @@ class ProspectDiscoveryService:
                     error="Failed to generate search queries"
                 )
             
-            # Step 2.5: Add market leaders query based on user input
-            market_leader_query = self._build_market_leaders_query(input)
-            if market_leader_query:
-                queries.append(market_leader_query)
-                print(f"[PROSPECT_DISCOVERY] 🏢 Added market leaders query: {market_leader_query[:80]}...", flush=True)
+            # Step 2.5: Add market leaders queries based on user input
+            market_leader_queries = self._build_market_leaders_queries(input)
+            for mlq in market_leader_queries:
+                queries.append(mlq)
+            if market_leader_queries:
+                print(f"[PROSPECT_DISCOVERY] 🏢 Added {len(market_leader_queries)} market leaders queries", flush=True)
             
             print(f"[PROSPECT_DISCOVERY] 📝 TOTAL {len(queries)} QUERIES:", flush=True)
             for i, q in enumerate(queries[:4], 1):
@@ -449,10 +450,16 @@ class ProspectDiscoveryService:
             # Step 4: Normalize and deduplicate
             normalized = self._normalize_results(raw_results)
             logger.info(f"[PROSPECT_DISCOVERY] Normalized to {len(normalized)} unique companies")
+            print(f"[PROSPECT_DISCOVERY] 📊 Normalized to {len(normalized)} unique companies", flush=True)
             
             # Step 5: Score and analyze
+            # Score MORE prospects than requested to allow filtering by quality
+            # This ensures we don't miss good prospects due to early limiting
+            scoring_limit = min(len(normalized), max(max_results * 2, 40))
+            print(f"[PROSPECT_DISCOVERY] 🎯 Scoring {scoring_limit} prospects (requested: {max_results})", flush=True)
+            
             scored = await self._score_prospects(
-                prospects=normalized[:max_results],  # Limit before scoring
+                prospects=normalized[:scoring_limit],  # Score more, filter later
                 input=input,
                 seller_context=seller_context
             )
@@ -461,13 +468,18 @@ class ProspectDiscoveryService:
             scored.sort(key=lambda p: p.fit_score, reverse=True)
             
             # Filter out low-scoring results (non-prospects)
-            MIN_FIT_SCORE = 35  # Results below this are likely not real prospects
+            MIN_FIT_SCORE = 30  # Lowered from 35 to be less aggressive
             before_filter = len(scored)
             scored = [p for p in scored if p.fit_score >= MIN_FIT_SCORE]
             filtered_out = before_filter - len(scored)
             
             if filtered_out > 0:
                 print(f"[PROSPECT_DISCOVERY] 🗑️ Filtered out {filtered_out} low-scoring results (< {MIN_FIT_SCORE})", flush=True)
+            
+            # Apply max_results limit AFTER quality filtering
+            if len(scored) > max_results:
+                print(f"[PROSPECT_DISCOVERY] 📉 Limiting to top {max_results} results (had {len(scored)})", flush=True)
+                scored = scored[:max_results]
             
             execution_time = (datetime.now() - start_time).total_seconds()
             
@@ -568,15 +580,20 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
             print(f"[PROSPECT_DISCOVERY] ❌ Query generation error: {e}", flush=True)
             return []
     
-    def _build_market_leaders_query(self, input: DiscoveryInput) -> Optional[str]:
+    def _build_market_leaders_queries(self, input: DiscoveryInput) -> List[str]:
         """
-        Build a query to find market leaders in the specified segment.
+        Build queries to find market leaders in the specified segment.
+        
+        Returns MULTIPLE queries to maximize coverage of top players:
+        1. Leading companies query
+        2. Top/list overview query  
+        3. Major players query
         
         This ensures we always include the top players in the sector,
         not just companies with visible trigger signals.
         """
         if not input.sector:
-            return None
+            return []
         
         # Build size descriptor
         size_terms = {
@@ -601,13 +618,21 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
         # Build region part
         region_part = f"in {input.region}" if input.region else ""
         
-        # Build the query
-        query = f"{size_descriptor} {input.sector} companies {region_part}".strip()
+        queries = []
         
-        # Clean up double spaces
-        query = " ".join(query.split())
+        # Query 1: Leading companies
+        q1 = f"{size_descriptor} {input.sector} companies {region_part}".strip()
+        queries.append(" ".join(q1.split()))
         
-        return query
+        # Query 2: Top/list overview (helps find directory-style pages)
+        q2 = f"top {input.sector} {region_part} list overview major players".strip()
+        queries.append(" ".join(q2.split()))
+        
+        # Query 3: Sector-specific with "largest" or "biggest"
+        q3 = f"biggest largest {input.sector} organizations {region_part}".strip()
+        queries.append(" ".join(q3.split()))
+        
+        return queries
     
     async def _extract_reference_context(
         self,
@@ -770,14 +795,14 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
         # =====================================================================
         print(f"[PROSPECT_DISCOVERY] 📰 LAYER 2: News search for triggers", flush=True)
         
-        for query in queries[:3]:  # Use first 3 queries for news
+        for query in queries[:4]:  # Use first 4 queries for news
             try:
                 def do_news_search():
                     return self._exa.search_and_contents(
                         query=query,
                         type="auto",
                         category="news",  # News articles with date support
-                        num_results=10,
+                        num_results=20,  # Increased from 10
                         start_published_date=start_date,
                         exclude_domains=self.EXCLUDE_DOMAINS,
                         text={"max_characters": 1200}
@@ -814,7 +839,7 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
                     return self._exa.search_and_contents(
                         query=query,
                         type="auto",  # No category = broader results
-                        num_results=10,
+                        num_results=15,  # Increased from 10
                         start_published_date=start_date,
                         exclude_domains=self.EXCLUDE_DOMAINS,
                         text={"max_characters": 1200}
@@ -873,7 +898,7 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
             def do_find_similar():
                 return self._exa.find_similar_and_contents(
                     url=reference_url,
-                    num_results=15,
+                    num_results=25,  # Increased from 15 for better coverage
                     exclude_domains=self.EXCLUDE_DOMAINS,  # Works with findSimilar!
                     text={"max_characters": 1000}
                 )
