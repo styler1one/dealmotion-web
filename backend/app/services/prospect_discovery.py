@@ -452,10 +452,17 @@ class ProspectDiscoveryService:
             logger.info(f"[PROSPECT_DISCOVERY] Normalized to {len(normalized)} unique companies")
             print(f"[PROSPECT_DISCOVERY] 📊 Normalized to {len(normalized)} unique companies", flush=True)
             
+            # Step 4.5: Filter by region if specified
+            if input.region:
+                before_region_filter = len(normalized)
+                normalized = self._filter_by_region(normalized, input.region)
+                region_filtered = before_region_filter - len(normalized)
+                if region_filtered > 0:
+                    print(f"[PROSPECT_DISCOVERY] 🌍 Filtered out {region_filtered} non-{input.region} results", flush=True)
+            
             # Step 5: Score and analyze
-            # Score MORE prospects than requested to allow filtering by quality
-            # This ensures we don't miss good prospects due to early limiting
-            scoring_limit = min(len(normalized), max(max_results * 2, 40))
+            # Score fewer prospects to avoid truncation (was 50, now 30)
+            scoring_limit = min(len(normalized), max(max_results + 10, 30))
             print(f"[PROSPECT_DISCOVERY] 🎯 Scoring {scoring_limit} prospects (requested: {max_results})", flush=True)
             
             scored = await self._score_prospects(
@@ -1179,6 +1186,72 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
     # =========================================================================
     # Helper Methods
     # =========================================================================
+    
+    def _filter_by_region(
+        self,
+        prospects: List[DiscoveredProspect],
+        target_region: str
+    ) -> List[DiscoveredProspect]:
+        """
+        Filter prospects to only include those matching the target region.
+        
+        Uses URL TLD and inferred_region to determine if prospect is in target region.
+        """
+        # Map of region names to acceptable TLDs and country indicators
+        region_indicators = {
+            # Netherlands
+            "nederland": [".nl", "netherlands", "nederland", "dutch", "amsterdam", "rotterdam"],
+            "netherlands": [".nl", "netherlands", "nederland", "dutch", "amsterdam", "rotterdam"],
+            "nl": [".nl", "netherlands", "nederland", "dutch"],
+            # Germany
+            "germany": [".de", "germany", "deutschland", "german", "munich", "berlin"],
+            "deutschland": [".de", "germany", "deutschland", "german"],
+            "dach": [".de", ".at", ".ch", "germany", "austria", "switzerland", "deutschland"],
+            # Belgium
+            "belgium": [".be", "belgium", "belgie", "belgian", "brussels"],
+            "belgie": [".be", "belgium", "belgie", "belgian"],
+            # Benelux
+            "benelux": [".nl", ".be", ".lu", "netherlands", "belgium", "luxembourg"],
+            # UK
+            "uk": [".uk", ".co.uk", "united kingdom", "british", "london"],
+            "united kingdom": [".uk", ".co.uk", "united kingdom", "british"],
+            # France
+            "france": [".fr", "france", "french", "paris"],
+            # USA
+            "usa": [".com", ".us", "united states", "american"],  # .com is tricky, be careful
+            "us": [".com", ".us", "united states", "american"],
+        }
+        
+        # Normalize target region
+        target_lower = target_region.lower().strip()
+        
+        # Get indicators for this region
+        indicators = region_indicators.get(target_lower, [target_lower])
+        
+        # Filter prospects
+        filtered = []
+        for p in prospects:
+            # Check URL TLD
+            url = (p.website or p.source_url or "").lower()
+            
+            # Check if any indicator matches
+            matches = False
+            for indicator in indicators:
+                if indicator.startswith("."):
+                    # TLD check
+                    if indicator in url:
+                        matches = True
+                        break
+                else:
+                    # Region name check in URL or inferred_region
+                    if indicator in url or (p.inferred_region and indicator in p.inferred_region.lower()):
+                        matches = True
+                        break
+            
+            if matches:
+                filtered.append(p)
+        
+        return filtered
     
     def _extract_domain(self, url: str) -> Optional[str]:
         """Extract domain from URL."""
