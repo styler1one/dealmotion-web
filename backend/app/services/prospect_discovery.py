@@ -464,11 +464,25 @@ class ProspectDiscoveryService:
                 seller_context=seller_context
             )
             
+            # Check how many prospects actually got scored
+            scored_count = sum(1 for p in scored if p.fit_score > 0)
+            print(f"[PROSPECT_DISCOVERY] 📊 Scored {scored_count}/{len(scored)} prospects", flush=True)
+            
+            # If most prospects weren't scored (scoring failed), give them default score
+            # so they're not all filtered out
+            if scored_count < len(scored) // 2:
+                DEFAULT_SCORE = 50  # Neutral score for unscored prospects
+                print(f"[PROSPECT_DISCOVERY] ⚠️ Many prospects unscored, applying default score {DEFAULT_SCORE}", flush=True)
+                for p in scored:
+                    if p.fit_score == 0:
+                        p.fit_score = DEFAULT_SCORE
+                        p.fit_reason = "Potential prospect - scoring incomplete"
+            
             # Sort by fit score
             scored.sort(key=lambda p: p.fit_score, reverse=True)
             
             # Filter out low-scoring results (non-prospects)
-            MIN_FIT_SCORE = 30  # Lowered from 35 to be less aggressive
+            MIN_FIT_SCORE = 25  # Lowered further to be less aggressive
             before_filter = len(scored)
             scored = [p for p in scored if p.fit_score >= MIN_FIT_SCORE]
             filtered_out = before_filter - len(scored)
@@ -1073,7 +1087,7 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
         try:
             response = self._anthropic.messages.create(
                 model="claude-sonnet-4-20250514",
-                max_tokens=4096,
+                max_tokens=16000,  # Increased from 4096 to handle 50+ prospects
                 messages=[{"role": "user", "content": prompt}]
             )
             
@@ -1110,6 +1124,53 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
         except json.JSONDecodeError as e:
             logger.error(f"[PROSPECT_DISCOVERY] Scoring JSON parse failed: {e}")
             logger.error(f"[PROSPECT_DISCOVERY] Raw content was: {content[:500] if content else 'EMPTY'}")
+            
+            # Try to recover partial JSON - find the last complete object
+            try:
+                # Find all complete JSON objects in the response
+                import re
+                # Match complete objects: {...}
+                complete_objects = []
+                brace_count = 0
+                start_idx = None
+                
+                for i, char in enumerate(content):
+                    if char == '{':
+                        if brace_count == 0:
+                            start_idx = i
+                        brace_count += 1
+                    elif char == '}':
+                        brace_count -= 1
+                        if brace_count == 0 and start_idx is not None:
+                            obj_str = content[start_idx:i+1]
+                            try:
+                                obj = json.loads(obj_str)
+                                complete_objects.append(obj)
+                            except:
+                                pass
+                            start_idx = None
+                
+                if complete_objects:
+                    print(f"[PROSPECT_DISCOVERY] ⚠️ Recovered {len(complete_objects)} scored prospects from truncated response", flush=True)
+                    score_map = {s["company_name"]: s for s in complete_objects}
+                    
+                    for p in prospects:
+                        if p.company_name in score_map:
+                            s = score_map[p.company_name]
+                            p.fit_score = s.get("fit_score", 0)
+                            p.proposition_fit = s.get("proposition_fit", 0)
+                            p.seller_fit = s.get("seller_fit", 0)
+                            p.intent_score = s.get("intent_score", 0)
+                            p.recency_score = s.get("recency_score", 0)
+                            p.fit_reason = s.get("fit_reason")
+                            p.key_signal = s.get("key_signal")
+                            p.inferred_sector = s.get("inferred_sector")
+                            p.inferred_size = s.get("inferred_size")
+                    
+                    return prospects
+            except Exception as recovery_error:
+                logger.error(f"[PROSPECT_DISCOVERY] Recovery also failed: {recovery_error}")
+            
             return prospects
         except Exception as e:
             logger.error(f"[PROSPECT_DISCOVERY] Scoring failed: {e}")
