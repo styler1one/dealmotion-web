@@ -110,10 +110,10 @@ Your task: Generate queries that find companies experiencing TRIGGER EVENTS that
 
 ## CONTEXT
 
-**Seller Context:**
+**Seller Profile (use as fallback if search input is incomplete):**
 {seller_context}
 
-**Search Input:**
+**Search Input (user-specified for this search):**
 - Region: {region}
 - Sector/Domain: {sector}
 - Company Size: {company_size}
@@ -121,6 +121,8 @@ Your task: Generate queries that find companies experiencing TRIGGER EVENTS that
 - Target Role: {target_role}
 - Pain Point/Urgency: {pain_point}
 {reference_section}
+
+**IMPORTANT**: If any search input field says "Not specified", use the corresponding information from the Seller Profile above. The seller profile contains their default proposition, target sectors, ideal customer profile, and typical pain points.
 
 ## STEP 1: ANALYZE THE PROPOSITION
 
@@ -210,10 +212,10 @@ Return ONLY the summary text, no JSON, no markdown.
 
 SCORING_PROMPT = """You are a B2B sales intelligence expert specializing in EARLY-STAGE prospect identification.
 
-## SELLER CONTEXT
+## SELLER PROFILE
 {seller_context}
 
-## SEARCH CRITERIA
+## SEARCH CRITERIA (if "Not specified", use Seller Profile above)
 - Proposition: {proposition}
 - Target Role: {target_role}
 - Pain Point: {pain_point}
