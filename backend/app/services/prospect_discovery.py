@@ -154,7 +154,7 @@ Instead of searching for companies "looking for solutions", search for these TRI
 Generate exactly 5 semantic search queries that find companies in {region} / {sector} experiencing TRIGGER EVENTS that would create need for: {proposition}
 
 **GOOD Queries (find triggers, not buyers):**
-- "{sector} companies in {region} appointing new technology leadership 2024"
+- "{sector} companies in {region} appointing new technology leadership {current_year}"
 - "{sector} firms announcing cost optimization or efficiency programs"
 - "{region} {sector} companies facing regulatory scrutiny or compliance challenges"
 - "{sector} organizations in {region} reporting operational challenges or customer complaints"
@@ -259,7 +259,7 @@ Return a JSON array with one object per company:
     "seller_fit": 70,
     "intent_score": 85,
     "recency_score": 90,
-    "fit_reason": "New CTO appointed in October 2024, likely to review technology stack",
+    "fit_reason": "New CTO appointed recently, likely to review technology stack",
     "key_signal": "Appointed new CTO from tech-forward competitor",
     "inferred_sector": "insurance",
     "inferred_size": "mid-market"
@@ -473,7 +473,8 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
             proposition=input.proposition or "Not specified",
             target_role=input.target_role or "Not specified",
             pain_point=input.pain_point or "Not specified",
-            reference_section=reference_section
+            reference_section=reference_section,
+            current_year=datetime.now().year
         )
         
         try:
