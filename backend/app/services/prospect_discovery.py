@@ -122,35 +122,43 @@ Your task: Generate queries that find companies experiencing TRIGGER EVENTS that
 - Pain Point/Urgency: {pain_point}
 {reference_section}
 
-## TRIGGER CATEGORIES (adapt to the sector!)
+## STEP 1: ANALYZE THE PROPOSITION
 
-Think about what creates urgency in **{sector}** specifically. Consider these universal trigger categories, but USE SECTOR-SPECIFIC language and roles:
+Before generating queries, think about what "{proposition}" means:
+- What PROBLEM does this solve?
+- What SITUATION creates the need for this?
+- WHO typically buys this? (which roles have budget/authority?)
+- What EVENTS would make someone suddenly need this?
 
-1. **Leadership Changes**: New decision makers bring new priorities
-   - Think: Who are the key decision makers in {sector}? (NOT just CTO - could be CMO, COO, Medical Director, Partner, etc.)
-   
-2. **Regulatory/Compliance Pressure**: External forces requiring action
-   - Think: What regulations affect {sector}? What audits or certifications matter?
-   
-3. **Operational Challenges**: Visible problems that need solving
-   - Think: What operational pain is common in {sector}? What do customers complain about?
-   
-4. **Growth/Change Events**: Scaling creates new needs
-   - Think: How do {sector} companies grow? Acquisitions, new markets, new products?
-   
-5. **Competitive/Market Pressure**: External market forces
-   - Think: What disrupts {sector}? New entrants, technology shifts, consolidation?
+## STEP 2: IDENTIFY RELEVANT TRIGGERS (sector + proposition specific!)
 
-## YOUR TASK
+Think about what creates urgency for **{proposition}** in **{sector}** specifically:
+
+1. **Leadership Changes**: Which NEW leaders would prioritize {proposition}?
+   - In {sector}, who decides on this? (NOT always CTO - could be COO, CFO, Chief Claims Officer, Medical Director, Partner, etc.)
+   
+2. **Regulatory/Compliance Pressure**: What regulations CREATE need for {proposition}?
+   - What audits, certifications, or mandates affect {sector} that relate to what we sell?
+   
+3. **Operational Challenges**: What visible problems would {proposition} solve?
+   - What customer complaints, delays, or inefficiencies in {sector} relate to our offering?
+   
+4. **Growth/Change Events**: How does growth create need for {proposition}?
+   - Acquisitions, market expansion, volume increases that strain current capabilities?
+   
+5. **Competitive/Market Pressure**: What market forces push toward {proposition}?
+   - Competitors with better capabilities, new entrants, industry benchmarks?
+
+## STEP 3: GENERATE QUERIES
 
 Generate exactly 5 semantic search queries for {region} / {sector} / {company_size} companies.
 
 **CRITICAL RULES:**
-1. Each query MUST be specific to **{sector}** - use industry terminology and relevant roles
-2. Target the role **{target_role}** or related decision makers in that sector
-3. Focus on triggers that would create need for: **{proposition}**
-4. Address the pain point: **{pain_point}**
-5. Include {region} in queries for geographic relevance
+1. Each query targets a trigger that creates need for **{proposition}** specifically
+2. Use {sector}-specific terminology and the relevant decision makers for THIS type of purchase
+3. The target role is **{target_role}** - find triggers that would concern THIS role
+4. Consider the pain point: **{pain_point}**
+5. Include {region} for geographic relevance
 6. Add "{current_year}" to at least one query for recency
 
 **BAD Queries (too generic or too late):**
@@ -217,25 +225,29 @@ SCORING_PROMPT = """You are a B2B sales intelligence expert specializing in EARL
 
 ## SCORING PHILOSOPHY
 
-We're looking for companies experiencing TRIGGER EVENTS - situations that CREATE the need for what we sell. This is BEFORE they start actively looking for solutions.
+We're looking for companies experiencing TRIGGER EVENTS that create the need for **{proposition}** specifically.
+
+**First, understand what we sell:**
+- Proposition: {proposition}
+- This solves problems related to: {pain_point}
+- Relevant decision maker: {target_role}
 
 **High-value triggers (score higher):**
-- New leadership in relevant roles = new priorities coming (consider {target_role} and related roles)
-- Cost pressure / efficiency mandates = urgency for ROI
-- Operational problems (complaints, delays, fines) = pain is visible
-- Regulatory/compliance pressure = forced to act
-- Growth/expansion announcements = scaling challenges ahead
-- Competitor moves = pressure to respond
+- New leadership in roles that would BUY {proposition} = new priorities coming
+- Problems that {proposition} specifically solves = clear fit
+- Regulatory pressure that {proposition} addresses = forced to act
+- Growth challenges that {proposition} handles = scaling pain
+- Competitor advantage that {proposition} would counter = urgency
 
 **Lower-value signals (score lower):**
-- Already implementing solutions = too late, competitors engaged
+- Already implementing similar solutions = too late
+- Triggers unrelated to what {proposition} solves = poor fit
 - Generic company descriptions = no trigger visible
 - Old news (>12 months) = situation may have changed
-- Irrelevant to the proposition or sector
 
 ## YOUR TASK
 
-For each company, evaluate relevance to **{sector}** and **{proposition}**:
+For each company, ask: "Would they need **{proposition}** based on what we found?"
 
 1. **fit_score** (0-100): Overall likelihood this is a good EARLY-STAGE prospect
 2. **proposition_fit** (0-100): Would our offering ({proposition}) solve a problem this trigger creates?
