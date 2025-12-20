@@ -100,7 +100,13 @@ class DiscoveryResult:
 # Prompt Templates
 # =============================================================================
 
-QUERY_GENERATION_PROMPT = """You are a B2B sales intelligence expert. Your task is to generate semantic search queries that will find companies who are likely prospects for a specific seller.
+QUERY_GENERATION_PROMPT = """You are a B2B sales intelligence expert specializing in EARLY-STAGE prospect identification.
+
+## CRITICAL INSIGHT
+
+Companies actively "seeking solutions" or "implementing technology" are ALREADY in buying mode - competitors are likely already engaged. We need to find companies BEFORE they start actively searching.
+
+Your task: Generate queries that find companies experiencing TRIGGER EVENTS that CREATE the need for what the seller offers.
 
 ## CONTEXT
 
@@ -115,35 +121,56 @@ QUERY_GENERATION_PROMPT = """You are a B2B sales intelligence expert. Your task 
 - Target Role: {target_role}
 - Pain Point/Urgency: {pain_point}
 {reference_section}
+## TRIGGER SIGNALS TO SEARCH FOR
+
+Instead of searching for companies "looking for solutions", search for these TRIGGER EVENTS:
+
+**1. Leadership Changes** (New decision makers = new priorities)
+- "appointed new CTO" / "new Chief Digital Officer" / "new CEO announces"
+- "leadership transition" / "executive team changes"
+
+**2. Financial Pressure** (Creates urgency for efficiency)
+- "cost reduction program" / "efficiency initiative announced"
+- "profit warning" / "margin pressure" / "operational restructuring"
+
+**3. Operational Pain** (Visible problems)
+- "customer complaints about" / "service delays" / "processing backlog"
+- "regulatory fine" / "compliance issues" / "audit findings"
+
+**4. Growth Triggers** (Scaling challenges)
+- "expansion into new markets" / "acquisition announced" / "merger integration"
+- "record growth creates challenges" / "scaling operations"
+
+**5. Competitive Pressure** (Market forces)
+- "competitor launches" / "market disruption" / "losing market share"
+- "industry consolidation" / "new entrant threatens"
+
+**6. Technology Debt Signals** (Legacy system pain)
+- "legacy system outage" / "IT infrastructure challenges"
+- "hiring difficulties in IT" / "technology talent shortage"
+
 ## YOUR TASK
 
-Generate exactly 5 semantic search queries that will find companies matching this profile. 
+Generate exactly 5 semantic search queries that find companies in {region} / {sector} experiencing TRIGGER EVENTS that would create need for: {proposition}
 
-**Query Guidelines:**
-1. Write queries as SENTENCES that might appear in news articles, press releases, or company content
-2. Focus on INTENT and CHANGE signals, not just firmographic descriptions
-3. Include the region/country context naturally
-4. Reference specific challenges, transformations, or initiatives
-5. Vary the angle: some about challenges, some about growth, some about technology
+**GOOD Queries (find triggers, not buyers):**
+- "{sector} companies in {region} appointing new technology leadership 2024"
+- "{sector} firms announcing cost optimization or efficiency programs"
+- "{region} {sector} companies facing regulatory scrutiny or compliance challenges"
+- "{sector} organizations in {region} reporting operational challenges or customer complaints"
+- "{sector} companies {region} struggling with talent acquisition in key roles"
 
-**Good Query Examples:**
-- "Mid-sized logistics companies in the Netherlands modernizing their data infrastructure"
-- "Manufacturing firms in Germany struggling with operational analytics and reporting"
-- "Professional services companies discussing AI transformation initiatives 2024"
-- "Dutch enterprises expanding international operations needing scalable systems"
-- "B2B companies in Benelux region hiring for digital transformation roles"
-
-**Bad Query Examples (avoid these patterns):**
-- "company netherlands" (too vague, keyword-based)
-- "logistics company" (no intent signal)
-- "companies with 50-200 employees" (firmographic filter, not semantic)
+**BAD Queries (too late - they're already buying):**
+- "companies seeking digital transformation solutions" ❌
+- "organizations implementing AI platforms" ❌
+- "businesses looking for analytics tools" ❌
 
 ## OUTPUT FORMAT
 
 Return ONLY a JSON array with exactly 5 query strings:
 ["query 1", "query 2", "query 3", "query 4", "query 5"]
 
-No explanation, no markdown, just the JSON array.
+Each query should target a DIFFERENT trigger signal category. No explanation, no markdown, just the JSON array.
 """
 
 REFERENCE_CONTEXT_PROMPT = """You are a B2B sales intelligence expert. Analyze these reference customers to understand what they have in common that makes them ideal customers.
@@ -178,7 +205,7 @@ Example bad output (avoid this):
 Return ONLY the summary text, no JSON, no markdown.
 """
 
-SCORING_PROMPT = """You are a B2B sales intelligence expert. Score and analyze discovered prospects for fit.
+SCORING_PROMPT = """You are a B2B sales intelligence expert specializing in EARLY-STAGE prospect identification.
 
 ## SELLER CONTEXT
 {seller_context}
@@ -192,16 +219,32 @@ SCORING_PROMPT = """You are a B2B sales intelligence expert. Score and analyze d
 
 {prospects_json}
 
+## SCORING PHILOSOPHY
+
+We're looking for companies experiencing TRIGGER EVENTS - situations that CREATE the need for what we sell. This is BEFORE they start actively looking for solutions.
+
+**High-value triggers (score higher):**
+- New leadership (CTO, CDO, CEO) = new priorities coming
+- Cost pressure / efficiency mandates = urgency for ROI
+- Operational problems (complaints, delays, fines) = pain is visible
+- Growth/expansion announcements = scaling challenges ahead
+- Competitor moves = pressure to respond
+
+**Lower-value signals (score lower):**
+- Already implementing solutions = too late, competitors engaged
+- Generic company descriptions = no trigger visible
+- Old news (>12 months) = situation may have changed
+
 ## YOUR TASK
 
 For each company, provide:
-1. **fit_score** (0-100): Overall likelihood this is a good prospect
-2. **proposition_fit** (0-100): How well does our offering match their needs?
-3. **seller_fit** (0-100): How well does this match the seller's target profile?
-4. **intent_score** (0-100): Are there signals of change/urgency?
-5. **recency_score** (0-100): How recent is the information?
-6. **fit_reason**: One sentence explaining why this is/isn't a fit
-7. **key_signal**: The most important signal from the source
+1. **fit_score** (0-100): Overall likelihood this is a good EARLY-STAGE prospect
+2. **proposition_fit** (0-100): Would our offering solve a problem this trigger creates?
+3. **seller_fit** (0-100): Does this match the seller's target profile?
+4. **intent_score** (0-100): How strong is the TRIGGER signal? (NOT buying intent - trigger strength)
+5. **recency_score** (0-100): How recent is the trigger? (<3mo=90+, 3-6mo=70-90, 6-12mo=50-70, >12mo=<50)
+6. **fit_reason**: One sentence: What trigger creates the need for our offering?
+7. **key_signal**: The specific trigger event found (leadership change, cost program, etc.)
 8. **inferred_sector**: Best guess for their industry
 9. **inferred_size**: Best guess for size (startup/SMB/mid-market/enterprise)
 
@@ -214,17 +257,21 @@ Return a JSON array with one object per company:
     "fit_score": 75,
     "proposition_fit": 80,
     "seller_fit": 70,
-    "intent_score": 65,
+    "intent_score": 85,
     "recency_score": 90,
-    "fit_reason": "They're actively modernizing data infrastructure, matching our analytics platform offering",
-    "key_signal": "Announced data transformation initiative in Q3 2024",
-    "inferred_sector": "logistics",
+    "fit_reason": "New CTO appointed in October 2024, likely to review technology stack",
+    "key_signal": "Appointed new CTO from tech-forward competitor",
+    "inferred_sector": "insurance",
     "inferred_size": "mid-market"
   }}
 ]
 
-Be CONSERVATIVE with scores. Only give 80+ if there's strong evidence.
-A score of 50 means "possibly relevant". Below 40 means "probably not a fit".
+**Scoring guide:**
+- 80-100: Clear, recent trigger directly relevant to our proposition
+- 60-79: Visible trigger, somewhat relevant
+- 40-59: Possible trigger, indirect relevance
+- 20-39: Weak or old signal
+- 0-19: No trigger visible, or already buying/implemented
 
 Return ONLY the JSON array, no explanation.
 """
