@@ -381,8 +381,14 @@ class ProspectDiscoveryService:
                     error="Failed to generate search queries"
                 )
             
-            print(f"[PROSPECT_DISCOVERY] 📝 GENERATED {len(queries)} QUERIES:", flush=True)
-            for i, q in enumerate(queries[:3], 1):
+            # Step 2.5: Add market leaders query based on user input
+            market_leader_query = self._build_market_leaders_query(input)
+            if market_leader_query:
+                queries.append(market_leader_query)
+                print(f"[PROSPECT_DISCOVERY] 🏢 Added market leaders query: {market_leader_query[:80]}...", flush=True)
+            
+            print(f"[PROSPECT_DISCOVERY] 📝 TOTAL {len(queries)} QUERIES:", flush=True)
+            for i, q in enumerate(queries[:4], 1):
                 print(f"  Query {i}: {q[:100]}...", flush=True)
             
             # Step 3: Execute Exa searches
@@ -491,6 +497,47 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
         except Exception as e:
             logger.error(f"[PROSPECT_DISCOVERY] Query generation failed: {e}")
             return []
+    
+    def _build_market_leaders_query(self, input: DiscoveryInput) -> Optional[str]:
+        """
+        Build a query to find market leaders in the specified segment.
+        
+        This ensures we always include the top players in the sector,
+        not just companies with visible trigger signals.
+        """
+        if not input.sector:
+            return None
+        
+        # Build size descriptor
+        size_terms = {
+            "enterprise": "largest major leading",
+            "mid-market": "established prominent growing",
+            "mid-sized": "established prominent growing", 
+            "midmarket": "established prominent growing",
+            "smb": "notable successful emerging",
+            "sme": "notable successful emerging",
+            "startup": "innovative fast-growing emerging",
+            "scale-up": "fast-growing successful scaling",
+        }
+        
+        size_input = (input.company_size or "").lower().strip()
+        size_descriptor = "leading prominent"
+        
+        for key, desc in size_terms.items():
+            if key in size_input:
+                size_descriptor = desc
+                break
+        
+        # Build region part
+        region_part = f"in {input.region}" if input.region else ""
+        
+        # Build the query
+        query = f"{size_descriptor} {input.sector} companies {region_part}".strip()
+        
+        # Clean up double spaces
+        query = " ".join(query.split())
+        
+        return query
     
     async def _extract_reference_context(
         self,
