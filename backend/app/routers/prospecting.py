@@ -11,7 +11,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from pydantic import BaseModel, Field
 
-from app.deps import get_current_user
+from app.deps import get_current_user, get_user_org
 from app.database import get_supabase_service
 from app.services.prospect_discovery import (
     get_prospect_discovery_service,
@@ -143,7 +143,7 @@ class ImportProspectResponse(BaseModel):
 @router.post("/search", response_model=ProspectingResultsResponse)
 async def start_prospecting_search(
     request: ProspectingSearchRequest,
-    current_user: dict = Depends(get_current_user)
+    user_org: tuple = Depends(get_user_org)
 ):
     """
     Start a new prospecting search.
@@ -159,8 +159,7 @@ async def start_prospecting_search(
     4. Scores each for fit
     5. Returns ranked results
     """
-    user_id = current_user["sub"]
-    organization_id = current_user["organization_id"]
+    user_id, organization_id = user_org
     
     logger.info(f"[PROSPECTING] Starting search for user {user_id}")
     
@@ -256,12 +255,12 @@ async def start_prospecting_search(
 @router.get("/searches", response_model=SearchHistoryResponse)
 async def get_search_history(
     limit: int = 10,
-    current_user: dict = Depends(get_current_user)
+    user_org: tuple = Depends(get_user_org)
 ):
     """
     Get recent prospecting searches for the organization.
     """
-    organization_id = current_user["organization_id"]
+    user_id, organization_id = user_org
     
     discovery_service = get_prospect_discovery_service()
     searches = await discovery_service.get_search_history(
@@ -291,14 +290,14 @@ async def get_search_history(
 async def get_search_results(
     search_id: str,
     min_score: int = 0,
-    current_user: dict = Depends(get_current_user)
+    user_org: tuple = Depends(get_user_org)
 ):
     """
     Get results for a specific prospecting search.
     
     - min_score: Only return prospects with fit_score >= this value
     """
-    organization_id = current_user["organization_id"]
+    user_id, organization_id = user_org
     
     supabase = get_supabase_service()
     
@@ -361,7 +360,7 @@ async def get_search_results(
 @router.post("/import", response_model=ImportProspectResponse)
 async def import_prospect(
     request: ImportProspectRequest,
-    current_user: dict = Depends(get_current_user)
+    user_org: tuple = Depends(get_user_org)
 ):
     """
     Import a discovered prospect into your prospects list.
@@ -369,7 +368,7 @@ async def import_prospect(
     This creates a new prospect from a discovery result,
     allowing you to then research them in detail.
     """
-    organization_id = current_user["organization_id"]
+    user_id, organization_id = user_org
     
     discovery_service = get_prospect_discovery_service()
     prospect_id = await discovery_service.import_to_prospects(
@@ -393,10 +392,10 @@ async def import_prospect(
 @router.delete("/searches/{search_id}")
 async def delete_search(
     search_id: str,
-    current_user: dict = Depends(get_current_user)
+    user_org: tuple = Depends(get_user_org)
 ):
     """Delete a prospecting search and its results."""
-    organization_id = current_user["organization_id"]
+    user_id, organization_id = user_org
     
     supabase = get_supabase_service()
     
@@ -422,13 +421,12 @@ async def delete_search(
 
 @router.get("/check")
 async def check_prospecting_available(
-    current_user: dict = Depends(get_current_user)
+    user_org: tuple = Depends(get_user_org)
 ):
     """
     Check if prospecting service is available and user has required context.
     """
-    user_id = current_user["sub"]
-    organization_id = current_user["organization_id"]
+    user_id, organization_id = user_org
     
     supabase = get_supabase_service()
     discovery_service = get_prospect_discovery_service()
