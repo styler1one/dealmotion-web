@@ -247,6 +247,16 @@ We're looking for companies experiencing TRIGGER EVENTS that create the need for
 - Generic company descriptions = no trigger visible
 - Old news (>12 months) = situation may have changed
 
+**NOT A PROSPECT (score 0-10):**
+- Media/publishing companies (news sites, magazines, blogs)
+- Consultancies and system integrators (they are competitors, not buyers)
+- Technology vendors (software companies selling to the same market)
+- Regulators and government agencies
+- Industry associations (unless they ARE the target sector)
+- Academic institutions and research organizations
+
+If the company is NOT a potential buyer of {proposition}, score them 0-10 regardless of how interesting the content is.
+
 ## YOUR TASK
 
 For each company, ask: "Would they need **{proposition}** based on what we found?"
@@ -659,6 +669,29 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
             logger.error(f"[PROSPECT_DISCOVERY] Reference context extraction failed: {e}")
             return None
     
+    # Domains to exclude - media, consultancies, competitors
+    EXCLUDE_DOMAINS = [
+        # Media & Publishing
+        "computable.nl", "amweb.nl", "infinance.nl", "banken.nl",
+        "consultancy.nl", "riskenbusiness.nl", "schade-magazine.nl",
+        "mt.nl", "sprout.nl", "emerce.nl", "twinkle.nl",
+        # Consultancies & Competitors
+        "mckinsey.com", "bcg.com", "bain.com", "kpmg.com", "kpmg.nl",
+        "ey.com", "deloitte.com", "deloitte.nl", "pwc.com", "pwc.nl",
+        "accenture.com", "capgemini.com", "sparkoptimus.com",
+        # Regulators & Government
+        "dnb.nl", "afm.nl", "autoriteitpersoonsgegevens.nl",
+        "rijksoverheid.nl", "overheid.nl",
+        # Technology vendors (potential competitors)
+        "salesforce.com", "microsoft.com", "oracle.com", "sap.com",
+        # Academic & Research
+        "researchgate.net", "academia.edu", "sciencedirect.com",
+        # Job sites
+        "linkedin.com", "indeed.com", "glassdoor.com",
+        # General news
+        "nos.nl", "rtv.nl", "nu.nl", "ad.nl", "telegraaf.nl",
+    ]
+    
     async def _execute_discovery_searches(
         self,
         queries: List[str],
@@ -668,9 +701,9 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
         Execute discovery searches using Exa.
         
         Uses different settings than company research:
-        - Focus on news and company announcements
+        - Focus on COMPANY websites (not news articles about companies)
         - Recent content only (last 12-18 months)
-        - More results per query for diversity
+        - Exclude media, consultancies, and competitors
         """
         if not self._exa:
             return []
@@ -691,8 +724,10 @@ Use these patterns to find SIMILAR companies with SIMILAR signals and situations
                     return self._exa.search_and_contents(
                         query=query,
                         type="auto",
-                        num_results=15,  # More results per query
+                        category="company",  # Focus on company websites!
+                        num_results=15,
                         start_published_date=start_date,
+                        exclude_domains=self.EXCLUDE_DOMAINS,
                         text={"max_characters": 1500}
                     )
                 
