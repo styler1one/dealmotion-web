@@ -41,6 +41,8 @@ async def process_prospecting_discovery_fn(ctx, step):
     max_results = data.get("max_results", 25)
     input_data = data.get("input", {})
     
+    print(f"[PROSPECTING_INNGEST] 🚀 START Processing search {search_id}")
+    print(f"[PROSPECTING_INNGEST] Input: region={input_data.get('region')}, sector={input_data.get('sector')}")
     logger.info(f"[PROSPECTING_INNGEST] Processing search {search_id} (max_results={max_results})")
     
     supabase = get_supabase_service()
@@ -67,14 +69,18 @@ async def process_prospecting_discovery_fn(ctx, step):
     )
     
     discovery_service = get_prospect_discovery_service()
+    print(f"[PROSPECTING_INNGEST] Discovery service available: {discovery_service.is_available}")
     
     async def run_discovery():
+        print(f"[PROSPECTING_INNGEST] 🔍 Calling discover_prospects...")
         result = await discovery_service.discover_prospects(
             user_id=user_id,
             organization_id=organization_id,
             input=input_obj,
             max_results=max_results
         )
+        
+        print(f"[PROSPECTING_INNGEST] ✅ Discovery result: success={result.success}, prospects={len(result.prospects)}, error={result.error}")
         
         # Convert to serializable dict
         return {

@@ -290,6 +290,7 @@ class ProspectDiscoveryService:
             DiscoveryResult with discovered prospects
         """
         if not self.is_available:
+            print(f"[PROSPECT_DISCOVERY] ❌ Service not available!")
             return DiscoveryResult(
                 success=False,
                 error="Service not available - missing API keys"
@@ -297,6 +298,7 @@ class ProspectDiscoveryService:
         
         start_time = datetime.now()
         
+        print(f"[PROSPECT_DISCOVERY] 🚀 Starting discovery for user {user_id}")
         logger.info(f"[PROSPECT_DISCOVERY] Starting discovery for user {user_id}")
         
         reference_context = None
