@@ -38,9 +38,10 @@ async def process_prospecting_discovery_fn(ctx, step):
     search_id = data.get("search_id")
     user_id = data.get("user_id")
     organization_id = data.get("organization_id")
+    max_results = data.get("max_results", 25)
     input_data = data.get("input", {})
     
-    logger.info(f"[PROSPECTING_INNGEST] Processing search {search_id}")
+    logger.info(f"[PROSPECTING_INNGEST] Processing search {search_id} (max_results={max_results})")
     
     supabase = get_supabase_service()
     
@@ -59,7 +60,8 @@ async def process_prospecting_discovery_fn(ctx, step):
         company_size=input_data.get("company_size"),
         proposition=input_data.get("proposition"),
         target_role=input_data.get("target_role"),
-        pain_point=input_data.get("pain_point")
+        pain_point=input_data.get("pain_point"),
+        reference_customers=input_data.get("reference_customers")
     )
     
     # Run discovery
@@ -70,7 +72,7 @@ async def process_prospecting_discovery_fn(ctx, step):
             user_id=user_id,
             organization_id=organization_id,
             input=input,
-            max_results=20
+            max_results=max_results
         )
     
     result = await step.run("run-discovery", run_discovery)
@@ -112,7 +114,7 @@ async def process_prospecting_discovery_fn(ctx, step):
                     "source_url": p.source_url,
                     "source_title": p.source_title,
                     "source_snippet": p.source_snippet,
-                    "source_published_date": p.source_published_date,
+                    "source_published_date": p.source_published_date if p.source_published_date else None,
                     "matched_query": p.matched_query
                 }
                 for p in result.prospects

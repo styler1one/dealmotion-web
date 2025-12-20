@@ -49,6 +49,7 @@ interface SearchResult {
   total_count: number
   reference_context?: string
   execution_time_seconds?: number
+  error_message?: string
 }
 
 interface SearchHistoryItem {
@@ -136,7 +137,36 @@ export default function ProspectingPage() {
     })
   }, [checkService, fetchHistory])
 
-  // Start prospecting search
+  // Poll for search results
+  const pollSearchResults = async (searchId: string): Promise<SearchResult | null> => {
+    const maxAttempts = 120 // 4 minutes max (2s intervals)
+    let attempts = 0
+    
+    while (attempts < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 2000)) // Wait 2 seconds
+      
+      const { data, error } = await api.get<SearchResult>(`/api/v1/prospecting/searches/${searchId}`)
+      
+      if (error) {
+        logger.error('Failed to poll search', error)
+        return null
+      }
+      
+      if (data?.status === 'completed') {
+        return data
+      }
+      
+      if (data?.status === 'failed') {
+        throw new Error(data.error_message || 'Search failed')
+      }
+      
+      attempts++
+    }
+    
+    throw new Error('Search timed out')
+  }
+
+  // Start prospecting search (async via Inngest)
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -153,7 +183,8 @@ export default function ProspectingPage() {
     setResults(null)
     
     try {
-      const { data, error } = await api.post<SearchResult>('/api/v1/prospecting/search', {
+      // Step 1: Start the search (returns search_id)
+      const { data: startData, error: startError } = await api.post<{ search_id: string; status: string }>('/api/v1/prospecting/search', {
         region: region || undefined,
         sector: sector || undefined,
         company_size: companySize || undefined,
@@ -166,17 +197,24 @@ export default function ProspectingPage() {
         max_results: maxResults,
       })
       
-      if (error) {
-        throw new Error(error.message || String(error))
+      if (startError) {
+        throw new Error(startError.message || String(startError))
       }
       
-      if (data) {
-        setResults(data)
+      if (!startData?.search_id) {
+        throw new Error('No search ID returned')
+      }
+      
+      // Step 2: Poll for results
+      const result = await pollSearchResults(startData.search_id)
+      
+      if (result) {
+        setResults(result)
         fetchHistory() // Refresh history
         
         toast({
           title: t('toast.searchComplete'),
-          description: t('toast.searchCompleteDesc', { count: data.total_count }),
+          description: t('toast.searchCompleteDesc', { count: result.total_count }),
         })
       }
     } catch (error: any) {

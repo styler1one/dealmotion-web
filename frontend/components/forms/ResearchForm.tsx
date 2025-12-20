@@ -25,9 +25,10 @@ interface ResearchStartResult {
 }
 
 interface ResearchFormProps {
-  // Pre-filled values (optional, for Hub context)
+  // Pre-filled values (optional, for Hub context or Prospect Discovery)
   initialCompanyName?: string
   initialCountry?: string
+  initialWebsiteUrl?: string
   
   // Callbacks
   onSuccess?: (result: ResearchStartResult) => void
@@ -40,6 +41,7 @@ interface ResearchFormProps {
 export function ResearchForm({
   initialCompanyName = '',
   initialCountry = '',
+  initialWebsiteUrl = '',
   onSuccess,
   onCancel,
   isSheet = false
@@ -53,7 +55,7 @@ export function ResearchForm({
   // Form state
   const [companyName, setCompanyName] = useState(initialCompanyName)
   const [linkedinUrl, setLinkedinUrl] = useState('')
-  const [websiteUrl, setWebsiteUrl] = useState('')
+  const [websiteUrl, setWebsiteUrl] = useState(initialWebsiteUrl)
   const [country, setCountry] = useState(initialCountry)
   const [city, setCity] = useState('')
   const [outputLanguage, setOutputLanguage] = useState('en')

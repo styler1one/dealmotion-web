@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Icons } from '@/components/icons'
 import { useToast } from '@/components/ui/use-toast'
@@ -20,11 +20,16 @@ import type { ResearchBrief } from '@/types'
 
 export default function ResearchPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createClientComponentClient()
   const { toast } = useToast()
   const { confirm } = useConfirmDialog()
   const t = useTranslations('research')
   const { settings } = useSettings()
+  
+  // Read query params for pre-filling (from Prospect Discovery)
+  const prefillCompany = searchParams.get('company') || ''
+  const prefillWebsite = searchParams.get('website') || ''
   
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
@@ -302,6 +307,8 @@ export default function ResearchPage() {
                 </h3>
                 
                 <ResearchForm 
+                  initialCompanyName={prefillCompany}
+                  initialWebsiteUrl={prefillWebsite}
                   onSuccess={handleResearchSuccess}
                   isSheet={false}
                 />

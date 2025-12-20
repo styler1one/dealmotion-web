@@ -141,28 +141,34 @@ class ImportProspectResponse(BaseModel):
 # Endpoints
 # =============================================================================
 
-@router.post("/search", response_model=ProspectingResultsResponse)
+class ProspectingSearchStartResponse(BaseModel):
+    """Response when starting an async prospecting search."""
+    search_id: str
+    status: str
+    message: str
+
+
+@router.post("/search", response_model=ProspectingSearchStartResponse)
 async def start_prospecting_search(
     request: ProspectingSearchRequest,
     user_org: tuple = Depends(get_user_org)
 ):
     """
-    Start a new prospecting search.
+    Start a new prospecting search (async via Inngest).
     
-    This uses AI to discover potential prospects based on your seller profile
-    and the search criteria. It's NOT research of known companies - it finds
-    NEW companies that might be relevant.
+    This creates a search record and triggers background processing.
+    Use GET /searches/{search_id} to poll for results.
     
-    The search process:
+    The search process (via Inngest):
     1. Uses your seller profile context
     2. Generates semantic search queries
     3. Searches for matching companies
     4. Scores each for fit
-    5. Returns ranked results
+    5. Saves results to database
     """
     user_id, organization_id = user_org
     
-    logger.info(f"[PROSPECTING] Starting search for user {user_id}")
+    logger.info(f"[PROSPECTING] Starting async search for user {user_id}")
     
     # Check usage limit (counts as a flow)
     usage_service = get_usage_service()
@@ -174,7 +180,7 @@ async def start_prospecting_search(
             detail="Flow limit reached. Upgrade your plan or purchase a flow pack."
         )
     
-    # Get discovery service
+    # Get discovery service to check availability
     discovery_service = get_prospect_discovery_service()
     
     if not discovery_service.is_available:
@@ -183,73 +189,58 @@ async def start_prospecting_search(
             detail="Prospecting service is not available. Check API configuration."
         )
     
-    # Build input
-    input = DiscoveryInput(
-        region=request.region,
-        sector=request.sector,
-        company_size=request.company_size,
-        proposition=request.proposition,
-        target_role=request.target_role,
-        pain_point=request.pain_point,
-        reference_customers=request.reference_customers
-    )
+    supabase = get_supabase_service()
     
-    # Execute discovery
-    result = await discovery_service.discover_prospects(
-        user_id=user_id,
-        organization_id=organization_id,
-        input=input,
-        max_results=request.max_results
-    )
+    # Create search record with pending status
+    search_data = {
+        "organization_id": organization_id,
+        "user_id": user_id,
+        "region": request.region,
+        "sector": request.sector,
+        "company_size": request.company_size,
+        "proposition": request.proposition,
+        "target_role": request.target_role,
+        "pain_point": request.pain_point,
+        "reference_customers": request.reference_customers or [],
+        "status": "pending"
+    }
     
-    if not result.success:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Discovery failed: {result.error}"
-        )
+    result = supabase.table("prospecting_searches").insert(search_data).execute()
     
-    # Increment usage
+    if not result.data:
+        raise HTTPException(status_code=500, detail="Failed to create search record")
+    
+    search_id = result.data[0]["id"]
+    
+    # Increment usage now (before async processing)
     await usage_service.increment_flow(organization_id)
     
-    # Save to database
-    search_id = await discovery_service.save_search(
-        user_id=user_id,
-        organization_id=organization_id,
-        input=input,
-        result=result
+    # Trigger Inngest event for async processing
+    await send_event(
+        name="prospecting/discover",
+        data={
+            "search_id": search_id,
+            "user_id": user_id,
+            "organization_id": organization_id,
+            "max_results": request.max_results,
+            "input": {
+                "region": request.region,
+                "sector": request.sector,
+                "company_size": request.company_size,
+                "proposition": request.proposition,
+                "target_role": request.target_role,
+                "pain_point": request.pain_point,
+                "reference_customers": request.reference_customers
+            }
+        }
     )
     
-    # Format response
-    prospects = [
-        DiscoveredProspectResponse(
-            company_name=p.company_name,
-            website=p.website,
-            linkedin_url=p.linkedin_url,
-            inferred_sector=p.inferred_sector,
-            inferred_region=p.inferred_region,
-            inferred_size=p.inferred_size,
-            fit_score=p.fit_score,
-            proposition_fit=p.proposition_fit,
-            seller_fit=p.seller_fit,
-            intent_score=p.intent_score,
-            recency_score=p.recency_score,
-            fit_reason=p.fit_reason,
-            key_signal=p.key_signal,
-            source_url=p.source_url,
-            source_title=p.source_title,
-            source_published_date=p.source_published_date
-        )
-        for p in result.prospects
-    ]
+    logger.info(f"[PROSPECTING] Created search {search_id}, triggered Inngest")
     
-    return ProspectingResultsResponse(
-        search_id=search_id or "",
-        status="completed",
-        generated_queries=result.generated_queries,
-        prospects=prospects,
-        total_count=len(prospects),
-        reference_context=result.reference_context,
-        execution_time_seconds=result.execution_time_seconds
+    return ProspectingSearchStartResponse(
+        search_id=search_id,
+        status="pending",
+        message="Search started. Poll /searches/{search_id} for results."
     )
 
 
