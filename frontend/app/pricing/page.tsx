@@ -49,16 +49,25 @@ export default function PricingPage() {
     checkAuth()
   }, [supabase])
 
-  // Pricing data
+  // Pricing data - v4 Credit-based pricing
   const pricing = {
     pro: {
-      monthly: { price: 4995, original: 7995 },      // €49.95 launch, €79.95 regular
-      yearly: { price: 50900, original: 81500 },     // €509 launch, €815 regular
+      monthly: { price: 9900 },      // €99/month
+      yearly: { price: 100800 },     // €84/month = €1008/year (15% korting)
+      credits: 250,                  // 250 credits/month (~9 complete sales cycles)
     },
     proPlus: {
-      monthly: { price: 6995, original: 9995 },      // €69.95 launch, €99.95 regular
-      yearly: { price: 71300, original: 101900 },    // €713 launch, €1019 regular
+      monthly: { price: 14900 },     // €149/month
+      yearly: { price: 152400 },     // €127/month = €1524/year (15% korting)
+      credits: 600,                  // 600 credits/month (~21 complete sales cycles)
     }
+  }
+  
+  // Credits per plan
+  const creditsPerPlan = {
+    free: 25,      // ~1 complete sales cycle
+    pro: 250,      // ~9 complete sales cycles
+    proPlus: 600,  // ~21 complete sales cycles
   }
 
   // Format price for display
@@ -77,50 +86,53 @@ export default function PricingPage() {
     return formatPrice(Math.round(yearlyCents / 12))
   }
 
-  // Calculate yearly savings
+  // Calculate yearly savings (15% discount)
   const getYearlySavings = (plan: 'pro' | 'proPlus') => {
     const monthlyTotal = pricing[plan].monthly.price * 12
     const yearlyPrice = pricing[plan].yearly.price
     return monthlyTotal - yearlyPrice
   }
+  
+  // Format credits display
+  const formatCredits = (credits: number) => {
+    return `${credits} credits/maand`
+  }
 
-  // Features for each plan - v4 structure with value-driven descriptions
+  // Features for each plan - v4 Credit-based with all features included
   const features = {
     free: [
-      { text: t('features.v4.value.twoFlows'), included: true },
+      { text: '25 credits/maand', included: true, highlight: true },
+      { text: 'Alle features inbegrepen', included: true },
       { text: t('features.v4.value.prospectIntel'), included: true },
-      { text: t('features.v4.value.contactAnalysis'), included: true },
       { text: t('features.v4.value.meetingPrep'), included: true },
       { text: t('features.v4.value.followupAnalysis'), included: true },
-      { text: t('features.v4.value.meetingReport'), included: true },
       { text: t('features.v4.value.salesCoach'), included: true },
       { text: t('pricing.noCardRequired'), included: true },
     ],
     pro: [
-      { text: t('features.v4.value.unlimited'), included: true, note: t('features.v4.value.unlimitedNote') },
+      { text: '250 credits/maand', included: true, highlight: true },
+      { text: 'Alle features inbegrepen', included: true },
       { text: t('features.v4.value.prospectIntel'), included: true },
-      { text: t('features.v4.value.contactAnalysis'), included: true },
       { text: t('features.v4.value.meetingPrep'), included: true },
       { text: t('features.v4.value.followupAnalysis'), included: true },
-      { text: t('features.v4.value.meetingReport'), included: true },
       { text: t('features.v4.value.dealAnalysis'), included: true },
       { text: t('features.v4.value.emailsDealNotes'), included: true },
       { text: t('features.v4.value.salesCoach'), included: true },
-      { text: t('features.v4.value.uploadTranscripts'), included: true },
+      { text: 'Credits bijkopen mogelijk', included: true },
     ],
     proPlus: [
-      { text: t('features.v4.value.unlimited'), included: true, note: t('features.v4.value.unlimitedNote') },
+      { text: '600 credits/maand', included: true, highlight: true },
+      { text: 'Alle features inbegrepen', included: true },
       { text: t('features.v4.value.prospectIntel'), included: true },
-      { text: t('features.v4.value.contactAnalysis'), included: true },
       { text: t('features.v4.value.meetingPrep'), included: true },
       { text: t('features.v4.value.followupAnalysis'), included: true },
-      { text: t('features.v4.value.meetingReport'), included: true },
       { text: t('features.v4.value.dealAnalysis'), included: true },
       { text: t('features.v4.value.emailsDealNotes'), included: true },
-      { text: t('features.v4.value.salesCoach'), included: true },
       { text: t('features.v4.aiNotetaker'), included: true, highlight: true },
+      { text: 'Credits bijkopen mogelijk', included: true },
     ],
     enterprise: [
+      { text: 'Onbeperkte credits', included: true, highlight: true },
       { text: t('features.v4.everythingProPlus'), included: true },
       { text: t('features.v4.unlimitedUsers'), included: true },
       { text: t('features.v4.value.crmSync'), included: true },
@@ -342,14 +354,6 @@ export default function PricingPage() {
               </div>
               <CardDescription className="text-sm">{t('plans.v4.pro.description')}</CardDescription>
               <div className="mt-4">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-lg text-slate-400 line-through">
-                    {isYearly 
-                      ? getMonthlyEquivalent(pricing.pro.yearly.original)
-                      : formatPrice(pricing.pro.monthly.original)
-                    }
-                  </span>
-                </div>
                 <div className="flex items-baseline gap-1">
                   <span className="text-3xl font-bold text-slate-900 dark:text-white">
                     {isYearly 
@@ -369,6 +373,9 @@ export default function PricingPage() {
                     </p>
                   </div>
                 )}
+                <p className="text-xs text-blue-600 dark:text-blue-400 font-medium mt-2">
+                  {pricing.pro.credits} credits/maand
+                </p>
               </div>
             </CardHeader>
             <CardContent className="pb-4">
@@ -419,14 +426,6 @@ export default function PricingPage() {
               </div>
               <CardDescription className="text-sm">{t('plans.v4.proPlus.description')}</CardDescription>
               <div className="mt-4">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-lg text-slate-400 line-through">
-                    {isYearly 
-                      ? getMonthlyEquivalent(pricing.proPlus.yearly.original)
-                      : formatPrice(pricing.proPlus.monthly.original)
-                    }
-                  </span>
-                </div>
                 <div className="flex items-baseline gap-1">
                   <span className="text-3xl font-bold text-slate-900 dark:text-white">
                     {isYearly 
@@ -446,6 +445,9 @@ export default function PricingPage() {
                     </p>
                   </div>
                 )}
+                <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium mt-2">
+                  {pricing.proPlus.credits} credits/maand
+                </p>
               </div>
             </CardHeader>
             <CardContent className="pb-4">
