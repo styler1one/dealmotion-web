@@ -19,6 +19,21 @@ from app.database import get_supabase_service
 logger = logging.getLogger(__name__)
 
 
+def get_user_output_language(supabase, user_id: str) -> str:
+    """Get user's preferred output language from settings."""
+    try:
+        result = supabase.table("user_settings").select(
+            "output_language"
+        ).eq("user_id", user_id).limit(1).execute()
+        
+        if result.data and len(result.data) > 0:
+            return result.data[0].get("output_language") or "en"
+    except Exception as e:
+        logger.warning(f"Failed to get user language settings: {e}")
+    
+    return "en"
+
+
 @inngest_client.create_function(
     fn_id="autopilot-execute-proposal",
     trigger=TriggerEvent(event="autopilot/proposal.accepted"),
@@ -245,6 +260,9 @@ def execute_research(supabase, user_id: str, organization_id: str, context_data:
     meeting_id = context_data.get("meeting_id")
     meeting_title = context_data.get("meeting_title", "Unknown")
     
+    # Get user's preferred output language
+    output_language = get_user_output_language(supabase, user_id)
+    
     # Get meeting details if we have a meeting_id
     company_name = meeting_title
     if meeting_id:
@@ -262,7 +280,7 @@ def execute_research(supabase, user_id: str, organization_id: str, context_data:
         "organization_id": organization_id,
         "company_name": company_name,
         "status": "pending",
-        "language": "en",
+        "language": output_language,
     }
     
     result = supabase.table("research_briefs") \
@@ -310,6 +328,9 @@ def execute_prep(
     meeting_id = context_data.get("meeting_id")
     company_name = context_data.get("company_name", "Unknown")
     
+    # Get user's preferred output language
+    output_language = get_user_output_language(supabase, user_id)
+    
     # If we have a research_id, use it; otherwise try to find one
     if not research_id and prospect_id:
         research_result = supabase.table("research_briefs") \
@@ -332,7 +353,7 @@ def execute_prep(
         "prospect_company_name": company_name,
         "meeting_type": meeting_type,
         "status": "pending",
-        "language": "en",
+        "language": output_language,
     }
     
     result = supabase.table("meeting_preps") \

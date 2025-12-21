@@ -231,13 +231,44 @@ export function MeetingRequestSheet({
     }
   }, [selectedContact])
 
+  const [emailSubject, setEmailSubject] = useState('')
+
   const generateEmailTemplate = async (contact: ProspectContact) => {
     setIsGeneratingEmail(true)
 
-    // For now, generate a simple template locally
-    // Could be replaced with AI-generated email via backend
+    try {
+      // Call AI email generation endpoint
+      const result = await api.post<{
+        subject: string
+        body: string
+        contact_name: string | null
+        company_name: string | null
+      }>('/api/v1/autopilot/generate-meeting-email', {
+        prospect_id: prospectId,
+        contact_id: contact.id,
+        prep_id: prepId,
+      })
+
+      if (!result.error && result.data) {
+        setEmailSubject(result.data.subject || `Meeting - ${companyName}`)
+        setEmailContent(result.data.body)
+      } else {
+        // Fallback to local template
+        generateFallbackTemplate(contact)
+      }
+    } catch (err) {
+      console.error('Failed to generate AI email:', err)
+      // Fallback to local template
+      generateFallbackTemplate(contact)
+    } finally {
+      setIsGeneratingEmail(false)
+    }
+  }
+
+  const generateFallbackTemplate = (contact: ProspectContact) => {
     const firstName = contact.name.split(' ')[0]
-    const template = `Beste ${firstName},
+    setEmailSubject(`Kennismaking - ${companyName}`)
+    setEmailContent(`Beste ${firstName},
 
 Ik heb mij verdiept in ${companyName} en zie interessante raakvlakken met onze oplossingen.
 
@@ -248,10 +279,7 @@ Ik ben beschikbaar op:
 - [Dag 2] [Tijd]
 
 Met vriendelijke groet,
-[Jouw naam]`
-
-    setEmailContent(template)
-    setIsGeneratingEmail(false)
+[Jouw naam]`)
   }
 
   const regenerateEmail = () => {
@@ -278,7 +306,7 @@ Met vriendelijke groet,
 
   const handleOpenMailto = () => {
     if (selectedContact?.email) {
-      const subject = encodeURIComponent(`Kennismaking - ${companyName}`)
+      const subject = encodeURIComponent(emailSubject || `Kennismaking - ${companyName}`)
       const body = encodeURIComponent(emailContent)
       window.location.href = `mailto:${selectedContact.email}?subject=${subject}&body=${body}`
     }

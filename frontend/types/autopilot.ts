@@ -67,6 +67,7 @@ export interface AutopilotProposal {
   title: string
   description: string | null
   luna_message: string
+  proposal_reason: string | null  // Why this proposal was created
   suggested_actions: SuggestedAction[]
   status: ProposalStatus
   priority: number
@@ -295,11 +296,11 @@ export interface SnoozeOption {
 
 export const SNOOZE_OPTIONS: SnoozeOption[] = [
   {
-    label: '1 uur',
+    label: '1 hour',
     getValue: () => new Date(Date.now() + 60 * 60 * 1000),
   },
   {
-    label: 'Vanavond',
+    label: 'This evening',
     getValue: () => {
       const date = new Date()
       date.setHours(20, 0, 0, 0)
@@ -310,10 +311,37 @@ export const SNOOZE_OPTIONS: SnoozeOption[] = [
     },
   },
   {
-    label: 'Morgen',
+    label: 'Tomorrow',
     getValue: () => {
       const date = new Date()
       date.setDate(date.getDate() + 1)
+      date.setHours(9, 0, 0, 0)
+      return date
+    },
+  },
+  {
+    label: 'After meeting',
+    getValue: () => {
+      // Default to 3 hours from now (typical meeting time)
+      return new Date(Date.now() + 3 * 60 * 60 * 1000)
+    },
+  },
+  {
+    label: 'Next week',
+    getValue: () => {
+      const date = new Date()
+      // Find next Monday
+      const daysUntilMonday = (8 - date.getDay()) % 7 || 7
+      date.setDate(date.getDate() + daysUntilMonday)
+      date.setHours(9, 0, 0, 0)
+      return date
+    },
+  },
+  {
+    label: 'In 3 days',
+    getValue: () => {
+      const date = new Date()
+      date.setDate(date.getDate() + 3)
       date.setHours(9, 0, 0, 0)
       return date
     },

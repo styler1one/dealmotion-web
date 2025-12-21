@@ -17,11 +17,12 @@ import type { AutopilotProposal, ProposalStatus } from '@/types/autopilot'
 import { ProposalCard } from './ProposalCard'
 import { useAutopilot } from './AutopilotProvider'
 
-type FilterTab = 'all' | 'proposed' | 'executing' | 'completed' | 'failed'
+type FilterTab = 'active' | 'proposed' | 'executing' | 'completed'
 
 export function ProposalInbox() {
   const { proposals, counts, isLoading, refreshProposals } = useAutopilot()
-  const [activeTab, setActiveTab] = useState<FilterTab>('all')
+  // Default to 'active' (proposed + executing) - hide completed by default
+  const [activeTab, setActiveTab] = useState<FilterTab>('active')
   const [isRefreshing, setIsRefreshing] = useState(false)
   
   const handleRefresh = async () => {
@@ -34,11 +35,15 @@ export function ProposalInbox() {
   }
   
   const filteredProposals = proposals.filter(p => {
-    if (activeTab === 'all') {
-      return ['proposed', 'executing', 'accepted', 'completed', 'failed'].includes(p.status)
+    if (activeTab === 'active') {
+      // Show only proposed and executing - hide completed by default
+      return ['proposed', 'executing', 'accepted'].includes(p.status)
     }
     if (activeTab === 'executing') {
       return p.status === 'executing' || p.status === 'accepted'
+    }
+    if (activeTab === 'completed') {
+      return ['completed', 'failed'].includes(p.status)
     }
     return p.status === activeTab
   })
@@ -99,12 +104,17 @@ export function ProposalInbox() {
       
       {/* Filter Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as FilterTab)} className="mb-4">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="all">
-            Alle
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="active" className="relative">
+            Active
+            {(pendingCount + executingCount) > 0 && (
+              <span className="ml-1 bg-indigo-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                {pendingCount + executingCount}
+              </span>
+            )}
           </TabsTrigger>
           <TabsTrigger value="proposed" className="relative">
-            Nieuw
+            New
             {pendingCount > 0 && (
               <span className="ml-1 bg-yellow-500 text-white text-xs px-1.5 py-0.5 rounded-full">
                 {pendingCount}
@@ -112,7 +122,7 @@ export function ProposalInbox() {
             )}
           </TabsTrigger>
           <TabsTrigger value="executing">
-            Bezig
+            In Progress
             {executingCount > 0 && (
               <span className="ml-1 bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded-full">
                 {executingCount}
@@ -120,13 +130,10 @@ export function ProposalInbox() {
             )}
           </TabsTrigger>
           <TabsTrigger value="completed">
-            Klaar
-          </TabsTrigger>
-          <TabsTrigger value="failed">
-            Mislukt
-            {failedCount > 0 && (
-              <span className="ml-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                {failedCount}
+            History
+            {(completedCount + failedCount) > 0 && (
+              <span className="ml-1 bg-gray-400 text-white text-xs px-1.5 py-0.5 rounded-full">
+                {completedCount + failedCount}
               </span>
             )}
           </TabsTrigger>

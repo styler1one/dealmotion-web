@@ -132,6 +132,8 @@ async def detect_meeting_ended_fn(ctx, step):
         
         for meeting in ended_meetings:
             try:
+                meeting_id = meeting["id"]
+                
                 # Get company name
                 company = "Onbekend"
                 if meeting.get("prospects") and meeting["prospects"].get("company_name"):
@@ -144,6 +146,35 @@ async def detect_meeting_ended_fn(ctx, step):
                 if not settings.enabled or not settings.auto_followup_after_meeting:
                     continue
                 
+                # Check if there's already a transcript (from Fireflies or AI notetaker)
+                transcript_exists = False
+                
+                # Check Fireflies recordings
+                fireflies_result = supabase.table("fireflies_recordings") \
+                    .select("id") \
+                    .eq("meeting_id", meeting_id) \
+                    .limit(1) \
+                    .execute()
+                
+                if fireflies_result.data and len(fireflies_result.data) > 0:
+                    transcript_exists = True
+                
+                # Check AI notetaker recordings
+                if not transcript_exists:
+                    notetaker_result = supabase.table("ai_notetaker_recordings") \
+                        .select("id") \
+                        .eq("meeting_id", meeting_id) \
+                        .limit(1) \
+                        .execute()
+                    
+                    if notetaker_result.data and len(notetaker_result.data) > 0:
+                        transcript_exists = True
+                
+                # If transcript exists, skip - the summarize will be triggered by that flow
+                if transcript_exists:
+                    logger.info(f"Skipping meeting {meeting_id} - transcript already exists")
+                    continue
+                
                 proposal = AutopilotProposalCreate(
                     organization_id=meeting["organization_id"],
                     user_id=meeting["user_id"],
@@ -154,6 +185,7 @@ async def detect_meeting_ended_fn(ctx, step):
                     title=f"Follow-up voor {company}",
                     description="Meeting afgelopen",
                     luna_message=LUNA_TEMPLATES["followup_pack"].format(company=company),
+                    proposal_reason=f"Je meeting met {company} is zojuist afgelopen. Ik kan een samenvatting en follow-up email maken.",
                     suggested_actions=[
                         SuggestedAction(action="followup_summarize", params={
                             "meeting_id": meeting["id"],
@@ -169,6 +201,7 @@ async def detect_meeting_ended_fn(ctx, step):
                         "meeting_id": meeting["id"],
                         "company_name": company,
                         "prospect_id": meeting.get("prospect_id"),
+                        "flow_step": "meeting_analysis",
                     },
                 )
                 
@@ -256,16 +289,31 @@ async def detect_silent_prospects_fn(ctx, step):
                 
                 organization_id = org_result.data[0]["organization_id"]
                 
-                # Find silent prospects
+                # Find silent prospects (exclude lost/rejected deals)
                 prospects_result = supabase.table("prospects") \
-                    .select("id, company_name, last_activity_at") \
+                    .select("id, company_name, last_activity_at, status") \
                     .eq("organization_id", organization_id) \
                     .lt("last_activity_at", cutoff.isoformat()) \
-                    .in_("status", ["qualified", "meeting_scheduled"]) \
+                    .in_("status", ["qualified", "meeting_scheduled", "proposal_sent"]) \
+                    .not_.in_("status", ["lost", "rejected", "churned"]) \
                     .limit(5) \
                     .execute()
                 
                 for prospect in (prospects_result.data or []):
+                    # Check if there's an active or positive deal
+                    deal_result = supabase.table("deals") \
+                        .select("id, outcome, is_active") \
+                        .eq("prospect_id", prospect["id"]) \
+                        .order("created_at", desc=True) \
+                        .limit(1) \
+                        .execute()
+                    
+                    # Skip if there's a lost deal
+                    if deal_result.data:
+                        deal = deal_result.data[0]
+                        if deal.get("outcome") in ["lost", "rejected", "no_decision"]:
+                            continue  # Don't suggest reactivation for lost deals
+                    
                     days_silent = (datetime.now() - datetime.fromisoformat(
                         prospect["last_activity_at"].replace("Z", "+00:00")
                     ).replace(tzinfo=None)).days
@@ -283,6 +331,7 @@ async def detect_silent_prospects_fn(ctx, step):
                             company=prospect["company_name"],
                             days=days_silent
                         ),
+                        proposal_reason=f"Je hebt al {days_silent} dagen geen contact gehad met {prospect['company_name']}. Tijd om weer eens te checken?",
                         suggested_actions=[
                             SuggestedAction(action="prep", params={
                                 "prospect_id": prospect["id"],
@@ -429,6 +478,7 @@ async def detect_incomplete_flow_fn(ctx, step):
                 title=f"Voeg contacten toe aan {company_name}",
                 description="Research klaar, contacten ontbreken",
                 luna_message=f"Je research over {company_name} is klaar! Voeg nu contactpersonen toe om je prep te personaliseren.",
+                proposal_reason=f"Research voor {company_name} is afgerond, maar er zijn nog geen contactpersonen. Met contacten maak ik betere preps.",
                 suggested_actions=[
                     SuggestedAction(action="add_contacts", params={
                         "prospect_id": prospect_id,
@@ -499,6 +549,7 @@ async def detect_incomplete_flow_fn(ctx, step):
             title=f"Maak prep voor {company_name}",
             description="Research + contacten klaar",
             luna_message=luna_message,
+            proposal_reason=f"Research en contacten voor {company_name} zijn klaar. Een prep helpt je voorbereiden op het eerste gesprek.",
             suggested_actions=[
                 SuggestedAction(action="prep", params={
                     "prospect_id": prospect_id,
@@ -651,6 +702,7 @@ async def detect_contact_added_fn(ctx, step):
             title=f"Maak prep voor {context['company_name']}",
             description=f"Contact {contact_name} toegevoegd",
             luna_message=luna_message,
+            proposal_reason=f"{contact_name} is toegevoegd. Met een prep bereid je je optimaal voor op het gesprek.",
             suggested_actions=[
                 SuggestedAction(action="prep", params={
                     "prospect_id": context["prospect_id"],
@@ -780,6 +832,7 @@ async def detect_prep_no_meeting_fn(ctx, step):
                     title=f"Plan meeting met {company}",
                     description="Prep klaar, meeting niet gepland",
                     luna_message=f"Je prep voor {company} is al een paar dagen klaar. Tijd om je meeting te plannen!",
+                    proposal_reason=f"Je prep is af maar er staat nog geen meeting gepland. Plan een moment om je voorbereiding te benutten.",
                     suggested_actions=[
                         SuggestedAction(action="plan_meeting", params={
                             "prospect_id": prep.get("prospect_id"),
@@ -929,6 +982,7 @@ async def detect_incomplete_actions_fn(ctx, step):
                     title=f"Rond acties af voor {company}",
                     description=f"{pending_count} acties nog open",
                     luna_message=f"Je hebt nog {pending_count} openstaande acties voor {company}. Tijd om ze af te ronden!",
+                    proposal_reason=f"Er staan al {pending_count} acties klaar sinds je meeting. Afronden houdt momentum in je deal.",
                     suggested_actions=[
                         SuggestedAction(action="complete_actions", params={
                             "followup_id": followup_id,
@@ -999,3 +1053,89 @@ async def expire_proposals_fn(ctx, step):
         "expired": expired_count,
         "unsnoozed": unsnoozed_count
     }
+
+
+# =============================================================================
+# PROSPECT IMPORTED DETECTION
+# =============================================================================
+
+@inngest_client.create_function(
+    fn_id="autopilot-detect-prospect-imported",
+    trigger=TriggerEvent(event="dealmotion/prospect.imported"),
+    retries=1,
+)
+async def detect_prospect_imported_fn(ctx, step):
+    """
+    Triggered when a prospect is imported from prospecting.
+    Creates a proposal to start research on the new prospect.
+    
+    Event data:
+    - prospect_id: ID of the imported prospect
+    - company_name: Company name
+    - user_id: User who imported
+    - organization_id: Organization ID
+    """
+    from app.services.autopilot_orchestrator import AutopilotOrchestrator
+    from app.models.autopilot import (
+        ProposalType, TriggerType, AutopilotProposalCreate,
+        SuggestedAction
+    )
+    
+    data = ctx.event.data
+    prospect_id = data.get("prospect_id")
+    company_name = data.get("company_name", "Unknown")
+    user_id = data.get("user_id")
+    organization_id = data.get("organization_id")
+    
+    if not prospect_id or not user_id or not organization_id:
+        logger.warning("detect_prospect_imported_fn: Missing required data")
+        return {"created": False, "reason": "missing_data"}
+    
+    logger.info(f"Prospect imported: {company_name} ({prospect_id})")
+    
+    # Check if autopilot is enabled for this user
+    orchestrator = AutopilotOrchestrator()
+    settings = await orchestrator.get_settings(user_id)
+    
+    if not settings.enabled:
+        return {"created": False, "reason": "autopilot_disabled"}
+    
+    # Create proposal to start research
+    async def create_research_proposal():
+        proposal = AutopilotProposalCreate(
+            organization_id=organization_id,
+            user_id=user_id,
+            proposal_type=ProposalType.RESEARCH_ONLY,
+            trigger_type=TriggerType.MANUAL,  # Triggered by user action
+            trigger_entity_id=prospect_id,
+            trigger_entity_type="prospect",
+            title=f"Start research voor {company_name}",
+            description="Nieuwe prospect geïmporteerd",
+            luna_message=f"Je hebt {company_name} toegevoegd aan je prospects! Wil je dat ik research doe over dit bedrijf?",
+            proposal_reason=f"{company_name} is nieuw in je lijst. Met research krijg je inzicht in het bedrijf voordat je contact opneemt.",
+            suggested_actions=[
+                SuggestedAction(action="research", params={
+                    "prospect_id": prospect_id,
+                    "company_name": company_name,
+                }),
+            ],
+            priority=85,  # High priority for new prospects
+            expires_at=datetime.now() + timedelta(days=7),
+            context_data={
+                "prospect_id": prospect_id,
+                "company_name": company_name,
+                "source": "prospecting_import",
+                "flow_step": "start_research",
+            },
+        )
+        
+        result = await orchestrator.create_proposal(proposal)
+        return result.id if result else None
+    
+    proposal_id = await step.run("create-research-proposal", create_research_proposal)
+    
+    if proposal_id:
+        logger.info(f"Created research proposal {proposal_id} for imported prospect {company_name}")
+        return {"created": True, "proposal_id": proposal_id}
+    else:
+        return {"created": False, "reason": "duplicate_or_error"}

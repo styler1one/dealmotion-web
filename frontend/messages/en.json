@@ -2727,6 +2727,47 @@
     }
   },
   "autopilot": {
+    "title": "Autopilot",
+    "inbox": {
+      "title": "Autopilot Inbox",
+      "tabs": {
+        "active": "Active",
+        "proposed": "New",
+        "executing": "In Progress",
+        "completed": "History"
+      },
+      "empty": "No proposals right now. I'm scanning for opportunities.",
+      "pending": "pending",
+      "waiting": "waiting"
+    },
+    "proposal": {
+      "why": "Why?",
+      "accept": "Accept",
+      "decline": "Decline",
+      "snooze": "Snooze",
+      "retry": "Retry",
+      "viewDetails": "View details",
+      "executing": "Executing...",
+      "failed": "Failed",
+      "completed": "Completed"
+    },
+    "snooze": {
+      "oneHour": "1 hour",
+      "thisEvening": "This evening",
+      "tomorrow": "Tomorrow",
+      "afterMeeting": "After meeting",
+      "nextWeek": "Next week",
+      "inThreeDays": "In 3 days"
+    },
+    "actions": {
+      "addContacts": "Add contacts",
+      "createPrep": "Create prep",
+      "planMeeting": "Plan meeting",
+      "uploadRecording": "Upload recording",
+      "generateActions": "Generate actions",
+      "completeActions": "Complete actions",
+      "startResearch": "Start research"
+    },
     "meetingRequest": {
       "contacts": "Contacts",
       "noContacts": "No contacts found. Add a contact first.",
@@ -2734,6 +2775,7 @@
       "emailTemplate": "Meeting invitation",
       "to": "To",
       "regenerate": "Regenerate",
+      "regenerating": "Generating AI email...",
       "copyEmail": "Copy",
       "openEmail": "Email",
       "call": "Call",
@@ -2749,6 +2791,12 @@
       "templateCopied": "Email template copied",
       "pasteInEmail": "Paste in your email client",
       "cancel": "Cancel"
+    },
+    "luna": {
+      "greeting": "Hey! I'm Luna, your AI sales assistant.",
+      "scanning": "I'm scanning your calendar and prospects for opportunities.",
+      "noProposals": "No active proposals right now.",
+      "checkBack": "Check back soon - I'm always looking for ways to help."
     }
   },
   "prospecting": {

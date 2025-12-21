@@ -103,6 +103,7 @@ class AutopilotProposalBase(BaseModel):
     title: str
     description: Optional[str] = None
     luna_message: str
+    proposal_reason: Optional[str] = None  # Why this proposal was created
     suggested_actions: List[SuggestedAction] = Field(default_factory=list)
     priority: int = Field(default=50, ge=0, le=100)
     expires_at: Optional[datetime] = None

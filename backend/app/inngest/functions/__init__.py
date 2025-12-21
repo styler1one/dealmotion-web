@@ -23,6 +23,7 @@ from .autopilot_detection import (
     detect_contact_added_fn,
     detect_prep_no_meeting_fn,
     detect_incomplete_actions_fn,
+    detect_prospect_imported_fn,
     expire_proposals_fn,
 )
 from .autopilot_execution import execute_proposal_fn
@@ -54,6 +55,7 @@ all_functions = [
     detect_contact_added_fn,
     detect_prep_no_meeting_fn,
     detect_incomplete_actions_fn,
+    detect_prospect_imported_fn,
     expire_proposals_fn,
     execute_proposal_fn,
     # Prospecting
@@ -87,6 +89,7 @@ __all__ = [
     "detect_contact_added_fn",
     "detect_prep_no_meeting_fn",
     "detect_incomplete_actions_fn",
+    "detect_prospect_imported_fn",
     "expire_proposals_fn",
     "execute_proposal_fn",
     # Prospecting

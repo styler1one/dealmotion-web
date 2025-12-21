@@ -141,6 +141,7 @@ class AutopilotOrchestrator:
                 "title": proposal.title,
                 "description": proposal.description,
                 "luna_message": proposal.luna_message,
+                "proposal_reason": proposal.proposal_reason,
                 "suggested_actions": [a.model_dump() for a in proposal.suggested_actions],
                 "priority": proposal.priority,
                 "expires_at": proposal.expires_at.isoformat() if proposal.expires_at else None,
@@ -605,6 +606,36 @@ class AutopilotOrchestrator:
             logger.error(f"Error getting upcoming meetings: {e}")
             return []
     
+    async def _get_user_first_name(self, user_id: str) -> str:
+        """Get the user's first name from their profile."""
+        try:
+            # Try sales_profiles first (most likely to have a name)
+            result = self.supabase.table("sales_profiles") \
+                .select("full_name") \
+                .eq("user_id", user_id) \
+                .limit(1) \
+                .execute()
+            
+            if result.data and result.data[0].get("full_name"):
+                full_name = result.data[0]["full_name"]
+                return full_name.split()[0]  # First name
+            
+            # Fallback to users table
+            result = self.supabase.table("users") \
+                .select("full_name") \
+                .eq("id", user_id) \
+                .limit(1) \
+                .execute()
+            
+            if result.data and result.data[0].get("full_name"):
+                full_name = result.data[0]["full_name"]
+                return full_name.split()[0]
+            
+        except Exception as e:
+            logger.debug(f"Could not get user name: {e}")
+        
+        return ""  # Empty string, so greeting works without name
+    
     async def _get_luna_greeting(
         self,
         user_id: str,
@@ -616,7 +647,11 @@ class AutopilotOrchestrator:
         """Generate Luna's dynamic greeting based on context."""
         hour = datetime.now().hour
         
-        # Check for urgent meeting
+        # Get user's first name for personalization
+        first_name = await self._get_user_first_name(user_id)
+        name_suffix = f", {first_name}" if first_name else ""
+        
+        # Check for urgent meeting (without prep, starting soon)
         urgent_meeting = next(
             (m for m in upcoming_meetings if m.starts_in_hours < 2 and not m.has_prep),
             None
@@ -624,58 +659,100 @@ class AutopilotOrchestrator:
         
         if urgent_meeting:
             hours_text = "1 uur" if urgent_meeting.starts_in_hours < 1.5 else f"{int(urgent_meeting.starts_in_hours)} uur"
+            company = urgent_meeting.company or urgent_meeting.title
             return LunaGreeting(
                 mode=LunaMode.URGENCY,
-                message=f"Let op: je meeting met {urgent_meeting.company or urgent_meeting.title} begint over {hours_text}!",
-                emphasis=urgent_meeting.company or urgent_meeting.title,
-                action="Bekijk prep",
+                message=f"Hey{name_suffix}! Je meeting met {company} begint over {hours_text}. Wil je dat ik snel een prep maak?",
+                emphasis=company,
+                action="Maak prep",
                 action_route=f"/dashboard/preparation?meeting={urgent_meeting.id}",
                 pending_count=pending_count,
                 urgent_count=urgent_count,
             )
         
-        # Morning greeting with pending items
-        if hour < 12 and pending_count > 0:
-            return LunaGreeting(
-                mode=LunaMode.MORNING,
-                message=f"Goedemorgen! Je hebt {pending_count} {'item' if pending_count == 1 else 'items'} klaarstaan.",
-                pending_count=pending_count,
-                urgent_count=urgent_count,
-            )
+        # Morning greeting (before 12:00)
+        if hour < 12:
+            if pending_count > 0:
+                return LunaGreeting(
+                    mode=LunaMode.MORNING,
+                    message=f"Goedemorgen{name_suffix}! Ik heb {pending_count} {'suggestie' if pending_count == 1 else 'suggesties'} voor je klaarliggen.",
+                    pending_count=pending_count,
+                    urgent_count=urgent_count,
+                )
+            else:
+                # No pending items in morning - suggest proactive action
+                next_meeting = next((m for m in upcoming_meetings), None)
+                if next_meeting:
+                    return LunaGreeting(
+                        mode=LunaMode.MORNING,
+                        message=f"Goedemorgen{name_suffix}! Je volgende meeting is om {next_meeting.start_time.strftime('%H:%M') if hasattr(next_meeting.start_time, 'strftime') else next_meeting.start_time}. Alles staat klaar.",
+                        pending_count=0,
+                        urgent_count=0,
+                    )
+                return LunaGreeting(
+                    mode=LunaMode.MORNING,
+                    message=f"Goedemorgen{name_suffix}! Je agenda is vrij. Tijd om aan nieuwe prospects te werken?",
+                    action="Ontdek prospects",
+                    action_route="/dashboard/prospecting",
+                    pending_count=0,
+                    urgent_count=0,
+                )
         
-        # Afternoon greeting with pending items
-        if 12 <= hour < 18 and pending_count > 0:
-            return LunaGreeting(
-                mode=LunaMode.PROPOSAL,
-                message=f"Je hebt {pending_count} {'voorstel' if pending_count == 1 else 'voorstellen'} wachten op je.",
-                pending_count=pending_count,
-                urgent_count=urgent_count,
-            )
-        
-        # Celebration mode
-        if completed_today >= 3:
-            return LunaGreeting(
-                mode=LunaMode.CELEBRATION,
-                message=f"Goed bezig! {completed_today} items afgerond vandaag.",
-                pending_count=pending_count,
-                urgent_count=urgent_count,
-            )
-        
-        # Default coach mode
-        if pending_count == 0:
+        # Afternoon greeting (12:00 - 18:00)
+        if 12 <= hour < 18:
+            if pending_count > 0:
+                return LunaGreeting(
+                    mode=LunaMode.PROPOSAL,
+                    message=f"Je hebt {pending_count} {'voorstel' if pending_count == 1 else 'voorstellen'} klaarstaan{name_suffix}.",
+                    pending_count=pending_count,
+                    urgent_count=urgent_count,
+                )
             return LunaGreeting(
                 mode=LunaMode.COACH,
-                message="Alles op orde. Neem de tijd om je voor te bereiden.",
+                message=f"Goede middag{name_suffix}! Geen openstaande items. Bekijk je prospects of start nieuwe research.",
                 pending_count=0,
                 urgent_count=0,
             )
         
-        # Generic pending
+        # Evening greeting (after 18:00)
+        if hour >= 18:
+            if pending_count > 0:
+                return LunaGreeting(
+                    mode=LunaMode.PROPOSAL,
+                    message=f"Goedenavond{name_suffix}. Je hebt nog {pending_count} {'item' if pending_count == 1 else 'items'} openstaan, maar dat kan ook morgen.",
+                    pending_count=pending_count,
+                    urgent_count=urgent_count,
+                )
+            return LunaGreeting(
+                mode=LunaMode.COACH,
+                message=f"Goedenavond{name_suffix}! Alles op orde voor morgen.",
+                pending_count=0,
+                urgent_count=0,
+            )
+        
+        # Celebration mode (3+ completed today)
+        if completed_today >= 3:
+            return LunaGreeting(
+                mode=LunaMode.CELEBRATION,
+                message=f"Goed bezig{name_suffix}! Je hebt vandaag al {completed_today} items afgerond. 🎉",
+                pending_count=pending_count,
+                urgent_count=urgent_count,
+            )
+        
+        # Generic fallback
+        if pending_count > 0:
+            return LunaGreeting(
+                mode=LunaMode.PROPOSAL,
+                message=f"Hey{name_suffix}! Ik heb {pending_count} {'suggestie' if pending_count == 1 else 'suggesties'} voor je.",
+                pending_count=pending_count,
+                urgent_count=urgent_count,
+            )
+        
         return LunaGreeting(
-            mode=LunaMode.PROPOSAL,
-            message=f"Je hebt {pending_count} {'item' if pending_count == 1 else 'items'} klaarstaan.",
-            pending_count=pending_count,
-            urgent_count=urgent_count,
+            mode=LunaMode.COACH,
+            message=f"Welkom terug{name_suffix}! Wat wil je vandaag bereiken?",
+            pending_count=0,
+            urgent_count=0,
         )
     
     # =========================================================================
@@ -877,7 +954,7 @@ class AutopilotOrchestrator:
                         SuggestedAction(action="research", params={"meeting_id": meeting_id}),
                         SuggestedAction(action="prep", params={"meeting_id": meeting_id}),
                     ],
-                    priority=self._calculate_priority(ProposalType.RESEARCH_PREP, start_time),
+                    priority=self._calculate_priority(ProposalType.RESEARCH_PREP, start_time, {"prospect_status": prospect.get("status") if prospect else None}),
                     expires_at=start_time,
                     context_data={
                         "meeting_id": meeting_id,
@@ -915,7 +992,7 @@ class AutopilotOrchestrator:
                             "prospect_id": prospect_id,
                         }),
                     ],
-                    priority=self._calculate_priority(ProposalType.PREP_ONLY, start_time),
+                    priority=self._calculate_priority(ProposalType.PREP_ONLY, start_time, {"prospect_status": prospect.get("status") if prospect else None}),
                     expires_at=start_time,
                     context_data={
                         "meeting_id": meeting_id,
@@ -934,25 +1011,85 @@ class AutopilotOrchestrator:
             logger.error(f"Error creating calendar proposal: {e}")
             return None
     
-    def _calculate_priority(self, proposal_type: ProposalType, meeting_start: datetime = None) -> int:
-        """Calculate priority for a proposal."""
+    def _calculate_priority(
+        self, 
+        proposal_type: ProposalType, 
+        meeting_start: datetime = None,
+        context_data: dict = None
+    ) -> int:
+        """
+        Calculate priority for a proposal based on multiple factors.
+        
+        Factors considered:
+        - Proposal type (base priority)
+        - Time urgency (upcoming meetings)
+        - Deal value (if available)
+        - Prospect status (qualified prospects get boost)
+        - Days since last activity (urgency for stale items)
+        """
         base_priority = {
             ProposalType.RESEARCH_PREP: 80,
             ProposalType.PREP_ONLY: 75,
             ProposalType.FOLLOWUP_PACK: 70,
+            ProposalType.RESEARCH_ONLY: 65,
             ProposalType.REACTIVATION: 50,
             ProposalType.COMPLETE_FLOW: 60,
         }
         
         priority = base_priority.get(proposal_type, 50)
+        context = context_data or {}
         
-        # Time urgency boost
+        # Time urgency boost (meetings)
         if meeting_start:
             hours_until = (meeting_start.replace(tzinfo=None) - datetime.now()).total_seconds() / 3600
             if hours_until < 2:
                 priority += 20  # Urgent!
+            elif hours_until < 4:
+                priority += 15
             elif hours_until < 24:
                 priority += 10
+            elif hours_until < 48:
+                priority += 5
+        
+        # Deal value boost
+        deal_value = context.get("deal_value")
+        if deal_value:
+            try:
+                value = float(deal_value)
+                if value >= 100000:
+                    priority += 15  # High value deal
+                elif value >= 50000:
+                    priority += 10
+                elif value >= 10000:
+                    priority += 5
+            except (ValueError, TypeError):
+                pass
+        
+        # Prospect status boost
+        prospect_status = context.get("prospect_status")
+        if prospect_status in ["qualified", "proposal_sent"]:
+            priority += 5  # Active deals get boost
+        elif prospect_status == "meeting_scheduled":
+            priority += 10  # Already engaged
+        
+        # Days since last activity (stale = more urgent)
+        days_silent = context.get("days_silent")
+        if days_silent:
+            try:
+                days = int(days_silent)
+                if days >= 14:
+                    priority += 5  # Getting stale
+                if days >= 30:
+                    priority += 10  # Very stale
+            except (ValueError, TypeError):
+                pass
+        
+        # Flow step importance
+        flow_step = context.get("flow_step")
+        if flow_step == "plan_meeting":
+            priority += 5  # Close to conversion
+        elif flow_step == "complete_actions":
+            priority += 3  # Follow-up is important
         
         return min(priority, 100)
     

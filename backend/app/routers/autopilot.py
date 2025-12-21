@@ -522,6 +522,7 @@ async def trigger_detection(
                         title=f"Voeg contacten toe aan {company}",
                         description="Research klaar, contacten ontbreken",
                         luna_message=f"Je research over {company} is klaar! Voeg nu contactpersonen toe om je prep te personaliseren.",
+                        proposal_reason=f"Je hebt research voor {company} maar nog geen contactpersonen. Met contacten kan ik je prep personaliseren.",
                         suggested_actions=[
                             SuggestedAction(action="add_contacts", params={
                                 "prospect_id": p_id,
@@ -565,6 +566,7 @@ async def trigger_detection(
                         title=f"Maak prep voor {company}",
                         description=f"Research en {contact_count} contacten klaar",
                         luna_message=f"Je hebt research over {company} en {contact_count} contacten toegevoegd. Wil je een prep maken voor het eerste gesprek?",
+                        proposal_reason=f"Research en {contact_count} contactpersonen zijn compleet. Een prep helpt je het gesprek effectief te voeren.",
                         suggested_actions=[
                             SuggestedAction(action="prep", params={
                                 "prospect_id": p_id,
@@ -621,6 +623,7 @@ async def trigger_detection(
                             title=f"Analyseer meeting met {company}",
                             description="Prep klaar, upload je meeting recording",
                             luna_message=f"Je prep voor {company} is klaar. Na je meeting, upload de recording voor een analyse en follow-up acties.",
+                            proposal_reason="Je prep is af. Na het gesprek kan ik de recording analyseren voor samenvatting en actiepunten.",
                             suggested_actions=[
                                 SuggestedAction(action="meeting_analysis", params={
                                     "prospect_id": p_id,
@@ -674,6 +677,7 @@ async def trigger_detection(
                                 title=f"Genereer acties voor {company}",
                                 description="Meeting analyse klaar, acties ontbreken",
                                 luna_message=f"Je meeting analyse voor {company} is klaar. Wil je een customer report of andere acties genereren?",
+                                proposal_reason="De meeting is geanalyseerd. Genereer nu follow-up acties zoals een rapport of email.",
                                 suggested_actions=[
                                     SuggestedAction(action="generate_actions", params={
                                         "followup_id": followup_id,
@@ -709,4 +713,239 @@ async def trigger_detection(
         
     except Exception as e:
         logger.error(f"Error in manual detection: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# =============================================================================
+# AI EMAIL GENERATION
+# =============================================================================
+
+from pydantic import BaseModel
+from typing import Optional
+
+class GenerateMeetingEmailRequest(BaseModel):
+    prospect_id: str
+    contact_id: Optional[str] = None
+    prep_id: Optional[str] = None
+    user_name: Optional[str] = None
+
+
+class GenerateMeetingEmailResponse(BaseModel):
+    subject: str
+    body: str
+    contact_name: Optional[str] = None
+    company_name: Optional[str] = None
+
+
+@router.post("/generate-meeting-email", response_model=GenerateMeetingEmailResponse)
+async def generate_meeting_email(
+    request: GenerateMeetingEmailRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Generate an AI-powered meeting request email based on prospect context.
+    
+    Uses research, prep, and contact data to create a personalized email.
+    """
+    user_id = current_user["sub"]
+    supabase = get_supabase_service()
+    
+    try:
+        # Get user's output language
+        output_language = "en"
+        try:
+            settings_result = supabase.table("user_settings") \
+                .select("output_language") \
+                .eq("user_id", user_id) \
+                .limit(1) \
+                .execute()
+            if settings_result.data:
+                output_language = settings_result.data[0].get("output_language", "en")
+        except Exception:
+            pass
+        
+        # Get prospect info
+        prospect_result = supabase.table("prospects") \
+            .select("company_name, website, industry") \
+            .eq("id", request.prospect_id) \
+            .limit(1) \
+            .execute()
+        
+        if not prospect_result.data:
+            raise HTTPException(status_code=404, detail="Prospect not found")
+        
+        prospect = prospect_result.data[0]
+        company_name = prospect.get("company_name", "Unknown")
+        
+        # Get contact info if provided
+        contact_name = None
+        contact_role = None
+        if request.contact_id:
+            contact_result = supabase.table("prospect_contacts") \
+                .select("name, role, profile_brief") \
+                .eq("id", request.contact_id) \
+                .limit(1) \
+                .execute()
+            
+            if contact_result.data:
+                contact = contact_result.data[0]
+                contact_name = contact.get("name")
+                contact_role = contact.get("role")
+        
+        # Get prep info if provided
+        prep_summary = None
+        key_topics = None
+        if request.prep_id:
+            prep_result = supabase.table("meeting_preps") \
+                .select("executive_summary, key_topics, objectives") \
+                .eq("id", request.prep_id) \
+                .limit(1) \
+                .execute()
+            
+            if prep_result.data:
+                prep = prep_result.data[0]
+                prep_summary = prep.get("executive_summary")
+                key_topics = prep.get("key_topics", [])
+        
+        # Get user name from sales_profiles if not provided
+        user_name = request.user_name
+        if not user_name:
+            profile_result = supabase.table("sales_profiles") \
+                .select("full_name") \
+                .eq("user_id", user_id) \
+                .limit(1) \
+                .execute()
+            
+            if profile_result.data:
+                user_name = profile_result.data[0].get("full_name", "").split()[0]
+        
+        # Try to use Gemini for email generation
+        try:
+            from google import genai
+            import os
+            
+            gemini_key = os.getenv("GOOGLE_AI_API_KEY") or os.getenv("GEMINI_API_KEY")
+            if gemini_key:
+                client = genai.Client(api_key=gemini_key)
+                
+                # Build context for email
+                context_parts = [
+                    f"Company: {company_name}",
+                    f"Industry: {prospect.get('industry', 'Unknown')}",
+                ]
+                
+                if contact_name:
+                    context_parts.append(f"Contact: {contact_name}, {contact_role or 'Unknown role'}")
+                
+                if prep_summary:
+                    context_parts.append(f"Key Context: {prep_summary[:500]}")
+                
+                if key_topics and isinstance(key_topics, list):
+                    context_parts.append(f"Topics to discuss: {', '.join(key_topics[:3])}")
+                
+                context = "\n".join(context_parts)
+                
+                lang_instruction = "in Dutch" if output_language == "nl" else "in English"
+                
+                prompt = f"""Generate a professional meeting request email {lang_instruction}.
+
+Context:
+{context}
+
+Requirements:
+- Keep it concise (3-4 short paragraphs max)
+- Be professional but warm
+- Show genuine interest in their business
+- Reference specific context from the research if available
+- Include a clear call to action to schedule a meeting
+- Do NOT use overly salesy language
+- Sign off with the sender's first name only
+
+Sender: {user_name or 'the sales rep'}
+
+Provide the response in this exact format:
+SUBJECT: [email subject line]
+BODY:
+[email body text]"""
+                
+                response = client.models.generate_content(
+                    model="gemini-2.0-flash",
+                    contents=prompt
+                )
+                
+                # Parse response
+                response_text = response.text
+                
+                # Extract subject
+                subject_match = response_text.find("SUBJECT:")
+                body_match = response_text.find("BODY:")
+                
+                if subject_match >= 0 and body_match >= 0:
+                    subject = response_text[subject_match + 8:body_match].strip()
+                    body = response_text[body_match + 5:].strip()
+                else:
+                    # Fallback parsing
+                    lines = response_text.strip().split("\n")
+                    subject = lines[0].replace("SUBJECT:", "").strip() if lines else "Meeting Request"
+                    body = "\n".join(lines[1:]).replace("BODY:", "").strip()
+                
+                return GenerateMeetingEmailResponse(
+                    subject=subject,
+                    body=body,
+                    contact_name=contact_name,
+                    company_name=company_name
+                )
+        
+        except Exception as ai_error:
+            logger.warning(f"AI email generation failed, using template: {ai_error}")
+        
+        # Fallback to template-based email
+        if output_language == "nl":
+            subject = f"Kennismaking - {company_name}"
+            
+            if contact_name:
+                greeting = f"Beste {contact_name.split()[0]},"
+            else:
+                greeting = "Beste,"
+            
+            body = f"""{greeting}
+
+Ik ben bezig met research naar {company_name} en zie interessante mogelijkheden voor samenwerking.
+
+{'Specifiek gezien jullie werk op het gebied van ' + ', '.join(key_topics[:2]) + ', denk ik dat er waardevolle punten zijn om te bespreken.' if key_topics and len(key_topics) >= 2 else 'Ik denk dat er waardevolle punten zijn om te bespreken.'}
+
+Zou je komende week tijd hebben voor een kort gesprek van 30 minuten? Ik kijk ernaar uit om te horen hoe het gaat en waar ik kan helpen.
+
+Met vriendelijke groet,
+{user_name or 'DealMotion gebruiker'}"""
+        else:
+            subject = f"Introduction - {company_name}"
+            
+            if contact_name:
+                greeting = f"Hi {contact_name.split()[0]},"
+            else:
+                greeting = "Hi,"
+            
+            body = f"""{greeting}
+
+I've been researching {company_name} and see some interesting opportunities for collaboration.
+
+{'Specifically regarding your work in ' + ', '.join(key_topics[:2]) + ', I believe there are valuable points to discuss.' if key_topics and len(key_topics) >= 2 else 'I believe there are valuable points to discuss.'}
+
+Would you have time for a brief 30-minute call next week? I look forward to hearing how things are going and where I can help.
+
+Best regards,
+{user_name or 'DealMotion user'}"""
+        
+        return GenerateMeetingEmailResponse(
+            subject=subject,
+            body=body,
+            contact_name=contact_name,
+            company_name=company_name
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating meeting email: {e}")
         raise HTTPException(status_code=500, detail=str(e))

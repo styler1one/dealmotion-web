@@ -395,13 +395,43 @@ async def import_prospect(
     """
     user_id, organization_id = user_org
     
+    supabase = get_supabase_service()
     discovery_service = get_prospect_discovery_service()
+    
+    # Get the result data before import (for event data)
+    result_data = supabase.table("prospecting_results")\
+        .select("company_name, website, inferred_sector")\
+        .eq("id", request.result_id)\
+        .limit(1)\
+        .execute()
+    
+    company_name = None
+    if result_data.data:
+        company_name = result_data.data[0].get("company_name")
+    
     prospect_id = await discovery_service.import_to_prospects(
         result_id=request.result_id,
         organization_id=organization_id
     )
     
     if prospect_id:
+        # Send event to trigger autopilot detection for new prospect
+        try:
+            await send_event(
+                "dealmotion/prospect.imported",
+                {
+                    "prospect_id": prospect_id,
+                    "company_name": company_name,
+                    "source": "prospecting",
+                    "user_id": user_id,
+                    "organization_id": organization_id,
+                },
+                user={"id": user_id}
+            )
+            logger.info(f"Sent prospect.imported event for {prospect_id}")
+        except Exception as e:
+            logger.warning(f"Failed to send prospect.imported event: {e}")
+        
         return ImportProspectResponse(
             success=True,
             prospect_id=prospect_id,

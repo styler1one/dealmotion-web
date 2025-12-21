@@ -242,10 +242,18 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
           <p className="text-sm text-gray-500 mb-2">{proposal.description}</p>
         )}
         
-        <div className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg">
+        <div className="flex items-start gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
           <span className="text-lg">💬</span>
-          <p className="text-sm text-gray-700 italic">{proposal.luna_message}</p>
+          <p className="text-sm text-gray-700 dark:text-gray-300 italic">{proposal.luna_message}</p>
         </div>
+        
+        {/* Why this proposal - explanation */}
+        {proposal.proposal_reason && (
+          <div className="mt-2 flex items-start gap-2 text-xs text-gray-500 dark:text-gray-400">
+            <span className="font-medium">Why?</span>
+            <span>{proposal.proposal_reason}</span>
+          </div>
+        )}
       </div>
       
       {/* Error message for failed proposals */}

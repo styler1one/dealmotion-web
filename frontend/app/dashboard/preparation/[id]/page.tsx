@@ -21,6 +21,7 @@ import { useTranslations } from 'next-intl'
 import { api } from '@/lib/api'
 import { exportAsMarkdown, exportAsPdf, exportAsDocx } from '@/lib/export-utils'
 import type { User } from '@supabase/supabase-js'
+import { useAutopilot } from '@/components/autopilot/AutopilotProvider'
 
 interface MeetingPrep {
   id: string
@@ -76,6 +77,7 @@ export default function PreparationDetailPage() {
   const { toast } = useToast()
   const t = useTranslations('preparation')
   const tCommon = useTranslations('common')
+  const { recordPrepViewed } = useAutopilot()
   
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
@@ -84,6 +86,7 @@ export default function PreparationDetailPage() {
   const [researchBrief, setResearchBrief] = useState<ResearchBrief | null>(null)
   const [linkedContacts, setLinkedContacts] = useState<ProspectContact[]>([])
   const [linkedDeal, setLinkedDeal] = useState<LinkedDeal | null>(null)
+  const [prepViewedTracked, setPrepViewedTracked] = useState(false)
   
   // Edit brief states
   const [isEditing, setIsEditing] = useState(false)
@@ -92,6 +95,37 @@ export default function PreparationDetailPage() {
   
   // Export states
   const [isExporting, setIsExporting] = useState(false)
+  
+  // Track prep viewed for Autopilot
+  useEffect(() => {
+    const prepId = params.id as string
+    if (prep && prep.status === 'completed' && !prepViewedTracked) {
+      const startTime = Date.now()
+      
+      // Track on unmount or after 30 seconds
+      const timeout = setTimeout(() => {
+        recordPrepViewed({
+          preparation_id: prepId,
+          view_duration_seconds: 30,
+          scroll_depth: 0.5,
+        })
+        setPrepViewedTracked(true)
+      }, 30000)
+      
+      return () => {
+        clearTimeout(timeout)
+        // Track view duration on unmount
+        const duration = Math.floor((Date.now() - startTime) / 1000)
+        if (duration >= 5 && !prepViewedTracked) {
+          recordPrepViewed({
+            preparation_id: prepId,
+            view_duration_seconds: duration,
+            scroll_depth: 0.5,
+          })
+        }
+      }
+    }
+  }, [prep, prepViewedTracked, params.id, recordPrepViewed])
 
   useEffect(() => {
     const getUser = async () => {
