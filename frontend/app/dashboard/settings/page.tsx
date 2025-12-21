@@ -45,6 +45,7 @@ import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { useBilling } from '@/lib/billing-context'
 import { UsageMeter } from '@/components/usage-meter'
+import { CreditUsage } from '@/components/credit-usage'
 import { api } from '@/lib/api'
 import { logger } from '@/lib/logger'
 import { useConfirmDialog } from '@/components/confirm-dialog'
@@ -1128,9 +1129,14 @@ export default function SettingsPage() {
                     )}
                   </div>
 
-                  {/* Usage Meters - v2: Flow-based */}
+                  {/* Credit Usage - v4: Credit-based system */}
+                  <CreditUsage 
+                    onBuyCredits={() => router.push('/pricing')}
+                  />
+
+                  {/* Legacy Usage Meters - v2: Flow-based */}
                   {usage && (
-                    <div className="space-y-4">
+                    <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-700">
                       <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">
                         {tBilling('usageThisMonth')}
                       </h4>

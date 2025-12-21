@@ -11,6 +11,7 @@ import json
 from anthropic import AsyncAnthropic  # Use async client to not block event loop
 from app.i18n.utils import get_language_instruction
 from app.i18n.config import DEFAULT_LANGUAGE
+from app.services.api_usage_service import get_api_usage_service
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +61,24 @@ class PrepGeneratorService:
             # Parse structured output
             parsed = self._parse_brief(brief_text, context['meeting_type'])
             
-            logger.info(f"Successfully generated brief ({len(brief_text)} chars)")
+            # Log Claude usage with actual token counts from API response
+            try:
+                usage_service = get_api_usage_service()
+                await usage_service.log_llm_usage(
+                    organization_id=context.get("organization_id"),
+                    provider="anthropic",
+                    model=self.model,
+                    input_tokens=response.usage.input_tokens,
+                    output_tokens=response.usage.output_tokens,
+                    user_id=context.get("user_id"),
+                    service="preparation",
+                    credits_consumed=0,  # Credits tracked separately
+                    metadata={"prospect_company": context.get("prospect_company")}
+                )
+            except Exception as usage_err:
+                logger.warning(f"Failed to log prep Claude usage: {usage_err}")
+            
+            logger.info(f"Successfully generated brief ({len(brief_text)} chars, {response.usage.input_tokens} in/{response.usage.output_tokens} out)")
             
             return {
                 "brief_content": brief_text,

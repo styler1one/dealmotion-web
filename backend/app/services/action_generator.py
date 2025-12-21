@@ -57,10 +57,11 @@ class ActionGeneratorService:
         max_tokens = max_tokens_map.get(action_type, 4000)
         
         # Generate content
-        content = await self._generate_with_claude(prompt, max_tokens=max_tokens)
+        content, token_stats = await self._generate_with_claude(prompt, max_tokens=max_tokens)
         
-        # Build metadata
+        # Build metadata with token stats for usage tracking
         metadata = self._build_metadata(action_type, content, context)
+        metadata["token_stats"] = token_stats
         
         return content, metadata
     
@@ -1957,8 +1958,12 @@ RULES:
 
 Generate the complete internal report now:"""
     
-    async def _generate_with_claude(self, prompt: str, max_tokens: int = 4000) -> str:
-        """Call Claude API to generate content (async to not block event loop)"""
+    async def _generate_with_claude(self, prompt: str, max_tokens: int = 4000) -> Tuple[str, Dict[str, int]]:
+        """Call Claude API to generate content (async to not block event loop)
+        
+        Returns:
+            Tuple of (content, token_stats) where token_stats has input_tokens and output_tokens
+        """
         try:
             # Use await with AsyncAnthropic - this is non-blocking!
             response = await self.client.messages.create(
@@ -1969,7 +1974,13 @@ Generate the complete internal report now:"""
                 ]
             )
             
-            return response.content[0].text
+            # Return both content and token usage stats
+            token_stats = {
+                "input_tokens": response.usage.input_tokens,
+                "output_tokens": response.usage.output_tokens
+            }
+            
+            return response.content[0].text, token_stats
             
         except Exception as e:
             logger.error(f"Claude API error: {e}")

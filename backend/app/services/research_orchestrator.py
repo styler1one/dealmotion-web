@@ -31,6 +31,7 @@ from .research_enricher import get_research_enricher, ResearchEnricher
 from app.database import get_supabase_service
 from app.i18n.config import DEFAULT_LANGUAGE
 from app.utils.timeout import with_timeout, AITimeoutError
+from app.services.api_usage_service import get_api_usage_service
 
 logger = logging.getLogger(__name__)
 
@@ -222,6 +223,23 @@ class ResearchOrchestrator:
                                 f"Gemini research: {stats.get('input_tokens', 'N/A')} in, "
                                 f"{stats.get('output_tokens', 'N/A')} out"
                             )
+                            # Log API usage for cost tracking
+                            if organization_id:
+                                try:
+                                    usage_service = get_api_usage_service()
+                                    await usage_service.log_llm_usage(
+                                        organization_id=organization_id,
+                                        provider="gemini",
+                                        model="gemini-2.0-flash",
+                                        input_tokens=stats.get("input_tokens", 0),
+                                        output_tokens=stats.get("output_tokens", 0),
+                                        user_id=user_id,
+                                        service="research_gemini",
+                                        credits_consumed=0,  # Credits consumed at flow level
+                                        metadata={"company_name": company_name}
+                                    )
+                                except Exception as usage_err:
+                                    logger.warning(f"Failed to log Gemini usage: {usage_err}")
                     elif name == "kvk" and result.get("success"):
                         kvk_data = result
                     elif name == "website" and result.get("success"):
@@ -302,6 +320,23 @@ class ResearchOrchestrator:
                     f"Claude analysis: {stats.get('input_tokens', 0)} in, "
                     f"{stats.get('output_tokens', 0)} out"
                 )
+                # Log API usage for cost tracking
+                if organization_id:
+                    try:
+                        usage_service = get_api_usage_service()
+                        await usage_service.log_llm_usage(
+                            organization_id=organization_id,
+                            provider="anthropic",
+                            model="claude-sonnet-4-20250514",
+                            input_tokens=stats.get("input_tokens", 0),
+                            output_tokens=stats.get("output_tokens", 0),
+                            user_id=user_id,
+                            service="research_analysis",
+                            credits_consumed=0,  # Credits consumed at flow level
+                            metadata={"company_name": company_name}
+                        )
+                    except Exception as usage_err:
+                        logger.warning(f"Failed to log Claude usage: {usage_err}")
         else:
             # Fallback: Return Gemini data directly (not ideal but better than nothing)
             logger.warning(f"Claude analysis failed, falling back to Gemini data")

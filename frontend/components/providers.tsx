@@ -6,6 +6,7 @@ import { SettingsProvider } from '@/lib/settings-context'
 import { BillingProvider } from '@/lib/billing-context'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { ConfirmDialogProvider } from '@/components/confirm-dialog'
+import { InsufficientCreditsProvider } from '@/components/insufficient-credits-modal'
 import { Toaster } from '@/components/ui/toaster'
 import { PostHogProvider } from '@/lib/posthog'
 
@@ -41,8 +42,10 @@ export function Providers({ children }: ProvidersProps) {
             <SettingsProvider>
               <BillingProvider>
                 <ConfirmDialogProvider>
-                  {children}
-                  <Toaster />
+                  <InsufficientCreditsProvider>
+                    {children}
+                    <Toaster />
+                  </InsufficientCreditsProvider>
                 </ConfirmDialogProvider>
               </BillingProvider>
             </SettingsProvider>

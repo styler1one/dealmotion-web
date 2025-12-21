@@ -106,7 +106,7 @@ class TranscriptionService:
         url = "https://api.deepgram.com/v1/listen"
         
         params = {
-            "model": "nova-2",
+            "model": "nova-3",  # Nova-3 Multilingual for best accuracy
             "language": language,
             "smart_format": "true",
             "diarize": "true",
@@ -151,7 +151,7 @@ class TranscriptionService:
         url = "https://api.deepgram.com/v1/listen"
         
         params = {
-            "model": "nova-2",
+            "model": "nova-3",  # Nova-3 Multilingual for best accuracy
             "language": language,
             "smart_format": "true",
             "diarize": "true",

@@ -21,6 +21,7 @@ from app.database import get_supabase_service, get_user_client
 from app.services.prospect_service import get_prospect_service
 from app.services.company_lookup import get_company_lookup
 from app.services.usage_service import get_usage_service
+from app.services.credit_service import get_credit_service
 from app.inngest.events import send_event, Events, use_inngest_for, get_research_event, get_research_architecture
 
 
@@ -274,6 +275,24 @@ async def start_research(
             }
         )
     
+    # Check credits BEFORE starting (v4: credit-based system)
+    credit_service = get_credit_service()
+    has_credits, credit_balance = await credit_service.check_credits(
+        organization_id=organization_id,
+        action="research_flow"
+    )
+    if not has_credits:
+        raise HTTPException(
+            status_code=402,
+            detail={
+                "error": "insufficient_credits",
+                "message": "Not enough credits for research",
+                "required": credit_balance.get("required_credits", 3),
+                "available": credit_balance.get("total_credits_available", 0),
+                "upgrade_url": "/pricing"
+            }
+        )
+    
     # Get or create prospect (NEW!)
     prospect_service = get_prospect_service()
     prospect_id = prospect_service.get_or_create_prospect(
@@ -367,6 +386,19 @@ async def start_research(
         
         # Increment flow counter (v3: flow-based tracking with flow pack support)
         await usage_service.increment_flow(organization_id, use_flow_pack=use_flow_pack)
+        
+        # Consume credits (v4: credit-based system for cost management)
+        try:
+            credit_service = get_credit_service()
+            await credit_service.consume_credits(
+                organization_id=organization_id,
+                action="research_flow",
+                user_id=user_id,
+                metadata={"company_name": body.company_name, "research_id": research_id}
+            )
+        except Exception as credit_err:
+            # Log but don't fail - credits table may not exist yet
+            logger.warning(f"Credit consumption failed (may be expected): {credit_err}")
         
         return ResearchResponse(
             id=research_id,

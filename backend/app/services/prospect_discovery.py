@@ -30,6 +30,7 @@ from supabase import Client
 
 from app.database import get_supabase_service
 from app.services.seller_context_builder import get_seller_context_builder
+from app.services.api_usage_service import get_api_usage_service
 
 logger = logging.getLogger(__name__)
 
@@ -737,6 +738,29 @@ class ProspectDiscoveryService:
                 f"[PROSPECT_DISCOVERY] Completed: {len(scored)} prospects (filtered {filtered_out}), "
                 f"{execution_time:.1f}s"
             )
+            
+            # Log API usage for Exa searches (estimate based on queries)
+            # Typical discovery uses ~25-40 Exa requests (news, direct, company searches)
+            try:
+                usage_service = get_api_usage_service()
+                # Estimate: 4 news searches + len(queries) direct + market leader searches
+                estimated_exa_requests = len(queries) * 2 + 10  # Conservative estimate
+                await usage_service.log_search_usage(
+                    organization_id=organization_id,
+                    provider="exa",
+                    request_type="search_and_contents",
+                    request_count=estimated_exa_requests,
+                    user_id=user_id,
+                    service="discovery",
+                    credits_consumed=0,  # Credits consumed at flow level in router
+                    metadata={
+                        "queries_count": len(queries),
+                        "prospects_found": len(scored),
+                        "execution_time": execution_time
+                    }
+                )
+            except Exception as usage_err:
+                logger.warning(f"Failed to log Exa usage: {usage_err}")
             
             return DiscoveryResult(
                 success=True,

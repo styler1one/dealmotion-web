@@ -20,6 +20,7 @@ from app.services.prospect_discovery import (
     DiscoveredProspect
 )
 from app.services.usage_service import get_usage_service
+from app.services.credit_service import get_credit_service
 from app.inngest.events import send_event
 
 logger = logging.getLogger(__name__)
@@ -180,6 +181,25 @@ async def start_prospecting_search(
             detail="Flow limit reached. Upgrade your plan or purchase a flow pack."
         )
     
+    # Check credits BEFORE starting (v4: credit-based system)
+    # ⚠️ Discovery is the MOST EXPENSIVE action (5 credits)
+    credit_service = get_credit_service()
+    has_credits, credit_balance = await credit_service.check_credits(
+        organization_id=organization_id,
+        action="prospect_discovery"
+    )
+    if not has_credits:
+        raise HTTPException(
+            status_code=402,
+            detail={
+                "error": "insufficient_credits",
+                "message": "Not enough credits for prospect discovery",
+                "required": credit_balance.get("required_credits", 5),
+                "available": credit_balance.get("total_credits_available", 0),
+                "upgrade_url": "/pricing"
+            }
+        )
+    
     # Get discovery service to check availability
     discovery_service = get_prospect_discovery_service()
     
@@ -214,6 +234,19 @@ async def start_prospecting_search(
     
     # Increment usage now (before async processing)
     await usage_service.increment_flow(organization_id)
+    
+    # Consume credits (v4: credit-based system for cost management)
+    # ⚠️ Discovery is expensive: ~22 Exa calls + 3 Claude calls = 4 credits
+    try:
+        credit_service = get_credit_service()
+        await credit_service.consume_credits(
+            organization_id=organization_id,
+            action="prospect_discovery",  # 4 credits - this is the most expensive operation!
+            user_id=user_id,
+            metadata={"search_id": search_id}
+        )
+    except Exception as credit_err:
+        logger.warning(f"Credit consumption failed (may be expected): {credit_err}")
     
     # Trigger Inngest event for async processing
     await send_event(

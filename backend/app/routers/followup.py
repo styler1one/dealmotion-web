@@ -339,6 +339,26 @@ async def upload_audio(
         # Track whether we should use flow pack for this upload
         use_flow_pack = limit_check.get("using_flow_pack", False)
         
+        # Check credits BEFORE starting (v4: credit-based system)
+        # Minimum check: ~3 credits for 5-min transcription + summary
+        from app.services.credit_service import get_credit_service
+        credit_service = get_credit_service()
+        has_credits, credit_balance = await credit_service.check_credits(
+            organization_id=organization_id,
+            action="followup_start"
+        )
+        if not has_credits:
+            raise HTTPException(
+                status_code=402,
+                detail={
+                    "error": "insufficient_credits",
+                    "message": "Not enough credits for follow-up processing",
+                    "required": credit_balance.get("required_credits", 3),
+                    "available": credit_balance.get("total_credits_available", 0),
+                    "action": "followup_start"
+                }
+            )
+        
         # Read file data
         audio_data = await file.read()
         
@@ -673,6 +693,26 @@ async def upload_transcript(
         
         # Track whether we should use flow pack for this upload
         use_flow_pack = limit_check.get("using_flow_pack", False)
+        
+        # Check credits BEFORE starting (v4: credit-based system)
+        # For transcript upload: only summary needed (2 credits)
+        from app.services.credit_service import get_credit_service
+        credit_service = get_credit_service()
+        has_credits, credit_balance = await credit_service.check_credits(
+            organization_id=organization_id,
+            action="followup"  # 2 credits for summary
+        )
+        if not has_credits:
+            raise HTTPException(
+                status_code=402,
+                detail={
+                    "error": "insufficient_credits",
+                    "message": "Not enough credits for follow-up processing",
+                    "required": credit_balance.get("required_credits", 2),
+                    "available": credit_balance.get("total_credits_available", 0),
+                    "action": "followup"
+                }
+            )
         
         # Read file data
         file_data = await file.read()

@@ -21,6 +21,8 @@ from app.services.rag_service import rag_service
 from app.services.prep_generator import prep_generator
 from app.services.prospect_service import get_prospect_service
 from app.services.usage_service import get_usage_service
+from app.services.credit_service import get_credit_service
+from app.services.api_usage_service import get_api_usage_service
 
 # Inngest integration
 from app.inngest.events import send_event, use_inngest_for, Events
@@ -122,6 +124,10 @@ def generate_prep_background(
             # Generate brief with AI
             result = await prep_generator.generate_meeting_brief(context, language=language)
             
+            # Log API usage for Claude call
+            # Note: Token counts are logged via prep_generator.generate_meeting_brief()
+            # which returns the actual token usage from the API response
+            
             # Update database with results
             supabase.table("meeting_preps").update({
                 "status": "completed",
@@ -189,6 +195,24 @@ async def start_prep(
                     "message": "You have reached your preparation limit for this month",
                     "current": limit_check.get("current", 0),
                     "limit": limit_check.get("limit", 0),
+                    "upgrade_url": "/pricing"
+                }
+            )
+        
+        # Check credits BEFORE starting (v4: credit-based system)
+        credit_service = get_credit_service()
+        has_credits, credit_balance = await credit_service.check_credits(
+            organization_id=organization_id,
+            action="preparation"
+        )
+        if not has_credits:
+            raise HTTPException(
+                status_code=402,
+                detail={
+                    "error": "insufficient_credits",
+                    "message": "Not enough credits for meeting preparation",
+                    "required": credit_balance.get("required_credits", 2),
+                    "available": credit_balance.get("total_credits_available", 0),
                     "upgrade_url": "/pricing"
                 }
             )
@@ -310,6 +334,18 @@ async def start_prep(
         
         # Increment usage counter
         await usage_service.increment_usage(organization_id, "preparation")
+        
+        # Consume credits (v4: credit-based system)
+        try:
+            credit_service = get_credit_service()
+            await credit_service.consume_credits(
+                organization_id=organization_id,
+                action="preparation",
+                user_id=user_id,
+                metadata={"prep_id": prep_id, "prospect_company": body.prospect_company_name}
+            )
+        except Exception as credit_err:
+            logger.warning(f"Credit consumption failed: {credit_err}")
         
         contact_count = len(body.contact_ids) if body.contact_ids else 0
         logger.info(f"Created prep {prep_id} for {body.prospect_company_name} (prospect: {prospect_id}, contacts: {contact_count})")

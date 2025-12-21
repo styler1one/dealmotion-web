@@ -16,3 +16,4 @@ export {
   useFocusTrap, 
   useHotkeys 
 } from './useKeyboard'
+export { useCreditCheck } from './use-credit-check'

@@ -108,6 +108,25 @@ async def generate_action(
         followup = followup_result.data[0]
         organization_id = followup["organization_id"]
         
+        # Check credits BEFORE generating (v4: credit-based system)
+        from app.services.credit_service import get_credit_service
+        credit_service = get_credit_service()
+        has_credits, credit_balance = await credit_service.check_credits(
+            organization_id=organization_id,
+            action="followup_action"
+        )
+        if not has_credits:
+            raise HTTPException(
+                status_code=402,
+                detail={
+                    "error": "insufficient_credits",
+                    "message": "Not enough credits for this action",
+                    "required": credit_balance.get("required_credits", 2),
+                    "available": credit_balance.get("total_credits_available", 0),
+                    "upgrade_url": "/pricing"
+                }
+            )
+        
         # Check if action of this type already exists
         existing = supabase.table("followup_actions").select("id").eq("followup_id", followup_id).eq("action_type", request.action_type.value).execute()
         
@@ -306,6 +325,14 @@ async def generate_action_content(
     try:
         # Import here to avoid circular imports
         from app.services.action_generator import ActionGeneratorService
+        from app.services.credit_service import get_credit_service
+        from app.services.api_usage_service import get_api_usage_service
+        
+        supabase = get_supabase_service()
+        
+        # Get organization_id from followup
+        followup_result = supabase.table("followups").select("organization_id").eq("id", followup_id).single().execute()
+        organization_id = followup_result.data.get("organization_id") if followup_result.data else None
         
         generator = ActionGeneratorService()
         
@@ -319,11 +346,42 @@ async def generate_action_content(
         )
         
         # Update action with generated content
-        supabase = get_supabase_service()
         supabase.table("followup_actions").update({
             "content": content,
             "metadata": metadata,
         }).eq("id", action_id).execute()
+        
+        # Log API usage and consume credits (if org_id available)
+        if organization_id:
+            try:
+                credit_service = get_credit_service()
+                await credit_service.consume_credits(
+                    organization_id=organization_id,
+                    action="followup_action",
+                    user_id=user_id,
+                    metadata={"action_id": action_id, "action_type": action_type.value}
+                )
+            except Exception as credit_err:
+                logger.warning(f"Credit consumption failed: {credit_err}")
+            
+            # Log actual token usage from metadata
+            token_stats = metadata.get("token_stats", {})
+            if token_stats:
+                try:
+                    usage_service = get_api_usage_service()
+                    await usage_service.log_llm_usage(
+                        organization_id=organization_id,
+                        provider="anthropic",
+                        model="claude-sonnet-4-20250514",
+                        input_tokens=token_stats.get("input_tokens", 0),
+                        output_tokens=token_stats.get("output_tokens", 0),
+                        user_id=user_id,
+                        service=f"followup_action_{action_type.value}",
+                        credits_consumed=0,
+                        metadata={"action_id": action_id, "followup_id": followup_id}
+                    )
+                except Exception as usage_err:
+                    logger.warning(f"API usage logging failed: {usage_err}")
         
         logger.info(f"Generated {action_type.value} for followup {followup_id}")
         

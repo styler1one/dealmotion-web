@@ -29,6 +29,8 @@ from inngest import NonRetriableError, TriggerEvent, Throttle
 from app.inngest.client import inngest_client
 from app.database import get_supabase_service
 from app.models.followup_actions import ActionType
+from app.services.api_usage_service import get_api_usage_service
+from app.services.credit_service import get_credit_service
 
 logger = logging.getLogger(__name__)
 
@@ -100,6 +102,41 @@ async def generate_followup_action_fn(ctx, step):
         action_id, followup_id, action_type, user_id, language,
         followup_context, seller_context, prospect_context
     )
+    
+    # Step 4.5: Log API usage and consume credits for this action
+    organization_id = followup_context.get("organization_id")
+    if organization_id:
+        # Consume credits for the action (each action = 0.1 credits)
+        try:
+            credit_service = get_credit_service()
+            await credit_service.consume_credits(
+                organization_id=organization_id,
+                action="followup_action",  # 0.1 credits per action
+                user_id=user_id,
+                quantity=1,
+                metadata={"action_id": action_id, "action_type": action_type}
+            )
+        except Exception as credit_err:
+            logger.warning(f"Credit consumption failed for action: {credit_err}")
+        
+        # Log actual Claude usage from result metadata
+        token_stats = result.get("metadata", {}).get("token_stats", {})
+        if token_stats:
+            try:
+                usage_service = get_api_usage_service()
+                await usage_service.log_llm_usage(
+                    organization_id=organization_id,
+                    provider="anthropic",
+                    model="claude-sonnet-4-20250514",
+                    input_tokens=token_stats.get("input_tokens", 0),
+                    output_tokens=token_stats.get("output_tokens", 0),
+                    user_id=user_id,
+                    service=f"followup_action_{action_type}",
+                    credits_consumed=0,  # Tracked separately
+                    metadata={"action_id": action_id, "followup_id": followup_id}
+                )
+            except Exception as usage_err:
+                logger.warning(f"Failed to log action Claude usage: {usage_err}")
     
     # Step 5: Save results
     await step.run(

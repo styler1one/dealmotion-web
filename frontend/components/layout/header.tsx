@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Icons } from '@/components/icons'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { LanguageSelector } from '@/components/language-selector'
+import { CreditWidget } from '@/components/credit-widget'
 import { cn } from '@/lib/utils'
 import { useLocale, useTranslations } from 'next-intl'
 import type { Locale } from '@/i18n/config'
@@ -47,6 +48,9 @@ export function Header({ user, className }: HeaderProps) {
 
         {/* Right side */}
         <div className="flex items-center gap-3">
+          {/* Credit Balance Widget */}
+          <CreditWidget />
+
           {/* Language Selector */}
           <LanguageSelector currentLocale={locale} />
 
