@@ -537,6 +537,7 @@ async def save_followup_results(
     try:
         update_data = {
             "status": "completed",
+            "meeting_gist": summary.get("meeting_gist", ""),  # Ultra-short TL;DR for lists/notifications
             "executive_summary": summary.get("executive_summary", ""),
             "key_points": summary.get("key_points", []),
             "concerns": summary.get("concerns", []),

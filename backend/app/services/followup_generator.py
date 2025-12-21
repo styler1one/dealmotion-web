@@ -225,12 +225,12 @@ This summary gives the essentials. Deeper analysis lives in separate reports.
             if company and company.get("company_narrative"):
                 prompt += f"## YOUR COMPANY\n{company['company_narrative'][:800]}\n\n"
             
-            # Research - include more for BANT signals and leadership context
+            # Research - include full context for BANT signals, leadership, entry strategy
             research = prospect_context.get("research")
             if research:
                 data = research.get("brief_content") or "Not available"
-                # Use more of research - contains BANT, leadership, entry strategy
-                prompt += f"## PROSPECT RESEARCH\n{data[:2500]}\n\n"
+                # Use more of research - contains BANT, leadership, entry strategy (15K chars)
+                prompt += f"## PROSPECT RESEARCH\n{data[:15000]}\n\n"
             
             # Meeting Prep
             preps = prospect_context.get("meeting_preps")
@@ -254,8 +254,8 @@ This summary gives the essentials. Deeper analysis lives in separate reports.
             if profile_context:
                 prompt += f"## SALES PROFILE\n{profile_context[:500]}\n\n"
 
-        # Transcription
-        prompt += f"## MEETING TRANSCRIPTION\n{transcription[:12000]}\n\n---\n"
+        # Transcription - use full transcript for rich summary (75K chars = ~18K tokens input)
+        prompt += f"## MEETING TRANSCRIPTION\n{transcription[:75000]}\n\n---\n"
 
         # Summary instructions
         prompt += f"""
@@ -263,6 +263,11 @@ Generate a structured, factual summary with EXACTLY the following sections.
 Do not analyse or interpret beyond what was explicitly said. Keep everything concise.
 
 # Meeting Summary
+
+## 🏷️ Gist
+A single-line TL;DR (max 15 words) that captures: [Company] - [Core topic] - [Outcome/Next step]
+Example: "Heijmans - Databricks migratie support - concrete kans, follow-up december"
+This must fit in a notification or list preview.
 
 ## 📋 In One Sentence
 A single precise sentence that captures what this meeting was about and its outcome or significance.  
@@ -358,6 +363,7 @@ Generate the meeting summary now:
         """
         
         sections = {
+            "meeting_gist": "",  # Ultra-short TL;DR for notifications/lists
             "executive_summary": "",
             "key_points": [],
             "concerns": [],
@@ -380,8 +386,14 @@ Generate the meeting summary now:
         for line in content.split("\n"):
             line_stripped = line.strip()
             
-            # New format sections
-            if "## 📋 In One Sentence" in line or "In One Sentence" in line:
+            # New format sections - Gist (ultra-short TL;DR)
+            if "## 🏷️ Gist" in line or "## Gist" in line:
+                current_section = "meeting_gist"
+                current_content = []
+            elif "## 📋 In One Sentence" in line or "In One Sentence" in line:
+                # Save gist if we were collecting it
+                if current_section == "meeting_gist" and current_content:
+                    sections["meeting_gist"] = " ".join(current_content).strip()
                 current_section = "executive_summary"
                 current_content = []
             elif "## 🎯 What Happened" in line or "What Happened" in line:
@@ -427,7 +439,11 @@ Generate the meeting summary now:
             
             # Content parsing
             elif line_stripped and current_section:
-                if current_section == "executive_summary":
+                if current_section == "meeting_gist":
+                    # Collect single line for gist (ignore example lines)
+                    if not line_stripped.startswith("#") and not line_stripped.startswith("---") and not line_stripped.startswith("Example:"):
+                        current_content.append(line_stripped)
+                elif current_section == "executive_summary":
                     # Collect lines for executive summary
                     if not line_stripped.startswith("#") and not line_stripped.startswith("---"):
                         current_content.append(line_stripped)
