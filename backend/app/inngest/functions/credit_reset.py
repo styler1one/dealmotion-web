@@ -10,6 +10,7 @@ Schedule: Every day at 00:05 UTC
 
 import logging
 from datetime import datetime
+from inngest import TriggerCron
 from app.inngest.client import inngest_client
 from app.database import get_supabase_service
 
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 @inngest_client.create_function(
     fn_id="credit-reset-daily",
-    trigger=inngest_client.TriggerCron(cron="5 0 * * *"),  # Daily at 00:05 UTC
+    trigger=TriggerCron(cron="5 0 * * *"),  # Daily at 00:05 UTC
 )
 async def credit_reset_daily_fn(ctx, step):
     """
