@@ -14,7 +14,6 @@ import {
   RefreshCw,
   Search,
   Calendar,
-  Download,
   ArrowDownRight,
   ArrowUpRight,
   Package,
@@ -30,7 +29,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -42,6 +40,7 @@ import { cn } from '@/lib/utils'
 import { api } from '@/lib/api'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { CreditPacksModal } from '@/components/credit-packs-modal'
+import { useTranslations } from 'next-intl'
 import type { User } from '@supabase/supabase-js'
 
 // Types matching backend API
@@ -121,6 +120,7 @@ const ACTION_COLORS: Record<string, string> = {
 export default function CreditsPage() {
   const router = useRouter()
   const supabase = createClientComponentClient()
+  const t = useTranslations('credits')
   
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
@@ -179,12 +179,12 @@ export default function CreditsPage() {
       setBalance(balanceRes.data)
       setUsageData(usageRes.data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Kon credits niet laden')
+      setError(err instanceof Error ? err.message : t('errorLoading'))
     } finally {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [page, filterType, filterAction])
+  }, [page, filterType, filterAction, t])
   
   useEffect(() => {
     if (user) {
@@ -200,7 +200,7 @@ export default function CreditsPage() {
   // Format date
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)
-    return new Intl.DateTimeFormat('nl-NL', {
+    return new Intl.DateTimeFormat('en-US', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
@@ -218,10 +218,10 @@ export default function CreditsPage() {
     const diffHours = Math.floor(diffMs / 3600000)
     const diffDays = Math.floor(diffMs / 86400000)
     
-    if (diffMins < 1) return 'Zojuist'
-    if (diffMins < 60) return `${diffMins} min geleden`
-    if (diffHours < 24) return `${diffHours} uur geleden`
-    if (diffDays < 7) return `${diffDays} dagen geleden`
+    if (diffMins < 1) return t('justNow')
+    if (diffMins < 60) return t('minutesAgo', { minutes: diffMins })
+    if (diffHours < 24) return t('hoursAgo', { hours: diffHours })
+    if (diffDays < 7) return t('daysAgo', { days: diffDays })
     return formatDate(dateStr)
   }
   
@@ -263,7 +263,7 @@ export default function CreditsPage() {
             className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 dark:hover:text-white mb-4 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
-            Terug naar instellingen
+            {t('backToSettings')}
           </button>
           
           <div className="flex items-center justify-between">
@@ -273,10 +273,10 @@ export default function CreditsPage() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-                  Credits & Verbruik
+                  {t('title')}
                 </h1>
                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Volledig overzicht van je credit verbruik
+                  {t('subtitle')}
                 </p>
               </div>
             </div>
@@ -290,7 +290,7 @@ export default function CreditsPage() {
                 className="gap-2"
               >
                 <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
-                Vernieuwen
+                {t('refresh')}
               </Button>
               <CreditPacksModal />
             </div>
@@ -309,7 +309,7 @@ export default function CreditsPage() {
           <Card className="md:col-span-1">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-medium text-slate-500">Beschikbaar</span>
+                <span className="text-sm font-medium text-slate-500">{t('available')}</span>
                 {balance?.is_unlimited ? (
                   <Badge className="bg-emerald-500 text-white">Unlimited</Badge>
                 ) : null}
@@ -318,7 +318,7 @@ export default function CreditsPage() {
               {balance?.is_unlimited ? (
                 <div className="text-center">
                   <span className="text-5xl font-bold text-emerald-600 dark:text-emerald-400">∞</span>
-                  <p className="text-sm text-slate-500 mt-1">Onbeperkte credits</p>
+                  <p className="text-sm text-slate-500 mt-1">{t('unlimited')}</p>
                 </div>
               ) : (
                 <>
@@ -343,8 +343,8 @@ export default function CreditsPage() {
                   </div>
                   
                   <div className="flex justify-between text-xs text-slate-500">
-                    <span>{balance?.subscription_credits_remaining?.toFixed(1) || 0} abonnement</span>
-                    <span>{balance?.pack_credits_remaining?.toFixed(1) || 0} packs</span>
+                    <span>{balance?.subscription_credits_remaining?.toFixed(1) || 0} {t('subscription')}</span>
+                    <span>{balance?.pack_credits_remaining?.toFixed(1) || 0} {t('packs')}</span>
                   </div>
                 </>
               )}
@@ -355,11 +355,11 @@ export default function CreditsPage() {
           <Card className="md:col-span-2">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-medium text-slate-500">Deze periode</span>
+                <span className="text-sm font-medium text-slate-500">{t('thisPeriod')}</span>
                 {balance?.period_end && (
                   <span className="text-xs text-slate-400 flex items-center gap-1">
                     <Clock className="h-3 w-3" />
-                    Verloopt {new Date(balance.period_end).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}
+                    {t('expires')} {new Date(balance.period_end).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}
                   </span>
                 )}
               </div>
@@ -368,7 +368,7 @@ export default function CreditsPage() {
                 <div>
                   <div className="flex items-center gap-1 text-red-600 dark:text-red-400 mb-1">
                     <ArrowDownRight className="h-4 w-4" />
-                    <span className="text-sm font-medium">Verbruikt</span>
+                    <span className="text-sm font-medium">{t('consumed')}</span>
                   </div>
                   <span className="text-2xl font-bold tabular-nums text-slate-900 dark:text-white">
                     {usageData?.period_stats?.total_consumed?.toFixed(1) || '0'}
@@ -378,7 +378,7 @@ export default function CreditsPage() {
                 <div>
                   <div className="flex items-center gap-1 text-green-600 dark:text-green-400 mb-1">
                     <ArrowUpRight className="h-4 w-4" />
-                    <span className="text-sm font-medium">Toegevoegd</span>
+                    <span className="text-sm font-medium">{t('added')}</span>
                   </div>
                   <span className="text-2xl font-bold tabular-nums text-slate-900 dark:text-white">
                     {usageData?.period_stats?.total_added?.toFixed(0) || '0'}
@@ -388,7 +388,7 @@ export default function CreditsPage() {
                 <div>
                   <div className="flex items-center gap-1 text-slate-600 dark:text-slate-400 mb-1">
                     <TrendingUp className="h-4 w-4" />
-                    <span className="text-sm font-medium">Transacties</span>
+                    <span className="text-sm font-medium">{t('transactions')}</span>
                   </div>
                   <span className="text-2xl font-bold tabular-nums text-slate-900 dark:text-white">
                     {usageData?.period_stats?.transaction_count || 0}
@@ -399,7 +399,7 @@ export default function CreditsPage() {
               {/* Usage breakdown */}
               {usageData?.period_stats?.by_action && usageData.period_stats.by_action.length > 0 && (
                 <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-                  <span className="text-xs font-medium text-slate-500 mb-2 block">Verbruik per functie</span>
+                  <span className="text-xs font-medium text-slate-500 mb-2 block">{t('usageByFunction')}</span>
                   <div className="flex flex-wrap gap-2">
                     {usageData.period_stats.by_action.slice(0, 6).map((item) => (
                       <div 
@@ -428,10 +428,10 @@ export default function CreditsPage() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="h-5 w-5 text-slate-400" />
-                  Transactiegeschiedenis
+                  {t('transactionHistory')}
                 </CardTitle>
                 <CardDescription>
-                  Alle credit transacties met volledige details
+                  {t('allTransactionsDetails')}
                 </CardDescription>
               </div>
               
@@ -443,24 +443,24 @@ export default function CreditsPage() {
                     <SelectValue placeholder="Type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Alle types</SelectItem>
-                    <SelectItem value="consumption">Verbruik</SelectItem>
-                    <SelectItem value="subscription_reset">Abonnement</SelectItem>
-                    <SelectItem value="pack_purchase">Credit Packs</SelectItem>
+                    <SelectItem value="all">{t('allTypes')}</SelectItem>
+                    <SelectItem value="consumption">{t('consumption')}</SelectItem>
+                    <SelectItem value="subscription_reset">{t('subscriptionType')}</SelectItem>
+                    <SelectItem value="pack_purchase">{t('creditPacks')}</SelectItem>
                   </SelectContent>
                 </Select>
                 
                 <Select value={filterAction} onValueChange={setFilterAction}>
                   <SelectTrigger className="w-[160px]">
-                    <SelectValue placeholder="Functie" />
+                    <SelectValue placeholder="Function" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Alle functies</SelectItem>
+                    <SelectItem value="all">{t('allFunctions')}</SelectItem>
                     <SelectItem value="research_flow">Research</SelectItem>
                     <SelectItem value="preparation">Meeting Prep</SelectItem>
                     <SelectItem value="followup">Follow-up</SelectItem>
                     <SelectItem value="followup_action">Follow-up Actions</SelectItem>
-                    <SelectItem value="transcription_minute">Transcriptie</SelectItem>
+                    <SelectItem value="transcription_minute">Transcription</SelectItem>
                     <SelectItem value="prospect_discovery">Discovery</SelectItem>
                     <SelectItem value="contact_search">Contacts</SelectItem>
                   </SelectContent>
@@ -475,11 +475,11 @@ export default function CreditsPage() {
               {usageData?.transactions?.length === 0 ? (
                 <div className="text-center py-12">
                   <Coins className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                  <p className="text-slate-500">Nog geen transacties gevonden</p>
+                  <p className="text-slate-500">{t('noTransactionsYet')}</p>
                   <p className="text-sm text-slate-400 mt-1">
                     {filterType !== 'all' || filterAction !== 'all' 
-                      ? 'Probeer andere filters' 
-                      : 'Start met het gebruiken van DealMotion functies'}
+                      ? t('tryOtherFilters') 
+                      : t('startUsingDealMotion')}
                   </p>
                 </div>
               ) : (
@@ -527,7 +527,7 @@ export default function CreditsPage() {
                         {tx.credits_amount > 0 ? '+' : ''}{tx.credits_amount.toFixed(2)}
                       </span>
                       <p className="text-xs text-slate-400">
-                        Saldo: {tx.balance_after >= 0 ? tx.balance_after.toFixed(1) : '∞'}
+                        {t('balance')}: {tx.balance_after >= 0 ? tx.balance_after.toFixed(1) : '∞'}
                       </p>
                     </div>
                   </div>
@@ -539,7 +539,7 @@ export default function CreditsPage() {
             {usageData && usageData.total_pages > 1 && (
               <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
                 <p className="text-sm text-slate-500">
-                  Pagina {usageData.page} van {usageData.total_pages} ({usageData.total_count} transacties)
+                  {t('pageOf', { page: usageData.page, total: usageData.total_pages, count: usageData.total_count })}
                 </p>
                 
                 <div className="flex items-center gap-2">
@@ -550,7 +550,7 @@ export default function CreditsPage() {
                     disabled={page <= 1 || loading}
                   >
                     <ChevronLeft className="h-4 w-4" />
-                    Vorige
+                    {t('previous')}
                   </Button>
                   <Button
                     variant="outline"
@@ -558,7 +558,7 @@ export default function CreditsPage() {
                     onClick={() => setPage(p => p + 1)}
                     disabled={page >= usageData.total_pages || loading}
                   >
-                    Volgende
+                    {t('next')}
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
@@ -573,12 +573,10 @@ export default function CreditsPage() {
             <Coins className="h-5 w-5 text-blue-500 mt-0.5" />
             <div>
               <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-1">
-                Hoe werken credits?
+                {t('howCreditsWork')}
               </h4>
               <p className="text-sm text-blue-700 dark:text-blue-300">
-                Credits worden gebruikt voor AI-functies zoals research, meeting prep, transcripties en follow-ups.
-                Je abonnement bevat een maandelijkse hoeveelheid credits die elke maand worden gereset.
-                Bijgekochte credit packs blijven geldig totdat ze zijn verbruikt.
+                {t('howCreditsWorkDescription')}
               </p>
             </div>
           </div>

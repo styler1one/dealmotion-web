@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Coins, TrendingUp, AlertTriangle, Loader2, RefreshCw, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react'
+import { Coins, AlertTriangle, Loader2, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { api } from '@/lib/api'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 
 // Types matching backend API
 interface CreditBalance {
@@ -20,45 +21,32 @@ interface CreditBalance {
   period_end: string | null
 }
 
-interface UsageSummary {
-  by_service: Record<string, { credits: number; cost_cents: number; calls: number }>
-  totals: { credits: number; cost_cents: number; api_calls: number }
-  period_start: string
-  period_end: string
-}
-
 interface CreditUsageProps {
   className?: string
 }
 
 export function CreditUsage({ className }: CreditUsageProps) {
   const router = useRouter()
+  const t = useTranslations('credits')
   const [balance, setBalance] = useState<CreditBalance | null>(null)
-  const [usage, setUsage] = useState<UsageSummary | null>(null)
   const [loading, setLoading] = useState(true)
-  const [showDetails, setShowDetails] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const fetchData = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const [balanceRes, usageRes] = await Promise.all([
-        api.get<CreditBalance>('/api/v1/credits/balance'),
-        api.get<UsageSummary>('/api/v1/credits/usage/summary')
-      ])
+      const balanceRes = await api.get<CreditBalance>('/api/v1/credits/balance')
       
       if (balanceRes.error) throw new Error(balanceRes.error.message)
-      if (usageRes.error) throw new Error(usageRes.error.message)
       
       setBalance(balanceRes.data)
-      setUsage(usageRes.data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load credits')
+      setError(err instanceof Error ? err.message : t('errorLoading'))
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [t])
 
   useEffect(() => {
     fetchData()
@@ -139,7 +127,7 @@ export function CreditUsage({ className }: CreditUsageProps) {
         {balance.is_unlimited ? (
           <div className="text-center py-2">
             <span className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">∞</span>
-            <p className="text-sm text-slate-500 mt-1">Onbeperkte credits</p>
+            <p className="text-sm text-slate-500 mt-1">{t('unlimited')}</p>
           </div>
         ) : (
           <>
@@ -153,11 +141,11 @@ export function CreditUsage({ className }: CreditUsageProps) {
                 )}>
                   {balance.total_credits_available.toFixed(1)}
                 </span>
-                <span className="text-sm text-slate-500 ml-1">beschikbaar</span>
+                <span className="text-sm text-slate-500 ml-1">{t('available')}</span>
               </div>
               {periodEnd && (
                 <span className="text-xs text-slate-400">
-                  tot {periodEnd}
+                  {t('until')} {periodEnd}
                 </span>
               )}
             </div>
@@ -179,12 +167,12 @@ export function CreditUsage({ className }: CreditUsageProps) {
             {/* Breakdown */}
             <div className="flex items-center justify-between mt-2 text-xs text-slate-500">
               <span>
-                {balance.subscription_credits_remaining.toFixed(1)} abonnement
+                {balance.subscription_credits_remaining.toFixed(1)} {t('subscription')}
                 {balance.pack_credits_remaining > 0 && (
-                  <> + {balance.pack_credits_remaining.toFixed(1)} packs</>
+                  <> + {balance.pack_credits_remaining.toFixed(1)} {t('packs')}</>
                 )}
               </span>
-              <span>{balance.subscription_credits_used.toFixed(1)} gebruikt</span>
+              <span>{balance.subscription_credits_used.toFixed(1)} {t('used')}</span>
             </div>
           </>
         )}
@@ -195,7 +183,7 @@ export function CreditUsage({ className }: CreditUsageProps) {
             <div className="flex items-center gap-2 mb-2">
               <AlertTriangle className="h-4 w-4 text-red-500" />
               <span className="text-sm font-medium text-red-600 dark:text-red-400">
-                Credits op!
+                {t('exhausted')}
               </span>
             </div>
             <Button
@@ -203,7 +191,7 @@ export function CreditUsage({ className }: CreditUsageProps) {
               onClick={() => router.push('/dashboard/settings')}
               className="w-full bg-red-600 hover:bg-red-700"
             >
-              Credits Bijkopen
+              {t('buyCredits')}
             </Button>
           </div>
         )}
@@ -213,7 +201,7 @@ export function CreditUsage({ className }: CreditUsageProps) {
             <div className="flex items-center gap-2 mb-2">
               <AlertTriangle className="h-4 w-4 text-amber-500" />
               <span className="text-sm text-amber-600 dark:text-amber-400">
-                Bijna op! Nog {balance.total_credits_available.toFixed(1)} credits
+                {t('almostEmpty', { credits: balance.total_credits_available.toFixed(1) })}
               </span>
             </div>
             <Button
@@ -222,95 +210,13 @@ export function CreditUsage({ className }: CreditUsageProps) {
               onClick={() => router.push('/dashboard/settings')}
               className="w-full border-amber-300 text-amber-700 hover:bg-amber-50"
             >
-              Credits Bijkopen
+              {t('buyCredits')}
             </Button>
           </div>
         )}
       </div>
 
-      {/* Usage Breakdown (Collapsible) */}
-      {usage && !balance.is_unlimited && (
-        <div className="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <button
-            onClick={() => setShowDetails(!showDetails)}
-            className="w-full flex items-center justify-between p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-          >
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-slate-400" />
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Verbruik deze maand
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-500">
-                {usage.totals.credits?.toFixed(1) || '0'} credits
-              </span>
-              {showDetails ? (
-                <ChevronUp className="h-4 w-4 text-slate-400" />
-              ) : (
-                <ChevronDown className="h-4 w-4 text-slate-400" />
-              )}
-            </div>
-          </button>
-
-          {showDetails && (
-            <div className="p-3 pt-0 border-t border-slate-100 dark:border-slate-800">
-              <div className="space-y-2 mt-3">
-                {Object.entries(usage.by_service).map(([service, data]) => (
-                  <div key={service} className="flex items-center justify-between text-sm">
-                    <span className="text-slate-600 dark:text-slate-400 capitalize">
-                      {formatServiceName(service)}
-                    </span>
-                    <div className="flex items-center gap-3">
-                      <span className="text-slate-500 text-xs">
-                        {data.calls}x
-                      </span>
-                      <span className="tabular-nums font-medium text-slate-700 dark:text-slate-300">
-                        {data.credits?.toFixed(2) || '0'} cr
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {Object.keys(usage.by_service).length === 0 && (
-                <p className="text-sm text-slate-400 text-center py-2">
-                  Nog geen verbruik deze maand
-                </p>
-              )}
-              
-              {/* Link to detailed view */}
-              <button
-                onClick={() => router.push('/dashboard/credits')}
-                className="w-full mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
-              >
-                <ExternalLink className="h-3 w-3" />
-                Bekijk alle transacties
-              </button>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   )
-}
-
-// Helper to format service names nicely
-function formatServiceName(service: string): string {
-  const names: Record<string, string> = {
-    'research_analysis': 'Research',
-    'discovery': 'Prospect Discovery',
-    'preparation': 'Meeting Prep',
-    'followup': 'Follow-up',
-    'followup_summary': 'Follow-up Summary',
-    'followup_action_commercial_analysis': 'Deal Analysis',
-    'followup_action_sales_coaching': 'Sales Coaching',
-    'followup_action_customer_report': 'Klantverslag',
-    'followup_action_action_items': 'Action Items',
-    'followup_action_internal_report': 'CRM Notes',
-    'followup_action_share_email': 'Follow-up Email',
-    'transcription': 'Transcriptie',
-    'contact_search': 'Contact Search',
-  }
-  return names[service] || service.replace(/_/g, ' ')
 }
 

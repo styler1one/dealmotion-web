@@ -1142,7 +1142,7 @@ export default function SettingsPage() {
                       className="gap-2 text-slate-500"
                     >
                       <TrendingUp className="h-4 w-4" />
-                      Bekijk alle transacties
+                      {tBilling('viewUsage')}
                       <ArrowRight className="h-3 w-3" />
                     </Button>
                     <CreditPacksModal />

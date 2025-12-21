@@ -41,13 +41,6 @@ const navigationItems = [
     color: 'text-blue-500',
   },
   {
-    key: 'prospecting',
-    href: '/dashboard/prospecting',
-    icon: Icons.radar,
-    color: 'text-violet-500',
-    badge: 'Beta',
-  },
-  {
     key: 'preparation',
     href: '/dashboard/preparation',
     icon: Icons.fileText,
@@ -70,6 +63,13 @@ const navigationItems = [
     href: '/dashboard/recordings',
     icon: Icons.mic,
     color: 'text-rose-500',
+  },
+  {
+    key: 'prospecting',
+    href: '/dashboard/prospecting',
+    icon: Icons.radar,
+    color: 'text-violet-500',
+    badge: 'Beta',
   },
 ]
 

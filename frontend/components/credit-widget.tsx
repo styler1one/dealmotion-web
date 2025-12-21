@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Coins, AlertTriangle, Infinity, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { api } from '@/lib/api'
+import { useTranslations } from 'next-intl'
 import {
   Tooltip,
   TooltipContent,
@@ -33,6 +34,7 @@ interface CreditWidgetProps {
  */
 export function CreditWidget({ className }: CreditWidgetProps) {
   const router = useRouter()
+  const t = useTranslations('credits')
   const [balance, setBalance] = useState<CreditBalance | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -148,22 +150,22 @@ export function CreditWidget({ className }: CreditWidgetProps) {
         <TooltipContent side="bottom" className="max-w-[200px]">
           <div className="space-y-1">
             <p className="font-medium">
-              {balance.is_unlimited ? 'Onbeperkte Credits' : `${balance.total_credits_available.toFixed(1)} credits beschikbaar`}
+              {balance.is_unlimited ? t('unlimited') : t('creditsAvailable', { credits: balance.total_credits_available.toFixed(1) })}
             </p>
             {!balance.is_unlimited && (
               <>
                 <p className="text-xs text-slate-500">
-                  {balance.subscription_credits_remaining.toFixed(1)} abonnement
-                  {balance.pack_credits_remaining > 0 && ` + ${balance.pack_credits_remaining.toFixed(1)} extra`}
+                  {balance.subscription_credits_remaining.toFixed(1)} {t('subscription')}
+                  {balance.pack_credits_remaining > 0 && ` + ${balance.pack_credits_remaining.toFixed(1)} ${t('extra')}`}
                 </p>
                 {daysLeft !== null && (
                   <p className="text-xs text-slate-400">
-                    Reset over {daysLeft} {daysLeft === 1 ? 'dag' : 'dagen'}
+                    {daysLeft === 1 ? t('resetInDays', { days: daysLeft }) : t('resetInDaysPlural', { days: daysLeft })}
                   </p>
                 )}
                 {isExhausted && (
                   <p className="text-xs text-red-500 font-medium">
-                    Klik om credits bij te kopen →
+                    {t('clickToBuyMore')}
                   </p>
                 )}
               </>

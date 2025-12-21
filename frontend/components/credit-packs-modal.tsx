@@ -15,6 +15,7 @@ import {
 import { cn } from '@/lib/utils'
 import { api } from '@/lib/api'
 import { useToast } from '@/components/ui/use-toast'
+import { useTranslations } from 'next-intl'
 
 interface CreditPack {
   id: string
@@ -35,6 +36,7 @@ interface CreditPacksModalProps {
 
 export function CreditPacksModal({ className, onSuccess, trigger }: CreditPacksModalProps) {
   const { toast } = useToast()
+  const t = useTranslations('credits')
   const [open, setOpen] = useState(false)
   const [packs, setPacks] = useState<CreditPack[]>([])
   const [loading, setLoading] = useState(true)
@@ -77,8 +79,8 @@ export function CreditPacksModal({ className, onSuccess, trigger }: CreditPacksM
     } catch (err) {
       console.error('Purchase failed:', err)
       toast({
-        title: 'Fout',
-        description: 'Kon checkout niet starten. Probeer opnieuw.',
+        title: t('error'),
+        description: t('checkoutError'),
         variant: 'destructive',
       })
     } finally {
@@ -99,7 +101,7 @@ export function CreditPacksModal({ className, onSuccess, trigger }: CreditPacksM
         {trigger || (
           <Button variant="outline" size="sm" className={cn("gap-2", className)}>
             <Plus className="h-4 w-4" />
-            Credits Bijkopen
+            {t('buyCredits')}
           </Button>
         )}
       </DialogTrigger>
@@ -107,10 +109,10 @@ export function CreditPacksModal({ className, onSuccess, trigger }: CreditPacksM
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="h-5 w-5 text-emerald-500" />
-            Credits Bijkopen
+            {t('buyPacks')}
           </DialogTitle>
           <DialogDescription>
-            Koop extra credits om door te gaan met je sales intelligence. Credits vervallen nooit.
+            {t('buyPacksDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -120,7 +122,7 @@ export function CreditPacksModal({ className, onSuccess, trigger }: CreditPacksM
           </div>
         ) : packs.length === 0 ? (
           <div className="text-center py-8 text-slate-500">
-            Geen credit packs beschikbaar
+            {t('noPacksAvailable')}
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-3 py-4">
@@ -138,7 +140,7 @@ export function CreditPacksModal({ className, onSuccess, trigger }: CreditPacksM
                   <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
                     <Badge className="bg-indigo-500 text-white text-xs">
                       <Star className="h-3 w-3 mr-1" />
-                      Populair
+                      {t('popular')}
                     </Badge>
                   </div>
                 )}
@@ -146,7 +148,7 @@ export function CreditPacksModal({ className, onSuccess, trigger }: CreditPacksM
                   <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
                     <Badge className="bg-emerald-500 text-white text-xs">
                       <Crown className="h-3 w-3 mr-1" />
-                      Beste Deal
+                      {t('bestDeal')}
                     </Badge>
                   </div>
                 )}
@@ -164,7 +166,7 @@ export function CreditPacksModal({ className, onSuccess, trigger }: CreditPacksM
                     </span>
                   </div>
                   <p className="text-xs text-slate-500">
-                    ~{Math.round(pack.credits / 30)} sales cycles
+                    {t('salesCycles', { count: Math.round(pack.credits / 30) })}
                   </p>
                 </div>
 
@@ -174,7 +176,7 @@ export function CreditPacksModal({ className, onSuccess, trigger }: CreditPacksM
                   </span>
                   {pack.per_credit_cents && (
                     <p className="text-xs text-slate-400 mt-0.5">
-                      {formatPrice(pack.per_credit_cents)} per credit
+                      {formatPrice(pack.per_credit_cents)} {t('perCredit')}
                     </p>
                   )}
                 </div>
@@ -186,11 +188,11 @@ export function CreditPacksModal({ className, onSuccess, trigger }: CreditPacksM
                   </div>
                   <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
                     <Check className="h-3 w-3 text-emerald-500 flex-shrink-0" />
-                    <span>Nooit verlopen</span>
+                    <span>{t('neverExpire')}</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
                     <Check className="h-3 w-3 text-emerald-500 flex-shrink-0" />
-                    <span>Direct beschikbaar</span>
+                    <span>{t('availableImmediately')}</span>
                   </div>
                 </div>
 
@@ -207,10 +209,10 @@ export function CreditPacksModal({ className, onSuccess, trigger }: CreditPacksM
                   {purchasing === pack.id ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      Even geduld...
+                      {t('pleaseWait')}
                     </>
                   ) : (
-                    'Kopen'
+                    t('buy')
                   )}
                 </Button>
               </div>
