@@ -18,6 +18,7 @@ from enum import Enum
 class ProposalType(str, Enum):
     """Types of autopilot proposals."""
     RESEARCH_PREP = "research_prep"       # New meeting, unknown org
+    RESEARCH_ONLY = "research_only"       # Just research (e.g., after prospecting import)
     PREP_ONLY = "prep_only"               # Known prospect, no prep
     FOLLOWUP_PACK = "followup_pack"       # Post-meeting
     REACTIVATION = "reactivation"         # Silent prospect

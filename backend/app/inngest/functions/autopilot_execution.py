@@ -87,19 +87,38 @@ async def execute_proposal_fn(ctx, step):
         # These proposals require manual user action - we just mark complete
         # =====================================================================
         
-        if flow_step in ["add_contacts", "generate_actions"]:
+        if flow_step in ["add_contacts", "generate_actions", "plan_meeting", "complete_actions"]:
             # These can't be auto-executed - user needs to do this manually
             # Just mark as completed with a redirect route
             logger.info(f"Navigational proposal {proposal_id}: {flow_step} -> {action_route}")
             artifacts.append({
                 "type": "redirect",
-                "route": action_route,
-                "message": "Ga naar de juiste pagina om deze actie uit te voeren"
+                "route": action_route or "/dashboard",
+                "message": "Navigate to complete this action"
             })
         
         # =====================================================================
         # EXECUTABLE PROPOSALS
         # =====================================================================
+        
+        elif proposal_type == "research_only" or flow_step == "start_research":
+            # Research only (e.g., after prospecting import)
+            research_id = await step.run("execute-research", lambda:
+                execute_research(
+                    supabase,
+                    user_id=user_id,
+                    organization_id=organization_id,
+                    context_data=context_data
+                )
+            )
+            
+            if research_id:
+                artifacts.append({"type": "research", "id": research_id})
+                artifacts.append({
+                    "type": "redirect",
+                    "route": f"/dashboard/research/{research_id}",
+                    "message": "Research started"
+                })
         
         elif proposal_type == "research_prep":
             # Research + Prep flow
@@ -165,7 +184,7 @@ async def execute_proposal_fn(ctx, step):
                 artifacts.append({
                     "type": "redirect",
                     "route": f"/dashboard/followup/{followup_id}",
-                    "message": "Upload je meeting recording om de analyse te starten"
+                    "message": "Upload meeting recording to start analysis"
                 })
         
         elif proposal_type == "reactivation":
@@ -204,7 +223,7 @@ async def execute_proposal_fn(ctx, step):
                 artifacts.append({
                     "type": "redirect",
                     "route": action_route or "/dashboard",
-                    "message": "Actie vereist handmatige stappen"
+                    "message": "Action requires manual steps"
                 })
         
         # Step 3: Update status to completed

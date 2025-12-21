@@ -29,7 +29,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Check, X, Clock, RefreshCw, Loader2, UserPlus, FileText, Mic, Calendar } from 'lucide-react'
+import { Check, X, Clock, RefreshCw, Loader2, UserPlus, FileText, Mic, Calendar, Search } from 'lucide-react'
 import type { AutopilotProposal } from '@/types/autopilot'
 import {
   PROPOSAL_STATUS_COLORS,
@@ -101,6 +101,7 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
   const isCreatePrepAction = flowStep === 'create_prep'
   const isMeetingAnalysisAction = flowStep === 'meeting_analysis'
   const isPlanMeetingAction = flowStep === 'plan_meeting'
+  const isStartResearchAction = flowStep === 'start_research'
   const hasInlineAction = isAddContactsAction || isCreatePrepAction || isMeetingAnalysisAction || isPlanMeetingAction
   
   const handleAccept = async () => {
@@ -154,10 +155,10 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
   // Get the appropriate button label and icon for inline actions
   const getActionButton = () => {
     if (isAddContactsAction) {
-      return { icon: <UserPlus className="w-4 h-4 mr-1" />, label: 'Voeg contact toe' }
+      return { icon: <UserPlus className="w-4 h-4 mr-1" />, label: 'Add contact' }
     }
     if (isCreatePrepAction) {
-      return { icon: <FileText className="w-4 h-4 mr-1" />, label: 'Maak prep' }
+      return { icon: <FileText className="w-4 h-4 mr-1" />, label: 'Create prep' }
     }
     if (isMeetingAnalysisAction) {
       return { icon: <Mic className="w-4 h-4 mr-1" />, label: 'Upload recording' }
@@ -165,7 +166,10 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
     if (isPlanMeetingAction) {
       return { icon: <Calendar className="w-4 h-4 mr-1" />, label: 'Plan meeting' }
     }
-    return { icon: <Check className="w-4 h-4 mr-1" />, label: 'Ja, doe maar' }
+    if (isStartResearchAction) {
+      return { icon: <Search className="w-4 h-4 mr-1" />, label: 'Start research' }
+    }
+    return { icon: <Check className="w-4 h-4 mr-1" />, label: 'Accept' }
   }
   
   const handleDecline = async () => {
