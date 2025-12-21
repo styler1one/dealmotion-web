@@ -70,6 +70,7 @@ class AutopilotOrchestrator:
         Get proposals for a user with optional status filter.
         
         Returns proposals sorted by priority (highest first).
+        Automatically validates and expires outdated proposals.
         """
         try:
             # Build query
@@ -85,19 +86,112 @@ class AutopilotOrchestrator:
             
             result = query.execute()
             
-            # Convert to models
-            proposals = [
-                AutopilotProposal(**row) for row in (result.data or [])
-            ]
+            # Validate and filter proposals
+            valid_proposals = []
+            proposals_to_expire = []
             
-            # Get counts
+            for row in (result.data or []):
+                proposal = AutopilotProposal(**row)
+                
+                # Only validate active proposals
+                if proposal.status in ["proposed", "accepted", "executing"]:
+                    is_valid = await self._validate_proposal_still_valid(proposal)
+                    if is_valid:
+                        valid_proposals.append(proposal)
+                    else:
+                        proposals_to_expire.append(proposal.id)
+                else:
+                    valid_proposals.append(proposal)
+            
+            # Auto-expire invalid proposals in background
+            if proposals_to_expire:
+                for proposal_id in proposals_to_expire:
+                    try:
+                        self.supabase.table("autopilot_proposals").update({
+                            "status": "expired",
+                            "expired_reason": "Action already completed outside Autopilot"
+                        }).eq("id", proposal_id).execute()
+                        logger.info(f"Auto-expired proposal {proposal_id} - action already completed")
+                    except Exception as e:
+                        logger.warning(f"Failed to auto-expire proposal {proposal_id}: {e}")
+            
+            # Get updated counts
             counts = await self._get_proposal_counts(user_id)
             
-            return proposals, counts
+            return valid_proposals, counts
             
         except Exception as e:
             logger.error(f"Error getting proposals for user {user_id}: {e}")
             raise
+    
+    async def _validate_proposal_still_valid(self, proposal: AutopilotProposal) -> bool:
+        """
+        Check if a proposal is still valid (action not yet completed).
+        
+        Returns True if the proposal should still be shown to user.
+        """
+        try:
+            context = proposal.context_data or {}
+            flow_step = context.get("flow_step")
+            prospect_id = context.get("prospect_id")
+            research_id = context.get("research_id")
+            
+            if not flow_step:
+                return True  # Unknown flow step, keep it
+            
+            # Check based on flow_step
+            if flow_step == "add_contacts":
+                # Check if prospect now has contacts
+                if prospect_id:
+                    contacts_result = self.supabase.table("prospect_contacts") \
+                        .select("id") \
+                        .eq("prospect_id", prospect_id) \
+                        .limit(1) \
+                        .execute()
+                    if contacts_result.data and len(contacts_result.data) > 0:
+                        return False  # Contacts already added
+            
+            elif flow_step == "create_prep":
+                # Check if prospect now has a prep
+                if prospect_id:
+                    prep_result = self.supabase.table("meeting_preps") \
+                        .select("id") \
+                        .eq("prospect_id", prospect_id) \
+                        .eq("status", "completed") \
+                        .limit(1) \
+                        .execute()
+                    if prep_result.data and len(prep_result.data) > 0:
+                        return False  # Prep already created
+            
+            elif flow_step == "start_research":
+                # Check if prospect now has research
+                if prospect_id:
+                    research_result = self.supabase.table("research_briefs") \
+                        .select("id") \
+                        .eq("prospect_id", prospect_id) \
+                        .eq("status", "completed") \
+                        .limit(1) \
+                        .execute()
+                    if research_result.data and len(research_result.data) > 0:
+                        return False  # Research already done
+            
+            elif flow_step == "meeting_analysis":
+                # Check if there's a followup now
+                if prospect_id:
+                    followup_result = self.supabase.table("followups") \
+                        .select("id") \
+                        .eq("prospect_id", prospect_id) \
+                        .eq("status", "completed") \
+                        .limit(1) \
+                        .execute()
+                    if followup_result.data and len(followup_result.data) > 0:
+                        return False  # Meeting analysis already done
+            
+            return True  # Proposal is still valid
+            
+        except Exception as e:
+            logger.warning(f"Error validating proposal {proposal.id}: {e}")
+            return True  # On error, keep the proposal
     
     async def get_proposal(
         self,

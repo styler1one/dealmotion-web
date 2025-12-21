@@ -172,19 +172,16 @@ export function AutopilotProvider({ children }: AutopilotProviderProps) {
       )
       
       if (!error && data) {
-        // Remove from local state
+        // Remove from local state immediately for snappy UX
         setProposals(prev => prev.filter(p => p.id !== id))
-        setCounts(prev => ({
-          ...prev,
-          proposed: prev.proposed - 1,
-          declined: prev.declined + 1,
-        }))
+        // Refresh from server to get accurate counts
+        await fetchProposals()
       }
     } catch (err) {
       logger.error('Failed to decline proposal', err, { source: 'AutopilotProvider' })
       throw err
     }
-  }, [])
+  }, [fetchProposals])
   
   const snoozeProposal = useCallback(async (id: string, until: Date, reason?: string) => {
     try {
@@ -194,19 +191,16 @@ export function AutopilotProvider({ children }: AutopilotProviderProps) {
       )
       
       if (!error && data) {
-        // Remove from local state (will reappear when unsnoozes)
+        // Remove from local state immediately for snappy UX
         setProposals(prev => prev.filter(p => p.id !== id))
-        setCounts(prev => ({
-          ...prev,
-          proposed: prev.proposed - 1,
-          snoozed: prev.snoozed + 1,
-        }))
+        // Refresh from server to get accurate counts
+        await fetchProposals()
       }
     } catch (err) {
       logger.error('Failed to snooze proposal', err, { source: 'AutopilotProvider' })
       throw err
     }
-  }, [])
+  }, [fetchProposals])
   
   const retryProposal = useCallback(async (id: string) => {
     try {
