@@ -99,9 +99,9 @@ export default function PricingPage() {
   }
 
   // Features for each plan - v4 Credit-based with all features included
+  // Note: Don't show specific credit numbers for Free to prevent mental math
   const features = {
     free: [
-      { text: '25 credits/maand', included: true, highlight: true },
       { text: 'Alle features inbegrepen', included: true },
       { text: t('features.v4.value.prospectIntel'), included: true },
       { text: t('features.v4.value.meetingPrep'), included: true },
@@ -110,7 +110,6 @@ export default function PricingPage() {
       { text: t('pricing.noCardRequired'), included: true },
     ],
     pro: [
-      { text: '250 credits/maand', included: true, highlight: true },
       { text: 'Alle features inbegrepen', included: true },
       { text: t('features.v4.value.prospectIntel'), included: true },
       { text: t('features.v4.value.meetingPrep'), included: true },
@@ -121,7 +120,6 @@ export default function PricingPage() {
       { text: 'Credits bijkopen mogelijk', included: true },
     ],
     proPlus: [
-      { text: '600 credits/maand', included: true, highlight: true },
       { text: 'Alle features inbegrepen', included: true },
       { text: t('features.v4.value.prospectIntel'), included: true },
       { text: t('features.v4.value.meetingPrep'), included: true },
@@ -132,7 +130,6 @@ export default function PricingPage() {
       { text: 'Credits bijkopen mogelijk', included: true },
     ],
     enterprise: [
-      { text: 'Onbeperkte credits', included: true, highlight: true },
       { text: t('features.v4.everythingProPlus'), included: true },
       { text: t('features.v4.unlimitedUsers'), included: true },
       { text: t('features.v4.value.crmSync'), included: true },
@@ -306,6 +303,16 @@ export default function PricingPage() {
               </div>
             </CardHeader>
             <CardContent className="pb-4">
+              {/* Free trial highlight box */}
+              <div className="mb-4 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300">
+                  <Sparkles className="h-5 w-5" />
+                  <span className="font-semibold text-sm">Probeer alle features</span>
+                </div>
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">
+                  Ontdek wat DealMotion voor jou kan doen
+                </p>
+              </div>
               <ul className="space-y-2">
                 {features.free.map((feature, idx) => (
                   <li key={idx} className="flex items-center gap-2 text-sm">
@@ -320,7 +327,7 @@ export default function PricingPage() {
             <CardFooter className="flex flex-col gap-2">
               <Button 
                 variant="outline" 
-                className="w-full"
+                className="w-full border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-emerald-700"
                 disabled={isCurrentPlan('free')}
                 onClick={() => !isLoggedIn && router.push('/signup')}
               >
@@ -373,12 +380,19 @@ export default function PricingPage() {
                     </p>
                   </div>
                 )}
-                <p className="text-xs text-blue-600 dark:text-blue-400 font-medium mt-2">
-                  {pricing.pro.credits} credits/maand
-                </p>
               </div>
             </CardHeader>
             <CardContent className="pb-4">
+              {/* Credits highlight box - same style as Pro+ */}
+              <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                  <Zap className="h-5 w-5" />
+                  <span className="font-semibold text-sm">~9 complete sales cycles/maand</span>
+                </div>
+                <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                  Research, prep, transcriptie & follow-up
+                </p>
+              </div>
               <ul className="space-y-2">
                 {features.pro.map((feature, idx) => (
                   <li key={idx} className="flex items-center gap-2 text-sm">
@@ -445,19 +459,26 @@ export default function PricingPage() {
                     </p>
                   </div>
                 )}
-                <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium mt-2">
-                  {pricing.proPlus.credits} credits/maand
-                </p>
               </div>
             </CardHeader>
             <CardContent className="pb-4">
-              {/* AI Notetaker highlight */}
+              {/* Usage highlight box */}
               <div className="mb-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-200 dark:border-indigo-800">
                 <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300">
+                  <Zap className="h-5 w-5" />
+                  <span className="font-semibold text-sm">~21 complete sales cycles/maand</span>
+                </div>
+                <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-1">
+                  Research, prep, transcriptie & follow-up
+                </p>
+              </div>
+              {/* AI Notetaker highlight */}
+              <div className="mb-4 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                <div className="flex items-center gap-2 text-purple-700 dark:text-purple-300">
                   <Bot className="h-5 w-5" />
                   <span className="font-semibold text-sm">{t('features.v4.aiNotetakerIncluded')}</span>
                 </div>
-                <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-1">
+                <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
                   {t('features.v4.aiNotetakerDescription')}
                 </p>
               </div>
@@ -511,6 +532,16 @@ export default function PricingPage() {
               </div>
             </CardHeader>
             <CardContent className="pb-4">
+              {/* Enterprise highlight box */}
+              <div className="mb-4 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                <div className="flex items-center gap-2 text-purple-700 dark:text-purple-300">
+                  <Infinity className="h-5 w-5" />
+                  <span className="font-semibold text-sm">Onbeperkt gebruik</span>
+                </div>
+                <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+                  Voor teams met hoge volumes
+                </p>
+              </div>
               <ul className="space-y-2">
                 {features.enterprise.map((feature, idx) => (
                   <li key={idx} className="flex items-center gap-2 text-sm">
