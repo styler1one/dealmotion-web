@@ -44,9 +44,8 @@ import { LanguageSelect } from '@/components/language-select'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { useBilling } from '@/lib/billing-context'
-import { UsageMeter } from '@/components/usage-meter'
 import { CreditUsage } from '@/components/credit-usage'
-import { CreditPacks } from '@/components/credit-packs'
+import { CreditPacksModal } from '@/components/credit-packs-modal'
 import { api } from '@/lib/api'
 import { logger } from '@/lib/logger'
 import { useConfirmDialog } from '@/components/confirm-dialog'
@@ -1131,59 +1130,13 @@ export default function SettingsPage() {
                   </div>
 
                   {/* Credit Usage - v4: Credit-based system */}
-                  <CreditUsage 
-                    onBuyCredits={() => {}}
-                  />
-
-                  {/* Credit Packs - Buy additional credits */}
-                  <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-                    <CreditPacks />
+                  <CreditUsage />
+                  
+                  {/* Buy more credits button */}
+                  <div className="flex items-center justify-between pt-2">
+                    <CreditPacksModal />
                   </div>
 
-                  {/* Legacy Usage Meters - v2: Flow-based */}
-                  {usage && (
-                    <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-                      <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                        {tBilling('usageThisMonth')}
-                      </h4>
-                      {/* Primary: Flow usage */}
-                      {usage.flow && (
-                        <UsageMeter
-                          label={tBilling('flowsUsed')}
-                          used={usage.flow.used}
-                          limit={usage.flow.limit}
-                          unlimited={usage.flow.unlimited}
-                          showUpgrade={false}
-                        />
-                      )}
-                      {/* Fallback: Individual metrics if flow not available */}
-                      {!usage.flow && (
-                        <>
-                          <UsageMeter
-                            label="Research"
-                            used={usage.research.used}
-                            limit={usage.research.limit}
-                            unlimited={usage.research.unlimited}
-                            showUpgrade={false}
-                          />
-                          <UsageMeter
-                            label="Preparation"
-                            used={usage.preparation.used}
-                            limit={usage.preparation.limit}
-                            unlimited={usage.preparation.unlimited}
-                            showUpgrade={false}
-                          />
-                          <UsageMeter
-                            label="Follow-up"
-                            used={usage.followup.used}
-                            limit={usage.followup.limit}
-                            unlimited={usage.followup.unlimited}
-                            showUpgrade={false}
-                          />
-                        </>
-                      )}
-                    </div>
-                  )}
 
                   {/* Upgrade Options - Context-aware */}
                   <div className="pt-4 border-t border-slate-200 dark:border-slate-700">

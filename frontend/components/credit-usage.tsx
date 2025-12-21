@@ -29,10 +29,9 @@ interface UsageSummary {
 
 interface CreditUsageProps {
   className?: string
-  onBuyCredits?: () => void
 }
 
-export function CreditUsage({ className, onBuyCredits }: CreditUsageProps) {
+export function CreditUsage({ className }: CreditUsageProps) {
   const router = useRouter()
   const [balance, setBalance] = useState<CreditBalance | null>(null)
   const [usage, setUsage] = useState<UsageSummary | null>(null)
@@ -201,7 +200,7 @@ export function CreditUsage({ className, onBuyCredits }: CreditUsageProps) {
             </div>
             <Button
               size="sm"
-              onClick={onBuyCredits || (() => router.push('/pricing'))}
+              onClick={() => router.push('/dashboard/settings')}
               className="w-full bg-red-600 hover:bg-red-700"
             >
               Credits Bijkopen
@@ -220,7 +219,7 @@ export function CreditUsage({ className, onBuyCredits }: CreditUsageProps) {
             <Button
               size="sm"
               variant="outline"
-              onClick={onBuyCredits || (() => router.push('/pricing'))}
+              onClick={() => router.push('/dashboard/settings')}
               className="w-full border-amber-300 text-amber-700 hover:bg-amber-50"
             >
               Credits Bijkopen
