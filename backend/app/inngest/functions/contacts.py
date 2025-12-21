@@ -9,6 +9,9 @@ Events:
 
 Throttling:
 - Per-user: Max 10 contact analyses per minute (lighter AI operation)
+
+Credits:
+- contact_search: 0.25 credits per analysis
 """
 
 import logging
@@ -20,6 +23,7 @@ from inngest import NonRetriableError, TriggerEvent, Throttle
 from app.inngest.client import inngest_client
 from app.database import get_supabase_service
 from app.services.contact_analyzer import get_contact_analyzer
+from app.services.credit_service import get_credit_service
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +99,23 @@ async def analyze_contact_fn(ctx, step):
         contact_id, analysis, linkedin_url
     )
     
-    # Step 5: Emit completion event
+    # Step 5: Consume credits (0.25 credits per contact search/analysis)
+    try:
+        credit_service = get_credit_service()
+        await credit_service.consume_credits(
+            organization_id=organization_id,
+            action="contact_search",
+            user_id=user_id,
+            quantity=1,
+            metadata={"contact_id": contact_id, "contact_name": contact_name}
+        )
+        logger.info(f"Consumed 0.25 credits for contact analysis: {contact_name}")
+    except Exception as e:
+        logger.error(f"Failed to consume credits for contact analysis: {e}")
+        # Don't fail the whole function if credit consumption fails
+        # The analysis was already completed and saved
+    
+    # Step 6: Emit completion event
     await step.send_event(
         "emit-completion",
         inngest.Event(
