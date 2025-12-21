@@ -148,13 +148,19 @@ export function ProposalInbox() {
       ) : sortedProposals.length === 0 ? (
         <div className="text-center py-12">
           <Inbox className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-1">
-            {activeTab === 'all' ? 'Geen voorstellen' : `Geen ${activeTab === 'proposed' ? 'nieuwe' : activeTab === 'executing' ? 'lopende' : activeTab === 'completed' ? 'afgeronde' : 'mislukte'} voorstellen`}
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">
+            {activeTab === 'active' 
+              ? 'No active proposals' 
+              : activeTab === 'proposed' 
+                ? 'No new proposals' 
+                : activeTab === 'executing' 
+                  ? 'No proposals in progress' 
+                  : 'No history yet'}
           </h3>
-          <p className="text-sm text-gray-500">
-            {activeTab === 'all' || activeTab === 'proposed' 
-              ? 'Autopilot detecteert automatisch kansen en maakt voorstellen voor je.'
-              : 'Bekijk andere tabs voor meer voorstellen.'}
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {activeTab === 'active' || activeTab === 'proposed' 
+              ? 'Autopilot automatically detects opportunities and creates proposals for you.'
+              : 'Check other tabs for more proposals.'}
           </p>
         </div>
       ) : (
