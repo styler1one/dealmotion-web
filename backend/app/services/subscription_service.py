@@ -557,17 +557,23 @@ class SubscriptionService:
             raise
     
     async def handle_invoice_paid(self, invoice: Dict[str, Any]) -> None:
-        """Handle invoice.paid webhook event"""
+        """
+        Handle invoice.paid webhook event.
+        
+        This resets subscription credits for monthly subscriptions.
+        For yearly subscriptions, a separate cron job handles monthly resets.
+        """
         try:
             customer_id = invoice.get("customer")
             invoice_id = invoice.get("id")
             amount_paid = invoice.get("amount_paid", 0)
             invoice_pdf = invoice.get("invoice_pdf")
             invoice_number = invoice.get("number")
+            subscription_id = invoice.get("subscription")
             
             # Find organization by customer ID
             response = self.supabase.table("organization_subscriptions").select(
-                "organization_id"
+                "organization_id, plan_id"
             ).eq("stripe_customer_id", customer_id).single().execute()
             
             if not response.data:
@@ -575,6 +581,7 @@ class SubscriptionService:
                 return
             
             organization_id = response.data["organization_id"]
+            plan_id = response.data.get("plan_id")
             
             # Record payment
             self.supabase.table("payment_history").insert({
@@ -587,6 +594,33 @@ class SubscriptionService:
                 "invoice_number": invoice_number,
                 "paid_at": datetime.utcnow().isoformat(),
             }).execute()
+            
+            # Reset subscription credits for this billing period
+            # This applies to monthly subscriptions
+            if subscription_id and plan_id:
+                from app.services.credit_service import get_credit_service
+                credit_service = get_credit_service()
+                
+                # Get plan credit allocation
+                plan_response = self.supabase.table("subscription_plans").select(
+                    "credits_per_month"
+                ).eq("id", plan_id).single().execute()
+                
+                if plan_response.data:
+                    credits_per_month = plan_response.data.get("credits_per_month", 0)
+                    is_unlimited = credits_per_month == -1
+                    
+                    # Reset credits for the new billing period
+                    await credit_service.reset_subscription_credits(
+                        organization_id=organization_id,
+                        credits_total=credits_per_month if not is_unlimited else 0,
+                        is_unlimited=is_unlimited
+                    )
+                    
+                    logger.info(
+                        f"Reset credits for org {organization_id}: "
+                        f"{credits_per_month} credits, unlimited={is_unlimited}"
+                    )
             
             logger.info(f"Invoice paid for org {organization_id}, amount: {amount_paid}")
             

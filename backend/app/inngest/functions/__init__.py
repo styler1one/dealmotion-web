@@ -27,6 +27,7 @@ from .autopilot_detection import (
 )
 from .autopilot_execution import execute_proposal_fn
 from .prospecting import process_prospecting_discovery_fn
+from .credit_reset import credit_reset_daily_fn
 
 # All functions to register with Inngest
 all_functions = [
@@ -57,6 +58,8 @@ all_functions = [
     execute_proposal_fn,
     # Prospecting
     process_prospecting_discovery_fn,
+    # Credit management
+    credit_reset_daily_fn,
 ]
 
 __all__ = [
@@ -88,5 +91,7 @@ __all__ = [
     "execute_proposal_fn",
     # Prospecting
     "process_prospecting_discovery_fn",
+    # Credit management
+    "credit_reset_daily_fn",
 ]
 
