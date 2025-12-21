@@ -35,7 +35,8 @@ import {
   RefreshCw,
   AlertCircle,
   Mic,
-  X
+  X,
+  TrendingUp
 } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
 import { useToast } from '@/components/ui/use-toast'
