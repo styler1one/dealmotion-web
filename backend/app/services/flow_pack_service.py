@@ -283,14 +283,27 @@ class FlowPackService:
                 metadata={"organization_id": organization_id}
             )
             
-            # Save customer ID
-            self.supabase.table("organization_subscriptions").upsert({
-                "organization_id": organization_id,
-                "stripe_customer_id": customer.id,
-                "plan_id": "free",
-                "status": "active",
-            }, on_conflict="organization_id").execute()
+            # Save customer ID - ONLY update stripe_customer_id, preserve existing plan!
+            # First check if a subscription record exists
+            existing = self.supabase.table("organization_subscriptions").select(
+                "plan_id"
+            ).eq("organization_id", organization_id).maybe_single().execute()
             
+            if existing.data:
+                # Record exists - only update stripe_customer_id
+                self.supabase.table("organization_subscriptions").update({
+                    "stripe_customer_id": customer.id,
+                }).eq("organization_id", organization_id).execute()
+            else:
+                # No record - create with free plan (new user)
+                self.supabase.table("organization_subscriptions").insert({
+                    "organization_id": organization_id,
+                    "stripe_customer_id": customer.id,
+                    "plan_id": "free",
+                    "status": "active",
+                }).execute()
+            
+            logger.info(f"Created Stripe customer {customer.id} for org {organization_id}")
             return customer.id
             
         except Exception as e:
