@@ -508,7 +508,7 @@ export default function CreditsPage() {
                             <>
                               <span>•</span>
                               <span className="text-slate-400">
-                                {tx.metadata.company_name || tx.metadata.prospect_company || tx.metadata.contact_name || ''}
+                                {String(tx.metadata.company_name || tx.metadata.prospect_company || tx.metadata.contact_name || '')}
                               </span>
                             </>
                           )}
