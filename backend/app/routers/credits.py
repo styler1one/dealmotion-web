@@ -372,15 +372,16 @@ async def check_credits_for_action(
     """
     Check if organization has enough credits for a specific action.
     
-    Actions (based on actual API costs):
-    - research_flow: 1 credit (Gemini + Claude)
-    - prospect_discovery: 4 credits (22 Exa + 3 Claude calls!)
-    - preparation: 0.75 credits (1 Claude call)
-    - followup: 0.75 credits (2 Claude calls)
-    - followup_action: 1 credit per action (6 action types available)
-    - transcription_minute: 2 credits per minute (Deepgram)
+    Actions (based on actual API costs with 30% margin):
+    - research_flow: 3 credits (Gemini + Claude)
+    - prospect_discovery: 5 credits (22 Exa + 3 Claude calls)
+    - preparation: 2 credits (1 Claude call)
+    - followup: 2 credits (transcript analysis)
+    - followup_action: 2 credits per action (6 action types available)
+    - transcription_minute: 0.15 credits per minute (Deepgram)
     - contact_search: 0.25 credits
-    - followup_bundle: 10 credits (30-min meeting bundle)
+    - followup_bundle: 19 credits (30-min meeting bundle)
+    - followup_start: 3 credits (minimum for starting followup)
     
     Returns whether action is allowed and current balance.
     """
