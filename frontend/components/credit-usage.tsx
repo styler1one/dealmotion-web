@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Coins, TrendingUp, AlertTriangle, Loader2, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react'
+import { Coins, TrendingUp, AlertTriangle, Loader2, RefreshCw, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
@@ -277,6 +277,15 @@ export function CreditUsage({ className }: CreditUsageProps) {
                   Nog geen verbruik deze maand
                 </p>
               )}
+              
+              {/* Link to detailed view */}
+              <button
+                onClick={() => router.push('/dashboard/credits')}
+                className="w-full mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+              >
+                <ExternalLink className="h-3 w-3" />
+                Bekijk alle transacties
+              </button>
             </div>
           )}
         </div>

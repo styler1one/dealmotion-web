@@ -292,15 +292,21 @@ class CreditService:
                         credits_to_consume
                     )
             
-            # Log transaction
+            # Log transaction with full context
             new_balance = await self.get_balance(organization_id)
+            
+            # Build user-friendly description
+            description = self._get_action_description(action, credits_to_consume, metadata)
+            
             await self._log_transaction(
                 organization_id=organization_id,
                 transaction_type="consumption",
                 credits_amount=-credits_to_consume,
                 balance_after=new_balance.get("total_credits_available", 0),
                 reference_type=action,
-                description=f"Consumed {credits_to_consume} credits for {action}"
+                description=description,
+                user_id=user_id,
+                metadata=metadata
             )
             
             logger.info(
@@ -312,6 +318,52 @@ class CreditService:
         except Exception as e:
             logger.error(f"Error consuming credits: {e}")
             return False
+    
+    def _get_action_description(
+        self,
+        action: str,
+        credits: float,
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> str:
+        """Generate user-friendly description for credit transaction."""
+        descriptions = {
+            "research_flow": "Research",
+            "prospect_discovery": "Prospect Discovery",
+            "preparation": "Meeting Preparation",
+            "followup": "Meeting Follow-up",
+            "followup_action": "Follow-up Action",
+            "transcription_minute": "Transcription",
+            "contact_search": "Contact Analysis",
+            "embedding_chunk": "Knowledge Base",
+        }
+        
+        base = descriptions.get(action, action.replace("_", " ").title())
+        
+        # Add context from metadata
+        if metadata:
+            if action == "research_flow" and metadata.get("company_name"):
+                return f"{base}: {metadata['company_name']}"
+            elif action == "preparation" and metadata.get("prospect_company"):
+                return f"{base}: {metadata['prospect_company']}"
+            elif action == "contact_search" and metadata.get("contact_name"):
+                return f"{base}: {metadata['contact_name']}"
+            elif action == "followup_action" and metadata.get("action_type"):
+                action_labels = {
+                    "commercial_analysis": "Deal Analysis",
+                    "sales_coaching": "Sales Coaching",
+                    "customer_report": "Customer Report",
+                    "action_items": "Action Items",
+                    "internal_report": "CRM Notes",
+                    "share_email": "Follow-up Email",
+                }
+                label = action_labels.get(metadata["action_type"], metadata["action_type"])
+                return f"Follow-up: {label}"
+            elif action == "transcription_minute" and metadata.get("followup_id"):
+                duration = metadata.get("duration_seconds", 0)
+                mins = int(duration / 60) if duration else 0
+                return f"Transcription: {mins} min"
+        
+        return f"{base} ({credits} credits)"
     
     async def _update_subscription_credits(
         self,
@@ -547,6 +599,149 @@ class CreditService:
             logger.error(f"Error getting usage history: {e}")
             return []
     
+    async def get_detailed_usage_history(
+        self,
+        organization_id: str,
+        page: int = 1,
+        page_size: int = 25,
+        filter_type: Optional[str] = None,
+        filter_action: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Get detailed usage history with pagination, filtering, and statistics.
+        
+        This powers the Credits Usage page for full transparency.
+        """
+        try:
+            # Build base query for transactions
+            query = self.supabase.table("credit_transactions").select(
+                "*", count="exact"
+            ).eq("organization_id", organization_id)
+            
+            # Apply filters
+            if filter_type:
+                query = query.eq("transaction_type", filter_type)
+            
+            if filter_action:
+                query = query.eq("reference_type", filter_action)
+            
+            if start_date:
+                query = query.gte("created_at", start_date)
+            
+            if end_date:
+                query = query.lte("created_at", end_date)
+            
+            # Apply pagination
+            offset = (page - 1) * page_size
+            query = query.order(
+                "created_at", desc=True
+            ).range(offset, offset + page_size - 1)
+            
+            response = query.execute()
+            
+            transactions = response.data or []
+            total_count = response.count or len(transactions)
+            
+            # Get period statistics (for current billing period)
+            period_stats = await self._get_period_statistics(
+                organization_id, filter_type, filter_action, start_date, end_date
+            )
+            
+            return {
+                "transactions": transactions,
+                "total_count": total_count,
+                "period_stats": period_stats
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting detailed usage history: {e}")
+            return {
+                "transactions": [],
+                "total_count": 0,
+                "period_stats": {}
+            }
+    
+    async def _get_period_statistics(
+        self,
+        organization_id: str,
+        filter_type: Optional[str] = None,
+        filter_action: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Calculate usage statistics for the filtered period."""
+        try:
+            # Build query for consumption only
+            query = self.supabase.table("credit_transactions").select(
+                "transaction_type, reference_type, credits_amount"
+            ).eq("organization_id", organization_id)
+            
+            if filter_type:
+                query = query.eq("transaction_type", filter_type)
+            
+            if filter_action:
+                query = query.eq("reference_type", filter_action)
+            
+            if start_date:
+                query = query.gte("created_at", start_date)
+            
+            if end_date:
+                query = query.lte("created_at", end_date)
+            
+            response = query.execute()
+            data = response.data or []
+            
+            # Calculate stats
+            total_consumed = 0.0
+            total_added = 0.0
+            by_action: Dict[str, float] = {}
+            
+            for row in data:
+                amount = float(row.get("credits_amount", 0))
+                action = row.get("reference_type") or row.get("transaction_type", "unknown")
+                
+                if amount < 0:
+                    total_consumed += abs(amount)
+                    by_action[action] = by_action.get(action, 0) + abs(amount)
+                else:
+                    total_added += amount
+            
+            # Format by_action for display
+            action_labels = {
+                "research_flow": "Research",
+                "prospect_discovery": "Prospect Discovery",
+                "preparation": "Meeting Preparation",
+                "followup": "Meeting Follow-up",
+                "followup_action": "Follow-up Actions",
+                "transcription_minute": "Transcription",
+                "contact_search": "Contact Analysis",
+                "embedding_chunk": "Knowledge Base",
+                "subscription_reset": "Subscription Credits",
+                "pack_purchase": "Credit Pack",
+            }
+            
+            by_action_formatted = [
+                {
+                    "action": action,
+                    "label": action_labels.get(action, action.replace("_", " ").title()),
+                    "credits": round(credits, 2)
+                }
+                for action, credits in sorted(by_action.items(), key=lambda x: -x[1])
+            ]
+            
+            return {
+                "total_consumed": round(total_consumed, 2),
+                "total_added": round(total_added, 2),
+                "transaction_count": len(data),
+                "by_action": by_action_formatted
+            }
+            
+        except Exception as e:
+            logger.error(f"Error calculating period statistics: {e}")
+            return {}
+    
     async def get_usage_by_service(
         self,
         organization_id: str,
@@ -668,11 +863,13 @@ class CreditService:
         balance_after: float,
         reference_type: Optional[str] = None,
         reference_id: Optional[str] = None,
-        description: Optional[str] = None
+        description: Optional[str] = None,
+        user_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None
     ) -> None:
-        """Log a credit transaction."""
+        """Log a credit transaction with full context for transparency."""
         try:
-            self.supabase.table("credit_transactions").insert({
+            record = {
                 "organization_id": organization_id,
                 "transaction_type": transaction_type,
                 "credits_amount": credits_amount,
@@ -680,7 +877,15 @@ class CreditService:
                 "reference_type": reference_type,
                 "reference_id": reference_id,
                 "description": description,
-            }).execute()
+            }
+            
+            # Add optional fields if provided
+            if user_id:
+                record["user_id"] = user_id
+            if metadata:
+                record["metadata"] = metadata
+            
+            self.supabase.table("credit_transactions").insert(record).execute()
         except Exception as e:
             logger.error(f"Error logging credit transaction: {e}")
 

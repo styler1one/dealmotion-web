@@ -1132,8 +1132,18 @@ export default function SettingsPage() {
                   {/* Credit Usage - v4: Credit-based system */}
                   <CreditUsage />
                   
-                  {/* Buy more credits button */}
+                  {/* Buy more credits + View details */}
                   <div className="flex items-center justify-between pt-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => router.push('/dashboard/credits')}
+                      className="gap-2 text-slate-500"
+                    >
+                      <TrendingUp className="h-4 w-4" />
+                      Bekijk alle transacties
+                      <ArrowRight className="h-3 w-3" />
+                    </Button>
                     <CreditPacksModal />
                   </div>
 

@@ -57,6 +57,9 @@ class CreditTransactionResponse(BaseModel):
     credits_amount: float
     balance_after: float
     description: Optional[str] = None
+    reference_type: Optional[str] = None
+    user_id: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
     created_at: str
 
 
@@ -64,6 +67,27 @@ class CreditHistoryResponse(BaseModel):
     """Credit transaction history."""
     transactions: List[CreditTransactionResponse]
     total_count: int
+    has_more: bool = False
+
+
+class DetailedUsageRequest(BaseModel):
+    """Request for detailed usage history."""
+    page: int = Field(1, ge=1, description="Page number (1-indexed)")
+    page_size: int = Field(25, ge=1, le=100, description="Items per page")
+    filter_type: Optional[str] = Field(None, description="Filter by transaction type: consumption, subscription_reset, pack_purchase")
+    filter_action: Optional[str] = Field(None, description="Filter by action: research_flow, preparation, followup, etc.")
+    start_date: Optional[str] = Field(None, description="Start date (ISO format)")
+    end_date: Optional[str] = Field(None, description="End date (ISO format)")
+
+
+class DetailedUsageResponse(BaseModel):
+    """Detailed usage history with pagination and stats."""
+    transactions: List[CreditTransactionResponse]
+    total_count: int
+    page: int
+    page_size: int
+    total_pages: int
+    period_stats: Dict[str, Any]
 
 
 class UsageByServiceItem(BaseModel):
@@ -189,7 +213,10 @@ async def get_credit_history(
     user_id, organization_id = user_org
     
     credit_service = get_credit_service()
-    transactions = await credit_service.get_usage_history(organization_id, limit=limit)
+    transactions = await credit_service.get_usage_history(organization_id, limit=limit + 1)
+    
+    has_more = len(transactions) > limit
+    transactions = transactions[:limit]
     
     return CreditHistoryResponse(
         transactions=[
@@ -199,11 +226,79 @@ async def get_credit_history(
                 credits_amount=float(t.get("credits_amount", 0)),
                 balance_after=float(t.get("balance_after", 0)),
                 description=t.get("description"),
+                reference_type=t.get("reference_type"),
+                user_id=str(t.get("user_id")) if t.get("user_id") else None,
+                metadata=t.get("metadata"),
                 created_at=str(t.get("created_at", ""))
             )
             for t in transactions
         ],
-        total_count=len(transactions)
+        total_count=len(transactions),
+        has_more=has_more
+    )
+
+
+@router.get("/history/detailed", response_model=DetailedUsageResponse)
+async def get_detailed_usage_history(
+    page: int = 1,
+    page_size: int = 25,
+    filter_type: Optional[str] = None,
+    filter_action: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    user_org: tuple = Depends(get_user_org)
+):
+    """
+    Get detailed usage history with pagination and filtering.
+    
+    This is the main endpoint for the Credits Usage page.
+    
+    Filter options:
+    - filter_type: consumption, subscription_reset, pack_purchase, admin_grant, refund
+    - filter_action: research_flow, preparation, followup, followup_action, 
+                     transcription_minute, prospect_discovery, contact_search
+    - start_date/end_date: ISO format dates
+    
+    Returns paginated transactions with period statistics.
+    """
+    user_id, organization_id = user_org
+    
+    credit_service = get_credit_service()
+    
+    result = await credit_service.get_detailed_usage_history(
+        organization_id=organization_id,
+        page=page,
+        page_size=page_size,
+        filter_type=filter_type,
+        filter_action=filter_action,
+        start_date=start_date,
+        end_date=end_date
+    )
+    
+    transactions = result.get("transactions", [])
+    total_count = result.get("total_count", 0)
+    total_pages = (total_count + page_size - 1) // page_size if page_size > 0 else 1
+    
+    return DetailedUsageResponse(
+        transactions=[
+            CreditTransactionResponse(
+                id=str(t.get("id", "")),
+                transaction_type=t.get("transaction_type", ""),
+                credits_amount=float(t.get("credits_amount", 0)),
+                balance_after=float(t.get("balance_after", 0)),
+                description=t.get("description"),
+                reference_type=t.get("reference_type"),
+                user_id=str(t.get("user_id")) if t.get("user_id") else None,
+                metadata=t.get("metadata"),
+                created_at=str(t.get("created_at", ""))
+            )
+            for t in transactions
+        ],
+        total_count=total_count,
+        page=page,
+        page_size=page_size,
+        total_pages=total_pages,
+        period_stats=result.get("period_stats", {})
     )
 
 
