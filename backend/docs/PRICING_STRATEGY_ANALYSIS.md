@@ -3,275 +3,264 @@
 ## Expert Panel: Pricing, Psychologie & Concurrentie-analyse
 
 **Datum:** December 2024  
-**Doel:** Optimale credit-gebaseerde prijsstrategie bepalen
+**Doel:** €50+ netto winst per gebruiker/maand (exclusief API kosten)
 
 ---
 
-## 🏆 Executive Summary
+## 🎯 Business Requirement
 
-**Aanbeveling:** Ga naar een **simplified credit-based model** waar:
-1. ✅ Alle functionaliteiten beschikbaar zijn voor iedereen
-2. 📊 Credits bepalen hoeveel je kunt doen (niet wat)
-3. 💰 Hogere plannen = meer credits + bonus packs
-4. 🛒 Credits bijkopen altijd mogelijk
+> "Ik wil per gebruiker minimaal €50 per maand verdienen zonder de kosten van de tokens. 
+> Want daar moet het platform, onderhoud en salarissen van betaald worden."
 
-Dit elimineert "feature FOMO" en creëert een eerlijker systeem.
-
----
-
-## 📊 Concurrentie-analyse
-
-### Model 1: Feature-Gated (Traditioneel)
-| Concurrent | Model | Nadelen |
-|------------|-------|---------|
-| **Gong.io** | Enterprise pricing, features locked per tier | Hoge drempel, complexe verkoop |
-| **Salesforce** | Feature tiers | Upsell druk, klant frustratie |
-
-### Model 2: Usage-Based (Modern)
-| Concurrent | Model | Voordelen |
-|------------|-------|-----------|
-| **OpenAI/ChatGPT** | Credits/tokens, alles beschikbaar | Transparant, eerlijk |
-| **Cursor** | Base credits + bijkopen | Gebruiker voelt controle |
-| **Notion AI** | €10/user/maand add-on, onbeperkt | Simpel, voorspelbaar |
-| **Fireflies.ai** | Minuten-based, tiers voor storage | Duidelijke waarde |
-| **Otter.ai** | 600 min/maand gratis, upgrades voor meer | Genereuze free tier |
-
-### Model 3: Hybrid (Beste van beide)
-| Concurrent | Model | Waarom het werkt |
-|------------|-------|------------------|
-| **Fathom** | Gratis unlimited recording, betaald voor AI features | Massive adoption eerst |
-| **Grain** | Free tier + Pro met meer seats/storage | Team-focus |
-| **Jasper AI** | Credits voor AI, alle features beschikbaar | Power users betalen meer |
+### Berekening:
+| Component | Bedrag |
+|-----------|--------|
+| **Target netto winst** | €50/user/maand |
+| Gemiddelde API kosten (10 meetings) | ~€3-5 |
+| Buffer voor support/overhead | €5 |
+| **Minimale prijs** | **€58-60/user/maand** |
 
 ---
 
-## 🧠 Psychologische Principes
+## 📊 Concurrentie-analyse (December 2024)
 
-### 1. Verliesaversie (Loss Aversion)
-> "Mensen voelen verlies 2x sterker dan winst"
+### Tier 1: Enterprise Revenue Intelligence
+| Concurrent | Prijs/user/maand | Wat ze bieden |
+|------------|------------------|---------------|
+| **Gong.io** | $100-200 | Call recording, analytics, coaching |
+| **Chorus.ai** (ZoomInfo) | $100-150 | Conversation intelligence |
+| **Clari** | $100+ | Revenue platform, forecasting |
 
-**Toepassing:**
-- Toon "X credits gebruikt" i.p.v. "Y credits over"
-- "Je hebt nog 3 credits voor deze maand - gebruik ze!"
-- Credits die vervallen = urgentie
+### Tier 2: Meeting Intelligence
+| Concurrent | Prijs/user/maand | Wat ze bieden |
+|------------|------------------|---------------|
+| **Avoma** | $49-79 | Recording, notes, coaching |
+| **Grain** | $19-49 | Recording, highlights |
+| **Fireflies.ai** | $10-29 | Transcription, summaries |
 
-### 2. Anchoring Effect
-> "Het eerste getal dat je ziet wordt je referentiepunt"
-
-**Toepassing:**
-- Start met Pro+ als "aanbevolen" (€69,95)
-- Free tier toont wat je MIST, niet wat je krijgt
-- Credit packs: toon "waarde €50, nu €35" (30% korting)
-
-### 3. Endowment Effect
-> "Wat je bezit, waardeer je meer"
-
-**Toepassing:**
-- Geef 10 gratis credits bij registratie
-- "Jouw credits" - persoonlijk taalgebruik
-- Progress bars voor credit usage
-
-### 4. FOMO (Fear of Missing Out)
-> "Angst om kansen te missen"
-
-**Toepassing:**
-- "Populair" badge op Pro+ plan
-- "X sales professionals gebruiken dit al"
-- Tijdelijke credit bonus bij eerste aankoop
-
-### 5. Reciprocity
-> "Als iemand iets geeft, wil je teruggeven"
-
-**Toepassing:**
-- Genereuze gratis credits (niet zuinig)
-- Waardevolle free tier → gebruikers voelen zich "schuldig" om terug te geven
-
-### 6. Decoy Effect
-> "Een 'slechte' optie maakt de goede optie aantrekkelijker"
-
-**Toepassing:**
-```
-Free:     5 credits    →  €0
-Pro:     50 credits    →  €49,95  (€1/credit)
-Pro+:   100 credits    →  €69,95  (€0.70/credit) ← BESTE DEAL
-```
+### Tier 3: Transcription-First
+| Concurrent | Prijs/user/maand | Wat ze bieden |
+|------------|------------------|---------------|
+| **Otter.ai** | $10-20 | Transcription, limited AI |
+| **Fathom** | $0-15 | Free recording, paid AI |
+| **tl;dv** | €20-40 | Recording, CRM sync |
 
 ---
 
-## 💡 Aanbevolen Pricing Model
+## 💎 DealMotion's Unique Value Proposition
 
-### Optie A: "All Features Unlocked" Model (AANBEVOLEN)
+DealMotion is **GEEN transcriptie tool**. Het is een **Complete Sales Intelligence Platform**:
 
-| Plan | Prijs | Credits/maand | Per Credit | Features |
-|------|-------|---------------|------------|----------|
-| **Free** | €0 | 10 | - | Alle features |
-| **Pro** | €49,95/mo | 75 | €0.67 | Alle features |
-| **Pro+** | €69,95/mo | 150 | €0.47 | Alle features + Priority support |
+| Feature | Fireflies | Avoma | Gong | **DealMotion** |
+|---------|-----------|-------|------|----------------|
+| Recording/Transcription | ✅ | ✅ | ✅ | ✅ |
+| Meeting Summary | ✅ | ✅ | ✅ | ✅ |
+| Action Items | ✅ | ✅ | ✅ | ✅ |
+| **Pre-meeting Research** | ❌ | ❌ | ❌ | ✅ |
+| **AI Meeting Prep** | ❌ | ❌ | ❌ | ✅ |
+| **Prospect Discovery** | ❌ | ❌ | ❌ | ✅ |
+| **Sales Coaching per call** | ❌ | Limited | ✅ | ✅ |
+| **Deal Analysis** | ❌ | ❌ | ✅ | ✅ |
+| **Follow-up Email AI** | ❌ | ❌ | ❌ | ✅ |
+| **CRM Notes Generator** | ❌ | ❌ | ❌ | ✅ |
 
-**Credit Packs (bijkopen):**
-| Pack | Credits | Prijs | Per Credit | Korting |
-|------|---------|-------|------------|---------|
-| Starter | 25 | €19,95 | €0.80 | - |
-| Value | 75 | €49,95 | €0.67 | 16% |
-| Power | 200 | €99,95 | €0.50 | 38% |
+**DealMotion = Avoma + Gong + ZoomInfo in één tool**
 
-### Waarom dit werkt:
-
-1. **Geen Feature Jealousy**
-   - Iedereen kan alles proberen
-   - Credits = de enige beperking
-   - Minder support vragen over "heb ik toegang tot X?"
-
-2. **Natuurlijke Upgrade Path**
-   - Free users raken credits kwijt → "Ik wil meer"
-   - Geen harde muren, alleen "zachte" credit limieten
-
-3. **Bijkopen = Laagdrempelig**
-   - €19,95 is een impulsaankoop
-   - Geen commitment, geen abonnement nodig
-
-4. **30% Marge Behouden**
-   - Onze costs per action zijn bekend
-   - Credits = premium pricing boven cost
+→ Prijs zou tussen Avoma (€49) en Gong (€150) moeten liggen.
 
 ---
 
-## 📈 Credit Allocatie per Action
+## 🏆 Aanbevolen Pricing Model
 
-| Action | Credits | Echte Kost | Marge |
-|--------|---------|------------|-------|
-| Research | 3 | €0.25 | ~40% |
-| Prospect Discovery | 5 | €0.45 | ~38% |
-| Meeting Prep | 2 | €0.15 | ~40% |
-| Follow-up Summary | 2 | €0.18 | ~35% |
-| Follow-up Action (elk) | 2 | €0.15 | ~40% |
-| Transcriptie (per min) | 0.15 | €0.01 | ~50% |
+### Filosofie
+1. **Alle features beschikbaar** voor iedereen
+2. **Credits bepalen volume**, niet toegang
+3. **Genereuze Free tier** voor viral growth
+4. **Premium pricing** gerechtvaardigd door complete platform
 
----
+### Nieuwe Pricing Tiers
 
-## 🎯 Wat kan een gebruiker met zijn credits?
+| Plan | Maandelijks | Jaarlijks (20% korting) | Credits | Target |
+|------|-------------|------------------------|---------|--------|
+| **Free** | €0 | - | 25/maand | Trial & viral |
+| **Starter** | €59 | €49/mo (€588/jaar) | 200/maand | Freelancers |
+| **Professional** | €99 | €79/mo (€948/jaar) | 450/maand | Sales reps |
+| **Business** | €149 | €119/mo (€1.428/jaar) | 1000/maand | Teams |
 
-### Free Plan (10 credits/maand)
-Genoeg voor:
-- 3x Research flows, OF
-- 2x Prospect Discovery, OF
-- 5x Meeting Preps, OF
-- 1x Volledige follow-up (transcriptie 30 min + summary + 2 actions)
-
-→ **Perfect om te proeven, niet genoeg voor dagelijks gebruik**
-
-### Pro Plan (75 credits/maand)
-Genoeg voor:
-- 25x Research flows, OF
-- 15x Prospect Discovery, OF
-- 37x Meeting Preps, OF
-- ~8x Volledige follow-ups met alle actions
-
-→ **Genoeg voor 1-2 meetings per week met full features**
-
-### Pro+ Plan (150 credits/maand)
-Genoeg voor:
-- 50x Research flows, OF
-- 30x Prospect Discovery, OF
-- 75x Meeting Preps, OF
-- ~15x Volledige follow-ups met alle actions
-
-→ **Genoeg voor dagelijks gebruik, power users**
+### Credit Packs (Bijkopen)
+| Pack | Credits | Prijs | Per Credit |
+|------|---------|-------|------------|
+| Boost 50 | 50 | €14,95 | €0.30 |
+| Boost 150 | 150 | €39,95 | €0.27 |
+| Boost 500 | 500 | €99,95 | €0.20 |
 
 ---
 
-## 🔄 Wanneer Koopt Iemand Credits?
+## 📈 Wat kan je met de credits?
 
-### Trigger Momenten (Psychologie)
+### Credit Kosten (bevestigd)
+| Actie | Credits |
+|-------|---------|
+| Research | 3 |
+| Prospect Discovery | 5 |
+| Meeting Prep | 2 |
+| Transcriptie (per 10 min) | 1.5 |
+| Follow-up Summary | 2 |
+| Follow-up Action (elk) | 2 |
+| Contact Search | 0.25 |
 
-1. **Mid-maand Crisis** (dag 15-20)
-   > "Ik heb nog 2 credits maar een belangrijke meeting"
-   
-   **Actie:** Push notification + email op 20% remaining
+### Typische Sales Workflow
+| Stap | Credits |
+|------|---------|
+| 1. Research company | 3 |
+| 2. Prep meeting | 2 |
+| 3. Transcription (30 min) | 4.5 |
+| 4. Summary | 2 |
+| 5. 3 Actions (email, notes, items) | 6 |
+| **Per meeting totaal** | **17.5** |
 
-2. **End-of-Quarter Rush** (laatste week Q)
-   > "Ik moet deze deals nog closen"
-   
-   **Actie:** "Extra credits voor Q-end? 20% bonus pack"
-
-3. **New Prospect Excitement**
-   > "Ik heb net een hot lead maar geen credits"
-   
-   **Actie:** "Koop nu, geen wachttijd" - instant beschikbaar
-
-4. **Post-Meeting Urgency**
-   > "Deze meeting was goud, ik MOET de follow-up nu doen"
-   
-   **Actie:** "Credits op? Koop 25 credits voor €19,95"
-
-### Optimale UX voor Bijkopen
-
-```
-┌─────────────────────────────────────────────┐
-│  ⚠️ Je hebt 2 credits over                  │
-│                                             │
-│  Deze Research kost 3 credits               │
-│                                             │
-│  ┌─────────────────────────────────────┐   │
-│  │ 🎁 Koop 25 credits - €19,95        │   │
-│  │    Bonus: +5 gratis (= 30 credits)  │   │
-│  └─────────────────────────────────────┘   │
-│                                             │
-│  Of upgrade naar Pro voor €49,95/maand     │
-│  → 75 credits/maand                         │
-└─────────────────────────────────────────────┘
-```
+### Credits per Plan
+| Plan | Credits | Volledige Meetings/maand |
+|------|---------|-------------------------|
+| Free (25) | 25 | ~1 meeting |
+| Starter (200) | 200 | ~11 meetings |
+| Professional (450) | 450 | ~25 meetings |
+| Business (1000) | 1000 | ~57 meetings |
 
 ---
 
-## 🚀 Implementatie Roadmap
+## 💰 Winstgevendheid Analyse
 
-### Fase 1: Immediate (Week 1)
-- [ ] Credit limits toevoegen aan subscription_plans tabel
-- [ ] Migration: Free = 10, Pro = 75, Pro+ = 150 credits
-- [ ] Frontend: Credit indicator in header ✅ (Done!)
-- [ ] Insufficient credits modal ✅ (Done!)
+### Per Plan (Maandelijks)
+| Plan | Prijs | Est. API Kosten | **Netto voor DealMotion** |
+|------|-------|-----------------|---------------------------|
+| Starter €59 | 200 credits | ~€5 | **€54** ✅ |
+| Professional €99 | 450 credits | ~€10 | **€89** ✅ |
+| Business €149 | 1000 credits | ~€20 | **€129** ✅ |
 
-### Fase 2: Credit Packs (Week 2)
-- [ ] Stripe products voor credit packs
-- [ ] Credit pack purchase flow
-- [ ] "Bijkopen" button in settings
-- [ ] Success page na aankoop
-
-### Fase 3: Remove Feature Gates (Week 3)
-- [ ] Alle features beschikbaar maken voor alle tiers
-- [ ] Frontend: Verwijder "Pro only" badges
-- [ ] Messaging update: "Credits op?" i.p.v. "Upgrade required"
-
-### Fase 4: Optimize (Week 4+)
-- [ ] A/B test credit pack prijzen
-- [ ] Email triggers bij lage credits
-- [ ] Credit bonus bij referrals
-- [ ] Monthly credit rollover (max 20%)?
+### API Kosten Berekening
+- 1 credit = ~$0.10 API cost = ~€0.09
+- 200 credits = €18 API kosten max (als 100% benut)
+- Gemiddelde benutting: ~50-60% → ~€9-11 kosten
+- **Veilige marge altijd gegarandeerd**
 
 ---
 
-## 📊 KPIs om te Monitoren
+## 🧠 Psychologie: Premium Pricing Justificatie
 
-| Metric | Baseline | Target |
-|--------|----------|--------|
-| Free → Pro conversion | ~3% | 8-12% |
-| Credit pack purchases/month | - | 15% of paid users |
-| Credit utilization (%) | - | 70-85% |
-| Churn rate | - | <5%/month |
-| Average revenue per user (ARPU) | - | €55+ |
+### Anchor Effect
+Toon de **waarde** voordat je de prijs toont:
+
+> "Gong kost €150/maand en doet alleen recording + analytics.
+> DealMotion doet Research + Prep + Recording + 6 Follow-up Actions voor €99."
+
+### Value Stacking
+| Als je dit apart zou kopen... | Kosten |
+|------------------------------|--------|
+| ZoomInfo (prospect research) | $200/mo |
+| Fireflies (transcription) | $29/mo |
+| ChatGPT (custom prompts) | $20/mo |
+| Gong-style analytics | $100/mo |
+| **Totaal** | **$349/mo** |
+| **DealMotion** | **€99/mo** |
+
+### Social Proof
+- "Gebruikt door 500+ sales professionals"
+- "Gemiddeld 3 uur per week bespaard"
+- "ROI binnen 2 meetings terugverdiend"
 
 ---
 
-## ✅ Conclusie
+## 🚫 Waarom GEEN Goedkope Pricing
 
-**Ga voor het "All Features Unlocked" model omdat:**
+### Risico's van €19-29 pricing:
+1. **Perception**: "Als het zo goedkoop is, kan het niet goed zijn"
+2. **Churn**: Lage commitment = makkelijk opzeggen
+3. **Support drain**: Goedkope users verwachten veel support
+4. **Funding**: Onmogelijk om team te groeien
 
-1. **Simpeler te communiceren** - "Je betaalt voor hoeveelheid, niet functies"
-2. **Eerlijker gevoel** - Geen "feature jail"
-3. **Hogere conversie** - Users ervaren volledige waarde
-4. **Meer upsell** - Credit packs zijn makkelijke impulsaankopen
-5. **Betere retentie** - Geen frustratie over locked features
+### Voordelen van €59-149 pricing:
+1. **Serieuze klanten**: Professionals die waarde begrijpen
+2. **Lower churn**: Hogere commitment
+3. **Betere unit economics**: Duurzaam bedrijf
+4. **Premium perception**: DealMotion = professional tool
 
-De combinatie van **psychologische triggers** (verliesaversie, FOMO, reciprocity) met een **transparant credit systeem** maximaliseert zowel conversie als klanttevredenheid.
+---
 
+## 🔄 Migration Path (Huidige → Nieuwe Pricing)
+
+### Huidige Situatie
+| Plan | Prijs |
+|------|-------|
+| Free | €0 |
+| Pro | €49,95 |
+| Pro+ | €69,95 |
+
+### Nieuwe Situatie
+| Plan | Prijs | Change |
+|------|-------|--------|
+| Free | €0 | Same |
+| Starter | €59 | +€9 |
+| Professional | €99 | New tier |
+| Business | €149 | New tier |
+
+### Grandfather Existing Users
+- Huidige Pro users: Blijven op €49,95 met 150 credits
+- Huidige Pro+ users: Blijven op €69,95 met 300 credits
+- Nieuwe users: Nieuwe pricing
+
+---
+
+## ✅ Implementatie Checklist
+
+### Fase 1: Database & Backend
+- [ ] Update subscription_plans met credit limits
+- [ ] Add credit_balances per plan initialisatie
+- [ ] Stripe products aanmaken voor nieuwe plannen
+
+### Fase 2: Credit Packs
+- [ ] Stripe products voor Boost packs
+- [ ] Purchase flow in frontend
+- [ ] Credit pack fulfillment
+
+### Fase 3: Pricing Page Update
+- [ ] Nieuwe pricing tiers
+- [ ] Value stacking visualisatie
+- [ ] Comparison met concurrenten
+
+### Fase 4: Communication
+- [ ] Email naar bestaande users
+- [ ] FAQ update
+- [ ] Support docs
+
+---
+
+## 📊 KPI Targets
+
+| Metric | Current | Target (6 maanden) |
+|--------|---------|-------------------|
+| ARPU (gemiddelde omzet per user) | €55 | €85 |
+| Conversion Free → Paid | 3% | 8% |
+| Credit Pack attach rate | 0% | 15% |
+| Churn rate | ? | <5% |
+| LTV | ? | €800+ |
+
+---
+
+## 🎯 Conclusie
+
+**Nieuwe Pricing:**
+- **Starter €59**: Minimaal €50 netto ✅
+- **Professional €99**: €85+ netto ✅
+- **Business €149**: €120+ netto ✅
+
+**Alle features unlocked** + **Genereuze credits** = Happy customers die blijven.
+
+De pricing is gerechtvaardigd door de **complete value proposition**:
+- Research (wat alleen DealMotion doet)
+- Prep (wat alleen DealMotion doet)
+- Recording (wat iedereen doet)
+- 6 Follow-up Actions (wat alleen DealMotion doet)
+- Prospect Discovery (wat alleen DealMotion doet)
+
+**DealMotion is geen Fireflies concurrent. DealMotion is een Gong-alternatief voor 50% van de prijs.**
