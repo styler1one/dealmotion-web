@@ -89,9 +89,31 @@ class AutopilotOrchestrator:
             # Validate and filter proposals
             valid_proposals = []
             proposals_to_expire = []
+            proposals_to_timeout = []
             
             for row in (result.data or []):
                 proposal = AutopilotProposal(**row)
+                
+                # Check for stuck "executing" proposals (> 10 minutes)
+                if proposal.status in ["accepted", "executing"]:
+                    if proposal.execution_started_at:
+                        try:
+                            started = datetime.fromisoformat(
+                                str(proposal.execution_started_at).replace("Z", "+00:00")
+                            ).replace(tzinfo=None)
+                            minutes_executing = (datetime.now() - started).total_seconds() / 60
+                            if minutes_executing > 10:
+                                # Check if action was completed outside autopilot
+                                is_valid = await self._validate_proposal_still_valid(proposal)
+                                if not is_valid:
+                                    # Action was completed, mark as completed
+                                    proposals_to_expire.append(proposal.id)
+                                else:
+                                    # Action not completed, mark as failed (timeout)
+                                    proposals_to_timeout.append(proposal.id)
+                                continue
+                        except Exception as e:
+                            logger.warning(f"Error checking execution time: {e}")
                 
                 # Only validate active proposals
                 if proposal.status in ["proposed", "accepted", "executing"]:
@@ -103,20 +125,40 @@ class AutopilotOrchestrator:
                 else:
                     valid_proposals.append(proposal)
             
-            # Auto-expire invalid proposals in background
+            # Auto-expire invalid proposals (sync to ensure counts are correct)
+            expired_count = 0
             if proposals_to_expire:
                 for proposal_id in proposals_to_expire:
                     try:
                         self.supabase.table("autopilot_proposals").update({
-                            "status": "expired",
-                            "expired_reason": "Action already completed outside Autopilot"
+                            "status": "completed",
+                            "execution_completed_at": datetime.now().isoformat(),
+                            "execution_result": {"auto_completed": True, "reason": "Action completed outside Autopilot"}
                         }).eq("id", proposal_id).execute()
-                        logger.info(f"Auto-expired proposal {proposal_id} - action already completed")
+                        logger.info(f"Auto-completed proposal {proposal_id} - action already done")
+                        expired_count += 1
                     except Exception as e:
-                        logger.warning(f"Failed to auto-expire proposal {proposal_id}: {e}")
+                        logger.warning(f"Failed to auto-complete proposal {proposal_id}: {e}")
             
-            # Get updated counts
+            # Mark timed-out proposals as failed
+            if proposals_to_timeout:
+                for proposal_id in proposals_to_timeout:
+                    try:
+                        self.supabase.table("autopilot_proposals").update({
+                            "status": "failed",
+                            "execution_completed_at": datetime.now().isoformat(),
+                            "execution_error": "Execution timed out after 10 minutes"
+                        }).eq("id", proposal_id).execute()
+                        logger.info(f"Timed out proposal {proposal_id}")
+                    except Exception as e:
+                        logger.warning(f"Failed to timeout proposal {proposal_id}: {e}")
+            
+            # Get fresh counts AFTER expiring (ensures accuracy)
             counts = await self._get_proposal_counts(user_id)
+            
+            # Log for debugging
+            if expired_count > 0:
+                logger.info(f"Auto-expired {expired_count} proposals, new counts: proposed={counts.proposed}")
             
             return valid_proposals, counts
             
