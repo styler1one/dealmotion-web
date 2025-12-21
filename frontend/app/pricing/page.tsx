@@ -49,17 +49,18 @@ export default function PricingPage() {
     checkAuth()
   }, [supabase])
 
-  // Pricing data - v4 Credit-based pricing
+  // Pricing data - v4 Credit-based pricing with Early Bird discount
+  const earlyBirdDiscount = 2400 // €24 korting
   const pricing = {
     pro: {
-      monthly: { price: 9900 },      // €99/month
-      yearly: { price: 100800 },     // €84/month = €1008/year (15% korting)
-      credits: 250,                  // 250 credits/month (~9 complete sales cycles)
+      monthly: { price: 9900 - earlyBirdDiscount, original: 9900 },      // €75 (was €99)
+      yearly: { price: 100800 - (earlyBirdDiscount * 12), original: 100800 },
+      credits: 250,
     },
     proPlus: {
-      monthly: { price: 14900 },     // €149/month
-      yearly: { price: 152400 },     // €127/month = €1524/year (15% korting)
-      credits: 600,                  // 600 credits/month (~21 complete sales cycles)
+      monthly: { price: 14900 - earlyBirdDiscount, original: 14900 },     // €125 (was €149)
+      yearly: { price: 152400 - (earlyBirdDiscount * 12), original: 152400 },
+      credits: 600,
     }
   }
   
@@ -117,6 +118,7 @@ export default function PricingPage() {
       { text: t('features.v4.value.dealAnalysis'), included: true },
       { text: t('features.v4.value.emailsDealNotes'), included: true },
       { text: t('features.v4.value.salesCoach'), included: true },
+      { text: t('features.v4.aiNotetaker'), included: true },
       { text: 'Credits bijkopen mogelijk', included: true },
     ],
     proPlus: [
@@ -361,6 +363,14 @@ export default function PricingPage() {
               </div>
               <CardDescription className="text-sm">{t('plans.v4.pro.description')}</CardDescription>
               <div className="mt-4">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-lg text-slate-400 line-through">
+                    {isYearly 
+                      ? getMonthlyEquivalent(pricing.pro.yearly.original)
+                      : formatPrice(pricing.pro.monthly.original)
+                    }
+                  </span>
+                </div>
                 <div className="flex items-baseline gap-1">
                   <span className="text-3xl font-bold text-slate-900 dark:text-white">
                     {isYearly 
@@ -380,17 +390,20 @@ export default function PricingPage() {
                     </p>
                   </div>
                 )}
+                <p className="text-xs text-blue-600 dark:text-blue-400 font-medium mt-2">
+                  {pricing.pro.credits} credits/maand
+                </p>
               </div>
             </CardHeader>
             <CardContent className="pb-4">
-              {/* Credits highlight box - same style as Pro+ */}
+              {/* AI Notetaker highlight */}
               <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                 <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
-                  <Zap className="h-5 w-5" />
-                  <span className="font-semibold text-sm">~9 complete sales cycles/maand</span>
+                  <Bot className="h-5 w-5" />
+                  <span className="font-semibold text-sm">{t('features.v4.aiNotetakerIncluded')}</span>
                 </div>
                 <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                  Research, prep, transcriptie & follow-up
+                  {t('features.v4.aiNotetakerDescription')}
                 </p>
               </div>
               <ul className="space-y-2">
@@ -440,6 +453,14 @@ export default function PricingPage() {
               </div>
               <CardDescription className="text-sm">{t('plans.v4.proPlus.description')}</CardDescription>
               <div className="mt-4">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-lg text-slate-400 line-through">
+                    {isYearly 
+                      ? getMonthlyEquivalent(pricing.proPlus.yearly.original)
+                      : formatPrice(pricing.proPlus.monthly.original)
+                    }
+                  </span>
+                </div>
                 <div className="flex items-baseline gap-1">
                   <span className="text-3xl font-bold text-slate-900 dark:text-white">
                     {isYearly 
@@ -459,26 +480,19 @@ export default function PricingPage() {
                     </p>
                   </div>
                 )}
+                <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium mt-2">
+                  {pricing.proPlus.credits} credits/maand
+                </p>
               </div>
             </CardHeader>
             <CardContent className="pb-4">
-              {/* Usage highlight box */}
+              {/* AI Notetaker highlight */}
               <div className="mb-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-200 dark:border-indigo-800">
                 <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300">
-                  <Zap className="h-5 w-5" />
-                  <span className="font-semibold text-sm">~21 complete sales cycles/maand</span>
-                </div>
-                <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-1">
-                  Research, prep, transcriptie & follow-up
-                </p>
-              </div>
-              {/* AI Notetaker highlight */}
-              <div className="mb-4 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-                <div className="flex items-center gap-2 text-purple-700 dark:text-purple-300">
                   <Bot className="h-5 w-5" />
                   <span className="font-semibold text-sm">{t('features.v4.aiNotetakerIncluded')}</span>
                 </div>
-                <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+                <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-1">
                   {t('features.v4.aiNotetakerDescription')}
                 </p>
               </div>
