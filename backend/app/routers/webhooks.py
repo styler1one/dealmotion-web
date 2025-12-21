@@ -95,10 +95,10 @@ async def stripe_webhook(
         if event_type == "checkout.session.completed":
             session = event["data"]["object"]
             
-            # Check if this is a flow pack purchase or subscription
+            # Check if this is a credit pack purchase or subscription
             metadata = session.get("metadata", {})
-            if metadata.get("type") == "flow_pack":
-                # Handle flow pack purchase
+            if metadata.get("type") in ("credit_pack", "flow_pack"):
+                # Handle credit pack purchase (supports both new and legacy type)
                 flow_pack_service = get_flow_pack_service()
                 await flow_pack_service.handle_checkout_completed(session)
             else:

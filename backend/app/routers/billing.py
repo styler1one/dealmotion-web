@@ -448,7 +448,7 @@ async def get_donation_link(current_user: dict = Depends(get_current_user)):
 # ==========================================
 
 class FlowPackCheckoutRequest(BaseModel):
-    pack_id: str = "pack_5"  # Default to 5-pack
+    pack_id: str = "boost_100"  # Default to Boost 100
     success_url: Optional[str] = None
     cancel_url: Optional[str] = None
 
@@ -461,8 +461,14 @@ class FlowPackBalanceResponse(BaseModel):
 class FlowPackProductResponse(BaseModel):
     id: str
     name: str
-    flows: int
+    credits: int
     price_cents: int
+    per_credit_cents: Optional[int] = None
+    description: Optional[str] = None
+    popular: Optional[bool] = False
+    best_value: Optional[bool] = False
+    # Legacy field for backwards compatibility
+    flows: Optional[int] = None
 
 
 @router.get("/flow-packs/balance", response_model=FlowPackBalanceResponse)

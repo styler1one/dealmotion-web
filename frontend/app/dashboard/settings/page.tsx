@@ -46,6 +46,7 @@ import { Switch } from '@/components/ui/switch'
 import { useBilling } from '@/lib/billing-context'
 import { UsageMeter } from '@/components/usage-meter'
 import { CreditUsage } from '@/components/credit-usage'
+import { CreditPacks } from '@/components/credit-packs'
 import { api } from '@/lib/api'
 import { logger } from '@/lib/logger'
 import { useConfirmDialog } from '@/components/confirm-dialog'
@@ -1131,8 +1132,13 @@ export default function SettingsPage() {
 
                   {/* Credit Usage - v4: Credit-based system */}
                   <CreditUsage 
-                    onBuyCredits={() => router.push('/pricing')}
+                    onBuyCredits={() => {}}
                   />
+
+                  {/* Credit Packs - Buy additional credits */}
+                  <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                    <CreditPacks />
+                  </div>
 
                   {/* Legacy Usage Meters - v2: Flow-based */}
                   {usage && (
