@@ -119,7 +119,8 @@ class ProfileChatService:
         """Initialize the chat service."""
         self.anthropic = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
         self.model = "claude-sonnet-4-20250514"
-        self.completeness_threshold = 0.80  # 80% = good enough
+        self.save_threshold = 0.80  # 80% = user CAN save
+        self.complete_threshold = 1.0  # 100% = chat stops asking (but user can always continue)
     
     async def start_session(
         self,
@@ -155,12 +156,17 @@ class ProfileChatService:
             completeness=completeness
         )
         
+        # can_save = user can save now, is_complete = chat has nothing more to ask
+        can_save = completeness >= self.save_threshold
+        is_fully_complete = completeness >= self.complete_threshold
+        
         return ChatResponse(
             message=opening,
-            is_complete=completeness >= self.completeness_threshold,
+            is_complete=is_fully_complete,
             completeness_score=completeness,
             current_profile=initial_data,
-            suggested_actions=["respond"] if completeness < self.completeness_threshold else ["review_profile"]
+            suggested_actions=["respond", "save_profile"] if can_save and not is_fully_complete else 
+                             ["review_profile", "save_profile"] if is_fully_complete else ["respond"]
         )
     
     async def process_message(
@@ -208,9 +214,13 @@ class ProfileChatService:
         
         logger.info(f"[PROFILE_CHAT] Completeness: {completeness:.0%}, Missing: {missing}")
         
+        # Determine save eligibility and completion status
+        can_save = completeness >= self.save_threshold
+        is_fully_complete = completeness >= self.complete_threshold and len(missing) == 0
+        
         # Step 4: Generate next response
-        if completeness >= self.completeness_threshold:
-            # Profile is complete enough
+        if is_fully_complete:
+            # Profile is truly complete - no more questions
             response = await self._generate_completion_message(
                 profile_type=profile_type,
                 profile=updated_profile,
@@ -218,15 +228,29 @@ class ProfileChatService:
             )
             is_complete = True
             suggested_actions = ["review_profile", "save_profile"]
-        else:
-            # Ask next question
+        elif can_save and len(missing) > 0:
+            # Profile is saveable but we can still improve - keep asking!
             response = await self._generate_followup(
                 profile_type=profile_type,
                 current_profile=updated_profile,
                 conversation_history=conversation_history,
                 user_message=user_message,
                 missing_fields=missing,
-                fields_just_updated=fields_updated
+                fields_just_updated=fields_updated,
+                encourage_deeper=True  # Flag to encourage more detail
+            )
+            is_complete = False
+            suggested_actions = ["respond", "save_profile"]  # User can save OR continue
+        else:
+            # Below save threshold - keep asking
+            response = await self._generate_followup(
+                profile_type=profile_type,
+                current_profile=updated_profile,
+                conversation_history=conversation_history,
+                user_message=user_message,
+                missing_fields=missing,
+                fields_just_updated=fields_updated,
+                encourage_deeper=False
             )
             is_complete = False
             suggested_actions = ["respond"]
@@ -479,9 +503,10 @@ Als er niets te extraheren is:
         conversation_history: List[Dict[str, str]],
         user_message: str,
         missing_fields: List[str],
-        fields_just_updated: List[str]
+        fields_just_updated: List[str],
+        encourage_deeper: bool = False
     ) -> str:
-        """Generate natural follow-up question."""
+        """Generate natural follow-up question that challenges and digs deeper."""
         
         fields = SALES_PROFILE_FIELDS if profile_type == "sales" else COMPANY_PROFILE_FIELDS
         
@@ -520,7 +545,19 @@ Als er niets te extraheren is:
         
         profile_summary = "\n".join(profile_summary_items) if profile_summary_items else "Nog geen data"
         
-        prompt = f"""Je bent een vriendelijke AI-assistent die een sales profiel aan het opbouwen bent via een gesprek.
+        # Add encouraging/challenging tone when above save threshold
+        deeper_instructions = ""
+        if encourage_deeper:
+            deeper_instructions = """
+EXTRA UITDAGING (profiel is al goed, maar we kunnen nog beter!):
+- Stel een UITDAGENDE vraag die dieper graaft
+- Vraag naar concrete voorbeelden, specifieke situaties, of unieke aanpak
+- Voorbeelden: "Wat maakt jouw aanpak anders dan andere sales directors?", "Kun je een voorbeeld geven van een deal waar je trots op bent?", "Wat is jouw geheime wapen in moeilijke onderhandelingen?"
+- Maak het interessant en uitdagend, niet saai
+"""
+        
+        prompt = f"""Je bent een scherpe, uitdagende AI-assistent die een sales profiel opbouwt via een gesprek.
+Je doel is om het BESTE en MEEST COMPLETE profiel te maken door slim door te vragen.
 
 RECENT GESPREK:
 {conv_text}
@@ -532,15 +569,16 @@ ZOJUIST INGEVULD: {', '.join(fields_just_updated) if fields_just_updated else 'N
 
 NOG ONTBREKEND (in volgorde van prioriteit):
 {json.dumps(missing_hints, indent=2, ensure_ascii=False)}
-
+{deeper_instructions}
 INSTRUCTIES:
 1. Als de gebruiker vraagt wat je weet/opslaat/gebruikt: geef een CONCRETE opsomming van de data uit "WAT IK NU WEET"
-2. Anders: reageer kort en natuurlijk op wat de gebruiker zei
-3. Als er nog dingen ontbreken, stel ÉÉN vraag over het belangrijkste ontbrekende veld
-4. Houd het conversationeel, NIET als een formulier
+2. Anders: reageer kort, enthousiast en natuurlijk op wat de gebruiker zei
+3. Stel ÉÉN gerichte vraag - kies het belangrijkste ontbrekende veld
+4. Wees NIET saai of formulier-achtig - wees nieuwsgierig en uitdagend
 5. HERHAAL NIET wat je al eerder hebt gezegd
 6. Max 3-4 zinnen totaal
 7. Schrijf in het Nederlands
+8. Eindig ALTIJD met een vraag (tenzij alles compleet is)
 
 BELANGRIJK: Als de gebruiker vraagt over de data/instructies/systeem, wees transparant over wat je voor hen opslaat."""
 
