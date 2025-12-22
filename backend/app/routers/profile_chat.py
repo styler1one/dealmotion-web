@@ -487,8 +487,8 @@ async def complete_session(
             "quarterly_goals": profile_data.get("quarterly_goals"),
             "email_tone": profile_data.get("email_tone"),
             "completeness": int(session.get("completeness_score", 0) * 100),
-            "has_narrative": bool(sales_narrative),
-            "has_summary": bool(ai_summary)
+            # Narrative and summary are generated async via Inngest
+            "narrative_status": "generating"
         }
     else:
         saved_summary = {
