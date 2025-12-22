@@ -19,6 +19,7 @@ from pydantic import BaseModel, Field
 from app.deps import get_current_user
 from app.database import get_supabase_service
 from app.services.profile_chat_service import get_profile_chat_service, ChatMessage
+from app.inngest.events import send_event, Events
 
 logger = logging.getLogger(__name__)
 
@@ -360,39 +361,27 @@ async def complete_session(
     
     logger.info(f"[PROFILE_CHAT] Complete session {session_id} for user {user_id}")
     logger.info(f"[PROFILE_CHAT] Profile data keys: {list(profile_data.keys())}")
-    logger.info(f"[PROFILE_CHAT] Profile data full_name: {profile_data.get('full_name')}")
     logger.info(f"[PROFILE_CHAT] Organization ID: {org_id}")
+    
+    # Get user's preferred output language from settings
+    output_language = "en"  # Default to English
+    try:
+        settings_response = supabase.table("user_settings")\
+            .select("output_language")\
+            .eq("user_id", user_id)\
+            .maybe_single()\
+            .execute()
+        if settings_response.data and settings_response.data.get("output_language"):
+            output_language = settings_response.data["output_language"]
+            logger.info(f"[PROFILE_CHAT] Using output language: {output_language}")
+    except Exception as e:
+        logger.warning(f"[PROFILE_CHAT] Could not get user settings, using default language: {e}")
     
     profile_id = None
     
     if request.save_profile:
         if profile_type == "sales":
-            # Generate sales narrative and AI summary if not already present
-            chat_service = get_profile_chat_service()
-            
-            sales_narrative = profile_data.get("sales_narrative")
-            ai_summary = profile_data.get("ai_summary")
-            
-            # Generate narrative if missing
-            if not sales_narrative:
-                try:
-                    sales_narrative = await chat_service.generate_sales_narrative(
-                        profile_data,
-                        linkedin_raw
-                    )
-                    logger.info(f"[PROFILE_CHAT] Generated sales narrative for user {user_id}")
-                except Exception as e:
-                    logger.error(f"[PROFILE_CHAT] Failed to generate narrative: {e}")
-            
-            # Generate AI summary if missing
-            if not ai_summary:
-                try:
-                    ai_summary = await chat_service.generate_ai_summary(profile_data)
-                    logger.info(f"[PROFILE_CHAT] Generated AI summary for user {user_id}")
-                except Exception as e:
-                    logger.error(f"[PROFILE_CHAT] Failed to generate summary: {e}")
-            
-            # Save to sales_profiles
+            # Save to sales_profiles IMMEDIATELY (without narrative - that's async via Inngest)
             sales_data = {
                 "organization_id": org_id,
                 "user_id": user_id,
@@ -410,15 +399,13 @@ async def complete_session(
                 "uses_emoji": profile_data.get("uses_emoji", False),
                 "email_signoff": profile_data.get("email_signoff"),
                 "writing_length_preference": profile_data.get("writing_length_preference"),
-                "ai_summary": ai_summary,
-                "sales_narrative": sales_narrative,
                 "style_guide": profile_data.get("style_guide"),
                 "profile_completeness": int(session.get("completeness_score", 0) * 100)
+                # Note: ai_summary and sales_narrative are generated async via Inngest
             }
             
-            # Upsert (create or update)
-            logger.info(f"[PROFILE_CHAT] Saving sales profile with data: full_name={sales_data.get('full_name')}, org={org_id}")
-            logger.info(f"[PROFILE_CHAT] Narrative length: {len(sales_narrative) if sales_narrative else 0}")
+            # Upsert (create or update) - fast, no AI calls
+            logger.info(f"[PROFILE_CHAT] Saving sales profile: {sales_data.get('full_name')}")
             
             try:
                 save_result = supabase.table("sales_profiles").upsert(
@@ -429,6 +416,25 @@ async def complete_session(
                 if save_result.data:
                     profile_id = save_result.data[0]["id"]
                     logger.info(f"[PROFILE_CHAT] Saved profile with ID: {profile_id}")
+                    
+                    # Trigger Inngest for async narrative generation
+                    event_sent = await send_event(
+                        Events.PROFILE_FINALIZE_REQUESTED,
+                        data={
+                            "profile_id": str(profile_id),
+                            "user_id": user_id,
+                            "organization_id": str(org_id),
+                            "profile_type": "sales",
+                            "profile_data": profile_data,
+                            "linkedin_raw": linkedin_raw,
+                            "output_language": output_language
+                        },
+                        user={"id": user_id}
+                    )
+                    if event_sent:
+                        logger.info(f"[PROFILE_CHAT] Triggered async narrative generation via Inngest")
+                    else:
+                        logger.warning(f"[PROFILE_CHAT] Failed to trigger Inngest, narrative will be missing")
                 else:
                     logger.error(f"[PROFILE_CHAT] Upsert returned no data")
             except Exception as e:

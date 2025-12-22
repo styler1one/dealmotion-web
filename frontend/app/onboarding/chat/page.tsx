@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import { 
   Sparkles, 
   Linkedin, 
@@ -17,6 +18,7 @@ type Step = 'linkedin' | 'enriching' | 'chat' | 'complete';
 
 export default function ChatOnboardingPage() {
   const router = useRouter();
+  const t = useTranslations('onboarding.chat');
   const [step, setStep] = useState<Step>('linkedin');
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -193,7 +195,7 @@ export default function ChatOnboardingPage() {
             transition={{ delay: 0.1 }}
             className="text-3xl font-bold text-white mb-3"
           >
-            Magic Profile Setup
+            {t('title')}
           </motion.h1>
           
           <motion.p
@@ -202,7 +204,7 @@ export default function ChatOnboardingPage() {
             transition={{ delay: 0.2 }}
             className="text-slate-400"
           >
-            Een kort gesprek om je sales profiel compleet te maken
+            {t('subtitle')}
           </motion.p>
         </div>
 
@@ -239,10 +241,10 @@ export default function ChatOnboardingPage() {
                 </div>
                 <div>
                   <h2 className="text-xl font-semibold text-white">
-                    Start met LinkedIn
+                    {t('startWithLinkedIn')}
                   </h2>
                   <p className="text-sm text-slate-400">
-                    We halen zoveel mogelijk informatie automatisch op
+                    {t('startWithLinkedInDesc')}
                   </p>
                 </div>
               </div>
@@ -250,13 +252,13 @@ export default function ChatOnboardingPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Je LinkedIn profiel URL
+                    {t('linkedInUrlLabel')}
                   </label>
                   <input
                     type="url"
                     value={linkedinUrl}
                     onChange={(e) => setLinkedinUrl(e.target.value)}
-                    placeholder="https://linkedin.com/in/jouw-profiel"
+                    placeholder={t('linkedInPlaceholder')}
                     className="w-full bg-slate-700/50 border border-slate-600 rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500"
                   />
                 </div>
@@ -273,12 +275,12 @@ export default function ChatOnboardingPage() {
                   disabled={!linkedinUrl.trim() || isLoading}
                   className="w-full py-3 px-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <span>Start Magic Setup</span>
+                  <span>{t('startMagicSetup')}</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
 
                 <p className="text-center text-xs text-slate-500">
-                  Je LinkedIn data wordt alleen gebruikt om je profiel te maken
+                  {t('linkedInPrivacy')}
                 </p>
               </div>
             </div>
@@ -296,17 +298,17 @@ export default function ChatOnboardingPage() {
               </motion.div>
               
               <h2 className="text-xl font-semibold text-white mb-2">
-                Even geduld...
+                {t('pleaseWait')}
               </h2>
               <p className="text-slate-400">
-                We analyseren je LinkedIn profiel
+                {t('analyzingProfile')}
               </p>
               
               <div className="mt-8 space-y-2">
                 {[
-                  'Profiel ophalen',
-                  'Ervaring analyseren',
-                  'Skills extraheren'
+                  t('fetchingProfile'),
+                  t('analyzingExperience'),
+                  t('extractingSkills')
                 ].map((task, i) => (
                   <motion.div
                     key={task}
@@ -346,10 +348,10 @@ export default function ChatOnboardingPage() {
               </motion.div>
               
               <h2 className="text-2xl font-bold text-white mb-2">
-                Profiel Compleet! 🎉
+                {t('profileSaved')} 🎉
               </h2>
               <p className="text-slate-400 mb-6">
-                Je wordt doorgestuurd naar het dashboard...
+                {t('redirecting')}
               </p>
               
               <Loader2 className="w-6 h-6 animate-spin text-violet-400 mx-auto" />

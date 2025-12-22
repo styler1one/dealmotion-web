@@ -400,47 +400,47 @@ export default function ProfilePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Mail className="h-5 w-5 text-violet-600" />
-              Communicatiestijl & Email Voorkeuren
+              {t('communicationStyle.title')}
             </CardTitle>
             <CardDescription>
-              Zo schrijft DealMotion emails en berichten namens jou
+              {t('communicationStyle.description')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               {/* Email Tone */}
               <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Schrijftoon</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('communicationStyle.writingTone')}</p>
                 <p className="text-base font-medium capitalize">
-                  {profile.email_tone || profile.style_guide?.tone || 'Professioneel'}
+                  {profile.email_tone || profile.style_guide?.tone || 'professional'}
                 </p>
               </div>
               
               {/* Writing Length */}
               <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Berichtlengte</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('communicationStyle.messageLength')}</p>
                 <p className="text-base font-medium capitalize">
-                  {profile.writing_length_preference === 'concise' ? 'Kort & bondig' :
-                   profile.writing_length_preference === 'detailed' ? 'Uitgebreid' :
-                   profile.style_guide?.writing_length === 'concise' ? 'Kort & bondig' :
-                   profile.style_guide?.writing_length === 'detailed' ? 'Uitgebreid' :
-                   'Standaard'}
+                  {profile.writing_length_preference === 'concise' ? t('communicationStyle.concise') :
+                   profile.writing_length_preference === 'detailed' ? t('communicationStyle.detailed') :
+                   profile.style_guide?.writing_length === 'concise' ? t('communicationStyle.concise') :
+                   profile.style_guide?.writing_length === 'detailed' ? t('communicationStyle.detailed') :
+                   t('communicationStyle.standard')}
                 </p>
               </div>
               
               {/* Emoji Usage */}
               <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Emoji gebruik</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('communicationStyle.emojiUsage')}</p>
                 <div className="flex items-center gap-2">
                   {(profile.uses_emoji || profile.style_guide?.emoji_usage) ? (
                     <>
                       <Check className="h-4 w-4 text-green-500" />
-                      <span className="text-base">Ja, in emails</span>
+                      <span className="text-base">{t('communicationStyle.emojiYes')}</span>
                     </>
                   ) : (
                     <>
                       <X className="h-4 w-4 text-slate-400" />
-                      <span className="text-base text-muted-foreground">Nee</span>
+                      <span className="text-base text-muted-foreground">{t('communicationStyle.emojiNo')}</span>
                     </>
                   )}
                 </div>
@@ -448,9 +448,9 @@ export default function ProfilePage() {
               
               {/* Email Signoff */}
               <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Email afsluiting</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('communicationStyle.emailSignoff')}</p>
                 <p className="text-base font-medium">
-                  {profile.email_signoff || profile.style_guide?.signoff || 'Met vriendelijke groet'}
+                  {profile.email_signoff || profile.style_guide?.signoff || 'Best regards'}
                 </p>
               </div>
             </div>
@@ -461,12 +461,12 @@ export default function ProfilePage() {
                 <div className="flex items-start gap-3">
                   <Sparkles className="h-5 w-5 text-violet-500 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Overtuigingsstijl</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">{t('communicationStyle.persuasionStyle')}</p>
                     <p className="text-base text-slate-700 dark:text-slate-300">
-                      {profile.style_guide.persuasion_style === 'logic' && 'Logica & data - Overtuigt met feiten, cijfers en rationele argumenten'}
-                      {profile.style_guide.persuasion_style === 'story' && 'Storytelling - Overtuigt met verhalen, voorbeelden en emotie'}
-                      {profile.style_guide.persuasion_style === 'reference' && 'Social proof - Overtuigt met referenties, cases en testimonials'}
-                      {profile.style_guide.persuasion_style === 'authority' && 'Autoriteit - Overtuigt met expertise en thought leadership'}
+                      {profile.style_guide.persuasion_style === 'logic' && t('communicationStyle.persuasionLogic')}
+                      {profile.style_guide.persuasion_style === 'story' && t('communicationStyle.persuasionStory')}
+                      {profile.style_guide.persuasion_style === 'reference' && t('communicationStyle.persuasionReference')}
+                      {profile.style_guide.persuasion_style === 'authority' && t('communicationStyle.persuasionAuthority')}
                     </p>
                   </div>
                 </div>

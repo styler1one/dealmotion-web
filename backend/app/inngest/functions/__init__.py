@@ -30,6 +30,7 @@ from .autopilot_execution import execute_proposal_fn
 from .prospecting import process_prospecting_discovery_fn
 from .credit_reset import credit_reset_daily_fn
 from .magic_onboarding import magic_onboard_sales_fn, magic_onboard_company_fn
+from .profile_finalize import profile_finalize_fn
 
 # All functions to register with Inngest
 all_functions = [
@@ -66,6 +67,8 @@ all_functions = [
     # Magic Onboarding
     magic_onboard_sales_fn,
     magic_onboard_company_fn,
+    # Profile Finalization
+    profile_finalize_fn,
 ]
 
 __all__ = [
@@ -103,5 +106,7 @@ __all__ = [
     # Magic Onboarding
     "magic_onboard_sales_fn",
     "magic_onboard_company_fn",
+    # Profile Finalization
+    "profile_finalize_fn",
 ]
 

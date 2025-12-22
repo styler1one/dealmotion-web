@@ -175,6 +175,9 @@ class Events:
     MAGIC_ONBOARDING_COMPANY_REQUESTED = "dealmotion/magic-onboarding.company.requested"
     MAGIC_ONBOARDING_COMPANY_COMPLETED = "dealmotion/magic-onboarding.company.completed"
     MAGIC_ONBOARDING_COMPANY_FAILED = "dealmotion/magic-onboarding.company.failed"
+    
+    # Profile Finalization (async narrative/summary generation)
+    PROFILE_FINALIZE_REQUESTED = "dealmotion/profile.finalize.requested"
 
 
 # =============================================================================

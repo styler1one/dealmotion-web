@@ -604,11 +604,17 @@ Geef een duidelijke samenvatting van wat je hebt geleerd, niet een generieke afs
     async def generate_sales_narrative(
         self,
         profile: Dict[str, Any],
-        linkedin_raw: Optional[Dict[str, Any]] = None
+        linkedin_raw: Optional[Dict[str, Any]] = None,
+        language: str = "en"
     ) -> str:
         """
         Generate a personal sales narrative/story based on the profile data.
         This creates a compelling, personalized story about the sales professional.
+        
+        Args:
+            profile: Profile data dict
+            linkedin_raw: Optional LinkedIn enrichment data
+            language: Output language code (en, nl, de, etc.)
         """
         
         linkedin_data = linkedin_raw or {}
@@ -617,42 +623,52 @@ Geef een duidelijke samenvatting van wat je hebt geleerd, niet een generieke afs
         skills = linkedin_data.get("skills", [])
         headline = linkedin_data.get("headline", "")
         
-        prompt = f"""Je bent een professionele copywriter die persoonlijke verhalen schrijft voor sales professionals.
+        # Language-specific instructions
+        lang_instructions = {
+            "nl": "Schrijf in het Nederlands",
+            "en": "Write in English",
+            "de": "Schreibe auf Deutsch",
+            "fr": "Écrivez en français",
+            "es": "Escribe en español",
+        }
+        lang_instruction = lang_instructions.get(language, "Write in English")
+        
+        prompt = f"""You are a professional copywriter creating personal stories for sales professionals.
 
-Schrijf een boeiend, persoonlijk verhaal (3-4 alinea's) over deze sales professional. Het verhaal moet:
-- In de derde persoon geschreven zijn
-- Authentiek en herkenbaar klinken
-- Kernpunten uit hun ervaring en aanpak belichten
-- Eindigend met wat hen drijft en hoe ze waarde creëren
+Write an engaging, personal narrative (3-4 paragraphs) about this sales professional. The story should:
+- Be written in third person
+- Sound authentic and relatable
+- Highlight key points from their experience and approach
+- End with what drives them and how they create value
 
-=== PROFIEL DATA ===
-Naam: {profile.get('full_name', 'Onbekend')}
-Rol: {profile.get('role', 'Sales Professional')}
-Ervaring: {profile.get('experience_years', '?')} jaar
-Methodologie: {profile.get('sales_methodology', 'Niet gespecificeerd')}
-Communicatiestijl: {profile.get('communication_style', 'Niet gespecificeerd')}
-Sterktes: {', '.join(profile.get('strengths', [])) if profile.get('strengths') else 'Niet gespecificeerd'}
-Target Industries: {', '.join(profile.get('target_industries', [])) if profile.get('target_industries') else 'Niet gespecificeerd'}
-Target Bedrijfsgroottes: {', '.join(profile.get('target_company_sizes', [])) if profile.get('target_company_sizes') else 'Niet gespecificeerd'}
-Kwartaaldoelen: {profile.get('quarterly_goals', 'Niet gespecificeerd')}
-Email Toon: {profile.get('email_tone', 'Niet gespecificeerd')}
+=== PROFILE DATA ===
+Name: {profile.get('full_name', 'Unknown')}
+Role: {profile.get('role', 'Sales Professional')}
+Experience: {profile.get('experience_years', '?')} years
+Methodology: {profile.get('sales_methodology', 'Not specified')}
+Communication Style: {profile.get('communication_style', 'Not specified')}
+Strengths: {', '.join(profile.get('strengths', [])) if profile.get('strengths') else 'Not specified'}
+Target Industries: {', '.join(profile.get('target_industries', [])) if profile.get('target_industries') else 'Not specified'}
+Target Company Sizes: {', '.join(profile.get('target_company_sizes', [])) if profile.get('target_company_sizes') else 'Not specified'}
+Quarterly Goals: {profile.get('quarterly_goals', 'Not specified')}
+Email Tone: {profile.get('email_tone', 'Not specified')}
 
-=== LINKEDIN INFORMATIE ===
+=== LINKEDIN INFORMATION ===
 Headline: {headline}
-Over mij: {about_section[:1000] if about_section else 'Niet beschikbaar'}
-Ervaring: {experience_section[:1000] if experience_section else 'Niet beschikbaar'}
-Skills: {', '.join(skills[:10]) if skills else 'Niet beschikbaar'}
+About: {about_section[:1000] if about_section else 'Not available'}
+Experience: {experience_section[:1000] if experience_section else 'Not available'}
+Skills: {', '.join(skills[:10]) if skills else 'Not available'}
 
-=== INSTRUCTIES ===
-1. Schrijf een PERSOONLIJK verhaal, geen opsomming
-2. Gebruik concrete details uit de data
-3. Schrijf in het Nederlands
-4. 3-4 alinea's, gescheiden door dubbele newlines
-5. Start NIET met de naam - begin met een krachtige openingszin over hun expertise of aanpak
-6. Maak het herkenbaar voor de persoon zelf
-7. Eindig met hun drive/motivatie of hoe ze impact maken
+=== INSTRUCTIONS ===
+1. Write a PERSONAL story, not a bullet list
+2. Use concrete details from the data
+3. {lang_instruction}
+4. 3-4 paragraphs, separated by double newlines
+5. Do NOT start with the name - begin with a powerful opening about their expertise or approach
+6. Make it recognizable for the person themselves
+7. End with their drive/motivation or how they create impact
 
-Schrijf het verhaal:"""
+Write the narrative:"""
 
         try:
             response = await self.anthropic.messages.create(
@@ -668,19 +684,36 @@ Schrijf het verhaal:"""
     
     async def generate_ai_summary(
         self,
-        profile: Dict[str, Any]
+        profile: Dict[str, Any],
+        language: str = "en"
     ) -> str:
-        """Generate a short AI summary of the profile."""
+        """
+        Generate a short AI summary of the profile.
         
-        prompt = f"""Schrijf een korte samenvatting (2-3 zinnen) van deze sales professional:
+        Args:
+            profile: Profile data dict
+            language: Output language code (en, nl, de, etc.)
+        """
+        
+        # Language-specific instructions
+        lang_instructions = {
+            "nl": "Schrijf een professionele, beknopte samenvatting in het Nederlands",
+            "en": "Write a professional, concise summary in English",
+            "de": "Schreibe eine professionelle, prägnante Zusammenfassung auf Deutsch",
+            "fr": "Rédigez un résumé professionnel et concis en français",
+            "es": "Escribe un resumen profesional y conciso en español",
+        }
+        lang_instruction = lang_instructions.get(language, "Write a professional, concise summary in English")
+        
+        prompt = f"""Write a short summary (2-3 sentences) of this sales professional:
 
-Naam: {profile.get('full_name', 'Onbekend')}
-Rol: {profile.get('role', 'Sales Professional')}
-Ervaring: {profile.get('experience_years', '?')} jaar
-Sterktes: {', '.join(profile.get('strengths', [])) if profile.get('strengths') else 'Niet gespecificeerd'}
-Target Industries: {', '.join(profile.get('target_industries', [])) if profile.get('target_industries') else 'Niet gespecificeerd'}
+Name: {profile.get('full_name', 'Unknown')}
+Role: {profile.get('role', 'Sales Professional')}
+Experience: {profile.get('experience_years', '?')} years
+Strengths: {', '.join(profile.get('strengths', [])) if profile.get('strengths') else 'Not specified'}
+Target Industries: {', '.join(profile.get('target_industries', [])) if profile.get('target_industries') else 'Not specified'}
 
-Schrijf een professionele, beknopte samenvatting in het Nederlands:"""
+{lang_instruction}:"""
 
         try:
             response = await self.anthropic.messages.create(

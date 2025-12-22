@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useTranslations } from 'next-intl';
 import { 
   Send, 
   Sparkles, 
@@ -36,6 +37,8 @@ export default function ProfileChat({
   onComplete,
   onCancel
 }: ProfileChatProps) {
+  const t = useTranslations('onboarding.chat');
+  
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -201,7 +204,7 @@ export default function ProfileChat({
           </div>
           <div>
             <h3 className="font-semibold text-white">
-              {profileType === 'sales' ? 'Sales' : 'Bedrijfs'} Profiel Chat
+              {profileType === 'sales' ? t('profileChatTitle') : t('companyProfileChatTitle')}
             </h3>
             <p className="text-xs text-slate-400">
               Powered by AI
@@ -212,7 +215,7 @@ export default function ProfileChat({
         {/* Progress indicator */}
         <div className="flex items-center gap-3">
           <div className="text-right">
-            <div className="text-xs text-slate-400">Compleet</div>
+            <div className="text-xs text-slate-400">{t('completeness')}</div>
             <div className="text-sm font-semibold text-white">
               {Math.round(completenessScore * 100)}%
             </div>
@@ -234,7 +237,7 @@ export default function ProfileChat({
           <div className="flex items-center justify-center h-full">
             <div className="flex items-center gap-3 text-slate-400">
               <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Chat voorbereiden op basis van je gegevens...</span>
+              <span>{t('preparingChat')}</span>
             </div>
           </div>
         ) : (
@@ -309,7 +312,7 @@ export default function ProfileChat({
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Typ je antwoord..."
+            placeholder={t('typeYourAnswer')}
             disabled={isLoading || isStarting}
             className="flex-1 bg-slate-700/50 border border-slate-600 rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent disabled:opacity-50"
           />
@@ -331,7 +334,7 @@ export default function ProfileChat({
           >
             <div className="flex items-center justify-center gap-2 text-emerald-400 text-sm">
               <CheckCircle2 className="w-4 h-4" />
-              <span>Profiel compleet genoeg om op te slaan</span>
+              <span>{t('profileComplete')}</span>
             </div>
             <button
               onClick={completeAndSave}
@@ -342,7 +345,7 @@ export default function ProfileChat({
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>
-                  <span>Profiel Opslaan</span>
+                  <span>{t('saveProfile')}</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
