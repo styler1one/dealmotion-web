@@ -102,8 +102,19 @@ async def start_chat_session(
     The AI will analyze the initial data and generate a personalized
     opening message with the first question.
     """
-    user_id = current_user["id"]
+    user_id = current_user["sub"]
     org_id = current_user.get("organization_id")
+    
+    # Get organization if not in token
+    if not org_id:
+        org_result = supabase.table("organization_members")\
+            .select("organization_id")\
+            .eq("user_id", user_id)\
+            .limit(1)\
+            .execute()
+        
+        if org_result.data and len(org_result.data) > 0:
+            org_id = org_result.data[0]["organization_id"]
     
     if not org_id:
         raise HTTPException(
@@ -176,7 +187,7 @@ async def send_message(
     2. Update the profile
     3. Ask the next relevant question (or complete if done)
     """
-    user_id = current_user["id"]
+    user_id = current_user["sub"]
     
     # Get session
     result = supabase.table("profile_chat_sessions").select("*").eq(
@@ -255,7 +266,7 @@ async def get_session_status(
     current_user: dict = Depends(get_current_user)
 ):
     """Get the current status of a chat session."""
-    user_id = current_user["id"]
+    user_id = current_user["sub"]
     
     result = supabase.table("profile_chat_sessions").select("*").eq(
         "id", str(session_id)
@@ -288,7 +299,7 @@ async def get_session_messages(
     current_user: dict = Depends(get_current_user)
 ):
     """Get all messages from a chat session."""
-    user_id = current_user["id"]
+    user_id = current_user["sub"]
     
     result = supabase.table("profile_chat_sessions").select(
         "messages, profile_type, status"
@@ -318,8 +329,19 @@ async def complete_session(
     
     This will create/update the actual sales_profiles or company_profiles record.
     """
-    user_id = current_user["id"]
+    user_id = current_user["sub"]
     org_id = current_user.get("organization_id")
+    
+    # Get organization if not in token
+    if not org_id:
+        org_result = supabase.table("organization_members")\
+            .select("organization_id")\
+            .eq("user_id", user_id)\
+            .limit(1)\
+            .execute()
+        
+        if org_result.data and len(org_result.data) > 0:
+            org_id = org_result.data[0]["organization_id"]
     
     # Get session
     result = supabase.table("profile_chat_sessions").select("*").eq(
@@ -418,7 +440,7 @@ async def get_active_session(
     current_user: dict = Depends(get_current_user)
 ):
     """Get the user's active chat session for a profile type, if any."""
-    user_id = current_user["id"]
+    user_id = current_user["sub"]
     
     result = supabase.table("profile_chat_sessions").select("*").eq(
         "user_id", user_id
