@@ -583,10 +583,10 @@ Important:
             
             logger.info(
                 f"[MAGIC_ONBOARDING] Exa research complete. "
-                f"Topics: {result.total_topics}, Success: {result.successful_topics}"
+                f"Topics completed: {result.topics_completed}, Failed: {result.topics_failed}"
             )
             
-            return result.combined_markdown
+            return result.markdown_output
             
         except Exception as e:
             logger.error(f"[MAGIC_ONBOARDING] Exa research error: {e}")
