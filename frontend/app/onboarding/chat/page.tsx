@@ -128,9 +128,19 @@ export default function ChatOnboardingPage() {
         const data = await response.json();
 
         if (data.status === 'completed') {
-          setLinkedinData(data.result?.profile_data || {});
-          if (data.result?.profile_data?.full_name) {
-            setUserName(data.result.profile_data.full_name);
+          // Backend returns profile_data directly, not nested in result
+          const profileData = data.profile_data || {};
+          const linkedinRaw = data.linkedin_data || {};
+          
+          // Merge LinkedIn raw data with profile data for richer context
+          const mergedData = {
+            ...profileData,
+            linkedin_raw: linkedinRaw
+          };
+          
+          setLinkedinData(mergedData);
+          if (profileData.full_name) {
+            setUserName(profileData.full_name);
           }
           setStep('chat');
           return;
