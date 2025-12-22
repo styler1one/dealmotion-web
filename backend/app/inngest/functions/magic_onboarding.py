@@ -262,12 +262,13 @@ async def run_sales_magic_onboarding(
     """Run sales profile magic onboarding."""
     try:
         service = get_magic_onboarding_service()
-        result = await service.magic_onboard_sales_profile(
+        result = await service.generate_sales_profile_from_linkedin(
             linkedin_url=linkedin_url,
             user_name=user_name,
             company_name=company_name
         )
-        return result
+        # Convert MagicOnboardingResult to dict
+        return result.to_dict() if hasattr(result, 'to_dict') else result
     except Exception as e:
         logger.error(f"Sales magic onboarding failed: {e}")
         raise NonRetriableError(f"Sales magic onboarding failed: {e}")
@@ -282,13 +283,14 @@ async def run_company_magic_onboarding(
     """Run company profile magic onboarding."""
     try:
         service = get_magic_onboarding_service()
-        result = await service.magic_onboard_company_profile(
+        result = await service.generate_company_profile(
             company_name=company_name,
             website=website,
             linkedin_url=linkedin_url,
             country=country
         )
-        return result
+        # Convert MagicOnboardingResult to dict
+        return result.to_dict() if hasattr(result, 'to_dict') else result
     except Exception as e:
         logger.error(f"Company magic onboarding failed: {e}")
         raise NonRetriableError(f"Company magic onboarding failed: {e}")

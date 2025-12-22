@@ -540,17 +540,18 @@ async def generate_company_magic_profile(
         if not event_sent:
             # Fallback: Process synchronously if Inngest is not available
             magic_service = get_magic_onboarding_service()
-            result = await magic_service.magic_onboard_company_profile(
+            result = await magic_service.generate_company_profile(
                 company_name=request.company_name,
                 website=request.website,
                 linkedin_url=request.linkedin_url,
                 country=request.country
             )
             
-            # Update session with result
+            # Update session with result (convert to dict if needed)
+            result_data = result.to_dict() if hasattr(result, 'to_dict') else result
             supabase.table("magic_onboarding_sessions").update({
                 "status": "completed",
-                "result_data": result
+                "result_data": result_data
             }).eq("id", session_id).execute()
         
         return CompanyMagicStartResponse(

@@ -383,16 +383,17 @@ async def start_magic_onboarding(
             # Fallback: Process synchronously if Inngest is not available
             # This ensures the feature works even without Inngest
             magic_service = get_magic_onboarding_service()
-            result = await magic_service.magic_onboard_sales_profile(
+            result = await magic_service.generate_sales_profile_from_linkedin(
                 linkedin_url=request.linkedin_url,
                 user_name=request.user_name,
                 company_name=request.company_name
             )
             
-            # Update session with result
+            # Update session with result (convert to dict if needed)
+            result_data = result.to_dict() if hasattr(result, 'to_dict') else result
             supabase.table("magic_onboarding_sessions").update({
                 "status": "completed",
-                "result_data": result
+                "result_data": result_data
             }).eq("id", session_id).execute()
         
         return MagicOnboardingStartResponse(
