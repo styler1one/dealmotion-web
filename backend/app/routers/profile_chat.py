@@ -16,12 +16,16 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
-from app.dependencies import get_current_user, get_supabase_client
+from app.deps import get_current_user
+from app.database import get_supabase_service
 from app.services.profile_chat_service import get_profile_chat_service, ChatMessage
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/profile/chat", tags=["Profile Chat"])
+
+# Use centralized database module
+supabase = get_supabase_service()
 
 
 # =============================================================================
@@ -90,8 +94,7 @@ class CompleteSessionResponse(BaseModel):
 @router.post("/start", response_model=StartChatResponse)
 async def start_chat_session(
     request: StartChatRequest,
-    current_user: dict = Depends(get_current_user),
-    supabase = Depends(get_supabase_client)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Start a new chat session for profile completion.
@@ -163,8 +166,7 @@ async def start_chat_session(
 async def send_message(
     session_id: UUID,
     request: SendMessageRequest,
-    current_user: dict = Depends(get_current_user),
-    supabase = Depends(get_supabase_client)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Send a message in an active chat session.
@@ -250,8 +252,7 @@ async def send_message(
 @router.get("/{session_id}", response_model=SessionStatusResponse)
 async def get_session_status(
     session_id: UUID,
-    current_user: dict = Depends(get_current_user),
-    supabase = Depends(get_supabase_client)
+    current_user: dict = Depends(get_current_user)
 ):
     """Get the current status of a chat session."""
     user_id = current_user["id"]
@@ -284,8 +285,7 @@ async def get_session_status(
 @router.get("/{session_id}/messages")
 async def get_session_messages(
     session_id: UUID,
-    current_user: dict = Depends(get_current_user),
-    supabase = Depends(get_supabase_client)
+    current_user: dict = Depends(get_current_user)
 ):
     """Get all messages from a chat session."""
     user_id = current_user["id"]
@@ -311,8 +311,7 @@ async def get_session_messages(
 async def complete_session(
     session_id: UUID,
     request: CompleteSessionRequest,
-    current_user: dict = Depends(get_current_user),
-    supabase = Depends(get_supabase_client)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Complete a chat session and optionally save the profile.
@@ -416,8 +415,7 @@ async def complete_session(
 @router.get("/active/current")
 async def get_active_session(
     profile_type: str,
-    current_user: dict = Depends(get_current_user),
-    supabase = Depends(get_supabase_client)
+    current_user: dict = Depends(get_current_user)
 ):
     """Get the user's active chat session for a profile type, if any."""
     user_id = current_user["id"]
