@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { 
   Send, 
   Sparkles, 
@@ -26,6 +27,8 @@ interface ProfileChatProps {
   onCancel?: () => void;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
+
 export default function ProfileChat({
   profileType,
   initialData,
@@ -41,9 +44,22 @@ export default function ProfileChat({
   const [isComplete, setIsComplete] = useState(false);
   const [completenessScore, setCompletenessScore] = useState(0);
   const [currentProfile, setCurrentProfile] = useState<Record<string, any>>(initialData);
+  const [authToken, setAuthToken] = useState<string | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const supabase = createClientComponentClient();
+
+  // Get auth token on mount
+  useEffect(() => {
+    const getToken = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        setAuthToken(session.access_token);
+      }
+    };
+    getToken();
+  }, [supabase]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -57,18 +73,24 @@ export default function ProfileChat({
     }
   }, [isLoading, isComplete]);
 
-  // Start chat session on mount
+  // Start chat session when we have auth token
   useEffect(() => {
-    startSession();
-  }, []);
+    if (authToken) {
+      startSession();
+    }
+  }, [authToken]);
 
   const startSession = async () => {
+    if (!authToken) return;
+    
     setIsStarting(true);
     try {
-      const response = await fetch('/api/v1/profile/chat/start', {
+      const response = await fetch(`${API_URL}/api/v1/profile/chat/start`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
         body: JSON.stringify({
           profile_type: profileType,
           initial_data: initialData,
@@ -96,7 +118,7 @@ export default function ProfileChat({
   };
 
   const sendMessage = async () => {
-    if (!inputValue.trim() || !sessionId || isLoading) return;
+    if (!inputValue.trim() || !sessionId || isLoading || !authToken) return;
 
     const userMessage = inputValue.trim();
     setInputValue('');
@@ -104,10 +126,12 @@ export default function ProfileChat({
     setIsLoading(true);
 
     try {
-      const response = await fetch(`/api/v1/profile/chat/${sessionId}/message`, {
+      const response = await fetch(`${API_URL}/api/v1/profile/chat/${sessionId}/message`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
         body: JSON.stringify({ message: userMessage })
       });
 
@@ -141,14 +165,16 @@ export default function ProfileChat({
   };
 
   const completeAndSave = async () => {
-    if (!sessionId) return;
+    if (!sessionId || !authToken) return;
 
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/v1/profile/chat/${sessionId}/complete`, {
+      const response = await fetch(`${API_URL}/api/v1/profile/chat/${sessionId}/complete`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
         body: JSON.stringify({ save_profile: true })
       });
 
@@ -325,4 +351,3 @@ export default function ProfileChat({
     </div>
   );
 }
-

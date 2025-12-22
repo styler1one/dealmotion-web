@@ -57,11 +57,22 @@ export default function ChatOnboardingPage() {
     setStep('enriching');
 
     try {
+      // Get auth token
+      const supabase = (await import('@supabase/auth-helpers-nextjs')).createClientComponentClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        router.push('/login');
+        return;
+      }
+      
       // Call magic onboarding to get LinkedIn data
-      const response = await fetch('/api/v1/profile/magic/start', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/profile/sales/magic/start`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
         body: JSON.stringify({
           linkedin_url: linkedinUrl.trim()
         })
@@ -95,11 +106,21 @@ export default function ChatOnboardingPage() {
   const pollForCompletion = async (sessionId: string) => {
     const maxAttempts = 30;
     let attempts = 0;
+    
+    // Get auth token for polling
+    const supabase = (await import('@supabase/auth-helpers-nextjs')).createClientComponentClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      throw new Error('Not authenticated');
+    }
 
     while (attempts < maxAttempts) {
       try {
-        const response = await fetch(`/api/v1/profile/magic/status/${sessionId}`, {
-          credentials: 'include'
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/profile/sales/magic/status/${sessionId}`, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
         });
 
         if (!response.ok) throw new Error('Status check failed');
