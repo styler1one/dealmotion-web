@@ -73,7 +73,16 @@ class SalesProfileResponse(BaseModel):
     target_company_sizes: List[str] = []
     quarterly_goals: Optional[str] = None
     preferred_meeting_types: List[str] = []
+    # AI generated content
     ai_summary: Optional[str] = None
+    sales_narrative: Optional[str] = None
+    # Communication preferences
+    email_tone: Optional[str] = None
+    uses_emoji: Optional[bool] = None
+    email_signoff: Optional[str] = None
+    writing_length_preference: Optional[str] = None
+    style_guide: Optional[Dict[str, Any]] = None
+    # Meta
     profile_completeness: int
     version: int
     created_at: str

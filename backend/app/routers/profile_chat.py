@@ -358,6 +358,11 @@ async def complete_session(
     linkedin_raw = profile_data.get("linkedin_raw", {})
     profile_type = session["profile_type"]
     
+    logger.info(f"[PROFILE_CHAT] Complete session {session_id} for user {user_id}")
+    logger.info(f"[PROFILE_CHAT] Profile data keys: {list(profile_data.keys())}")
+    logger.info(f"[PROFILE_CHAT] Profile data full_name: {profile_data.get('full_name')}")
+    logger.info(f"[PROFILE_CHAT] Organization ID: {org_id}")
+    
     profile_id = None
     
     if request.save_profile:
@@ -412,13 +417,22 @@ async def complete_session(
             }
             
             # Upsert (create or update)
-            save_result = supabase.table("sales_profiles").upsert(
-                sales_data,
-                on_conflict="organization_id,user_id"
-            ).execute()
+            logger.info(f"[PROFILE_CHAT] Saving sales profile with data: full_name={sales_data.get('full_name')}, org={org_id}")
+            logger.info(f"[PROFILE_CHAT] Narrative length: {len(sales_narrative) if sales_narrative else 0}")
             
-            if save_result.data:
-                profile_id = save_result.data[0]["id"]
+            try:
+                save_result = supabase.table("sales_profiles").upsert(
+                    sales_data,
+                    on_conflict="organization_id,user_id"
+                ).execute()
+                
+                if save_result.data:
+                    profile_id = save_result.data[0]["id"]
+                    logger.info(f"[PROFILE_CHAT] Saved profile with ID: {profile_id}")
+                else:
+                    logger.error(f"[PROFILE_CHAT] Upsert returned no data")
+            except Exception as e:
+                logger.error(f"[PROFILE_CHAT] Upsert failed: {e}")
                 
         elif profile_type == "company":
             # Save to company_profiles
