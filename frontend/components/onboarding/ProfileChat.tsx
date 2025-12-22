@@ -300,21 +300,43 @@ export default function ProfileChat({
       </div>
 
       {/* Input / Complete */}
-      <div className="p-4 border-t border-slate-700/50 bg-slate-800/30">
-        {isComplete ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-3"
+      <div className="p-4 border-t border-slate-700/50 bg-slate-800/30 space-y-3">
+        {/* Always show input - user can always continue the conversation */}
+        <div className="flex gap-2">
+          <input
+            ref={inputRef}
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Typ je antwoord..."
+            disabled={isLoading || isStarting}
+            className="flex-1 bg-slate-700/50 border border-slate-600 rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent disabled:opacity-50"
+          />
+          <button
+            onClick={sendMessage}
+            disabled={!inputValue.trim() || isLoading || isStarting}
+            className="p-3 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <div className="flex items-center justify-center gap-2 text-emerald-400">
-              <CheckCircle2 className="w-5 h-5" />
-              <span className="font-medium">Profiel compleet!</span>
+            <Send className="w-5 h-5" />
+          </button>
+        </div>
+        
+        {/* Show save button when profile is complete enough (>=80%) */}
+        {completenessScore >= 0.8 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-2"
+          >
+            <div className="flex items-center justify-center gap-2 text-emerald-400 text-sm">
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Profiel compleet genoeg om op te slaan</span>
             </div>
             <button
               onClick={completeAndSave}
               disabled={isLoading}
-              className="w-full py-3 px-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+              className="w-full py-3 px-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all disabled:opacity-50"
             >
               {isLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -326,26 +348,6 @@ export default function ProfileChat({
               )}
             </button>
           </motion.div>
-        ) : (
-          <div className="flex gap-2">
-            <input
-              ref={inputRef}
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Typ je antwoord..."
-              disabled={isLoading || isStarting}
-              className="flex-1 bg-slate-700/50 border border-slate-600 rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent disabled:opacity-50"
-            />
-            <button
-              onClick={sendMessage}
-              disabled={!inputValue.trim() || isLoading || isStarting}
-              className="p-3 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Send className="w-5 h-5" />
-            </button>
-          </div>
         )}
       </div>
     </div>
