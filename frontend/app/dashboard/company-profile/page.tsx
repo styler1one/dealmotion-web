@@ -318,6 +318,475 @@ function EditableICPField({ icp, fieldKey, label, onSave, colorClass = "bg-prima
   )
 }
 
+// Editable Products Component
+interface EditableProductsProps {
+  products: Product[]
+  onSave: (field: string, products: Product[]) => Promise<void>
+}
+
+function EditableProducts({ products, onSave }: EditableProductsProps) {
+  const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [editProduct, setEditProduct] = useState<Product | null>(null)
+  const [isAdding, setIsAdding] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const t = useTranslations('companyProfile')
+
+  const handleEdit = (index: number) => {
+    setEditProduct({ ...products[index] })
+    setEditingIndex(index)
+    setIsAdding(false)
+  }
+
+  const handleAdd = () => {
+    setEditProduct({ name: '', description: '', value_proposition: '' })
+    setEditingIndex(null)
+    setIsAdding(true)
+  }
+
+  const handleSave = async () => {
+    if (!editProduct || !editProduct.name.trim()) return
+    setSaving(true)
+    try {
+      let newProducts: Product[]
+      if (isAdding) {
+        newProducts = [...products, editProduct]
+      } else if (editingIndex !== null) {
+        newProducts = products.map((p, i) => i === editingIndex ? editProduct : p)
+      } else {
+        return
+      }
+      await onSave('products', newProducts)
+      setEditingIndex(null)
+      setEditProduct(null)
+      setIsAdding(false)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDelete = async (index: number) => {
+    setSaving(true)
+    try {
+      const newProducts = products.filter((_, i) => i !== index)
+      await onSave('products', newProducts)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setEditingIndex(null)
+    setEditProduct(null)
+    setIsAdding(false)
+  }
+
+  return (
+    <div className="space-y-4">
+      {products.map((product, i) => (
+        <div key={i} className="group">
+          {editingIndex === i ? (
+            <div className="p-3 bg-gray-50 dark:bg-slate-800 rounded-lg space-y-2">
+              <Input
+                value={editProduct?.name || ''}
+                onChange={(e) => setEditProduct(prev => prev ? {...prev, name: e.target.value} : null)}
+                placeholder={t('productName')}
+                className="font-medium"
+              />
+              <Textarea
+                value={editProduct?.description || ''}
+                onChange={(e) => setEditProduct(prev => prev ? {...prev, description: e.target.value} : null)}
+                placeholder={t('productDescription')}
+                className="min-h-[60px]"
+              />
+              <Input
+                value={editProduct?.value_proposition || ''}
+                onChange={(e) => setEditProduct(prev => prev ? {...prev, value_proposition: e.target.value} : null)}
+                placeholder={t('productValue')}
+              />
+              <div className="flex gap-2">
+                <Button size="sm" onClick={handleSave} disabled={saving}>
+                  {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
+                  <span className="ml-1">{t('save')}</span>
+                </Button>
+                <Button size="sm" variant="outline" onClick={handleCancel} disabled={saving}>
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="p-3 bg-gray-50 dark:bg-slate-800 rounded-lg relative">
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => handleEdit(i)}>
+                  <Pencil className="h-3 w-3" />
+                </Button>
+                <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-red-500" onClick={() => handleDelete(i)}>
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+              <h4 className="font-medium text-slate-900 dark:text-white">{product.name}</h4>
+              {product.description && (
+                <p className="text-sm text-gray-600 dark:text-slate-400 mt-1">{product.description}</p>
+              )}
+              {product.value_proposition && (
+                <p className="text-sm text-primary mt-1">
+                  <strong>Value:</strong> {product.value_proposition}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      ))}
+      
+      {isAdding && (
+        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg space-y-2 border-2 border-dashed border-blue-200 dark:border-blue-800">
+          <Input
+            value={editProduct?.name || ''}
+            onChange={(e) => setEditProduct(prev => prev ? {...prev, name: e.target.value} : null)}
+            placeholder={t('productName')}
+            className="font-medium"
+          />
+          <Textarea
+            value={editProduct?.description || ''}
+            onChange={(e) => setEditProduct(prev => prev ? {...prev, description: e.target.value} : null)}
+            placeholder={t('productDescription')}
+            className="min-h-[60px]"
+          />
+          <Input
+            value={editProduct?.value_proposition || ''}
+            onChange={(e) => setEditProduct(prev => prev ? {...prev, value_proposition: e.target.value} : null)}
+            placeholder={t('productValue')}
+          />
+          <div className="flex gap-2">
+            <Button size="sm" onClick={handleSave} disabled={saving || !editProduct?.name?.trim()}>
+              {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
+              <span className="ml-1">{t('save')}</span>
+            </Button>
+            <Button size="sm" variant="outline" onClick={handleCancel} disabled={saving}>
+              <X className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
+      )}
+      
+      {!isAdding && editingIndex === null && (
+        <Button size="sm" variant="outline" onClick={handleAdd} className="w-full">
+          <Plus className="h-3 w-3 mr-1" />
+          {t('addProduct')}
+        </Button>
+      )}
+    </div>
+  )
+}
+
+// Editable Buyer Personas Component
+interface EditablePersonasProps {
+  personas: BuyerPersona[]
+  onSave: (field: string, personas: BuyerPersona[]) => Promise<void>
+}
+
+function EditablePersonas({ personas, onSave }: EditablePersonasProps) {
+  const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [editPersona, setEditPersona] = useState<BuyerPersona | null>(null)
+  const [isAdding, setIsAdding] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [newPainPoint, setNewPainPoint] = useState('')
+  const t = useTranslations('companyProfile')
+
+  const handleEdit = (index: number) => {
+    setEditPersona({ ...personas[index] })
+    setEditingIndex(index)
+    setIsAdding(false)
+  }
+
+  const handleAdd = () => {
+    setEditPersona({ title: '', seniority: '', pain_points: [], goals: [], objections: [] })
+    setEditingIndex(null)
+    setIsAdding(true)
+  }
+
+  const handleSave = async () => {
+    if (!editPersona || !editPersona.title.trim()) return
+    setSaving(true)
+    try {
+      let newPersonas: BuyerPersona[]
+      if (isAdding) {
+        newPersonas = [...personas, editPersona]
+      } else if (editingIndex !== null) {
+        newPersonas = personas.map((p, i) => i === editingIndex ? editPersona : p)
+      } else {
+        return
+      }
+      await onSave('buyer_personas', newPersonas)
+      setEditingIndex(null)
+      setEditPersona(null)
+      setIsAdding(false)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDelete = async (index: number) => {
+    setSaving(true)
+    try {
+      const newPersonas = personas.filter((_, i) => i !== index)
+      await onSave('buyer_personas', newPersonas)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setEditingIndex(null)
+    setEditPersona(null)
+    setIsAdding(false)
+    setNewPainPoint('')
+  }
+
+  const addPainPoint = () => {
+    if (newPainPoint.trim() && editPersona) {
+      setEditPersona({
+        ...editPersona,
+        pain_points: [...(editPersona.pain_points || []), newPainPoint.trim()]
+      })
+      setNewPainPoint('')
+    }
+  }
+
+  const removePainPoint = (point: string) => {
+    if (editPersona) {
+      setEditPersona({
+        ...editPersona,
+        pain_points: editPersona.pain_points.filter(p => p !== point)
+      })
+    }
+  }
+
+  const renderEditForm = () => (
+    <div className="p-3 bg-gray-50 dark:bg-slate-800 rounded-lg space-y-2">
+      <Input
+        value={editPersona?.title || ''}
+        onChange={(e) => setEditPersona(prev => prev ? {...prev, title: e.target.value} : null)}
+        placeholder={t('personaTitle')}
+        className="font-medium"
+      />
+      <Input
+        value={editPersona?.seniority || ''}
+        onChange={(e) => setEditPersona(prev => prev ? {...prev, seniority: e.target.value} : null)}
+        placeholder={t('personaSeniority')}
+      />
+      <div>
+        <p className="text-xs font-medium text-muted-foreground mb-1">{t('fields.painPoints')}</p>
+        <div className="flex flex-wrap gap-1 mb-2">
+          {editPersona?.pain_points?.map((point, i) => (
+            <span key={i} className="px-2 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-xs rounded flex items-center gap-1">
+              {point}
+              <button onClick={() => removePainPoint(point)}><X className="h-3 w-3" /></button>
+            </span>
+          ))}
+        </div>
+        <div className="flex gap-1">
+          <Input
+            value={newPainPoint}
+            onChange={(e) => setNewPainPoint(e.target.value)}
+            placeholder={t('addPainPoint')}
+            className="text-sm h-8"
+            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addPainPoint())}
+          />
+          <Button size="sm" variant="outline" onClick={addPainPoint} className="h-8 px-2">
+            <Plus className="h-3 w-3" />
+          </Button>
+        </div>
+      </div>
+      <div className="flex gap-2 pt-2">
+        <Button size="sm" onClick={handleSave} disabled={saving || !editPersona?.title?.trim()}>
+          {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
+          <span className="ml-1">{t('save')}</span>
+        </Button>
+        <Button size="sm" variant="outline" onClick={handleCancel} disabled={saving}>
+          <X className="h-3 w-3" />
+        </Button>
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="space-y-4">
+      {personas.map((persona, i) => (
+        <div key={i} className="group">
+          {editingIndex === i ? renderEditForm() : (
+            <div className="p-3 bg-gray-50 dark:bg-slate-800 rounded-lg relative">
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => handleEdit(i)}>
+                  <Pencil className="h-3 w-3" />
+                </Button>
+                <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-red-500" onClick={() => handleDelete(i)}>
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+              <h4 className="font-medium text-slate-900 dark:text-white">{persona.title}</h4>
+              <p className="text-sm text-muted-foreground">{persona.seniority}</p>
+              {persona.pain_points?.length > 0 && (
+                <div className="mt-2">
+                  <p className="text-xs font-medium text-muted-foreground">{t('fields.painPoints')}:</p>
+                  <p className="text-sm text-gray-700 dark:text-slate-300">{persona.pain_points.join(', ')}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      ))}
+      
+      {isAdding && (
+        <div className="border-2 border-dashed border-blue-200 dark:border-blue-800 rounded-lg">
+          {renderEditForm()}
+        </div>
+      )}
+      
+      {!isAdding && editingIndex === null && (
+        <Button size="sm" variant="outline" onClick={handleAdd} className="w-full">
+          <Plus className="h-3 w-3 mr-1" />
+          {t('addPersona')}
+        </Button>
+      )}
+    </div>
+  )
+}
+
+// Editable Case Studies Component
+interface EditableCaseStudiesProps {
+  caseStudies: CaseStudy[]
+  onSave: (field: string, caseStudies: CaseStudy[]) => Promise<void>
+}
+
+function EditableCaseStudies({ caseStudies, onSave }: EditableCaseStudiesProps) {
+  const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [editCS, setEditCS] = useState<CaseStudy | null>(null)
+  const [isAdding, setIsAdding] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const t = useTranslations('companyProfile')
+
+  const handleEdit = (index: number) => {
+    setEditCS({ ...caseStudies[index] })
+    setEditingIndex(index)
+    setIsAdding(false)
+  }
+
+  const handleAdd = () => {
+    setEditCS({ customer: '', industry: '', challenge: '', solution: '', results: '' })
+    setEditingIndex(null)
+    setIsAdding(true)
+  }
+
+  const handleSave = async () => {
+    if (!editCS || !editCS.customer.trim()) return
+    setSaving(true)
+    try {
+      let newCS: CaseStudy[]
+      if (isAdding) {
+        newCS = [...caseStudies, editCS]
+      } else if (editingIndex !== null) {
+        newCS = caseStudies.map((c, i) => i === editingIndex ? editCS : c)
+      } else {
+        return
+      }
+      await onSave('case_studies', newCS)
+      setEditingIndex(null)
+      setEditCS(null)
+      setIsAdding(false)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDelete = async (index: number) => {
+    setSaving(true)
+    try {
+      const newCS = caseStudies.filter((_, i) => i !== index)
+      await onSave('case_studies', newCS)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setEditingIndex(null)
+    setEditCS(null)
+    setIsAdding(false)
+  }
+
+  const renderEditForm = () => (
+    <div className="p-3 bg-gray-50 dark:bg-slate-800 rounded-lg space-y-2">
+      <Input
+        value={editCS?.customer || ''}
+        onChange={(e) => setEditCS(prev => prev ? {...prev, customer: e.target.value} : null)}
+        placeholder={t('caseCustomer')}
+        className="font-medium"
+      />
+      <Input
+        value={editCS?.industry || ''}
+        onChange={(e) => setEditCS(prev => prev ? {...prev, industry: e.target.value} : null)}
+        placeholder={t('caseIndustry')}
+      />
+      <Textarea
+        value={editCS?.results || ''}
+        onChange={(e) => setEditCS(prev => prev ? {...prev, results: e.target.value} : null)}
+        placeholder={t('caseResults')}
+        className="min-h-[60px]"
+      />
+      <div className="flex gap-2 pt-2">
+        <Button size="sm" onClick={handleSave} disabled={saving || !editCS?.customer?.trim()}>
+          {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
+          <span className="ml-1">{t('save')}</span>
+        </Button>
+        <Button size="sm" variant="outline" onClick={handleCancel} disabled={saving}>
+          <X className="h-3 w-3" />
+        </Button>
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="space-y-4">
+      {caseStudies.map((cs, i) => (
+        <div key={i} className="group">
+          {editingIndex === i ? renderEditForm() : (
+            <div className="p-3 bg-gray-50 dark:bg-slate-800 rounded-lg relative">
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => handleEdit(i)}>
+                  <Pencil className="h-3 w-3" />
+                </Button>
+                <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-red-500" onClick={() => handleDelete(i)}>
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+              <h4 className="font-medium text-slate-900 dark:text-white">{cs.customer}</h4>
+              <p className="text-sm text-muted-foreground">{cs.industry}</p>
+              {cs.results && (
+                <p className="text-sm text-green-700 dark:text-green-400 mt-1">
+                  <strong>{t('fields.result')}:</strong> {cs.results}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      ))}
+      
+      {isAdding && (
+        <div className="border-2 border-dashed border-blue-200 dark:border-blue-800 rounded-lg">
+          {renderEditForm()}
+        </div>
+      )}
+      
+      {!isAdding && editingIndex === null && (
+        <Button size="sm" variant="outline" onClick={handleAdd} className="w-full">
+          <Plus className="h-3 w-3 mr-1" />
+          {t('addCaseStudy')}
+        </Button>
+      )}
+    </div>
+  )
+}
+
 export default function CompanyProfilePage() {
   const router = useRouter()
   const supabase = createClientComponentClient()
@@ -540,24 +1009,11 @@ export default function CompanyProfilePage() {
                 {t('sections.products')}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {profile.products && profile.products.length > 0 ? (
-                profile.products.map((product, i) => (
-                  <div key={i} className="p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
-                    <h4 className="font-medium text-slate-900 dark:text-white">{product.name}</h4>
-                    {product.description && (
-                      <p className="text-sm text-gray-600 dark:text-slate-400 mt-1">{product.description}</p>
-                    )}
-                    {product.value_proposition && (
-                      <p className="text-sm text-primary mt-1">
-                        <strong>Value:</strong> {product.value_proposition}
-                      </p>
-                    )}
-                  </div>
-                ))
-              ) : (
-                <p className="text-muted-foreground text-sm">{t('noProducts')}</p>
-              )}
+            <CardContent>
+              <EditableProducts
+                products={profile.products || []}
+                onSave={handleSaveField}
+              />
             </CardContent>
           </Card>
 
@@ -628,23 +1084,11 @@ export default function CompanyProfilePage() {
                 {t('sections.personas')}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {profile.buyer_personas && profile.buyer_personas.length > 0 ? (
-                profile.buyer_personas.map((persona, i) => (
-                  <div key={i} className="p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
-                    <h4 className="font-medium text-slate-900 dark:text-white">{persona.title}</h4>
-                    <p className="text-sm text-muted-foreground">{persona.seniority}</p>
-                    {persona.pain_points?.length > 0 && (
-                      <div className="mt-2">
-                        <p className="text-xs font-medium text-muted-foreground">{t('fields.painPoints')}:</p>
-                        <p className="text-sm text-gray-700 dark:text-slate-300">{persona.pain_points.join(', ')}</p>
-                      </div>
-                    )}
-                  </div>
-                ))
-              ) : (
-                <p className="text-muted-foreground text-sm">{t('noPersonas')}</p>
-              )}
+            <CardContent>
+              <EditablePersonas
+                personas={profile.buyer_personas || []}
+                onSave={handleSaveField}
+              />
             </CardContent>
           </Card>
 
@@ -656,22 +1100,11 @@ export default function CompanyProfilePage() {
                 {t('sections.caseStudies')}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {profile.case_studies && profile.case_studies.length > 0 ? (
-                profile.case_studies.map((cs, i) => (
-                  <div key={i} className="p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
-                    <h4 className="font-medium text-slate-900 dark:text-white">{cs.customer}</h4>
-                    <p className="text-sm text-muted-foreground">{cs.industry}</p>
-                    {cs.results && (
-                      <p className="text-sm text-green-700 dark:text-green-400 mt-1">
-                        <strong>{t('fields.result')}:</strong> {cs.results}
-                      </p>
-                    )}
-                  </div>
-                ))
-              ) : (
-                <p className="text-muted-foreground text-sm">{t('noCaseStudies')}</p>
-              )}
+            <CardContent>
+              <EditableCaseStudies
+                caseStudies={profile.case_studies || []}
+                onSave={handleSaveField}
+              />
             </CardContent>
           </Card>
 
