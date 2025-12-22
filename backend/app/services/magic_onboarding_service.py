@@ -204,7 +204,8 @@ class MagicOnboardingService:
         experience_years = linkedin_data.get("experience_years")
         location = linkedin_data.get("location", "")
         
-        prompt = f"""Analyze this LinkedIn profile data and extract a structured sales profile.
+        prompt = f"""Extract a structured sales profile from this LinkedIn data. 
+CRITICAL: Only extract information that is DIRECTLY VISIBLE in the data. Do NOT invent or guess anything.
 
 LINKEDIN DATA:
 - Headline: {headline}
@@ -225,53 +226,50 @@ Additional Context:
 - User name hint: {user_name_hint or 'Not provided'}
 - Company hint: {company_name_hint or 'Not provided'}
 
-TASK: Extract and infer as much as possible. For fields you cannot determine, use null.
-Be intelligent about deriving information - e.g., if someone has "Strategic sales" in their headline, 
-they likely use consultative or solution selling methodology.
+EXTRACTION RULES:
+1. EXTRACT directly from data: full_name, role, experience_years, skills/strengths, industries from experience, location/regions
+2. NEVER GUESS these (set to null/empty): sales_methodology, email preferences, meeting preferences, company size targets
+3. Write a factual summary based ONLY on what you see in the data
 
 Return ONLY valid JSON with this exact structure:
 {{
     "full_name": "Extract from profile or use hint",
-    "role": "Current job title",
+    "role": "Current job title from headline",
     "experience_years": number or null,
-    "sales_methodology": "Infer from experience: SPIN, Challenger, Consultative, Solution Selling, etc. or null",
-    "methodology_description": "Brief description of their likely sales approach based on experience",
-    "communication_style": "Infer from writing style: Direct, Consultative, Relationship-focused, Data-driven",
-    "style_notes": "Additional observations about their style",
-    "strengths": ["List of 3-5 strengths derived from skills and experience"],
+    "sales_methodology": null,
+    "methodology_description": null,
+    "communication_style": null,
+    "style_notes": null,
+    "strengths": ["Extract from skills - only what's actually listed"],
     "areas_to_improve": [],
-    "target_industries": ["Industries they've worked with based on experience"],
-    "target_regions": ["Regions based on location and experience"],
-    "target_company_sizes": ["Company sizes they typically target"],
+    "target_industries": ["Only industries EXPLICITLY mentioned in their experience"],
+    "target_regions": ["Only if location is specified"],
+    "target_company_sizes": [],
     "quarterly_goals": null,
-    "preferred_meeting_types": ["discovery", "demo", "closing"],
-    "email_tone": "Infer: direct, warm, formal, casual, professional",
-    "uses_emoji": false,
-    "email_signoff": "Best regards",
-    "writing_length_preference": "concise or detailed - infer from their writing",
-    "ai_summary": "2-3 sentence professional summary",
-    "sales_narrative": "4-6 paragraph narrative about this sales professional. Write in third person.",
+    "preferred_meeting_types": [],
+    "email_tone": null,
+    "uses_emoji": null,
+    "email_signoff": null,
+    "writing_length_preference": null,
+    "ai_summary": "2-3 sentence factual summary based ONLY on visible data",
+    "sales_narrative": "4-6 paragraph narrative about this sales professional based ONLY on facts from their profile. Write in third person. Do NOT invent details.",
     
     "_field_confidence": {{
         "full_name": 0.0-1.0,
         "role": 0.0-1.0,
         "experience_years": 0.0-1.0,
-        "sales_methodology": 0.0-1.0,
-        "communication_style": 0.0-1.0,
         "strengths": 0.0-1.0,
         "target_industries": 0.0-1.0,
-        "target_regions": 0.0-1.0,
-        "email_tone": 0.0-1.0
+        "target_regions": 0.0-1.0
     }}
 }}
 
-Important:
-- Set confidence to 0.9+ for directly extracted data
-- Set confidence to 0.5-0.8 for inferred/derived data
-- Set confidence to 0.3-0.5 for guessed data
-- quarterly_goals is ALWAYS null (private info)
-- areas_to_improve is ALWAYS empty (nobody shares weaknesses)
-- Be generous with derivation - this is about creating a useful starting point"""
+STRICT RULES:
+- Confidence 0.95+ = Directly visible in the LinkedIn data
+- Confidence 0.7-0.9 = Reasonably derived from visible data
+- If you cannot find something in the data, use null or empty array
+- NEVER fabricate sales methodology, communication preferences, or email style
+- These will be asked to the user separately"""
 
         try:
             response = await self.anthropic.messages.create(
@@ -295,19 +293,32 @@ Important:
             # Extract confidence scores
             confidence_data = result.pop("_field_confidence", {})
             
+            # Fields that require user input (never derivable from LinkedIn)
+            user_required_fields = {
+                "sales_methodology", "methodology_description", 
+                "communication_style", "style_notes",
+                "quarterly_goals", "preferred_meeting_types",
+                "email_tone", "uses_emoji", "email_signoff", 
+                "writing_length_preference", "areas_to_improve",
+                "target_company_sizes"
+            }
+            
             # Build field sources
             field_sources = {}
             for field_name, value in result.items():
                 if field_name.startswith("_"):
                     continue
                 
-                confidence = confidence_data.get(field_name, 0.7)
-                source = "linkedin" if confidence >= 0.8 else "ai_derived"
-                
-                # Override for known defaults
-                if field_name in ["quarterly_goals", "areas_to_improve"]:
-                    source = "default"
+                # Check if this is a field that requires user input
+                if field_name in user_required_fields:
+                    source = "user_required"
+                    confidence = 0.0  # No confidence - needs user input
+                elif value is None or value == "" or (isinstance(value, list) and len(value) == 0):
+                    source = "user_required"
                     confidence = 0.0
+                else:
+                    confidence = confidence_data.get(field_name, 0.7)
+                    source = "linkedin" if confidence >= 0.8 else "linkedin_derived"
                 
                 field_sources[field_name] = ProfileField(
                     value=value,
@@ -317,17 +328,23 @@ Important:
                     required=field_name in ["full_name", "role"]
                 )
             
-            # Build style_guide from extracted fields
-            result["style_guide"] = {
-                "tone": result.get("email_tone", "professional"),
-                "formality": "professional",
-                "language_style": "business",
-                "persuasion_style": self._derive_persuasion_style(result.get("sales_methodology")),
-                "emoji_usage": result.get("uses_emoji", False),
-                "signoff": result.get("email_signoff", "Best regards"),
-                "writing_length": result.get("writing_length_preference", "concise"),
-                "confidence_score": 0.7
-            }
+            # Build style_guide only if we have user-provided preferences
+            # These cannot be derived from LinkedIn - will be filled after user input
+            email_tone = result.get("email_tone")
+            if email_tone:
+                result["style_guide"] = {
+                    "tone": email_tone,
+                    "formality": "professional",
+                    "language_style": "business",
+                    "persuasion_style": self._derive_persuasion_style(result.get("sales_methodology")),
+                    "emoji_usage": result.get("uses_emoji") or False,
+                    "signoff": result.get("email_signoff") or "Best regards",
+                    "writing_length": result.get("writing_length_preference") or "concise",
+                    "confidence_score": 0.7
+                }
+            else:
+                # Style guide requires user input
+                result["style_guide"] = None
             
             return result, field_sources
             
@@ -360,38 +377,39 @@ Important:
         linkedin_data: Dict[str, Any],
         user_name_hint: Optional[str] = None
     ) -> Dict[str, Any]:
-        """Build a basic profile when AI synthesis fails."""
+        """Build a basic profile when AI synthesis fails - only use actual data, no guessing."""
+        skills = linkedin_data.get("skills", [])[:5]
+        location = linkedin_data.get("location")
+        
         return {
-            "full_name": user_name_hint or "Unknown",
-            "role": linkedin_data.get("headline", ""),
+            # Extractable from LinkedIn
+            "full_name": user_name_hint or None,
+            "role": linkedin_data.get("headline") or None,
             "experience_years": linkedin_data.get("experience_years"),
+            "strengths": skills if skills else [],
+            "target_regions": [location] if location else [],
+            "target_industries": [],
+            
+            # Requires user input - explicitly null
             "sales_methodology": None,
             "methodology_description": None,
-            "communication_style": "Professional",
+            "communication_style": None,
             "style_notes": None,
-            "strengths": linkedin_data.get("skills", [])[:5],
             "areas_to_improve": [],
-            "target_industries": [],
-            "target_regions": [linkedin_data.get("location")] if linkedin_data.get("location") else [],
             "target_company_sizes": [],
             "quarterly_goals": None,
-            "preferred_meeting_types": ["discovery", "demo"],
-            "email_tone": "professional",
-            "uses_emoji": False,
-            "email_signoff": "Best regards",
-            "writing_length_preference": "concise",
-            "ai_summary": f"Sales professional with expertise in {', '.join(linkedin_data.get('skills', [])[:3]) or 'their field'}.",
-            "sales_narrative": "This sales professional is building their profile. More details will be added after review.",
-            "style_guide": {
-                "tone": "professional",
-                "formality": "professional",
-                "language_style": "business",
-                "persuasion_style": "logic",
-                "emoji_usage": False,
-                "signoff": "Best regards",
-                "writing_length": "concise",
-                "confidence_score": 0.3
-            }
+            "preferred_meeting_types": [],
+            "email_tone": None,
+            "uses_emoji": None,
+            "email_signoff": None,
+            "writing_length_preference": None,
+            
+            # Summary based on available data
+            "ai_summary": f"Sales professional{' with expertise in ' + ', '.join(skills[:3]) if skills else ''}." if skills else "Sales professional - profile pending completion.",
+            "sales_narrative": None,
+            
+            # Style guide - empty, needs user input
+            "style_guide": None
         }
     
     def _identify_missing_sales_fields(
@@ -399,32 +417,48 @@ Important:
         profile_data: Dict[str, Any],
         field_sources: Dict[str, ProfileField]
     ) -> List[str]:
-        """Identify fields that need user input or have low confidence."""
+        """Identify fields that need user input - these cannot be derived from LinkedIn."""
         missing = []
         
-        # Critical fields that should be reviewed
-        critical_fields = [
-            ("full_name", "Your full name"),
-            ("role", "Your current role"),
-            ("sales_methodology", "Your preferred sales methodology"),
-            ("communication_style", "Your communication style"),
+        # Fields from LinkedIn (check if extracted)
+        linkedin_fields = [
+            "full_name",
+            "role",
         ]
         
-        # Optional but valuable fields
-        optional_fields = [
-            ("quarterly_goals", "Your current goals"),
-            ("target_industries", "Industries you sell to"),
-            ("target_company_sizes", "Company sizes you target"),
+        # Fields that MUST be asked (never on LinkedIn)
+        always_ask_fields = [
+            "sales_methodology",
+            "communication_style", 
+            "email_tone",
+            "uses_emoji",
+            "email_signoff",
+            "writing_length_preference",
+            "quarterly_goals",
+            "preferred_meeting_types",
         ]
         
-        for field_name, label in critical_fields:
-            source = field_sources.get(field_name)
+        # Optional fields to ask if empty
+        optional_ask_fields = [
+            "target_industries",
+            "target_company_sizes",
+            "target_regions",
+        ]
+        
+        # Check LinkedIn fields
+        for field_name in linkedin_fields:
             value = profile_data.get(field_name)
-            
-            if not value or (source and source.confidence < 0.5):
+            if not value:
                 missing.append(field_name)
         
-        for field_name, label in optional_fields:
+        # Always-ask fields (these cannot be derived)
+        for field_name in always_ask_fields:
+            value = profile_data.get(field_name)
+            if value is None or value == "" or (isinstance(value, list) and len(value) == 0):
+                missing.append(field_name)
+        
+        # Optional fields
+        for field_name in optional_ask_fields:
             value = profile_data.get(field_name)
             if not value or (isinstance(value, list) and len(value) == 0):
                 missing.append(field_name)
