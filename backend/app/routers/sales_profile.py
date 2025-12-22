@@ -9,6 +9,8 @@ from app.deps import get_current_user
 from app.database import get_supabase_service
 from app.services.profile_service import ProfileService
 from app.services.interview_service import InterviewService
+from app.services.magic_onboarding_service import get_magic_onboarding_service
+from app.inngest.events import send_event, Events
 
 # Use centralized database module
 supabase = get_supabase_service()
@@ -252,6 +254,301 @@ async def complete_interview(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to complete interview: {str(e)}"
+        )
+
+
+# ==========================================
+# Magic Onboarding Endpoints
+# ==========================================
+
+class MagicOnboardingStartRequest(BaseModel):
+    """Request for starting magic onboarding with LinkedIn."""
+    linkedin_url: str = Field(..., description="LinkedIn profile URL")
+    user_name: Optional[str] = Field(None, description="Optional name hint")
+    company_name: Optional[str] = Field(None, description="Optional company hint")
+
+
+class MagicOnboardingStartResponse(BaseModel):
+    """Response for starting magic onboarding - returns session ID for polling."""
+    session_id: str
+    status: str = "pending"
+    message: str = "Magic onboarding started. Poll /magic/status/{session_id} for progress."
+
+
+class MagicOnboardingStatusResponse(BaseModel):
+    """Response for magic onboarding status check."""
+    session_id: str
+    status: str  # 'pending', 'processing', 'completed', 'failed'
+    profile_data: Optional[Dict[str, Any]] = None
+    field_sources: Optional[Dict[str, Dict[str, Any]]] = None
+    missing_fields: Optional[List[str]] = None
+    linkedin_data: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None
+
+
+class MagicOnboardingFieldSource(BaseModel):
+    """Source information for a profile field."""
+    value: Any
+    source: str  # 'linkedin', 'ai_derived', 'user_input', 'default'
+    confidence: float
+    editable: bool = True
+    required: bool = False
+
+
+class MagicOnboardingResult(BaseModel):
+    """Result of magic onboarding generation (legacy sync response)."""
+    success: bool
+    profile_data: Dict[str, Any] = {}
+    field_sources: Dict[str, Dict[str, Any]] = {}
+    missing_fields: List[str] = []
+    linkedin_data: Dict[str, Any] = {}
+    error: Optional[str] = None
+
+
+class MagicOnboardingConfirmRequest(BaseModel):
+    """Request for confirming and saving magic-generated profile."""
+    profile_data: Dict[str, Any] = Field(..., description="Profile data to save (potentially edited by user)")
+    linkedin_url: Optional[str] = Field(None, description="Original LinkedIn URL for reference")
+
+
+@router.post("/magic/start", response_model=MagicOnboardingStartResponse)
+async def start_magic_onboarding(
+    request: MagicOnboardingStartRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Start magic onboarding from LinkedIn URL (async via Inngest).
+    
+    This endpoint:
+    1. Creates a session record
+    2. Sends an Inngest event for background processing
+    3. Returns a session_id for status polling
+    
+    The client should poll /magic/status/{session_id} until status is 'completed'.
+    Then call /magic/confirm to save the profile.
+    
+    Designed for scalability with thousands of concurrent users.
+    """
+    try:
+        user_id = current_user.get("sub")
+        organization_id = current_user.get("organization_id")
+        
+        # Get organization if not in token
+        if not organization_id:
+            org_result = supabase.table("organization_members")\
+                .select("organization_id")\
+                .eq("user_id", user_id)\
+                .limit(1)\
+                .execute()
+            
+            if org_result.data:
+                organization_id = org_result.data[0]["organization_id"]
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="User not associated with an organization"
+                )
+        
+        # Create session record
+        session_id = str(uuid.uuid4())
+        session_data = {
+            "id": session_id,
+            "organization_id": organization_id,
+            "user_id": user_id,
+            "session_type": "sales",
+            "status": "pending",
+            "input_data": {
+                "linkedin_url": request.linkedin_url,
+                "user_name": request.user_name,
+                "company_name": request.company_name
+            }
+        }
+        
+        supabase.table("magic_onboarding_sessions").insert(session_data).execute()
+        
+        # Send Inngest event for background processing
+        event_sent = await send_event(
+            Events.MAGIC_ONBOARDING_SALES_REQUESTED,
+            {
+                "session_id": session_id,
+                "user_id": user_id,
+                "organization_id": organization_id,
+                "linkedin_url": request.linkedin_url,
+                "user_name": request.user_name,
+                "company_name": request.company_name
+            }
+        )
+        
+        if not event_sent:
+            # Fallback: Process synchronously if Inngest is not available
+            # This ensures the feature works even without Inngest
+            magic_service = get_magic_onboarding_service()
+            result = await magic_service.magic_onboard_sales_profile(
+                linkedin_url=request.linkedin_url,
+                user_name=request.user_name,
+                company_name=request.company_name
+            )
+            
+            # Update session with result
+            supabase.table("magic_onboarding_sessions").update({
+                "status": "completed",
+                "result_data": result
+            }).eq("id", session_id).execute()
+        
+        return MagicOnboardingStartResponse(
+            session_id=session_id,
+            status="pending" if event_sent else "completed",
+            message="Magic onboarding started. Poll /magic/status/{session_id} for progress."
+            if event_sent else "Magic onboarding completed synchronously."
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to start magic onboarding: {str(e)}"
+        )
+
+
+@router.get("/magic/status/{session_id}", response_model=MagicOnboardingStatusResponse)
+async def get_magic_onboarding_status(
+    session_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get status of a magic onboarding session.
+    
+    Poll this endpoint until status is 'completed' or 'failed'.
+    """
+    try:
+        user_id = current_user.get("sub")
+        
+        # Get session
+        result = supabase.table("magic_onboarding_sessions")\
+            .select("*")\
+            .eq("id", session_id)\
+            .eq("user_id", user_id)\
+            .single()\
+            .execute()
+        
+        if not result.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Session not found"
+            )
+        
+        session = result.data
+        
+        response = MagicOnboardingStatusResponse(
+            session_id=session_id,
+            status=session["status"],
+            error=session.get("error_message")
+        )
+        
+        # Include result data if completed
+        if session["status"] == "completed" and session.get("result_data"):
+            result_data = session["result_data"]
+            response.profile_data = result_data.get("profile_data", {})
+            response.field_sources = result_data.get("field_sources", {})
+            response.missing_fields = result_data.get("missing_fields", [])
+            response.linkedin_data = result_data.get("linkedin_data", {})
+        
+        return response
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get session status: {str(e)}"
+        )
+
+
+@router.post("/magic/confirm", response_model=SalesProfileResponse)
+async def confirm_magic_onboarding(
+    request: MagicOnboardingConfirmRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Confirm and save the magic-generated profile.
+    
+    This endpoint is called after the user reviews the generated profile
+    and makes any necessary edits.
+    """
+    try:
+        profile_service = ProfileService()
+        
+        # Get user's organization
+        user_id = current_user.get("sub")
+        organization_id = current_user.get("organization_id")
+        
+        if not organization_id:
+            org_member_result = supabase.table("organization_members").select("organization_id").eq("user_id", user_id).limit(1).execute()
+            
+            if org_member_result.data and len(org_member_result.data) > 0:
+                organization_id = org_member_result.data[0]["organization_id"]
+            else:
+                # Create organization for user
+                email = current_user.get('email', 'User')
+                slug = email.split('@')[0].lower().replace('.', '-').replace('_', '-')
+                
+                org_data = {
+                    "id": str(uuid.uuid4()),
+                    "name": f"Personal - {email}",
+                    "slug": slug,
+                    "created_at": "now()",
+                    "updated_at": "now()"
+                }
+                org_result = supabase.table("organizations").insert(org_data).execute()
+                organization_id = org_result.data[0]["id"] if org_result.data else str(uuid.uuid4())
+                
+                supabase.table("organization_members").insert({
+                    "user_id": user_id,
+                    "organization_id": organization_id,
+                    "role": "owner"
+                }).execute()
+        
+        # Prepare profile data
+        profile_data = request.profile_data
+        
+        # Store LinkedIn URL as reference in interview_responses
+        if request.linkedin_url:
+            profile_data["interview_responses"] = {
+                "magic_onboarding": True,
+                "linkedin_url": request.linkedin_url
+            }
+        
+        # Create or update profile
+        existing = profile_service.get_sales_profile(user_id, organization_id)
+        
+        if existing:
+            profile = profile_service.update_sales_profile(
+                user_id=user_id,
+                updates=profile_data,
+                organization_id=organization_id
+            )
+        else:
+            profile = profile_service.create_sales_profile(
+                user_id=user_id,
+                organization_id=organization_id,
+                profile_data=profile_data
+            )
+        
+        if not profile:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to save profile"
+            )
+        
+        return SalesProfileResponse(**profile)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to save profile: {str(e)}"
         )
 
 

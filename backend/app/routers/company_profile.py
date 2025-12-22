@@ -9,6 +9,8 @@ from app.deps import get_current_user
 from app.database import get_supabase_service
 from app.services.profile_service import ProfileService
 from app.services.company_interview_service import get_company_interview_service
+from app.services.magic_onboarding_service import get_magic_onboarding_service
+from app.inngest.events import send_event, Events
 
 # Use centralized database module
 supabase = get_supabase_service()
@@ -367,6 +369,314 @@ async def complete_company_interview(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to complete interview: {str(e)}"
+        )
+
+
+# ==========================================
+# Magic Onboarding Endpoints
+# ==========================================
+
+class CompanyMagicSearchRequest(BaseModel):
+    """Request for searching company options."""
+    company_name: str = Field(..., description="Company name to search for")
+    country: str = Field(..., description="Country where company is located")
+
+
+class CompanyMagicSearchResult(BaseModel):
+    """Result of company search."""
+    success: bool
+    company_options: List[Dict[str, Any]] = []
+    error: Optional[str] = None
+
+
+class CompanyMagicGenerateRequest(BaseModel):
+    """Request for generating company profile."""
+    company_name: str = Field(..., description="Company name")
+    website: Optional[str] = Field(None, description="Company website URL")
+    linkedin_url: Optional[str] = Field(None, description="LinkedIn company page URL")
+    country: Optional[str] = Field(None, description="Country hint")
+
+
+class CompanyMagicFieldSource(BaseModel):
+    """Source information for a profile field."""
+    value: Any
+    source: str  # 'website', 'ai_derived', 'user_input', 'default'
+    confidence: float
+    editable: bool = True
+    required: bool = False
+
+
+class CompanyMagicResult(BaseModel):
+    """Result of magic company profile generation (legacy sync response)."""
+    success: bool
+    profile_data: Dict[str, Any] = {}
+    field_sources: Dict[str, Dict[str, Any]] = {}
+    missing_fields: List[str] = []
+    selected_company: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None
+
+
+class CompanyMagicStartResponse(BaseModel):
+    """Response for starting company magic onboarding - returns session ID for polling."""
+    session_id: str
+    status: str = "pending"
+    message: str = "Company profile generation started. Poll /magic/status/{session_id} for progress."
+
+
+class CompanyMagicStatusResponse(BaseModel):
+    """Response for company magic onboarding status check."""
+    session_id: str
+    status: str  # 'pending', 'processing', 'completed', 'failed'
+    profile_data: Optional[Dict[str, Any]] = None
+    field_sources: Optional[Dict[str, Dict[str, Any]]] = None
+    missing_fields: Optional[List[str]] = None
+    selected_company: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None
+
+
+class CompanyMagicConfirmRequest(BaseModel):
+    """Request for confirming and saving magic-generated company profile."""
+    profile_data: Dict[str, Any] = Field(..., description="Profile data to save")
+
+
+@router.post("/magic/search", response_model=CompanyMagicSearchResult)
+async def search_company_options(
+    request: CompanyMagicSearchRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Search for company options matching the given name.
+    
+    This is step 1 of magic company onboarding - finding the right company.
+    Returns a list of matching companies for user to select from.
+    """
+    try:
+        magic_service = get_magic_onboarding_service()
+        
+        result = await magic_service.search_company_options(
+            company_name=request.company_name,
+            country=request.country
+        )
+        
+        return CompanyMagicSearchResult(
+            success=result.success,
+            company_options=result.company_options,
+            error=result.error
+        )
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to search companies: {str(e)}"
+        )
+
+
+@router.post("/magic/generate", response_model=CompanyMagicStartResponse)
+async def generate_company_magic_profile(
+    request: CompanyMagicGenerateRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Generate a complete company profile from company info (async via Inngest).
+    
+    This is step 2 of magic company onboarding - after user selects a company.
+    Uses AI to research and synthesize a complete company profile.
+    
+    Returns a session_id for status polling.
+    Designed for scalability with thousands of concurrent users.
+    """
+    try:
+        user_id = current_user.get("sub")
+        organization_id = current_user.get("organization_id")
+        
+        # Get organization if not in token
+        if not organization_id:
+            org_result = supabase.table("organization_members")\
+                .select("organization_id")\
+                .eq("user_id", user_id)\
+                .limit(1)\
+                .execute()
+            
+            if org_result.data:
+                organization_id = org_result.data[0]["organization_id"]
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="User not associated with an organization"
+                )
+        
+        # Create session record
+        session_id = str(uuid.uuid4())
+        session_data = {
+            "id": session_id,
+            "organization_id": organization_id,
+            "user_id": user_id,
+            "session_type": "company",
+            "status": "pending",
+            "input_data": {
+                "company_name": request.company_name,
+                "website": request.website,
+                "linkedin_url": request.linkedin_url,
+                "country": request.country
+            }
+        }
+        
+        supabase.table("magic_onboarding_sessions").insert(session_data).execute()
+        
+        # Send Inngest event for background processing
+        event_sent = await send_event(
+            Events.MAGIC_ONBOARDING_COMPANY_REQUESTED,
+            {
+                "session_id": session_id,
+                "user_id": user_id,
+                "organization_id": organization_id,
+                "company_name": request.company_name,
+                "website": request.website,
+                "linkedin_url": request.linkedin_url,
+                "country": request.country
+            }
+        )
+        
+        if not event_sent:
+            # Fallback: Process synchronously if Inngest is not available
+            magic_service = get_magic_onboarding_service()
+            result = await magic_service.magic_onboard_company_profile(
+                company_name=request.company_name,
+                website=request.website,
+                linkedin_url=request.linkedin_url,
+                country=request.country
+            )
+            
+            # Update session with result
+            supabase.table("magic_onboarding_sessions").update({
+                "status": "completed",
+                "result_data": result
+            }).eq("id", session_id).execute()
+        
+        return CompanyMagicStartResponse(
+            session_id=session_id,
+            status="pending" if event_sent else "completed",
+            message="Company profile generation started. Poll /magic/status/{session_id} for progress."
+            if event_sent else "Company profile generated synchronously."
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to start company profile generation: {str(e)}"
+        )
+
+
+@router.get("/magic/status/{session_id}", response_model=CompanyMagicStatusResponse)
+async def get_company_magic_status(
+    session_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get status of a company magic onboarding session.
+    
+    Poll this endpoint until status is 'completed' or 'failed'.
+    """
+    try:
+        user_id = current_user.get("sub")
+        
+        # Get session
+        result = supabase.table("magic_onboarding_sessions")\
+            .select("*")\
+            .eq("id", session_id)\
+            .eq("user_id", user_id)\
+            .single()\
+            .execute()
+        
+        if not result.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Session not found"
+            )
+        
+        session = result.data
+        
+        response = CompanyMagicStatusResponse(
+            session_id=session_id,
+            status=session["status"],
+            error=session.get("error_message")
+        )
+        
+        # Include result data if completed
+        if session["status"] == "completed" and session.get("result_data"):
+            result_data = session["result_data"]
+            response.profile_data = result_data.get("profile_data", {})
+            response.field_sources = result_data.get("field_sources", {})
+            response.missing_fields = result_data.get("missing_fields", [])
+            response.selected_company = result_data.get("selected_company")
+        
+        return response
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get session status: {str(e)}"
+        )
+
+
+@router.post("/magic/confirm", response_model=CompanyProfileResponse)
+async def confirm_company_magic_onboarding(
+    request: CompanyMagicConfirmRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Confirm and save the magic-generated company profile.
+    
+    This is step 3 of magic company onboarding - after user reviews and edits.
+    """
+    try:
+        organization_id = check_admin_access(current_user)
+        profile_service = ProfileService()
+        
+        # Prepare profile data
+        profile_data = request.profile_data
+        
+        # Mark as magic onboarding
+        profile_data["interview_responses"] = {
+            "magic_onboarding": True
+        }
+        
+        # Check if profile already exists
+        existing = profile_service.get_company_profile(organization_id)
+        
+        if existing:
+            # Update existing profile
+            profile = profile_service.update_company_profile(
+                organization_id=organization_id,
+                updates=profile_data,
+                updated_by=current_user["sub"]
+            )
+        else:
+            # Create new profile
+            profile = profile_service.create_company_profile(
+                organization_id=organization_id,
+                profile_data=profile_data,
+                created_by=current_user["sub"]
+            )
+        
+        if not profile:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to save company profile"
+            )
+        
+        return CompanyProfileResponse(**profile)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to save company profile: {str(e)}"
         )
 
 

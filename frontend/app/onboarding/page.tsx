@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { Loader2, CheckCircle2, ArrowRight, Sparkles } from "lucide-react"
+import { Loader2, CheckCircle2, ArrowRight, Sparkles, Wand2 } from "lucide-react"
 import { useTranslations } from 'next-intl'
 import { LanguageSelector } from '@/components/language-selector'
 import { useLocale } from 'next-intl'
@@ -298,6 +298,95 @@ export default function OnboardingPage() {
             </div>
           </CardContent>
         </Card>
+      </div>
+    )
+  }
+
+  // Show choice between Magic and Traditional onboarding for new users
+  if (!hasExistingProfile && !sessionId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 px-4">
+        <div className="absolute top-4 right-4">
+          <LanguageSelector currentLocale={locale} />
+        </div>
+        
+        <div className="w-full max-w-3xl">
+          <div className="text-center mb-8">
+            <Sparkles className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+            <h1 className="text-3xl font-bold mb-2">{t('welcome')}</h1>
+            <p className="text-muted-foreground">Choose how you want to set up your sales profile</p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Magic Option */}
+            <Card className="shadow-lg hover:shadow-xl transition-shadow cursor-pointer border-2 hover:border-violet-400"
+                  onClick={() => router.push('/onboarding/magic')}>
+              <CardHeader className="text-center pb-2">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center mx-auto mb-3">
+                  <Wand2 className="h-8 w-8 text-white" />
+                </div>
+                <CardTitle className="text-xl">Magic Setup</CardTitle>
+                <CardDescription className="text-base">
+                  Just paste your LinkedIn URL and we'll create your profile in seconds
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="text-center">
+                <ul className="text-sm text-muted-foreground space-y-2 mb-4">
+                  <li className="flex items-center justify-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    Auto-extract from LinkedIn
+                  </li>
+                  <li className="flex items-center justify-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    AI-enhanced profile
+                  </li>
+                  <li className="flex items-center justify-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    ~30 seconds
+                  </li>
+                </ul>
+                <Button className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600">
+                  <Wand2 className="h-4 w-4 mr-2" />
+                  Start Magic Setup
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Traditional Option */}
+            <Card className="shadow-lg hover:shadow-xl transition-shadow cursor-pointer border-2 hover:border-blue-400"
+                  onClick={() => startInterview()}>
+              <CardHeader className="text-center pb-2">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center mx-auto mb-3">
+                  <Sparkles className="h-8 w-8 text-white" />
+                </div>
+                <CardTitle className="text-xl">Guided Interview</CardTitle>
+                <CardDescription className="text-base">
+                  Answer questions step-by-step to build your detailed profile
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="text-center">
+                <ul className="text-sm text-muted-foreground space-y-2 mb-4">
+                  <li className="flex items-center justify-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    {totalQuestions} personalized questions
+                  </li>
+                  <li className="flex items-center justify-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    Full control over answers
+                  </li>
+                  <li className="flex items-center justify-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    ~10-15 minutes
+                  </li>
+                </ul>
+                <Button variant="outline" className="w-full">
+                  <ArrowRight className="h-4 w-4 mr-2" />
+                  Start Interview
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     )
   }

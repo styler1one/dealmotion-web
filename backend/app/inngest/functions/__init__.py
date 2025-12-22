@@ -29,6 +29,7 @@ from .autopilot_detection import (
 from .autopilot_execution import execute_proposal_fn
 from .prospecting import process_prospecting_discovery_fn
 from .credit_reset import credit_reset_daily_fn
+from .magic_onboarding import magic_onboard_sales_fn, magic_onboard_company_fn
 
 # All functions to register with Inngest
 all_functions = [
@@ -62,6 +63,9 @@ all_functions = [
     process_prospecting_discovery_fn,
     # Credit management
     credit_reset_daily_fn,
+    # Magic Onboarding
+    magic_onboard_sales_fn,
+    magic_onboard_company_fn,
 ]
 
 __all__ = [
@@ -96,5 +100,8 @@ __all__ = [
     "process_prospecting_discovery_fn",
     # Credit management
     "credit_reset_daily_fn",
+    # Magic Onboarding
+    "magic_onboard_sales_fn",
+    "magic_onboard_company_fn",
 ]
 

@@ -15,7 +15,8 @@ import {
   Edit,
   RefreshCw,
   Loader2,
-  BookOpen
+  BookOpen,
+  Wand2
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import type { User } from '@supabase/supabase-js'
@@ -132,10 +133,16 @@ export default function ProfilePage() {
                 {profile.role || 'Sales Professional'}
               </p>
             </div>
-            <Button onClick={() => router.push('/onboarding')}>
-              <Edit className="h-4 w-4 mr-2" />
-              {t('edit')}
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => router.push('/onboarding')}>
+                <Edit className="h-4 w-4 mr-2" />
+                {t('edit')}
+              </Button>
+              <Button onClick={() => router.push('/onboarding/magic')} className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700">
+                <Wand2 className="h-4 w-4 mr-2" />
+                Refresh with AI
+              </Button>
+            </div>
           </div>
         </div>
 

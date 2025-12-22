@@ -16,7 +16,8 @@ import {
   Building2, 
   Loader2,
   CheckCircle2,
-  Sparkles
+  Sparkles,
+  Wand2
 } from 'lucide-react'
 
 interface InterviewState {
@@ -41,54 +42,65 @@ export default function CompanyOnboardingPage() {
   const [answer, setAnswer] = useState('')
   const [responses, setResponses] = useState<Record<number, string>>({})
   const [completed, setCompleted] = useState(false)
+  const [showChoice, setShowChoice] = useState(true)
 
-  // Start interview on mount
+  // Check auth on mount
   useEffect(() => {
-    const startInterview = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!session) {
-          router.push('/login')
-          return
-        }
-
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/profile/company/interview/start`,
-          {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${session.access_token}`,
-              'Content-Type': 'application/json'
-            }
-          }
-        )
-
-        if (!response.ok) {
-          throw new Error('Failed to start interview')
-        }
-
-        const data = await response.json()
-        setInterview({
-          sessionId: data.session_id,
-          questionId: data.question_id,
-          question: data.question,
-          progress: data.progress,
-          totalQuestions: data.total_questions
-        })
-      } catch (error) {
-        console.error('Error starting interview:', error)
-        toast({
-          title: t('toast.startError'),
-          description: t('toast.startErrorDesc'),
-          variant: 'destructive'
-        })
-      } finally {
-        setLoading(false)
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        router.push('/login')
+        return
       }
+      setLoading(false)
     }
+    checkAuth()
+  }, [supabase, router])
 
-    startInterview()
-  }, [supabase, router, toast])
+  const startInterview = async () => {
+    setShowChoice(false)
+    setLoading(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        router.push('/login')
+        return
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/profile/company/interview/start`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error('Failed to start interview')
+      }
+
+      const data = await response.json()
+      setInterview({
+        sessionId: data.session_id,
+        questionId: data.question_id,
+        question: data.question,
+        progress: data.progress,
+        totalQuestions: data.total_questions
+      })
+    } catch (error) {
+      console.error('Error starting interview:', error)
+      toast({
+        title: t('toast.startError'),
+        description: t('toast.startErrorDesc'),
+        variant: 'destructive'
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleSubmitAnswer = async () => {
     if (!interview || !answer.trim()) return
@@ -226,6 +238,104 @@ export default function CompanyOnboardingPage() {
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
           <p className="text-muted-foreground">{t('company.startInterview')}</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show choice between Magic and Traditional onboarding
+  if (showChoice && !interview) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 px-4">
+        <div className="absolute top-4 right-4">
+          <LanguageSelector currentLocale={locale} />
+        </div>
+        
+        <div className="w-full max-w-3xl">
+          <Button 
+            variant="ghost" 
+            onClick={() => router.push('/dashboard')}
+            className="mb-6"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {t('back')}
+          </Button>
+          
+          <div className="text-center mb-8">
+            <Building2 className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+            <h1 className="text-3xl font-bold mb-2">{t('company.pageTitle')}</h1>
+            <p className="text-muted-foreground">Choose how you want to set up your company profile</p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Magic Option */}
+            <Card className="shadow-lg hover:shadow-xl transition-shadow cursor-pointer border-2 hover:border-blue-400"
+                  onClick={() => router.push('/onboarding/company/magic')}>
+              <CardHeader className="text-center pb-2">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center mx-auto mb-3">
+                  <Wand2 className="h-8 w-8 text-white" />
+                </div>
+                <CardTitle className="text-xl">Magic Setup</CardTitle>
+                <CardDescription className="text-base">
+                  Enter your company name and we'll research everything automatically
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="text-center">
+                <ul className="text-sm text-muted-foreground space-y-2 mb-4">
+                  <li className="flex items-center justify-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    AI-powered research
+                  </li>
+                  <li className="flex items-center justify-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    Auto-discover website & LinkedIn
+                  </li>
+                  <li className="flex items-center justify-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    ~1 minute
+                  </li>
+                </ul>
+                <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600">
+                  <Wand2 className="h-4 w-4 mr-2" />
+                  Start Magic Setup
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Traditional Option */}
+            <Card className="shadow-lg hover:shadow-xl transition-shadow cursor-pointer border-2 hover:border-indigo-400"
+                  onClick={() => startInterview()}>
+              <CardHeader className="text-center pb-2">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center mx-auto mb-3">
+                  <Sparkles className="h-8 w-8 text-white" />
+                </div>
+                <CardTitle className="text-xl">Guided Interview</CardTitle>
+                <CardDescription className="text-base">
+                  Answer questions step-by-step to build your company profile
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="text-center">
+                <ul className="text-sm text-muted-foreground space-y-2 mb-4">
+                  <li className="flex items-center justify-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    12 focused questions
+                  </li>
+                  <li className="flex items-center justify-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    Full control over content
+                  </li>
+                  <li className="flex items-center justify-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    ~10-15 minutes
+                  </li>
+                </ul>
+                <Button variant="outline" className="w-full">
+                  <ArrowRight className="h-4 w-4 mr-2" />
+                  Start Interview
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     )

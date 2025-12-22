@@ -167,6 +167,14 @@ class Events:
     
     # Follow-up Summarize (for imported transcripts)
     FOLLOWUP_SUMMARIZE = "dealmotion/followup.summarize"
+    
+    # Magic Onboarding (AI-powered profile creation)
+    MAGIC_ONBOARDING_SALES_REQUESTED = "dealmotion/magic-onboarding.sales.requested"
+    MAGIC_ONBOARDING_SALES_COMPLETED = "dealmotion/magic-onboarding.sales.completed"
+    MAGIC_ONBOARDING_SALES_FAILED = "dealmotion/magic-onboarding.sales.failed"
+    MAGIC_ONBOARDING_COMPANY_REQUESTED = "dealmotion/magic-onboarding.company.requested"
+    MAGIC_ONBOARDING_COMPANY_COMPLETED = "dealmotion/magic-onboarding.company.completed"
+    MAGIC_ONBOARDING_COMPANY_FAILED = "dealmotion/magic-onboarding.company.failed"
 
 
 # =============================================================================
