@@ -594,6 +594,33 @@ export default function ProfilePage() {
     }
   }
 
+  // Save style guide fields (like persuasion_style)
+  const handleSaveStyleGuide = async (field: string, value: any) => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/profile/sales/style-guide`,
+      {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ [field]: value })
+      }
+    )
+
+    if (response.ok) {
+      // Refetch the full profile to get updated style_guide
+      await fetchProfile()
+      setSaveMessage(t('fieldSaved'))
+      setTimeout(() => setSaveMessage(null), 2000)
+    } else {
+      throw new Error('Failed to save style guide')
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-slate-900">
@@ -911,22 +938,25 @@ export default function ProfilePage() {
             </div>
             
             {/* Persuasion Style */}
-            {profile.style_guide?.persuasion_style && (
-              <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
-                <div className="flex items-start gap-3">
-                  <Sparkles className="h-5 w-5 text-violet-500 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">{t('communicationStyle.persuasionStyle')}</p>
-                    <p className="text-base text-slate-700 dark:text-slate-300">
-                      {profile.style_guide.persuasion_style === 'logic' && t('communicationStyle.persuasionLogic')}
-                      {profile.style_guide.persuasion_style === 'story' && t('communicationStyle.persuasionStory')}
-                      {profile.style_guide.persuasion_style === 'reference' && t('communicationStyle.persuasionReference')}
-                      {profile.style_guide.persuasion_style === 'authority' && t('communicationStyle.persuasionAuthority')}
-                    </p>
-                  </div>
+            <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+              <div className="flex items-start gap-3">
+                <Sparkles className="h-5 w-5 text-violet-500 mt-0.5" />
+                <div className="flex-1">
+                  <EditableSelect
+                    value={profile.style_guide?.persuasion_style || 'logic'}
+                    field="persuasion_style"
+                    label={t('communicationStyle.persuasionStyle')}
+                    options={[
+                      { value: 'logic', label: t('communicationStyle.persuasionLogic') },
+                      { value: 'story', label: t('communicationStyle.persuasionStory') },
+                      { value: 'reference', label: t('communicationStyle.persuasionReference') },
+                      { value: 'authority', label: t('communicationStyle.persuasionAuthority') }
+                    ]}
+                    onSave={handleSaveStyleGuide}
+                  />
                 </div>
               </div>
-            )}
+            </div>
           </CardContent>
         </Card>
 
