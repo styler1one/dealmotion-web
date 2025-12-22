@@ -246,15 +246,30 @@ class ProfileChatService:
         """
         Analyze how complete the profile is.
         
+        Also considers linkedin_raw data as filled fields.
+        
         Returns:
             Tuple of (completeness_score, filled_fields, missing_fields)
         """
         fields = SALES_PROFILE_FIELDS if profile_type == "sales" else COMPANY_PROFILE_FIELDS
         
+        # Check linkedin_raw for additional data
+        linkedin_raw = profile.get("linkedin_raw", {})
+        
         filled = []
         missing = []
         total_weight = 0
         filled_weight = 0
+        
+        # Map linkedin_raw fields to profile fields
+        linkedin_field_map = {
+            "full_name": ["headline"],  # Can extract from headline
+            "role": ["headline"],
+            "experience_years": ["experience_years"],
+            "strengths": ["skills"],
+            "target_industries": [],  # Need to ask
+            "target_regions": ["location"],
+        }
         
         for field_name, config in fields.items():
             # Weight by priority (higher priority = more weight)
@@ -264,8 +279,26 @@ class ProfileChatService:
             
             total_weight += weight
             
+            # Check profile data
             value = profile.get(field_name)
             has_value = bool(value) and value != [] and value != {}
+            
+            # Also check linkedin_raw for mapped fields
+            if not has_value and field_name in linkedin_field_map:
+                for linkedin_field in linkedin_field_map[field_name]:
+                    linkedin_value = linkedin_raw.get(linkedin_field)
+                    if linkedin_value:
+                        has_value = True
+                        break
+            
+            # Special cases: if we have about_section or experience_section, count related fields
+            if not has_value:
+                if field_name == "full_name" and linkedin_raw.get("about_section"):
+                    has_value = True  # We can likely extract from about
+                elif field_name == "strengths" and linkedin_raw.get("skills"):
+                    has_value = True
+                elif field_name == "experience_years" and linkedin_raw.get("experience_section"):
+                    has_value = True  # Can be derived from experience
             
             if has_value:
                 filled.append(field_name)
@@ -292,36 +325,69 @@ class ProfileChatService:
     ) -> str:
         """Generate personalized opening message."""
         
-        # Build context about what we know
+        # Extract LinkedIn raw data if available (from magic onboarding)
+        linkedin_raw = initial_data.get("linkedin_raw", {})
+        
+        # Build comprehensive context about what we know
         known_info = []
-        if initial_data.get("full_name"):
-            known_info.append(f"naam: {initial_data['full_name']}")
-        if initial_data.get("role"):
-            known_info.append(f"rol: {initial_data['role']}")
-        if initial_data.get("experience_years"):
-            known_info.append(f"{initial_data['experience_years']} jaar ervaring")
-        if initial_data.get("company_name"):
-            known_info.append(f"bedrijf: {initial_data['company_name']}")
+        
+        # Basic info
+        name = initial_data.get("full_name") or linkedin_raw.get("headline", "").split(" - ")[0] if linkedin_raw.get("headline") else None
+        if name:
+            known_info.append(f"Naam: {name}")
+        
+        role = initial_data.get("role") or linkedin_raw.get("headline")
+        if role:
+            known_info.append(f"Rol/Headline: {role}")
+        
+        if initial_data.get("experience_years") or linkedin_raw.get("experience_years"):
+            years = initial_data.get("experience_years") or linkedin_raw.get("experience_years")
+            known_info.append(f"Ervaring: {years} jaar")
+        
+        # Rich LinkedIn data
+        about = linkedin_raw.get("about_section")
+        if about:
+            known_info.append(f"LinkedIn About: {about[:500]}...")
+        
+        experience = linkedin_raw.get("experience_section")
+        if experience:
+            known_info.append(f"Werkervaring: {experience[:400]}...")
+        
+        skills = linkedin_raw.get("skills") or initial_data.get("strengths", [])
+        if skills:
+            known_info.append(f"Skills: {', '.join(skills[:10])}")
+        
+        ai_summary = linkedin_raw.get("ai_summary")
+        if ai_summary:
+            known_info.append(f"Profiel samenvatting: {ai_summary[:300]}...")
+        
+        known_info_text = "\n".join(known_info) if known_info else "Geen informatie beschikbaar"
         
         prompt = f"""Je bent een vriendelijke AI-assistent die helpt met het aanmaken van een sales profiel.
 Je hebt zojuist iemands LinkedIn profiel geanalyseerd en wilt nu een kort gesprek voeren om het profiel compleet te maken.
 
-BEKENDE INFORMATIE:
-{json.dumps(initial_data, indent=2, ensure_ascii=False)}
+=== LINKEDIN DATA DIE JE HEBT ===
+{known_info_text}
+
+=== HUIDIGE PROFIELDATA ===
+{json.dumps({k: v for k, v in initial_data.items() if k != 'linkedin_raw'}, indent=2, ensure_ascii=False)}
 
 PROFIELCOMPLETENESS: {completeness:.0%}
 INGEVULDE VELDEN: {', '.join(filled_fields[:5])}
 ONTBREKENDE VELDEN: {', '.join(missing_fields[:5])}
 
 INSTRUCTIES:
-1. Begin met een warme, persoonlijke begroeting
-2. Bevestig kort wat je al weet (1-2 dingen)
-3. Leg uit dat je een paar vragen hebt om het profiel compleet te maken
+1. Begin met een warme, persoonlijke begroeting - noem hun naam als je die hebt
+2. Laat zien dat je hun LinkedIn profiel hebt gelezen - noem iets specifieks (bijv. hun ervaring, huidige rol, of iets uit hun about sectie)
+3. Leg uit dat je een paar aanvullende vragen hebt om het profiel compleet te maken
 4. Stel meteen de EERSTE vraag - kies het belangrijkste ontbrekende veld
-5. Houd het kort en conversationeel (max 3-4 zinnen)
+5. Houd het kort en conversationeel (max 4-5 zinnen)
 6. Schrijf in het Nederlands, informeel maar professioneel
 
-BELANGRIJK: Stel slechts ÉÉN vraag per bericht. Wees niet te formeel."""
+BELANGRIJK: 
+- Stel slechts ÉÉN vraag per bericht
+- Toon dat je de LinkedIn data daadwerkelijk hebt gelezen
+- Als je veel info hebt, benoem dan dat je al veel weet"""
 
         response = await self.anthropic.messages.create(
             model=self.model,
