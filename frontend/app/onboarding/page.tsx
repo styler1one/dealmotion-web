@@ -318,36 +318,43 @@ export default function OnboardingPage() {
           </div>
           
           <div className="grid md:grid-cols-2 gap-6">
-            {/* Magic Option */}
-            <Card className="shadow-lg hover:shadow-xl transition-shadow cursor-pointer border-2 hover:border-violet-400"
-                  onClick={() => router.push('/onboarding/magic')}>
-              <CardHeader className="text-center pb-2">
+            {/* AI Chat Option - Recommended */}
+            <Card className="shadow-lg hover:shadow-xl transition-shadow cursor-pointer border-2 border-violet-400 relative"
+                  onClick={() => router.push('/onboarding/chat')}>
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-xs font-semibold rounded-full">
+                ✨ Recommended
+              </div>
+              <CardHeader className="text-center pb-2 pt-6">
                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center mx-auto mb-3">
                   <Wand2 className="h-8 w-8 text-white" />
                 </div>
-                <CardTitle className="text-xl">Magic Setup</CardTitle>
+                <CardTitle className="text-xl">AI Chat Setup</CardTitle>
                 <CardDescription className="text-base">
-                  Just paste your LinkedIn URL and we'll create your profile in seconds
+                  Chat with AI to build your profile - like talking to a colleague
                 </CardDescription>
               </CardHeader>
               <CardContent className="text-center">
                 <ul className="text-sm text-muted-foreground space-y-2 mb-4">
                   <li className="flex items-center justify-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-green-600" />
-                    Auto-extract from LinkedIn
+                    Starts from your LinkedIn
                   </li>
                   <li className="flex items-center justify-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-green-600" />
-                    AI-enhanced profile
+                    Natural conversation
                   </li>
                   <li className="flex items-center justify-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-green-600" />
-                    ~30 seconds
+                    Only asks what's needed
+                  </li>
+                  <li className="flex items-center justify-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    ~2-3 minutes
                   </li>
                 </ul>
                 <Button className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600">
                   <Wand2 className="h-4 w-4 mr-2" />
-                  Start Magic Setup
+                  Start AI Chat
                 </Button>
               </CardContent>
             </Card>
