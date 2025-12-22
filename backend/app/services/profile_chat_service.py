@@ -497,6 +497,27 @@ Als er niets te extraheren is:
             conv_text += f"{role}: {msg.get('content', '')}\n"
         conv_text += f"User: {user_message}\n"
         
+        # Build profile summary for context
+        profile_summary_items = []
+        if current_profile.get("full_name"):
+            profile_summary_items.append(f"Naam: {current_profile['full_name']}")
+        if current_profile.get("role"):
+            profile_summary_items.append(f"Rol: {current_profile['role']}")
+        if current_profile.get("experience_years"):
+            profile_summary_items.append(f"Ervaring: {current_profile['experience_years']} jaar")
+        if current_profile.get("sales_methodology"):
+            profile_summary_items.append(f"Methodologie: {current_profile['sales_methodology']}")
+        if current_profile.get("communication_style"):
+            profile_summary_items.append(f"Stijl: {current_profile['communication_style']}")
+        if current_profile.get("strengths"):
+            profile_summary_items.append(f"Sterktes: {', '.join(current_profile['strengths'][:3])}")
+        if current_profile.get("target_industries"):
+            profile_summary_items.append(f"Industries: {', '.join(current_profile['target_industries'][:3])}")
+        if current_profile.get("quarterly_goals"):
+            profile_summary_items.append(f"Doelen: {current_profile['quarterly_goals'][:100]}")
+        
+        profile_summary = "\n".join(profile_summary_items) if profile_summary_items else "Nog geen data"
+        
         prompt = f"""Je bent een vriendelijke AI-assistent die een sales profiel aan het opbouwen bent via een gesprek.
 
 RECENT GESPREK:
@@ -504,18 +525,22 @@ RECENT GESPREK:
 
 ZOJUIST INGEVULD: {', '.join(fields_just_updated) if fields_just_updated else 'Niets nieuws'}
 
+=== WAT IK NU WEET (ACTUEEL PROFIEL) ===
+{profile_summary}
+
 NOG ONTBREKEND (in volgorde van prioriteit):
 {json.dumps(missing_hints, indent=2, ensure_ascii=False)}
 
 INSTRUCTIES:
-1. Reageer kort en natuurlijk op wat de gebruiker net zei (erken hun antwoord)
-2. Stel vervolgens ÉÉN vraag over het belangrijkste ontbrekende veld
-3. Houd het conversationeel en niet als een formulier
-4. Varieer in hoe je vragen stelt
-5. Max 2-3 zinnen totaal
-6. Schrijf in het Nederlands
+1. Als de gebruiker vraagt wat je weet/opslaat/gebruikt: geef een CONCRETE opsomming van de data uit "WAT IK NU WEET"
+2. Anders: reageer kort en natuurlijk op wat de gebruiker zei
+3. Als er nog dingen ontbreken, stel ÉÉN vraag over het belangrijkste ontbrekende veld
+4. Houd het conversationeel, NIET als een formulier
+5. HERHAAL NIET wat je al eerder hebt gezegd
+6. Max 3-4 zinnen totaal
+7. Schrijf in het Nederlands
 
-Als de gebruiker iets interessants zei, kun je kort doorvragen voordat je naar het volgende onderwerp gaat."""
+BELANGRIJK: Als de gebruiker vraagt over de data/instructies/systeem, wees transparant over wat je voor hen opslaat."""
 
         response = await self.anthropic.messages.create(
             model=self.model,
@@ -533,27 +558,42 @@ Als de gebruiker iets interessants zei, kun je kort doorvragen voordat je naar h
     ) -> str:
         """Generate message when profile is complete enough."""
         
+        # Build detailed summary of what we know
+        strengths = profile.get('strengths', [])
+        targets = profile.get('target_industries', [])
+        goals = profile.get('quarterly_goals', '')
+        
         prompt = f"""Je bent een vriendelijke AI-assistent die zojuist een sales profiel heeft afgerond via een gesprek.
 
 PROFIELCOMPLETENESS: {completeness:.0%}
 
-PROFIEL SAMENVATTING:
+=== VOLLEDIG OPGEBOUWD PROFIEL ===
 - Naam: {profile.get('full_name', 'Onbekend')}
 - Rol: {profile.get('role', 'Onbekend')}
-- Methodologie: {profile.get('sales_methodology', 'Niet gespecificeerd')}
+- Ervaring: {profile.get('experience_years', '?')} jaar
+- Sales methodologie: {profile.get('sales_methodology', 'Niet gespecificeerd')}
 - Communicatiestijl: {profile.get('communication_style', 'Niet gespecificeerd')}
+- Sterktes: {', '.join(strengths[:5]) if strengths else 'Niet gespecificeerd'}
+- Target industrieën: {', '.join(targets[:3]) if targets else 'Niet gespecificeerd'}
+- Email toon: {profile.get('email_tone', 'Niet gespecificeerd')}
+- Kwartaaldoelen: {goals[:100] if goals else 'Niet gespecificeerd'}
 
 INSTRUCTIES:
-1. Bedank de gebruiker voor het gesprek
-2. Geef een korte samenvatting van wat je hebt geleerd (1-2 zinnen)
-3. Zeg dat hun profiel nu klaar is om te gebruiken
-4. Nodig uit om het profiel te bekijken
-5. Kort en enthousiast (max 3-4 zinnen)
-6. Nederlands, informeel maar professioneel"""
+1. Geef een CONCRETE samenvatting van wat je hebt opgeslagen (noem specifieke dingen uit het profiel)
+2. Leg uit dat deze informatie wordt gebruikt om:
+   - Meeting preps te personaliseren
+   - Emails in hun stijl te schrijven
+   - Gesprekstips af te stemmen op hun aanpak
+3. Nodig uit om op "Profiel Opslaan" te klikken
+4. Kort maar informatief (max 5 zinnen)
+5. Nederlands, vriendelijk en professioneel
+6. HERHAAL NIET wat je al eerder hebt gezegd
+
+Geef een duidelijke samenvatting van wat je hebt geleerd, niet een generieke afsluiting."""
 
         response = await self.anthropic.messages.create(
             model=self.model,
-            max_tokens=300,
+            max_tokens=400,
             messages=[{"role": "user", "content": prompt}]
         )
         

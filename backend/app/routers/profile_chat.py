@@ -9,7 +9,7 @@ Provides endpoints for:
 """
 
 import logging
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from uuid import UUID
 from datetime import datetime
 
@@ -85,6 +85,7 @@ class CompleteSessionResponse(BaseModel):
     success: bool
     profile_id: Optional[str] = None
     message: str
+    saved_data_summary: Optional[Dict[str, Any]] = None  # Summary of what was saved
 
 
 # =============================================================================
@@ -425,10 +426,38 @@ async def complete_session(
         "resulting_profile_id": profile_id
     }).eq("id", str(session_id)).execute()
     
+    # Build summary of what was saved
+    saved_summary = {}
+    if profile_type == "sales":
+        saved_summary = {
+            "type": "Sales Profiel",
+            "name": profile_data.get("full_name"),
+            "role": profile_data.get("role"),
+            "experience_years": profile_data.get("experience_years"),
+            "methodology": profile_data.get("sales_methodology"),
+            "communication_style": profile_data.get("communication_style"),
+            "strengths": profile_data.get("strengths", []),
+            "target_industries": profile_data.get("target_industries", []),
+            "quarterly_goals": profile_data.get("quarterly_goals"),
+            "email_tone": profile_data.get("email_tone"),
+            "completeness": int(session.get("completeness_score", 0) * 100)
+        }
+    else:
+        saved_summary = {
+            "type": "Bedrijfs Profiel",
+            "company_name": profile_data.get("company_name"),
+            "industry": profile_data.get("industry"),
+            "website": profile_data.get("website"),
+            "products": profile_data.get("products", []),
+            "value_props": profile_data.get("core_value_props", []),
+            "completeness": int(session.get("completeness_score", 0) * 100)
+        }
+    
     return CompleteSessionResponse(
         success=True,
         profile_id=str(profile_id) if profile_id else None,
-        message="Profile saved successfully!" if profile_id else "Session completed"
+        message="Je profiel is opgeslagen! Je kunt het nu gebruiken in je sales gesprekken.",
+        saved_data_summary=saved_summary
     )
 
 
