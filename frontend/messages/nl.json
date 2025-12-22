@@ -825,6 +825,7 @@
     "completeness": "Profiel volledigheid",
     "edit": "Bewerken",
     "save": "Opslaan",
+    "cancel": "Annuleren",
     "saving": "Opslaan...",
     "noProfile": "Geen profiel gevonden",
     "startOnboarding": "Start de onboarding om je profiel aan te maken",
@@ -838,6 +839,13 @@
     "approach": "Aanpak",
     "notSet": "Niet ingesteld",
     "years": "jaar",
+    "fieldSaved": "Opgeslagen!",
+    "addNewTag": "Toevoegen...",
+    "selectOption": "Selecteer...",
+    "editHint": "Hover over een veld om het direct te bewerken",
+    "yourName": "Je naam",
+    "yourRole": "Je functie",
+    "refreshWithAI": "Vernieuwen met AI",
     "sections": {
       "personal": "Persoonlijke Gegevens",
       "experience": "Ervaring & Expertise",
@@ -879,7 +887,12 @@
       "persuasionLogic": "Logica & data - Overtuigt met feiten, cijfers en rationele argumenten",
       "persuasionStory": "Storytelling - Overtuigt met verhalen, voorbeelden en emotie",
       "persuasionReference": "Social proof - Overtuigt met referenties, cases en testimonials",
-      "persuasionAuthority": "Autoriteit - Overtuigt met expertise en thought leadership"
+      "persuasionAuthority": "Autoriteit - Overtuigt met expertise en thought leadership",
+      "toneProfessional": "Professioneel",
+      "toneDirect": "Direct",
+      "toneWarm": "Warm",
+      "toneFormal": "Formeel",
+      "toneCasual": "Casual"
     },
     "howUsed": {
       "title": "Hoe wordt dit gebruikt?",

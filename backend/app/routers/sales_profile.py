@@ -90,20 +90,40 @@ class SalesProfileResponse(BaseModel):
 
 
 class SalesProfileUpdateRequest(BaseModel):
-    """Request for updating sales profile."""
+    """Request for updating sales profile - supports all editable fields."""
+    # Basic info
+    full_name: Optional[str] = None
     role: Optional[str] = None
     experience_years: Optional[int] = None
+    
+    # Sales approach
     sales_methodology: Optional[str] = None
     methodology_description: Optional[str] = None
     communication_style: Optional[str] = None
     style_notes: Optional[str] = None
+    
+    # Strengths & Development
     strengths: Optional[List[str]] = None
     areas_to_improve: Optional[List[str]] = None
+    
+    # Target Market
     target_industries: Optional[List[str]] = None
     target_regions: Optional[List[str]] = None
     target_company_sizes: Optional[List[str]] = None
+    
+    # Goals & Preferences
     quarterly_goals: Optional[str] = None
     preferred_meeting_types: Optional[List[str]] = None
+    
+    # Communication & Email style
+    email_tone: Optional[str] = None
+    uses_emoji: Optional[bool] = None
+    email_signoff: Optional[str] = None
+    writing_length_preference: Optional[str] = None
+    
+    # AI-generated (editable)
+    sales_narrative: Optional[str] = None
+    ai_summary: Optional[str] = None
 
 
 # ==========================================

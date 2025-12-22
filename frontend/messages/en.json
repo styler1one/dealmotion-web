@@ -828,6 +828,7 @@
     "completeness": "Profile completeness",
     "edit": "Edit",
     "save": "Save",
+    "cancel": "Cancel",
     "saving": "Saving...",
     "noProfile": "No profile found",
     "startOnboarding": "Start onboarding to create your profile",
@@ -841,6 +842,13 @@
     "approach": "Approach",
     "notSet": "Not set",
     "years": "years",
+    "fieldSaved": "Saved!",
+    "addNewTag": "Add new...",
+    "selectOption": "Select...",
+    "editHint": "Hover over any field to edit it directly",
+    "yourName": "Your name",
+    "yourRole": "Your role",
+    "refreshWithAI": "Refresh with AI",
     "sections": {
       "personal": "Personal Details",
       "experience": "Experience & Expertise",
@@ -882,7 +890,12 @@
       "persuasionLogic": "Logic & data - Convinces with facts, numbers, and rational arguments",
       "persuasionStory": "Storytelling - Convinces with stories, examples, and emotion",
       "persuasionReference": "Social proof - Convinces with references, cases, and testimonials",
-      "persuasionAuthority": "Authority - Convinces with expertise and thought leadership"
+      "persuasionAuthority": "Authority - Convinces with expertise and thought leadership",
+      "toneProfessional": "Professional",
+      "toneDirect": "Direct",
+      "toneWarm": "Warm",
+      "toneFormal": "Formal",
+      "toneCasual": "Casual"
     },
     "howUsed": {
       "title": "How is this used?",
