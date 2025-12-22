@@ -20,6 +20,7 @@ from anthropic import AsyncAnthropic
 
 from app.services.people_search_provider import get_people_search_provider, PeopleSearchProvider
 from app.services.company_lookup import get_company_lookup, CompanyLookupService
+from app.services.exa_research_service import ExaComprehensiveResearcher
 
 logger = logging.getLogger(__name__)
 
@@ -539,6 +540,58 @@ Important:
                 error=str(e)
             )
     
+    async def _research_company_with_exa(
+        self,
+        company_name: str,
+        website: Optional[str] = None,
+        country: Optional[str] = None
+    ) -> Optional[str]:
+        """
+        Research a company using Exa web search.
+        
+        Uses the same Exa service as prospect research for consistent,
+        high-quality, factual data collection.
+        
+        Args:
+            company_name: Name of the company
+            website: Optional company website URL
+            country: Optional country hint
+            
+        Returns:
+            Markdown formatted research data, or None if unavailable
+        """
+        try:
+            exa_researcher = ExaComprehensiveResearcher()
+            
+            if not exa_researcher.is_available:
+                logger.warning("[MAGIC_ONBOARDING] Exa researcher not available, falling back to AI-only")
+                return None
+            
+            logger.info(f"[MAGIC_ONBOARDING] Starting Exa research for company: {company_name}")
+            
+            # Use the full Exa research pipeline (34 searches)
+            # This is the same quality as prospect research
+            result = await exa_researcher.research_company(
+                company_name=company_name,
+                country=country,
+                website_url=website
+            )
+            
+            if not result.success:
+                logger.warning(f"[MAGIC_ONBOARDING] Exa research failed: {result.errors}")
+                return None
+            
+            logger.info(
+                f"[MAGIC_ONBOARDING] Exa research complete. "
+                f"Topics: {result.total_topics}, Success: {result.successful_topics}"
+            )
+            
+            return result.combined_markdown
+            
+        except Exception as e:
+            logger.error(f"[MAGIC_ONBOARDING] Exa research error: {e}")
+            return None
+    
     async def _synthesize_company_profile(
         self,
         company_name: str,
@@ -547,26 +600,72 @@ Important:
         country: Optional[str] = None
     ) -> Tuple[Dict[str, Any], Dict[str, ProfileField]]:
         """
-        Use Claude to synthesize a company profile from available information.
+        Research and synthesize a company profile using Exa web search + Claude analysis.
         
-        Claude has broad knowledge of companies, especially larger ones.
-        We leverage this to fill in information even without web scraping.
+        Flow:
+        1. Exa web research (same as prospect research) for factual data
+        2. Claude synthesis of research data into structured profile
+        
+        This approach ensures factual, verifiable data instead of AI hallucinations.
         """
-        prompt = f"""You are an expert at researching B2B companies. Analyze the following company and create a comprehensive company profile.
+        # Step 1: Research company with Exa (real web search)
+        research_data = await self._research_company_with_exa(
+            company_name=company_name,
+            website=website,
+            country=country
+        )
+        
+        # Determine if we have web research or need to rely on AI knowledge
+        has_research = research_data is not None and len(research_data) > 500
+        
+        if has_research:
+            logger.info(f"[MAGIC_ONBOARDING] Using Exa research data ({len(research_data)} chars) for synthesis")
+            prompt = f"""You are an expert at analyzing B2B company research. Based on the following REAL WEB RESEARCH DATA, create a comprehensive company profile.
 
-COMPANY INFORMATION:
+## COMPANY BEING ANALYZED
 - Company Name: {company_name}
 - Website: {website or 'Not provided'}
 - LinkedIn: {linkedin_url or 'Not provided'}
 - Country: {country or 'Not provided'}
 
-TASK: Based on your knowledge of this company (and companies in general), create a detailed profile.
-If you have specific knowledge about this company, use it. If not, make reasonable inferences based on:
-- The company name and industry
-- Common patterns for companies in their sector
-- The country/region they operate in
+## WEB RESEARCH DATA
+The following is real data collected from web searches about this company:
 
-Return ONLY valid JSON with this exact structure:
+{research_data}
+
+---
+
+## TASK
+Analyze the research data above and extract/synthesize a structured company profile.
+- ONLY use information that is supported by the research data
+- If something is not in the research, mark confidence as low or omit
+- Do NOT hallucinate or invent information not present in the research
+
+Return ONLY valid JSON with this exact structure:"""
+            source_type = "web_research"
+            base_confidence = 0.85
+        else:
+            logger.warning(f"[MAGIC_ONBOARDING] No Exa research available, using AI knowledge only")
+            prompt = f"""You are an expert at researching B2B companies. Analyze the following company and create a profile.
+
+## COMPANY BEING ANALYZED
+- Company Name: {company_name}
+- Website: {website or 'Not provided'}
+- LinkedIn: {linkedin_url or 'Not provided'}
+- Country: {country or 'Not provided'}
+
+## TASK
+Based on your training knowledge about this company (if any), create a profile.
+- Be honest about what you know vs don't know
+- Mark confidence appropriately
+- If you don't have specific knowledge, focus on industry patterns
+
+Return ONLY valid JSON with this exact structure:"""
+            source_type = "ai_knowledge"
+            base_confidence = 0.5
+        
+        # Complete the prompt with JSON structure
+        prompt += f"""
 {{
     "company_name": "{company_name}",
     "industry": "Primary industry/sector",
@@ -620,11 +719,11 @@ Return ONLY valid JSON with this exact structure:
     }}
 }}
 
-Confidence scoring:
-- 0.9+ = You have specific knowledge about this company
-- 0.6-0.8 = Reasonable inference based on industry/context
-- 0.3-0.5 = Educated guess based on general patterns
-- Leave fields empty/null if you really don't know"""
+Confidence scoring guidelines:
+- 0.9+ = Directly stated in research data OR you have specific verified knowledge
+- 0.6-0.8 = Strongly implied by research data OR reasonable inference
+- 0.3-0.5 = Weak inference, may need user verification
+- Leave fields empty/null if truly unknown"""
 
         try:
             response = await self.anthropic.messages.create(
@@ -648,18 +747,27 @@ Confidence scoring:
             # Extract confidence scores
             confidence_data = result.pop("_field_confidence", {})
             
-            # Build field sources
+            # Build field sources with appropriate confidence based on data source
             field_sources = {}
             for field_name, value in result.items():
                 if field_name.startswith("_"):
                     continue
                 
-                confidence = confidence_data.get(field_name, 0.5)
-                source = "ai_derived"
+                # Get AI-reported confidence, adjust based on source type
+                ai_confidence = confidence_data.get(field_name, 0.5)
                 
-                # Website was provided, higher confidence for related fields
+                if has_research:
+                    # Web research - boost confidence, cap at 0.95
+                    source = source_type
+                    confidence = min(0.95, ai_confidence * 1.1)
+                else:
+                    # AI-only - reduce confidence
+                    source = source_type
+                    confidence = ai_confidence * 0.7
+                
+                # Website was provided, higher confidence for those fields
                 if website and field_name in ["website", "company_name"]:
-                    source = "website"
+                    source = "user_provided"
                     confidence = 1.0
                 
                 field_sources[field_name] = ProfileField(
