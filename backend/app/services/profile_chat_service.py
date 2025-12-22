@@ -600,6 +600,99 @@ Geef een duidelijke samenvatting van wat je hebt geleerd, niet een generieke afs
         )
         
         return response.content[0].text.strip()
+    
+    async def generate_sales_narrative(
+        self,
+        profile: Dict[str, Any],
+        linkedin_raw: Optional[Dict[str, Any]] = None
+    ) -> str:
+        """
+        Generate a personal sales narrative/story based on the profile data.
+        This creates a compelling, personalized story about the sales professional.
+        """
+        
+        linkedin_data = linkedin_raw or {}
+        about_section = linkedin_data.get("about_section", "")
+        experience_section = linkedin_data.get("experience_section", "")
+        skills = linkedin_data.get("skills", [])
+        headline = linkedin_data.get("headline", "")
+        
+        prompt = f"""Je bent een professionele copywriter die persoonlijke verhalen schrijft voor sales professionals.
+
+Schrijf een boeiend, persoonlijk verhaal (3-4 alinea's) over deze sales professional. Het verhaal moet:
+- In de derde persoon geschreven zijn
+- Authentiek en herkenbaar klinken
+- Kernpunten uit hun ervaring en aanpak belichten
+- Eindigend met wat hen drijft en hoe ze waarde creëren
+
+=== PROFIEL DATA ===
+Naam: {profile.get('full_name', 'Onbekend')}
+Rol: {profile.get('role', 'Sales Professional')}
+Ervaring: {profile.get('experience_years', '?')} jaar
+Methodologie: {profile.get('sales_methodology', 'Niet gespecificeerd')}
+Communicatiestijl: {profile.get('communication_style', 'Niet gespecificeerd')}
+Sterktes: {', '.join(profile.get('strengths', [])) if profile.get('strengths') else 'Niet gespecificeerd'}
+Target Industries: {', '.join(profile.get('target_industries', [])) if profile.get('target_industries') else 'Niet gespecificeerd'}
+Target Bedrijfsgroottes: {', '.join(profile.get('target_company_sizes', [])) if profile.get('target_company_sizes') else 'Niet gespecificeerd'}
+Kwartaaldoelen: {profile.get('quarterly_goals', 'Niet gespecificeerd')}
+Email Toon: {profile.get('email_tone', 'Niet gespecificeerd')}
+
+=== LINKEDIN INFORMATIE ===
+Headline: {headline}
+Over mij: {about_section[:1000] if about_section else 'Niet beschikbaar'}
+Ervaring: {experience_section[:1000] if experience_section else 'Niet beschikbaar'}
+Skills: {', '.join(skills[:10]) if skills else 'Niet beschikbaar'}
+
+=== INSTRUCTIES ===
+1. Schrijf een PERSOONLIJK verhaal, geen opsomming
+2. Gebruik concrete details uit de data
+3. Schrijf in het Nederlands
+4. 3-4 alinea's, gescheiden door dubbele newlines
+5. Start NIET met de naam - begin met een krachtige openingszin over hun expertise of aanpak
+6. Maak het herkenbaar voor de persoon zelf
+7. Eindig met hun drive/motivatie of hoe ze impact maken
+
+Schrijf het verhaal:"""
+
+        try:
+            response = await self.anthropic.messages.create(
+                model=self.model,
+                max_tokens=1000,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            
+            return response.content[0].text.strip()
+        except Exception as e:
+            logger.error(f"[PROFILE_CHAT] Failed to generate sales narrative: {e}")
+            return ""
+    
+    async def generate_ai_summary(
+        self,
+        profile: Dict[str, Any]
+    ) -> str:
+        """Generate a short AI summary of the profile."""
+        
+        prompt = f"""Schrijf een korte samenvatting (2-3 zinnen) van deze sales professional:
+
+Naam: {profile.get('full_name', 'Onbekend')}
+Rol: {profile.get('role', 'Sales Professional')}
+Ervaring: {profile.get('experience_years', '?')} jaar
+Sterktes: {', '.join(profile.get('strengths', [])) if profile.get('strengths') else 'Niet gespecificeerd'}
+Target Industries: {', '.join(profile.get('target_industries', [])) if profile.get('target_industries') else 'Niet gespecificeerd'}
+
+Schrijf een professionele, beknopte samenvatting in het Nederlands:"""
+
+        try:
+            response = await self.anthropic.messages.create(
+                model=self.model,
+                max_tokens=200,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            
+            return response.content[0].text.strip()
+        except Exception as e:
+            logger.error(f"[PROFILE_CHAT] Failed to generate AI summary: {e}")
+            return ""
 
 
 # Singleton instance

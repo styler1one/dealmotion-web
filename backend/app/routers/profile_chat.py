@@ -355,12 +355,38 @@ async def complete_session(
     
     session = result.data
     profile_data = session.get("current_profile", {})
+    linkedin_raw = profile_data.get("linkedin_raw", {})
     profile_type = session["profile_type"]
     
     profile_id = None
     
     if request.save_profile:
         if profile_type == "sales":
+            # Generate sales narrative and AI summary if not already present
+            chat_service = get_profile_chat_service()
+            
+            sales_narrative = profile_data.get("sales_narrative")
+            ai_summary = profile_data.get("ai_summary")
+            
+            # Generate narrative if missing
+            if not sales_narrative:
+                try:
+                    sales_narrative = await chat_service.generate_sales_narrative(
+                        profile_data,
+                        linkedin_raw
+                    )
+                    logger.info(f"[PROFILE_CHAT] Generated sales narrative for user {user_id}")
+                except Exception as e:
+                    logger.error(f"[PROFILE_CHAT] Failed to generate narrative: {e}")
+            
+            # Generate AI summary if missing
+            if not ai_summary:
+                try:
+                    ai_summary = await chat_service.generate_ai_summary(profile_data)
+                    logger.info(f"[PROFILE_CHAT] Generated AI summary for user {user_id}")
+                except Exception as e:
+                    logger.error(f"[PROFILE_CHAT] Failed to generate summary: {e}")
+            
             # Save to sales_profiles
             sales_data = {
                 "organization_id": org_id,
@@ -379,8 +405,8 @@ async def complete_session(
                 "uses_emoji": profile_data.get("uses_emoji", False),
                 "email_signoff": profile_data.get("email_signoff"),
                 "writing_length_preference": profile_data.get("writing_length_preference"),
-                "ai_summary": profile_data.get("ai_summary"),
-                "sales_narrative": profile_data.get("sales_narrative"),
+                "ai_summary": ai_summary,
+                "sales_narrative": sales_narrative,
                 "style_guide": profile_data.get("style_guide"),
                 "profile_completeness": int(session.get("completeness_score", 0) * 100)
             }
@@ -440,7 +466,9 @@ async def complete_session(
             "target_industries": profile_data.get("target_industries", []),
             "quarterly_goals": profile_data.get("quarterly_goals"),
             "email_tone": profile_data.get("email_tone"),
-            "completeness": int(session.get("completeness_score", 0) * 100)
+            "completeness": int(session.get("completeness_score", 0) * 100),
+            "has_narrative": bool(sales_narrative),
+            "has_summary": bool(ai_summary)
         }
     else:
         saved_summary = {
