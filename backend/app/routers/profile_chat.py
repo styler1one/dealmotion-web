@@ -149,7 +149,8 @@ async def start_chat_session(
             }
         ],
         "completeness_score": response.completeness_score,
-        "status": "completed" if response.is_complete else "active"
+        # Always start as active - only mark completed when user explicitly saves
+        "status": "active"
     }
     
     result = supabase.table("profile_chat_sessions").insert(session_data).execute()
@@ -235,16 +236,13 @@ async def send_message(
         "timestamp": datetime.utcnow().isoformat()
     })
     
-    # Update session
+    # Update session - keep status as active, only user can complete via save button
     update_data = {
         "messages": messages,
         "current_profile": response.current_profile,
-        "completeness_score": response.completeness_score,
-        "status": "completed" if response.is_complete else "active"
+        "completeness_score": response.completeness_score
+        # Note: status stays "active" - only set to "completed" when user explicitly saves
     }
-    
-    if response.is_complete:
-        update_data["completed_at"] = datetime.utcnow().isoformat()
     
     supabase.table("profile_chat_sessions").update(update_data).eq(
         "id", str(session_id)
