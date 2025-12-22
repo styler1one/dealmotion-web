@@ -917,6 +917,7 @@
     "completeness": "Profiel volledigheid",
     "edit": "Bewerken",
     "save": "Opslaan",
+    "cancel": "Annuleren",
     "saving": "Opslaan...",
     "noProfile": "Geen bedrijfsprofiel gevonden",
     "noProfileDesc": "Maak een bedrijfsprofiel aan om gepersonaliseerde AI-output te krijgen",
@@ -928,6 +929,12 @@
     "noProducts": "Nog geen producten toegevoegd",
     "noPersonas": "Nog geen personas toegevoegd",
     "noCaseStudies": "Nog geen case studies toegevoegd",
+    "fieldSaved": "Opgeslagen!",
+    "addNew": "Toevoegen...",
+    "editHint": "Hover over een veld om het direct te bewerken",
+    "companyName": "Bedrijfsnaam",
+    "industry": "Industrie",
+    "refreshWithAI": "Vernieuwen met AI",
     "sections": {
       "basic": "Basisinformatie",
       "products": "Producten & Diensten",
@@ -945,9 +952,11 @@
       "companySizes": "Bedrijfsgrootte",
       "painPoints": "Pain Points",
       "salesCycle": "Sales Cycle",
-      "avgDeal": "Gemiddelde Deal",
+      "avgDeal": "Gemiddelde Dealgrootte",
       "competitors": "Concurrenten",
-      "competitiveAdvantage": "Competitief Voordeel"
+      "competitiveAdvantage": "Competitief Voordeel",
+      "valueProps": "Kernwaarde Proposities",
+      "result": "Resultaat"
     },
     "howUsed": {
       "title": "Hoe wordt dit gebruikt?",
@@ -957,17 +966,6 @@
       "followupDesc": "Relevant productinformatie wordt automatisch toegevoegd",
       "research": "Research",
       "researchDesc": "ICP wordt gebruikt om relevante prospect info te filteren"
-    },
-    "fields": {
-      "companyName": "Bedrijfsnaam",
-      "website": "Website",
-      "industry": "Industrie",
-      "companySize": "Bedrijfsgrootte",
-      "products": "Producten/Diensten",
-      "targetAudience": "Doelgroep",
-      "competitors": "Concurrenten",
-      "uniqueSellingPoints": "Unique Selling Points",
-      "companyValues": "Bedrijfswaarden"
     },
     "toast": {
       "saved": "Profiel opgeslagen",

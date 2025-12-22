@@ -920,6 +920,7 @@
     "completeness": "Profile completeness",
     "edit": "Edit",
     "save": "Save",
+    "cancel": "Cancel",
     "saving": "Saving...",
     "noProfile": "No company profile found",
     "noProfileDesc": "Create a company profile to get personalized AI outputs",
@@ -931,6 +932,12 @@
     "noProducts": "No products added yet",
     "noPersonas": "No personas added yet",
     "noCaseStudies": "No case studies added yet",
+    "fieldSaved": "Saved!",
+    "addNew": "Add new...",
+    "editHint": "Hover over any field to edit it directly",
+    "companyName": "Company name",
+    "industry": "Industry",
+    "refreshWithAI": "Refresh with AI",
     "sections": {
       "basic": "Basic Information",
       "products": "Products & Services",
@@ -948,9 +955,11 @@
       "companySizes": "Company Sizes",
       "painPoints": "Pain Points",
       "salesCycle": "Sales Cycle",
-      "avgDeal": "Average Deal",
+      "avgDeal": "Average Deal Size",
       "competitors": "Competitors",
-      "competitiveAdvantage": "Competitive Advantage"
+      "competitiveAdvantage": "Competitive Advantage",
+      "valueProps": "Core Value Propositions",
+      "result": "Result"
     },
     "howUsed": {
       "title": "How is this used?",
@@ -960,17 +969,6 @@
       "followupDesc": "Relevant product info is added automatically",
       "research": "Research",
       "researchDesc": "ICP is used to filter relevant prospect info"
-    },
-    "fields": {
-      "companyName": "Company Name",
-      "website": "Website",
-      "industry": "Industry",
-      "companySize": "Company Size",
-      "products": "Products/Services",
-      "targetAudience": "Target Audience",
-      "competitors": "Competitors",
-      "uniqueSellingPoints": "Unique Selling Points",
-      "companyValues": "Company Values"
     },
     "toast": {
       "saved": "Profile saved",

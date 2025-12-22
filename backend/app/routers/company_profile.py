@@ -117,26 +117,43 @@ class CompanyProfileCreateRequest(BaseModel):
 
 
 class CompanyProfileUpdateRequest(BaseModel):
-    """Request for updating company profile."""
+    """Request for updating company profile - supports all editable fields."""
+    # Basic info
     company_name: Optional[str] = None
     industry: Optional[str] = None
     company_size: Optional[str] = None
     headquarters: Optional[str] = None
     founded_year: Optional[int] = None
     website: Optional[str] = None
+    
+    # Products & Services
     products: Optional[List[ProductModel]] = None
+    
+    # Value propositions
     core_value_props: Optional[List[str]] = None
     differentiators: Optional[List[str]] = None
     unique_selling_points: Optional[str] = None
+    
+    # ICP & Personas
     ideal_customer_profile: Optional[ICPModel] = None
     buyer_personas: Optional[List[BuyerPersonaModel]] = None
+    
+    # Case studies & Testimonials
     case_studies: Optional[List[CaseStudyModel]] = None
     testimonials: Optional[List[str]] = None
+    
+    # Metrics & Competition
     metrics: Optional[Dict[str, Any]] = None
     competitors: Optional[List[str]] = None
     competitive_advantages: Optional[str] = None
+    
+    # Sales info
     typical_sales_cycle: Optional[str] = None
     average_deal_size: Optional[str] = None
+    
+    # AI-generated content (editable)
+    company_narrative: Optional[str] = None
+    ai_summary: Optional[str] = None
 
 
 class CompanyProfileResponse(BaseModel):
