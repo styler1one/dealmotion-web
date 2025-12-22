@@ -71,6 +71,8 @@ SALES_PROFILE_FIELDS = {
     # Communication preferences (need to ask)
     "email_tone": {"priority": 4, "required": True, "from_linkedin": False,
         "question_hint": "Hoe schrijf je liefst emails? Direct, warm, formeel?"},
+    "email_signoff": {"priority": 5, "required": False, "from_linkedin": False,
+        "question_hint": "Hoe sluit je emails af? (bijv. 'Groet', 'Met vriendelijke groet', etc.)"},
     "uses_emoji": {"priority": 5, "required": False, "from_linkedin": False,
         "question_hint": "Gebruik je emoji's in professionele communicatie?"},
     "writing_length_preference": {"priority": 5, "required": False, "from_linkedin": False,

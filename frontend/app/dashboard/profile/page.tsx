@@ -16,10 +16,27 @@ import {
   RefreshCw,
   Loader2,
   BookOpen,
-  Wand2
+  Wand2,
+  Mail,
+  MessageSquare,
+  Sparkles,
+  Check,
+  X
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import type { User } from '@supabase/supabase-js'
+
+interface StyleGuide {
+  tone?: string
+  formality?: string
+  language_style?: string
+  persuasion_style?: string
+  emoji_usage?: boolean
+  signoff?: string
+  writing_length?: string
+  generated_at?: string
+  confidence_score?: number
+}
 
 interface SalesProfileData {
   id: string
@@ -40,6 +57,12 @@ interface SalesProfileData {
   ai_summary: string | null
   sales_narrative: string | null
   profile_completeness: number
+  // Email & Communication preferences
+  email_tone: string | null
+  uses_emoji: boolean | null
+  email_signoff: string | null
+  writing_length_preference: string | null
+  style_guide: StyleGuide | null
   created_at: string
   updated_at: string
 }
@@ -138,7 +161,7 @@ export default function ProfilePage() {
                 <Edit className="h-4 w-4 mr-2" />
                 {t('edit')}
               </Button>
-              <Button onClick={() => router.push('/onboarding/magic')} className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700">
+              <Button onClick={() => router.push('/onboarding/chat')} className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700">
                 <Wand2 className="h-4 w-4 mr-2" />
                 Refresh with AI
               </Button>
@@ -370,6 +393,88 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Communication & Email Style - Full Width */}
+      {(profile.email_tone || profile.email_signoff || profile.style_guide) && (
+        <Card className="mt-6 border-violet-200/50 dark:border-violet-800/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5 text-violet-600" />
+              Communicatiestijl & Email Voorkeuren
+            </CardTitle>
+            <CardDescription>
+              Zo schrijft DealMotion emails en berichten namens jou
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {/* Email Tone */}
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">Schrijftoon</p>
+                <p className="text-base font-medium capitalize">
+                  {profile.email_tone || profile.style_guide?.tone || 'Professioneel'}
+                </p>
+              </div>
+              
+              {/* Writing Length */}
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">Berichtlengte</p>
+                <p className="text-base font-medium capitalize">
+                  {profile.writing_length_preference === 'concise' ? 'Kort & bondig' :
+                   profile.writing_length_preference === 'detailed' ? 'Uitgebreid' :
+                   profile.style_guide?.writing_length === 'concise' ? 'Kort & bondig' :
+                   profile.style_guide?.writing_length === 'detailed' ? 'Uitgebreid' :
+                   'Standaard'}
+                </p>
+              </div>
+              
+              {/* Emoji Usage */}
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">Emoji gebruik</p>
+                <div className="flex items-center gap-2">
+                  {(profile.uses_emoji || profile.style_guide?.emoji_usage) ? (
+                    <>
+                      <Check className="h-4 w-4 text-green-500" />
+                      <span className="text-base">Ja, in emails</span>
+                    </>
+                  ) : (
+                    <>
+                      <X className="h-4 w-4 text-slate-400" />
+                      <span className="text-base text-muted-foreground">Nee</span>
+                    </>
+                  )}
+                </div>
+              </div>
+              
+              {/* Email Signoff */}
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">Email afsluiting</p>
+                <p className="text-base font-medium">
+                  {profile.email_signoff || profile.style_guide?.signoff || 'Met vriendelijke groet'}
+                </p>
+              </div>
+            </div>
+            
+            {/* Persuasion Style - if available */}
+            {profile.style_guide?.persuasion_style && (
+              <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+                <div className="flex items-start gap-3">
+                  <Sparkles className="h-5 w-5 text-violet-500 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Overtuigingsstijl</p>
+                    <p className="text-base text-slate-700 dark:text-slate-300">
+                      {profile.style_guide.persuasion_style === 'logic' && 'Logica & data - Overtuigt met feiten, cijfers en rationele argumenten'}
+                      {profile.style_guide.persuasion_style === 'story' && 'Storytelling - Overtuigt met verhalen, voorbeelden en emotie'}
+                      {profile.style_guide.persuasion_style === 'reference' && 'Social proof - Overtuigt met referenties, cases en testimonials'}
+                      {profile.style_guide.persuasion_style === 'authority' && 'Autoriteit - Overtuigt met expertise en thought leadership'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* How this is used */}
       <Card className="mt-6 bg-muted/50">
