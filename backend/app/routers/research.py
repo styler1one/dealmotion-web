@@ -20,7 +20,6 @@ limiter = Limiter(key_func=get_remote_address)
 from app.database import get_supabase_service, get_user_client
 from app.services.prospect_service import get_prospect_service
 from app.services.company_lookup import get_company_lookup
-from app.services.usage_service import get_usage_service
 from app.services.credit_service import get_credit_service
 from app.inngest.events import send_event, Events, use_inngest_for, get_research_event, get_research_architecture
 
@@ -257,25 +256,7 @@ async def start_research(
     except Exception as e:
         logger.warning(f"Could not get user settings, using default language: {e}")
     
-    # Check subscription limit (v3: flow-based with flow pack fallback)
-    usage_service = get_usage_service()
-    limit_check = await usage_service.check_flow_limit(organization_id)
-    use_flow_pack = limit_check.get("using_flow_pack", False)
-    
-    if not limit_check.get("allowed"):
-        raise HTTPException(
-            status_code=402,  # Payment Required
-            detail={
-                "error": "limit_exceeded",
-                "message": "You have reached your flow limit for this month",
-                "current": limit_check.get("current", 0),
-                "limit": limit_check.get("limit", 0),
-                "flow_pack_balance": limit_check.get("flow_pack_balance", 0),
-                "upgrade_url": "/pricing"
-            }
-        )
-    
-    # Check credits BEFORE starting (v4: credit-based system)
+    # Check credits BEFORE starting (v4: credit-based system replaces flow limits)
     credit_service = get_credit_service()
     has_credits, credit_balance = await credit_service.check_credits(
         organization_id=organization_id,
@@ -383,9 +364,6 @@ async def start_research(
                 output_language
             )
             logger.info(f"Research {research_id} triggered via BackgroundTasks")
-        
-        # Increment flow counter (v3: flow-based tracking with flow pack support)
-        await usage_service.increment_flow(organization_id, use_flow_pack=use_flow_pack)
         
         # Consume credits (v4: credit-based system for cost management)
         try:

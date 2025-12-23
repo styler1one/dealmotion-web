@@ -19,7 +19,6 @@ from app.services.prospect_discovery import (
     DiscoveryResult,
     DiscoveredProspect
 )
-from app.services.usage_service import get_usage_service
 from app.services.credit_service import get_credit_service
 from app.inngest.events import send_event
 
@@ -171,17 +170,7 @@ async def start_prospecting_search(
     
     logger.info(f"[PROSPECTING] Starting async search for user {user_id}")
     
-    # Check usage limit (counts as a flow)
-    usage_service = get_usage_service()
-    can_use = await usage_service.check_flow_limit(organization_id)
-    
-    if not can_use:
-        raise HTTPException(
-            status_code=402,
-            detail="Flow limit reached. Upgrade your plan or purchase a flow pack."
-        )
-    
-    # Check credits BEFORE starting (v4: credit-based system)
+    # Check credits BEFORE starting (v4: credit-based system replaces flow limits)
     # ⚠️ Discovery is the MOST EXPENSIVE action (5 credits)
     credit_service = get_credit_service()
     has_credits, credit_balance = await credit_service.check_credits(
@@ -231,9 +220,6 @@ async def start_prospecting_search(
         raise HTTPException(status_code=500, detail="Failed to create search record")
     
     search_id = result.data[0]["id"]
-    
-    # Increment usage now (before async processing)
-    await usage_service.increment_flow(organization_id)
     
     # Consume credits (v4: credit-based system for cost management)
     # ⚠️ Discovery is expensive: ~22 Exa calls + 3 Claude calls = 4 credits

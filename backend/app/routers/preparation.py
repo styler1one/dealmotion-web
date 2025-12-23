@@ -20,7 +20,6 @@ limiter = Limiter(key_func=get_remote_address)
 from app.services.rag_service import rag_service
 from app.services.prep_generator import prep_generator
 from app.services.prospect_service import get_prospect_service
-from app.services.usage_service import get_usage_service
 from app.services.credit_service import get_credit_service
 from app.services.api_usage_service import get_api_usage_service
 
@@ -184,22 +183,7 @@ async def start_prep(
         
         organization_id = org_response.data[0]["organization_id"]
         
-        # Check subscription limit
-        usage_service = get_usage_service()
-        limit_check = await usage_service.check_limit(organization_id, "preparation")
-        if not limit_check.get("allowed"):
-            raise HTTPException(
-                status_code=402,  # Payment Required
-                detail={
-                    "error": "limit_exceeded",
-                    "message": "You have reached your preparation limit for this month",
-                    "current": limit_check.get("current", 0),
-                    "limit": limit_check.get("limit", 0),
-                    "upgrade_url": "/pricing"
-                }
-            )
-        
-        # Check credits BEFORE starting (v4: credit-based system)
+        # Check credits BEFORE starting (v4: credit-based system replaces usage limits)
         credit_service = get_credit_service()
         has_credits, credit_balance = await credit_service.check_credits(
             organization_id=organization_id,
@@ -331,9 +315,6 @@ async def start_prep(
                 body.selected_followup_ids
             )
             logger.info(f"Prep {prep_id} triggered via BackgroundTasks")
-        
-        # Increment usage counter
-        await usage_service.increment_usage(organization_id, "preparation")
         
         # Consume credits (v4: credit-based system)
         try:

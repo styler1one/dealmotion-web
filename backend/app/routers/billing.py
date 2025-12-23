@@ -14,7 +14,6 @@ from app.deps import get_current_user
 from app.database import get_supabase_service
 from app.utils.errors import handle_exception
 from app.services.subscription_service import get_subscription_service
-from app.services.usage_service import get_usage_service
 from app.services.flow_pack_service import get_flow_pack_service
 
 logger = logging.getLogger(__name__)
@@ -354,20 +353,34 @@ async def get_usage(current_user: dict = Depends(get_current_user)):
         
         organization_id = await get_user_organization(user_id)
         
-        usage_service = get_usage_service()
-        usage = await usage_service.get_usage(organization_id)
+        # v4: Return credit-based usage instead of flow-based
+        from app.services.credit_service import get_credit_service
+        credit_service = get_credit_service()
+        balance = await credit_service.get_balance(organization_id)
         
-        # Add percentage calculations
-        for key in ["research", "preparation", "followup", "kb_documents"]:
-            if key in usage and not usage[key].get("unlimited"):
-                limit = usage[key].get("limit", 0)
-                used = usage[key].get("used", 0)
-                if limit > 0:
-                    usage[key]["percentage"] = round((used / limit) * 100, 1)
-                    usage[key]["remaining"] = max(0, limit - used)
-                else:
-                    usage[key]["percentage"] = 100 if used > 0 else 0
-                    usage[key]["remaining"] = 0
+        # Format for backward compatibility with frontend
+        total = balance.get("subscription_credits_total", 0)
+        used = balance.get("subscription_credits_used", 0)
+        remaining = balance.get("total_credits_available", 0)
+        unlimited = balance.get("is_unlimited", False)
+        
+        usage = {
+            "period_start": balance.get("period_start"),
+            "period_end": balance.get("period_end"),
+            "flow": {
+                "used": used,
+                "limit": total,
+                "unlimited": unlimited,
+                "remaining": remaining,
+                "percentage": 0 if unlimited else (round((used / total) * 100, 1) if total > 0 else 0),
+            },
+            # Legacy compatibility - all point to credits now
+            "research": {"used": 0, "limit": total, "unlimited": unlimited, "remaining": remaining},
+            "preparation": {"used": 0, "limit": total, "unlimited": unlimited, "remaining": remaining},
+            "followup": {"used": 0, "limit": total, "unlimited": unlimited, "remaining": remaining},
+            "transcription_seconds": {"used": 0, "limit": -1, "unlimited": True},
+            "kb_documents": {"used": 0, "limit": -1, "unlimited": True},
+        }
         
         return usage
         
@@ -397,20 +410,31 @@ async def check_limit(
         
         organization_id = await get_user_organization(user_id)
         
-        usage_service = get_usage_service()
+        # v4: Use credit-based checking (replaces flow limits)
+        from app.services.credit_service import get_credit_service
+        credit_service = get_credit_service()
         
-        # v2: Use flow-based limit checking
-        if request.metric == "flow" or request.metric in ["research", "preparation", "followup"]:
-            result = await usage_service.check_flow_limit(organization_id)
-        elif request.metric == "transcription_seconds" and request.additional_amount:
-            result = await usage_service.check_transcription_limit(
-                organization_id,
-                request.additional_amount
-            )
-        else:
-            result = await usage_service.check_limit(organization_id, request.metric)
+        # Map legacy metric names to credit actions
+        action_map = {
+            "flow": "research_flow",
+            "research": "research_flow",
+            "preparation": "preparation",
+            "followup": "followup",
+            "transcription_seconds": "transcription_minute",
+        }
+        action = action_map.get(request.metric, request.metric)
+        quantity = request.additional_amount // 60 if request.metric == "transcription_seconds" and request.additional_amount else 1
         
-        return result
+        allowed, balance = await credit_service.check_credits(organization_id, action, quantity)
+        
+        return {
+            "allowed": allowed,
+            "current": balance.get("subscription_credits_used", 0),
+            "limit": balance.get("subscription_credits_total", 0),
+            "unlimited": balance.get("is_unlimited", False),
+            "remaining": balance.get("total_credits_available", 0),
+            "upgrade_required": not allowed,
+        }
         
     except HTTPException:
         raise

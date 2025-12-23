@@ -25,7 +25,6 @@ from app.services.followup_generator import get_followup_generator
 from app.services.transcript_parser import get_transcript_parser
 from app.services.prospect_context_service import get_prospect_context_service
 from app.services.prospect_service import get_prospect_service
-from app.services.usage_service import get_usage_service
 
 # Inngest integration
 from app.inngest.events import send_event, use_inngest_for, Events
@@ -320,26 +319,7 @@ async def upload_audio(
         
         organization_id = org_response.data[0]["organization_id"]
         
-        # Check subscription limit (v3: includes flow pack balance)
-        usage_service = get_usage_service()
-        limit_check = await usage_service.check_flow_limit(organization_id)
-        if not limit_check.get("allowed"):
-            raise HTTPException(
-                status_code=402,  # Payment Required
-                detail={
-                    "error": "limit_exceeded",
-                    "message": "You have reached your follow-up limit for this month",
-                    "current": limit_check.get("current", 0),
-                    "limit": limit_check.get("limit", 0),
-                    "flow_pack_balance": limit_check.get("flow_pack_balance", 0),
-                    "upgrade_url": "/pricing"
-                }
-            )
-        
-        # Track whether we should use flow pack for this upload
-        use_flow_pack = limit_check.get("using_flow_pack", False)
-        
-        # Check credits BEFORE starting (v4: credit-based system)
+        # Check credits BEFORE starting (v4: credit-based system replaces flow limits)
         # Minimum check: ~3 credits for 5-min transcription + summary
         from app.services.credit_service import get_credit_service
         credit_service = get_credit_service()
@@ -486,9 +466,6 @@ async def upload_audio(
                 language
             )
             logger.info(f"Followup {followup_id} triggered via BackgroundTasks")
-        
-        # Increment usage counter
-        await usage_service.increment_usage(organization_id, "followup")
         
         logger.info(f"Created followup {followup_id} for prospect {prospect_id}")
         
@@ -675,26 +652,7 @@ async def upload_transcript(
         
         organization_id = org_response.data[0]["organization_id"]
         
-        # Check subscription limit (v3: includes flow pack balance)
-        usage_service = get_usage_service()
-        limit_check = await usage_service.check_flow_limit(organization_id)
-        if not limit_check.get("allowed"):
-            raise HTTPException(
-                status_code=402,  # Payment Required
-                detail={
-                    "error": "limit_exceeded",
-                    "message": "You have reached your follow-up limit for this month",
-                    "current": limit_check.get("current", 0),
-                    "limit": limit_check.get("limit", 0),
-                    "flow_pack_balance": limit_check.get("flow_pack_balance", 0),
-                    "upgrade_url": "/pricing"
-                }
-            )
-        
-        # Track whether we should use flow pack for this upload
-        use_flow_pack = limit_check.get("using_flow_pack", False)
-        
-        # Check credits BEFORE starting (v4: credit-based system)
+        # Check credits BEFORE starting (v4: credit-based system replaces flow limits)
         # For transcript upload: only summary needed (2 credits)
         from app.services.credit_service import get_credit_service
         credit_service = get_credit_service()
@@ -826,9 +784,6 @@ async def upload_transcript(
                 language
             )
             logger.info(f"Transcript followup {followup_id} triggered via BackgroundTasks")
-        
-        # Increment usage counter
-        await usage_service.increment_usage(organization_id, "followup")
         
         logger.info(f"Created transcript followup {followup_id} for prospect {prospect_id}, language={language}")
         
