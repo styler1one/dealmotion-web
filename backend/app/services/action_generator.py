@@ -441,6 +441,12 @@ Read the ENTIRE transcript carefully and extract:
 - Only in "Questions to consider" section
 - Avoid bullets in narrative sections — use prose instead
 
+**Date logic:**
+- The meeting date is your reference point
+- All future dates mentioned must be AFTER the meeting date
+- "Next month", "Q1", "in March" → calculate the correct year based on meeting date
+- Example: if meeting is December 2025 and they say "March", that's March 2026
+
 ---
 
 ## CONTENT COMPLETENESS
@@ -588,6 +594,7 @@ Now create the meeting report. Remember: this is diplomacy with structure.
 ✓ All table headers in output language
 ✓ Agreements table uses Doel/Goal column (outcome-focused)
 ✓ Sentence case for all headings
+✓ **DATE CONSISTENCY**: All future dates must be AFTER the meeting date ({meeting_date}). If meeting is Dec 2025, "next March" = March 2026, not 2025.
 
 Generate the complete meeting report:"""
     
