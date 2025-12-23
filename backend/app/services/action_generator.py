@@ -400,13 +400,14 @@ Read the ENTIRE transcript carefully and extract:
 
 | Category | What to capture | Why it matters |
 |----------|-----------------|----------------|
-| **People** | Every name + their role/title + organization. If role unclear, infer from context (e.g., "leads the IT team" → IT Manager) | Relationship assets, DMU mapping |
-| **Technologies** | Systems, platforms, tools + status (current/planned/replacing) | Solution context |
-| **Timelines** | Dates, deadlines, phases, "Q2", "next year", "by 2027" | Urgency and planning |
-| **Organizations** | Partners, vendors, competitors mentioned | Customer's ecosystem |
+| **People (ALL)** | 1) Meeting participants with roles. 2) ALL other persons mentioned (colleagues, stakeholders, decision-makers, contacts to introduce). Always capture: name + role/title + organization. If role is stated in transcript, use that exact role (not outdated info). | Complete stakeholder map, DMU mapping, relationship assets |
+| **Technologies** | ALL systems, platforms, tools mentioned. Capture: name + status (current/planned/end-of-life/replacing) + integrations. Note version changes, migration paths, deadlines. | Full technology landscape and dependencies |
+| **Timelines** | Dates, deadlines, phases, "Q2", "next year", "by 2027", migration dates, end-of-life dates | Urgency and planning |
+| **Organizations** | Partners, vendors, competitors, alternative suppliers mentioned. Note: who does what, who might be replaced, who else is being considered. | Customer's ecosystem and competitive landscape |
 | **Strategic themes** | Underlying challenges, ambitions, political dynamics | Depth of understanding |
 | **Commitments** | Who promised what, follow-ups, introductions, deliverables | Accountability |
-| **Signals** | Enthusiasm, concerns, hesitations, implicit needs | Subtleties that matter |
+| **Culture signals** | Quotes that reveal company values, working style, culture (e.g., "not talking but doing", "family business feel", "flat structure") | Understanding the customer's DNA |
+| **Concerns/risks** | Hesitations, mentioned risks, capacity issues, deadlines at risk | Proactive partnership |
 
 ---
 
@@ -429,6 +430,25 @@ Read the ENTIRE transcript carefully and extract:
 **When to use bullets:**
 - Only in "Questions to consider" section
 - Avoid bullets in narrative sections — use prose instead
+
+---
+
+## CONTENT COMPLETENESS
+
+**Mentioned persons (beyond meeting participants):**
+If people are mentioned during the conversation who were NOT in the meeting (colleagues, stakeholders, potential contacts, decision-makers), weave them into the relevant sections:
+- In "Current situation" or "What we discussed": reference them naturally (e.g., "Joost van der Koppel leads the data science team")
+- In "Agreements": if an introduction was promised, include it in the action table
+
+**Technology & competitive landscape:**
+When multiple systems, vendors, or competing parties are mentioned:
+- Capture the full picture in "Current situation" or "What we discussed"
+- Note relationships (e.g., "80 integrations between Dynamics and SAP")
+- Note alternatives being considered (e.g., "also speaking with [other party]")
+- Note end-of-life dates or migration deadlines
+
+**Culture-revealing quotes:**
+Beyond operational quotes, look for statements that reveal the customer's culture, values, or working style. These humanize the report and show deep understanding.
 
 ---
 
@@ -486,11 +506,12 @@ Use sentence case (only first word capitalized). Generate in the output language
 
 **PARTICIPANT FORMATTING:**
 - Always include role/title for each person: "Name (Role, Organization)"
-- If roles are provided, use them exactly
+- ⚠️ **TRANSCRIPT OVERRIDES PROVIDED DATA**: If someone states their CURRENT role in the transcript (e.g., "I'm now a business consultant"), use that role — not outdated info from pre-filled data
 - If "[EXTRACT FROM TRANSCRIPT]" appears, identify ALL participants from the transcript:
   - Look for introductions, greetings, how people address each other
   - Infer roles from context (e.g., "I run the IT department" → IT Director)
   - Format: "Jan de Vries (CFO, Acme BV), Petra Smit (Data Lead, Acme BV)"
+- Include the seller/rep with their organization: "Name (Role, Seller Company)"
 
 ---
 
@@ -530,10 +551,13 @@ Now create the meeting report. Remember: this is diplomacy with structure.
 
 **FINAL CHECKLIST:**
 ✓ Header shows CUSTOMER company name ("{company_name}"), NOT seller company
+✓ Participant roles match what was stated IN THE TRANSCRIPT (not outdated pre-filled data)
+✓ ALL mentioned persons captured (not just meeting participants)
+✓ ALL mentioned technologies/systems captured with status
+✓ Competing parties or alternatives noted if mentioned
+✓ 2-4 authentic quotes including culture-revealing statements
 ✓ All section titles in output language
 ✓ All table headers in output language
-✓ Participants include roles/titles
-✓ 2-4 authentic quotes woven into narrative
 ✓ Agreements table uses Doel/Goal column (outcome-focused)
 ✓ Sentence case for all headings
 
