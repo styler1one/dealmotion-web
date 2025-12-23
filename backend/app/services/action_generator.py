@@ -357,168 +357,123 @@ class ActionGeneratorService:
         style_guide = sales_profile.get("style_guide", {})
         style_rules = self._format_style_rules(style_guide) if style_guide else ""
         
-        return f"""You are creating a professional customer-facing meeting report that will be sent directly to the client as an email attachment.
+        # Build attendees string
+        attendees_value = ', '.join(attendee_roles) if attendee_roles else '[EXTRACT FROM TRANSCRIPT]'
+        
+        return f"""You are a senior consultant creating a professional meeting report for the customer.
+
+This is NOT a summary. This is a strategic document that:
+- Strengthens trust and reinforces the relationship
+- Creates momentum toward a logical next step
+- Positions you as a thoughtful advisor, not a note-taker
+- Can be shared internally by the customer as "this is what we discussed"
 
 {style_rules}
 
 {lang_instruction}
 
-CRITICAL GUIDELINES:
+---
 
-**EXTRACTION REQUIREMENTS — Read the ENTIRE transcript carefully:**
-You MUST extract and include ALL of the following from the transcript:
+## CORE PRINCIPLES
 
-1. **ALL PEOPLE mentioned** — names, roles, and their organizational position
-   - Extract every person mentioned by name, even if only referenced once
-   - Include their role/title and relationship to the customer organization
-   - These are critical for the customer to share internally
+**1. Interpret and prioritize — do not just summarize**
+Structure the conversation thematically. Extract what matters. Connect insights. The customer should think: "They really understood what we're dealing with."
 
-2. **ALL TECHNOLOGIES & PLATFORMS mentioned** — current state and future plans
-   - Every software, platform, tool, or system discussed
-   - Their status: current, planned, being replaced, under evaluation
-   - Migration timelines if mentioned
+**2. Write entirely from the CUSTOMER's perspective**
+This is THEIR document. Focus on their world, their challenges, their goals. Never emphasize what the seller offered or did.
 
-3. **ALL TIMELINES & DATES** — concrete and estimated
-   - Project milestones, deadlines, target dates
-   - Phases and their expected durations
-   - "Next year", "Q2", "by 2027" — all of these matter
+**3. Advisory, never salesy**
+Be diplomatic yet insightful. Guide, don't push. Create openings through relevance, not pressure.
 
-4. **ALL ORGANIZATIONS mentioned** — partners, competitors, vendors
-   - Companies mentioned as current partners, potential partners, or competitors
-   - Their role in the customer's ecosystem
-
-5. **ALL STRATEGIC THEMES** — not just surface topics
-   - Underlying challenges and ambitions
-   - Political dynamics hinted at
-   - Growth plans and transformation goals
-
-6. **ALL ACTION ITEMS & COMMITMENTS** — explicit and implicit
-   - What was promised by whom
-   - Follow-up meetings, introductions, deliverables
-
-**Tone & Perspective:**
-- Write entirely from the CUSTOMER's perspective — this is THEIR document
-- Use warm, strategic, and mature language befitting a senior consultant
-- Be diplomatic yet insightful — advisory, never directive or salesy
-- Never emphasize what the seller did or offered — focus on the customer's world
-- Make the customer feel understood, supported, and empowered
-
-**Quality Standards:**
-- This document represents professional excellence — it should impress
-- Every sentence must add value for the customer
-- Be thorough but never verbose — quality over quantity
-- Use flowing prose with clear paragraph structure
-- Avoid bullet points in main sections (tables are fine for actions)
-
-**Length:**
-- Adapt length to match the depth and duration of the conversation
-- Short check-in (15-20 min): 400-600 words
-- Standard meeting (30 min): 600-900 words
-- Deep discussion (45-60 min): 900-1400 words
-- Complex multi-stakeholder (60+ min): 1200-1800 words
-- NEVER sacrifice quality for brevity — thoroughness is valued
-- A 60+ minute conversation with rich content should result in a COMPREHENSIVE report
-
-{context_text}
-
-DOCUMENT STRUCTURE:
+**4. Completeness where it counts**
+Leave nothing important behind. Every name, technology, timeline, organization, and commitment mentioned should be captured — these are relationship assets.
 
 ---
 
-# Gespreksverslag
+## EXTRACTION REQUIREMENTS
+
+Read the ENTIRE transcript carefully and extract:
+
+| Category | What to capture | Why it matters |
+|----------|-----------------|----------------|
+| **People** | Every name, role, organization, relationship to decision-making | Relationship assets, DMU mapping |
+| **Technologies** | Systems, platforms, tools + status (current/planned/replacing) | Solution context |
+| **Timelines** | Dates, deadlines, phases, "Q2", "next year", "by 2027" | Urgency and planning |
+| **Organizations** | Partners, vendors, competitors mentioned | Customer's ecosystem |
+| **Strategic themes** | Underlying challenges, ambitions, political dynamics | Depth of understanding |
+| **Commitments** | Who promised what, follow-ups, introductions, deliverables | Accountability |
+| **Signals** | Enthusiasm, concerns, hesitations, implicit needs | Subtleties that matter |
+
+---
+
+## QUALITY STANDARDS
+
+- Every sentence adds value for the customer
+- Flowing prose with clear paragraph structure
+- Thorough without being verbose — depth over padding
+- Tables are fine for structured data (actions, people)
+- Avoid bullet points in narrative sections
+
+---
+
+## DYNAMIC STRUCTURE
+
+Adapt the structure to the conversation. Not every meeting needs every section.
+
+**ALWAYS INCLUDE:**
+
+1. **Header** — Date, subject, participants (use format below)
+2. **The Essence** — 2-3 sentences capturing the core theme and key takeaway. A busy executive should understand the meeting in 10 seconds.
+3. **Agreements and Next Steps** — Table with: Action | Owner | When | Goal (outcome-focused, e.g., "Enable Q2 rollout")
+4. **Closing signature** — Your contact details
+
+**INCLUDE WHEN RELEVANT:**
+
+- **Current Situation** — If the customer shared context, challenges, or priorities. Describe factually and empathetically.
+- **What We Discussed** — Organize into 2-4 thematic sections with clear subheadings. Only include themes that help the customer make progress.
+- **What This Means** — Implications, opportunities, dependencies, trade-offs. Advisory perspective.
+- **Looking Ahead** — A possible path forward that builds on their goals. Paint success, invite partnership.
+- **Questions to Consider** — 2-3 genuinely useful strategic questions (only for complex/strategic conversations).
+
+**SECTION TITLES:**
+Generate appropriate section titles in the output language. Examples:
+- English: "The Essence", "Current Situation", "What We Discussed", "Agreements and Next Steps"
+- Dutch: "De Essentie", "Huidige Situatie", "Wat We Bespraken", "Afspraken en Vervolgstappen"
+- German: "Das Wesentliche", "Aktuelle Situation", "Besprochene Themen", "Vereinbarungen und nächste Schritte"
+
+---
+
+## DOCUMENT FORMAT
+
+**HEADER:**
+
+# [Meeting Report / Gespreksverslag / Gesprächsprotokoll — in output language]
 
 **{company_name}**
 
----
-
 | | |
 |---|---|
-| **Datum** | {meeting_date} |
-| **Onderwerp** | {meeting_subject} |
-| **Deelnemers** | {', '.join(attendee_roles) if attendee_roles else '[MUST EXTRACT from transcript - see instruction below]'} |
-| **Namens** | {seller_company} — {sales_name} |
+| **[Date label]** | {meeting_date} |
+| **[Subject label]** | {meeting_subject} |
+| **[Participants label]** | {attendees_value} |
 
-**ATTENDEE EXTRACTION** (if not pre-filled above):
-If "Deelnemers" shows "[MUST EXTRACT from transcript]", carefully scan the transcript to identify ALL participants:
-- Look for introductions, greetings, and moments where people address each other by name
-- Extract: Full name + Role/Title + Organization
-- Format as: "Name (Role)", "Name (Role)"
+If participants show "[EXTRACT FROM TRANSCRIPT]", carefully identify ALL participants from the transcript:
+- Look for introductions, greetings, people addressing each other by name
+- Format: "Name (Role/Title)", "Name (Role/Title)"
 
 ---
 
-## ⚡ In Één Oogopslag
+**AGREEMENTS TABLE FORMAT:**
 
-*Write 2-3 sentences that capture the essence of the conversation from the customer's perspective. What was the core theme? What is the most important takeaway? This should allow a busy executive to understand the meeting in 10 seconds.*
-
----
-
-## 1. Inleiding
-
-*Begin with a warm, professional reflection on the conversation. Acknowledge their current situation and ambitions. Set the tone for a document that serves THEM. This paragraph should make the reader feel that you truly understood what matters to them.*
+| [Action] | [Owner] | [When] | [Goal] |
+|----------|---------|--------|--------|
+| [Specific action] | [Name] | [Date/Week] | [Outcome, e.g., "Finalize vendor shortlist"] |
 
 ---
 
-## 2. Uw Huidige Situatie
+**CLOSING SIGNATURE:**
 
-*Describe the customer's context, challenges, and priorities exactly as they expressed them. Be factual and empathetic — no judgment, no spin. Subtly connect their current reality to what is strategically important for their future. Show that you listened deeply.*
-
----
-
-## 3. Wat We Bespraken
-
-*Organize the discussion into 2-4 clear themes. For each theme:*
-
-### [Theme 1 Title — e.g., "Schaalbaarheid en Groei"]
-
-*Compact paragraph explaining this theme and what it means for the customer. What insights emerged? What became clearer?*
-
-### [Theme 2 Title — e.g., "Data-Infrastructuur en Integratie"]
-
-*Compact paragraph...*
-
-### [Theme 3 Title — if applicable]
-
-*Compact paragraph...*
-
-*Only include themes that genuinely help the customer make progress. Exclude small talk or tangential topics.*
-
----
-
-## 4. Wat Dit Voor U Betekent
-
-*Explain the implications of what was discussed for their direction, choices, or risks. What opportunities emerge? What dependencies should they consider? What trade-offs might they face? Keep the tone advisory — you are a trusted consultant offering perspective, not a salesperson pushing an agenda.*
-
----
-
-## 5. Afspraken en Vervolgstappen
-
-| Actie | Eigenaar | Wanneer | Waarom Dit Ertoe Doet |
-|-------|----------|---------|----------------------|
-| [Specific action] | [Name] | [Date/Week] | [Why this matters to the customer] |
-| [Action 2] | [Name] | [Timing] | [Customer relevance] |
-| [Action 3] | [Name] | [Timing] | [Customer relevance] |
-
----
-
-## 6. Vooruitblik
-
-*Outline a possible path forward that logically builds on the customer's own goals. Do not push — guide. Be professional and constructive. Paint a picture of what success could look like and how they might get there. End with an inviting, open sentence that reinforces trust and the spirit of partnership.*
-
----
-
-## 💭 Vragen Ter Overweging
-
-*Provide 2-3 thoughtful questions that help the customer organize their thinking before the next conversation. These should be genuinely useful strategic questions — not leading questions designed to sell.*
-
-- *[Strategic question 1 — e.g., "Welke data-initiatieven hebben voor u de hoogste prioriteit in het komende kwartaal?"]*
-
-- *[Strategic question 2 — e.g., "Wie binnen uw organisatie zou bij een vervolggesprek betrokken moeten worden?"]*
-
-- *[Strategic question 3 — optional, if relevant]*
-
----
-
-**Dit verslag is opgesteld door:**
+[Appropriate closing phrase in output language]
 
 {sales_name}
 {f'{sales_title}' if sales_title else ''}
@@ -528,9 +483,11 @@ If "Deelnemers" shows "[MUST EXTRACT from transcript]", carefully scan the trans
 
 ---
 
-*Dit document is vertrouwelijk en uitsluitend bestemd voor de geadresseerde(n). Verspreiding of gebruik door anderen is niet toegestaan zonder voorafgaande toestemming.*
+{context_text}
 
 ---
+
+Now create the meeting report. Remember: this is diplomacy with structure.
 
 GENERAL RULES:
 - Always prioritise clarity over completeness.
