@@ -1,18 +1,70 @@
 'use client'
 
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { AuthForm } from '@/components/auth/auth-form'
 import { Icons } from '@/components/icons'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useTranslations } from 'next-intl'
 import { Logo } from '@/components/dealmotion-logo'
+import { 
+    checkAndStoreAffiliateCode, 
+    trackAffiliateClick, 
+    validateAffiliateCode,
+    getAffiliateDisplayInfo
+} from '@/lib/affiliate'
+import { UserCheck } from 'lucide-react'
 
 export default function SignupPage() {
     const searchParams = useSearchParams()
+    const pathname = usePathname()
     const error = searchParams.get('error')
     const t = useTranslations('authForm')
     const tAuth = useTranslations('auth.signup')
+    const tAffiliate = useTranslations('affiliate')
+    
+    // Affiliate state
+    const [affiliateInfo, setAffiliateInfo] = useState<{
+        hasAffiliate: boolean
+        affiliateName: string | null
+        code: string | null
+    }>({ hasAffiliate: false, affiliateName: null, code: null })
+    
+    // Track affiliate referral on page load
+    useEffect(() => {
+        const initAffiliate = async () => {
+            // Check for ?ref= parameter and store
+            const params = new URLSearchParams(searchParams.toString())
+            const affiliateData = checkAndStoreAffiliateCode(params, pathname)
+            
+            if (affiliateData && !affiliateData.validated) {
+                // Validate the code and track the click
+                const [validation] = await Promise.all([
+                    validateAffiliateCode(affiliateData.code),
+                    trackAffiliateClick(affiliateData, {
+                        utm_source: params.get('utm_source'),
+                        utm_medium: params.get('utm_medium'),
+                        utm_campaign: params.get('utm_campaign'),
+                    })
+                ])
+                
+                if (validation.valid) {
+                    setAffiliateInfo({
+                        hasAffiliate: true,
+                        affiliateName: validation.affiliateName,
+                        code: affiliateData.code,
+                    })
+                }
+            } else {
+                // Check if we have stored affiliate info
+                const stored = getAffiliateDisplayInfo()
+                setAffiliateInfo(stored)
+            }
+        }
+        
+        initAffiliate()
+    }, [searchParams, pathname])
 
     // Error messages for OAuth errors
     const errorMessages: Record<string, string> = {
@@ -45,6 +97,23 @@ export default function SignupPage() {
                                 {tAuth('subtitle')}
                             </p>
                         </div>
+
+                        {/* Affiliate Referral Banner */}
+                        {affiliateInfo.hasAffiliate && (
+                            <div className="mb-6 flex items-center gap-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 p-3 border border-blue-200 dark:border-blue-800">
+                                <div className="flex-shrink-0">
+                                    <UserCheck className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <div className="text-sm">
+                                    <p className="font-medium text-blue-900 dark:text-blue-100">
+                                        {affiliateInfo.affiliateName 
+                                            ? tAffiliate('referredBy', { name: affiliateInfo.affiliateName })
+                                            : tAffiliate('referredByPartner')
+                                        }
+                                    </p>
+                                </div>
+                            </div>
+                        )}
 
                         {/* OAuth Error Alert */}
                         {errorMessage && (

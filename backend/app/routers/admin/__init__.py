@@ -13,6 +13,7 @@ Routers:
 - health: System health monitoring
 - billing: Billing overview and transactions
 - audit: Audit log viewing
+- affiliates: Affiliate program management
 
 Access Levels:
 - super_admin: Full access, can manage other admins
@@ -31,6 +32,7 @@ from .alerts import router as alerts_router
 from .health import router as health_router
 from .billing import router as billing_router
 from .audit import router as audit_router
+from .affiliates import router as affiliates_router
 
 # Create main admin router
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -43,6 +45,7 @@ router.include_router(alerts_router)
 router.include_router(health_router)
 router.include_router(billing_router)
 router.include_router(audit_router)
+router.include_router(affiliates_router)
 
 __all__ = ["router"]
 

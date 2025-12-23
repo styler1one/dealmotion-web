@@ -3155,6 +3155,73 @@
         "privacy": "Privacybeleid"
       }
     }
+  },
+  "affiliate": {
+    "referredBy": "Uitgenodigd door {name}",
+    "referredByPartner": "Je bent uitgenodigd door een DealMotion partner",
+    "errorLoading": "Kon affiliate data niet laden",
+    "errorApplying": "Aanmelden mislukt. Probeer het opnieuw.",
+    "errorConnect": "Betalingen instellen mislukt. Probeer het opnieuw.",
+    "joinProgram": {
+      "title": "Word DealMotion Affiliate",
+      "subtitle": "Verdien terugkerende commissies door sales professionals naar DealMotion te verwijzen",
+      "benefit1Title": "15% Commissie",
+      "benefit1Desc": "Verdien 15% op elke abonnementsbetaling van je referrals",
+      "benefit2Title": "Automatische Uitbetaling",
+      "benefit2Desc": "Maandelijkse uitbetalingen via Stripe direct naar je bankrekening",
+      "benefit3Title": "30 Dagen Attributie",
+      "benefit3Desc": "Word gecrediteerd voor aanmeldingen binnen 30 dagen na de klik",
+      "benefit4Title": "Levenslange Inkomsten",
+      "benefit4Desc": "Blijf verdienen zolang je referrals geabonneerd blijven",
+      "applyButton": "Word Affiliate"
+    },
+    "dashboard": {
+      "title": "Affiliate Dashboard",
+      "subtitle": "Volg je referrals en inkomsten",
+      "referralLink": "Jouw Referral Link",
+      "referralLinkDesc": "Deel deze link om commissie te verdienen op nieuwe aanmeldingen",
+      "stats": {
+        "clicks": "Totaal Kliks",
+        "signups": "Aanmeldingen",
+        "conversions": "Conversies",
+        "totalEarned": "Totaal Verdiend"
+      },
+      "balance": {
+        "title": "Saldo",
+        "available": "Beschikbaar voor uitbetaling",
+        "pending": "In afwachting (14 dagen hold)",
+        "paid": "Totaal uitbetaald"
+      },
+      "payout": {
+        "title": "Uitbetaling Instellingen",
+        "desc": "Stel Stripe Connect in om je uitbetalingen te ontvangen",
+        "enabled": "Uitbetalingen ingeschakeld",
+        "setupRequired": "Koppel je bankrekening om uitbetalingen te ontvangen",
+        "setupButton": "Uitbetaling Instellen"
+      },
+      "tabs": {
+        "referrals": "Referrals",
+        "commissions": "Commissies",
+        "payouts": "Uitbetalingen"
+      },
+      "referrals": {
+        "title": "Recente Referrals",
+        "empty": "Nog geen referrals. Deel je link om te beginnen!",
+        "converted": "Geconverteerd",
+        "pending": "In afwachting"
+      },
+      "commissions": {
+        "title": "Recente Commissies",
+        "empty": "Nog geen commissies. Commissies verschijnen wanneer referrals betalingen doen.",
+        "subscription": "Abonnement",
+        "creditPack": "Credit Pack"
+      },
+      "payouts": {
+        "title": "Uitbetalingsgeschiedenis",
+        "empty": "Nog geen uitbetalingen. Uitbetalingen worden maandelijks verwerkt.",
+        "commissions": "commissies"
+      }
+    }
   }
 }
 

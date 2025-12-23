@@ -3312,6 +3312,73 @@
         "privacy": "Privacy Policy"
       }
     }
+  },
+  "affiliate": {
+    "referredBy": "Referred by {name}",
+    "referredByPartner": "You were referred by a DealMotion partner",
+    "errorLoading": "Failed to load affiliate data",
+    "errorApplying": "Failed to apply. Please try again.",
+    "errorConnect": "Failed to set up payments. Please try again.",
+    "joinProgram": {
+      "title": "Join the DealMotion Affiliate Program",
+      "subtitle": "Earn recurring commissions by referring sales professionals to DealMotion",
+      "benefit1Title": "15% Commission",
+      "benefit1Desc": "Earn 15% on every subscription payment from your referrals",
+      "benefit2Title": "Automatic Payouts",
+      "benefit2Desc": "Monthly payouts via Stripe directly to your bank account",
+      "benefit3Title": "30-Day Attribution",
+      "benefit3Desc": "Get credited for signups within 30 days of the click",
+      "benefit4Title": "Lifetime Revenue",
+      "benefit4Desc": "Keep earning as long as your referrals stay subscribed",
+      "applyButton": "Become an Affiliate"
+    },
+    "dashboard": {
+      "title": "Affiliate Dashboard",
+      "subtitle": "Track your referrals and earnings",
+      "referralLink": "Your Referral Link",
+      "referralLinkDesc": "Share this link to earn commissions on new signups",
+      "stats": {
+        "clicks": "Total Clicks",
+        "signups": "Signups",
+        "conversions": "Conversions",
+        "totalEarned": "Total Earned"
+      },
+      "balance": {
+        "title": "Balance",
+        "available": "Available for payout",
+        "pending": "Pending (14-day hold)",
+        "paid": "Total paid out"
+      },
+      "payout": {
+        "title": "Payout Settings",
+        "desc": "Set up Stripe Connect to receive your payouts",
+        "enabled": "Payouts enabled",
+        "setupRequired": "Connect your bank account to receive payouts",
+        "setupButton": "Set Up Payouts"
+      },
+      "tabs": {
+        "referrals": "Referrals",
+        "commissions": "Commissions",
+        "payouts": "Payouts"
+      },
+      "referrals": {
+        "title": "Recent Referrals",
+        "empty": "No referrals yet. Share your link to get started!",
+        "converted": "Converted",
+        "pending": "Pending"
+      },
+      "commissions": {
+        "title": "Recent Commissions",
+        "empty": "No commissions yet. Commissions appear when referrals make payments.",
+        "subscription": "Subscription",
+        "creditPack": "Credit Pack"
+      },
+      "payouts": {
+        "title": "Payout History",
+        "empty": "No payouts yet. Payouts are processed monthly.",
+        "commissions": "commissions"
+      }
+    }
   }
 }
 

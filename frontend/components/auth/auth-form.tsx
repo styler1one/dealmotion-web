@@ -11,6 +11,7 @@ import { Icons } from '@/components/icons'
 import { OAuthButtons } from './oauth-buttons'
 import { useTranslations } from 'next-intl'
 import { CheckCircle2, Mail } from 'lucide-react'
+import { getAffiliateSignupData, clearAffiliateData } from '@/lib/affiliate'
 
 interface AuthFormProps {
     view: 'login' | 'signup'
@@ -33,11 +34,20 @@ export function AuthForm({ view }: AuthFormProps) {
 
         try {
             if (view === 'signup') {
+                // Get affiliate data if present
+                const affiliateData = getAffiliateSignupData()
+                
                 const { data, error } = await supabase.auth.signUp({
                     email,
                     password,
                     options: {
                         emailRedirectTo: `${location.origin}/auth/callback`,
+                        data: {
+                            // Pass affiliate info in user metadata
+                            // Will be processed by handle_new_user trigger or backend
+                            affiliate_code: affiliateData.affiliateCode,
+                            affiliate_click_id: affiliateData.clickId,
+                        },
                     },
                 })
                 if (error) throw error
@@ -50,8 +60,12 @@ export function AuthForm({ view }: AuthFormProps) {
                 } else if (data.user && !data.session) {
                     // Email confirmation required - show success message
                     setSignupSuccess(true)
+                    // Clear affiliate data after successful signup
+                    clearAffiliateData()
                 } else {
                     // Email confirmation disabled - user is logged in
+                    // Clear affiliate data after successful signup
+                    clearAffiliateData()
                     router.refresh()
                     router.push('/dashboard')
                 }

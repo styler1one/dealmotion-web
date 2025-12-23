@@ -37,6 +37,12 @@ from .gdpr import (
     cleanup_expired_exports_fn,
     process_scheduled_deletions_fn,
 )
+from .affiliate import (
+    approve_commissions_fn,
+    process_payouts_fn,
+    sync_connect_status_fn,
+    cleanup_clicks_fn,
+)
 
 # All functions to register with Inngest
 all_functions = [
@@ -80,6 +86,11 @@ all_functions = [
     generate_export_fn,
     cleanup_expired_exports_fn,
     process_scheduled_deletions_fn,
+    # Affiliate Program
+    approve_commissions_fn,
+    process_payouts_fn,
+    sync_connect_status_fn,
+    cleanup_clicks_fn,
 ]
 
 __all__ = [
@@ -124,5 +135,10 @@ __all__ = [
     "generate_export_fn",
     "cleanup_expired_exports_fn",
     "process_scheduled_deletions_fn",
+    # Affiliate Program
+    "approve_commissions_fn",
+    "process_payouts_fn",
+    "sync_connect_status_fn",
+    "cleanup_clicks_fn",
 ]
 
