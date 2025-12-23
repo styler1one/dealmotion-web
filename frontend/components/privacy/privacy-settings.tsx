@@ -516,7 +516,7 @@ export function PrivacySettings() {
           {/* Export Status */}
           {exportStatus && (
             <div className={`p-3 rounded-lg border ${
-              exportStatus.status === 'ready' 
+              exportStatus.status === 'ready' || exportStatus.status === 'downloaded'
                 ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' 
                 : exportStatus.status === 'failed' || exportStatus.status === 'expired'
                   ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
@@ -526,7 +526,7 @@ export function PrivacySettings() {
             }`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  {exportStatus.status === 'ready' && <Check className="h-4 w-4 text-green-600" />}
+                  {(exportStatus.status === 'ready' || exportStatus.status === 'downloaded') && <Check className="h-4 w-4 text-green-600" />}
                   {(exportStatus.status === 'pending' || exportStatus.status === 'processing') && !isExportStuck && (
                     <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
                   )}
@@ -537,7 +537,7 @@ export function PrivacySettings() {
                     <AlertTriangle className="h-4 w-4 text-red-600" />
                   )}
                   <span className="text-sm font-medium">
-                    {exportStatus.status === 'ready' && t('downloadData.ready')}
+                    {(exportStatus.status === 'ready' || exportStatus.status === 'downloaded') && t('downloadData.ready')}
                     {(exportStatus.status === 'pending' || exportStatus.status === 'processing') && !isExportStuck && t('downloadData.processing')}
                     {isExportStuck && t('downloadData.stuck')}
                     {exportStatus.status === 'failed' && t('downloadData.failed')}
@@ -551,7 +551,7 @@ export function PrivacySettings() {
                 )}
               </div>
               
-              {exportStatus.status === 'ready' && (
+              {(exportStatus.status === 'ready' || exportStatus.status === 'downloaded') && (
                 <>
                   {/* Expiration info */}
                   {exportStatus.expires_at && (
@@ -607,8 +607,8 @@ export function PrivacySettings() {
             </div>
           )}
           
-          {/* Don't show button if there's already a ready export */}
-          {(!exportStatus || exportStatus.status !== 'ready') && (
+          {/* Don't show button if there's already an available export */}
+          {(!exportStatus || (exportStatus.status !== 'ready' && exportStatus.status !== 'downloaded')) && (
             <Button
               variant="outline"
               onClick={handleRequestExport}

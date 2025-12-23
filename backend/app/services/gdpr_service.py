@@ -1005,11 +1005,17 @@ This export was generated pursuant to your rights under the GDPR (General Data P
                 "user_id", user_id
             ).order("created_at", desc=True).limit(10).execute()
             
+            logger.info(f"[GDPR] list_exports for user {user_id}: found {len(result.data or [])} exports")
+            
             if not result.data:
                 return []
             
             now = datetime.utcnow()
             exports = []
+            
+            # Log what we found
+            for exp in result.data:
+                logger.info(f"[GDPR] Export {exp['id']}: status={exp.get('status')}, expires_at={exp.get('expires_at')}, has_url={bool(exp.get('download_url'))}")
             
             for export in result.data:
                 # Check if this "ready" export has expired
