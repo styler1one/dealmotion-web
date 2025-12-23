@@ -103,9 +103,9 @@ export default function AffiliateDashboardPage() {
     const checkAffiliateStatus = async () => {
         try {
             setLoading(true)
-            const response = await api.get('/affiliate/status')
+            const response = await api.get<{ is_affiliate: boolean; affiliate?: AffiliateData }>('/affiliate/status')
             
-            if (response.is_affiliate) {
+            if (response.data?.is_affiliate) {
                 setIsAffiliate(true)
                 // Load dashboard data
                 await loadDashboard()
@@ -122,8 +122,10 @@ export default function AffiliateDashboardPage() {
 
     const loadDashboard = async () => {
         try {
-            const data = await api.get('/affiliate/dashboard')
-            setDashboardData(data)
+            const response = await api.get<DashboardData>('/affiliate/dashboard')
+            if (response.data) {
+                setDashboardData(response.data)
+            }
         } catch (err) {
             console.error('Error loading dashboard:', err)
             setError(t('errorLoading'))
@@ -135,11 +137,11 @@ export default function AffiliateDashboardPage() {
             setApplying(true)
             setError(null)
             
-            const response = await api.post('/affiliate/apply', {
+            const response = await api.post<{ is_affiliate: boolean; affiliate?: AffiliateData }>('/affiliate/apply', {
                 application_notes: null // Could add a form for this
             })
             
-            if (response.is_affiliate) {
+            if (response.data?.is_affiliate) {
                 setIsAffiliate(true)
                 await loadDashboard()
             }
@@ -169,13 +171,13 @@ export default function AffiliateDashboardPage() {
             const returnUrl = `${window.location.origin}/dashboard/affiliate?connect=success`
             const refreshUrl = `${window.location.origin}/dashboard/affiliate?connect=refresh`
             
-            const response = await api.post('/affiliate/connect/onboarding', {
+            const response = await api.post<{ url: string }>('/affiliate/connect/onboarding', {
                 return_url: returnUrl,
                 refresh_url: refreshUrl
             })
             
-            if (response.url) {
-                window.location.href = response.url
+            if (response.data?.url) {
+                window.location.href = response.data.url
             }
         } catch (err: any) {
             console.error('Error setting up Connect:', err)
