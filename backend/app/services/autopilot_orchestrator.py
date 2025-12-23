@@ -1090,7 +1090,7 @@ class AutopilotOrchestrator:
                         SuggestedAction(action="research", params={"meeting_id": meeting_id}),
                         SuggestedAction(action="prep", params={"meeting_id": meeting_id}),
                     ],
-                    priority=self._calculate_priority(ProposalType.RESEARCH_PREP, start_time, {"prospect_status": prospect.get("status") if prospect else None}),
+                    priority=self._calculate_priority(ProposalType.RESEARCH_PREP, start_time, {"prospect_status": None}),
                     expires_at=start_time,
                     context_data={
                         "meeting_id": meeting_id,
@@ -1104,13 +1104,15 @@ class AutopilotOrchestrator:
                 if not settings.auto_prep_known_prospects:
                     return None
                 
-                # Get prospect name
+                # Get prospect data (name and status)
                 prospect_result = self.supabase.table("prospects") \
-                    .select("company_name") \
+                    .select("company_name, status") \
                     .eq("id", prospect_id) \
                     .execute()
                 
-                company = prospect_result.data[0]["company_name"] if prospect_result.data else company
+                prospect = prospect_result.data[0] if prospect_result.data else None
+                company = prospect.get("company_name", company) if prospect else company
+                prospect_status = prospect.get("status") if prospect else None
                 
                 proposal = AutopilotProposalCreate(
                     organization_id=organization_id,
@@ -1128,7 +1130,7 @@ class AutopilotOrchestrator:
                             "prospect_id": prospect_id,
                         }),
                     ],
-                    priority=self._calculate_priority(ProposalType.PREP_ONLY, start_time, {"prospect_status": prospect.get("status") if prospect else None}),
+                    priority=self._calculate_priority(ProposalType.PREP_ONLY, start_time, {"prospect_status": prospect_status}),
                     expires_at=start_time,
                     context_data={
                         "meeting_id": meeting_id,
