@@ -31,13 +31,40 @@ REGION_URLS = {
 }
 RECALL_API_BASE = REGION_URLS.get(RECALL_REGION, "https://us-east-1.recall.ai/api/v1")
 
-AI_NOTETAKER_NAME = os.getenv("AI_NOTETAKER_NAME", "DealMotion AI Notes")
+AI_NOTETAKER_NAME_TEMPLATE = os.getenv("AI_NOTETAKER_NAME", "{name}'s Notetaker")
+AI_NOTETAKER_NAME_FALLBACK = "Notetaker"
+
+
+def get_bot_name(user_name: Optional[str] = None) -> str:
+    """
+    Generate a personalized bot name for the AI Notetaker.
+    
+    Examples:
+        - "Jan's Notetaker" (with user name)
+        - "Notetaker" (fallback without name)
+    
+    The template can be customized via AI_NOTETAKER_NAME env var.
+    Use {name} as placeholder for the user's first name.
+    """
+    if not user_name or not user_name.strip():
+        return AI_NOTETAKER_NAME_FALLBACK
+    
+    # Get first name only (cleaner in meeting participant list)
+    first_name = user_name.strip().split()[0]
+    
+    # Apply template
+    template = AI_NOTETAKER_NAME_TEMPLATE
+    if "{name}" in template:
+        return template.replace("{name}", first_name)
+    else:
+        # If no placeholder, just return template as-is (backwards compatible)
+        return template
 
 
 class RecallBotConfig(BaseModel):
     """Configuration for creating a Recall.ai bot."""
     meeting_url: str
-    bot_name: str = AI_NOTETAKER_NAME
+    bot_name: str = AI_NOTETAKER_NAME_FALLBACK
     join_at: Optional[datetime] = None  # None = join immediately
 
 

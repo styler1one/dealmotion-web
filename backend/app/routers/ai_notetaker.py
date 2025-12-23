@@ -22,7 +22,7 @@ import os
 
 from app.deps import get_current_user, get_user_org, require_feature
 from app.database import get_supabase_service
-from app.services.recall_service import recall_service, RecallBotConfig
+from app.services.recall_service import recall_service, RecallBotConfig, get_bot_name
 from app.inngest.events import send_event, use_inngest_for, Events
 
 logger = logging.getLogger(__name__)
@@ -160,8 +160,12 @@ async def schedule_recording(
     
     # Schedule with Recall.ai
     if recall_service.is_configured():
+        # Get user name for personalized bot name (e.g., "Jan's Notetaker")
+        user_name = current_user.get("name") or current_user.get("email", "").split("@")[0]
+        
         config = RecallBotConfig(
             meeting_url=request.meeting_url,
+            bot_name=get_bot_name(user_name),
             join_at=scheduled_time if request.scheduled_time else None
         )
         

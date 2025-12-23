@@ -25,7 +25,7 @@ from inngest import TriggerEvent
 from app.inngest.client import inngest_client
 from app.database import get_supabase_service
 from app.services.ics_parser import ics_parser
-from app.services.recall_service import recall_service, RecallBotConfig
+from app.services.recall_service import recall_service, RecallBotConfig, get_bot_name
 from app.services.prospect_matcher import ProspectMatcher
 
 logger = logging.getLogger(__name__)
@@ -542,11 +542,16 @@ async def process_email_invite_fn(ctx, step):
             join_at = None
             logger.info(f"[EMAIL-INVITE] Meeting is now or in past, bot will join immediately")
         
+        # Personalized bot name (e.g., "Jan's Notetaker")
+        bot_name = get_bot_name(user_name)
+        
         config = RecallBotConfig(
             meeting_url=meeting_url,
+            bot_name=bot_name,
             join_at=join_at
         )
         
+        logger.info(f"[EMAIL-INVITE] Bot name: '{bot_name}'")
         result = await recall_service.create_bot(config)
         
         if not result.get("success"):
