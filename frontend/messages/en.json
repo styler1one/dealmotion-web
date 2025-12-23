@@ -1195,7 +1195,8 @@
       "subscription": "Subscription",
       "integrations": "Integrations",
       "notifications": "Notifications",
-      "coach": "AI Coach"
+      "coach": "AI Coach",
+      "privacy": "Privacy & Data"
     },
     "coach": {
       "title": "AI Coach (Luna)",
@@ -1328,6 +1329,89 @@
         "saveFailed": "Failed to save settings",
         "resetFailed": "Failed to reset keywords",
         "previewFailed": "Failed to load preview"
+      }
+    },
+    "privacy": {
+      "title": "Privacy & Data",
+      "description": "Manage your personal data and privacy settings",
+      "dataOverview": {
+        "title": "Your Data Overview",
+        "description": "Summary of your stored personal data",
+        "accountCreated": "Account created",
+        "profilesTitle": "Profiles",
+        "salesProfile": "Sales Profile",
+        "companyProfile": "Company Profile",
+        "completed": "Completed",
+        "notCompleted": "Not completed",
+        "connections": "Connected Services"
+      },
+      "downloadData": {
+        "title": "Download Your Data",
+        "description": "Get a copy of all your personal data in machine-readable format (JSON)",
+        "button": "Download My Data",
+        "requesting": "Requesting...",
+        "requested": "Export Requested",
+        "requestedDesc": "Your data export is being prepared. You'll receive a download link shortly.",
+        "ready": "Export Ready",
+        "readyDesc": "Your data export is ready. The link expires in 7 days.",
+        "download": "Download Export",
+        "processing": "Preparing export...",
+        "failed": "Export failed",
+        "failedDesc": "We couldn't prepare your export. Please try again.",
+        "expired": "Export expired",
+        "expiredDesc": "This export has expired. Request a new one."
+      },
+      "deleteAccount": {
+        "title": "Delete Account",
+        "description": "Permanently delete your account and all associated data",
+        "button": "Delete My Account",
+        "confirmTitle": "Delete Your Account?",
+        "confirmDesc": "This action cannot be undone. After a 48-hour grace period, your account and all associated data will be permanently deleted. Billing records will be anonymized and retained for legal compliance.",
+        "confirmButton": "Yes, Delete My Account",
+        "cancelButton": "Cancel",
+        "cancelling": "Cancelling...",
+        "scheduled": "Deletion Scheduled",
+        "scheduledDesc": "Your account will be deleted on {date}. You can cancel this anytime before then.",
+        "cancelDeletion": "Cancel Deletion",
+        "cancelled": "Deletion Cancelled",
+        "cancelledDesc": "Your account deletion has been cancelled.",
+        "reason": "Reason (optional)",
+        "reasonPlaceholder": "Help us understand why you're leaving...",
+        "gracePeriod": "48-hour grace period",
+        "gracePeriodDesc": "You can cancel the deletion anytime within 48 hours.",
+        "whatHappens": "What happens when you delete your account:",
+        "deleteProfile": "Your profile and settings will be removed",
+        "deleteContent": "All your prospects, research, and content will be deleted",
+        "deleteFiles": "Uploaded files will be permanently removed",
+        "anonBilling": "Billing records will be anonymized for legal compliance",
+        "processing": "Processing deletion...",
+        "failed": "Deletion failed",
+        "failedDesc": "We couldn't schedule your account deletion. Please try again or contact support."
+      },
+      "legal": {
+        "title": "Legal Documents",
+        "privacyPolicy": "Privacy Policy",
+        "privacyPolicyDesc": "How we collect, use, and protect your data",
+        "terms": "Terms & Conditions",
+        "termsDesc": "Rules for using DealMotion"
+      },
+      "dataCategories": {
+        "prospects": "Prospects",
+        "prospectsDesc": "Companies you're researching or selling to",
+        "contacts": "Contacts",
+        "contactsDesc": "People at your prospect companies",
+        "research": "Research Briefs",
+        "researchDesc": "AI-generated company research",
+        "preparations": "Meeting Preparations",
+        "preparationsDesc": "AI-generated meeting briefs",
+        "followups": "Follow-ups",
+        "followupsDesc": "Meeting recordings and summaries",
+        "deals": "Deals",
+        "dealsDesc": "Sales opportunities you're tracking",
+        "notes": "Notes",
+        "notesDesc": "Your notes on prospects",
+        "files": "Knowledge Base Files",
+        "filesDesc": "Documents you've uploaded"
       }
     },
     "comingSoon": "Coming Soon"
@@ -2960,6 +3044,260 @@
       "rejected": "Prospect rejected",
       "rejectedDesc": "The prospect has been removed from results.",
       "rejectFailed": "Reject failed"
+    }
+  },
+  "legal": {
+    "privacy": {
+      "title": "Privacy Policy",
+      "lastUpdated": "Last updated",
+      "lastUpdatedDate": "December 23, 2025",
+      "intro": {
+        "title": "Introduction",
+        "text": "DealMotion B.V. (\"we\", \"us\", or \"our\") respects your privacy and is committed to protecting your personal data. This privacy policy explains how we collect, use, and safeguard your information when you use our AI-powered sales enablement platform."
+      },
+      "controller": {
+        "title": "Data Controller",
+        "company": "DealMotion B.V.",
+        "address": "Amsterdam, The Netherlands",
+        "country": "The Netherlands",
+        "email": "Email"
+      },
+      "dataCollected": {
+        "title": "Personal Data We Collect",
+        "intro": "We collect the following categories of personal data:",
+        "account": {
+          "title": "Account Information",
+          "item1": "Full name and business email address",
+          "item2": "Password (encrypted)",
+          "item3": "Profile information (role, experience, company details)"
+        },
+        "content": {
+          "title": "Content You Create",
+          "item1": "Prospect and contact information you enter",
+          "item2": "Research notes, meeting preparations, and follow-up content",
+          "item3": "Uploaded documents to your knowledge base",
+          "item4": "Meeting recordings and transcripts (when using AI Notetaker)"
+        },
+        "technical": {
+          "title": "Technical Data",
+          "item1": "IP address and browser type",
+          "item2": "Device information and session data",
+          "item3": "Usage analytics (features used, timing)"
+        }
+      },
+      "purposes": {
+        "title": "How We Use Your Data",
+        "item1": "Provide and improve our AI-powered sales enablement services",
+        "item2": "Generate personalized research, preparation, and follow-up content",
+        "item3": "Process payments and manage your subscription",
+        "item4": "Send transactional emails (account updates, service notifications)",
+        "item5": "Ensure security and prevent fraud"
+      },
+      "legalBasis": {
+        "title": "Legal Basis for Processing",
+        "contract": "Contract performance",
+        "contractDesc": "Processing necessary to provide the service you subscribed to",
+        "consent": "Consent",
+        "consentDesc": "For optional features like calendar integration",
+        "legitimate": "Legitimate interest",
+        "legitimateDesc": "For analytics and service improvement",
+        "legal": "Legal obligation",
+        "legalDesc": "For tax and accounting records"
+      },
+      "retention": {
+        "title": "Data Retention",
+        "intro": "We retain your data according to the following principles:",
+        "account": "Account data: Retained while your account is active, deleted within 30 days of account deletion",
+        "content": "Content data: Deleted immediately upon account deletion",
+        "billing": "Billing records: Anonymized and retained for 7 years for tax compliance",
+        "logs": "Technical logs: Automatically deleted after 90 days"
+      },
+      "rights": {
+        "title": "Your Rights Under GDPR",
+        "intro": "As an EU resident, you have the following rights:",
+        "access": "Right of Access",
+        "accessDesc": "Request a copy of your personal data",
+        "rectification": "Right to Rectification",
+        "rectificationDesc": "Correct inaccurate personal data",
+        "erasure": "Right to Erasure",
+        "erasureDesc": "Request deletion of your personal data",
+        "portability": "Right to Data Portability",
+        "portabilityDesc": "Receive your data in a machine-readable format",
+        "objection": "Right to Object",
+        "objectionDesc": "Object to processing based on legitimate interest",
+        "withdraw": "Right to Withdraw Consent",
+        "withdrawDesc": "Withdraw consent where processing is based on consent",
+        "howTo": "You can exercise most of these rights directly from your account settings (Settings → Privacy & Data). For other requests, contact us at privacy@dealmotion.ai."
+      },
+      "transfers": {
+        "title": "International Data Transfers",
+        "intro": "Some of our service providers are located outside the EU. We only use providers that:",
+        "safeguards": "Have certified under the EU-US Data Privacy Framework (DPF), have signed Standard Contractual Clauses (SCCs), or are located in countries with an EU adequacy decision."
+      },
+      "subprocessors": {
+        "title": "Subprocessors",
+        "intro": "We use the following third-party service providers:",
+        "name": "Service",
+        "purpose": "Purpose",
+        "location": "Location",
+        "supabase": "Database and authentication",
+        "vercel": "Frontend hosting",
+        "railway": "Backend hosting",
+        "stripe": "Payment processing",
+        "anthropic": "AI content generation (research, prep, follow-up)",
+        "google": "AI research assistance",
+        "pinecone": "Knowledge base vector storage",
+        "deepgram": "Audio transcription",
+        "inngest": "Background job processing",
+        "sentry": "Error monitoring",
+        "dpfNote": "DPF = EU-US Data Privacy Framework certified"
+      },
+      "security": {
+        "title": "Security Measures",
+        "intro": "We implement appropriate technical and organizational measures:",
+        "encryption": "Encryption of data in transit (TLS) and at rest (AES-256)",
+        "access": "Role-based access control with principle of least privilege",
+        "monitoring": "Security monitoring and logging (without PII)",
+        "testing": "Regular security reviews and updates"
+      },
+      "cookies": {
+        "title": "Cookies",
+        "intro": "We use only essential cookies:",
+        "essential": "Essential cookies",
+        "essentialDesc": "Required for authentication and session management",
+        "preferences": "Preference cookies",
+        "preferencesDesc": "Store your language preference",
+        "noTracking": "We do not use tracking cookies or third-party advertising cookies."
+      },
+      "complaints": {
+        "title": "Complaints",
+        "intro": "If you believe we have not handled your personal data properly, you can lodge a complaint with your local data protection authority:",
+        "authority": "Dutch Data Protection Authority",
+        "authorityName": "Autoriteit Persoonsgegevens",
+        "authorityWebsite": "autoriteitpersoonsgegevens.nl"
+      },
+      "changes": {
+        "title": "Changes to This Policy",
+        "text": "We may update this privacy policy from time to time. We will notify you of significant changes via email or in-app notification. Continued use of the service after changes constitutes acceptance of the updated policy."
+      },
+      "contact": {
+        "title": "Contact Us",
+        "text": "For privacy-related questions or to exercise your rights, contact us at:"
+      },
+      "seeAlso": {
+        "terms": "Terms & Conditions"
+      }
+    },
+    "terms": {
+      "title": "Terms & Conditions",
+      "lastUpdated": "Last updated",
+      "lastUpdatedDate": "December 23, 2025",
+      "intro": {
+        "title": "Introduction",
+        "text": "These Terms & Conditions (\"Terms\") govern your use of DealMotion, an AI-powered B2B sales enablement platform operated by DealMotion B.V. By using our service, you agree to these Terms."
+      },
+      "definitions": {
+        "title": "Definitions",
+        "service": "Service",
+        "serviceDesc": "The DealMotion platform, including web application, APIs, and related services",
+        "user": "User",
+        "userDesc": "Any individual or entity that registers for and uses the Service",
+        "content": "User Content",
+        "contentDesc": "All data, text, files, and other materials you upload or create in the Service",
+        "subscription": "Subscription",
+        "subscriptionDesc": "Your paid or free plan for accessing the Service"
+      },
+      "service": {
+        "title": "Service Description",
+        "intro": "DealMotion is an AI-powered sales enablement platform that provides:",
+        "feature1": "AI-generated prospect research and intelligence",
+        "feature2": "Meeting preparation briefs",
+        "feature3": "Post-meeting follow-up with action items and email drafts",
+        "feature4": "Meeting recording and transcription (AI Notetaker)",
+        "feature5": "Knowledge base for document storage and RAG-enhanced context"
+      },
+      "account": {
+        "title": "Account Registration",
+        "item1": "You must provide accurate and complete registration information",
+        "item2": "You are responsible for maintaining the security of your account credentials",
+        "item3": "You must notify us immediately of any unauthorized access",
+        "item4": "One person or entity per account - sharing accounts is not permitted"
+      },
+      "responsibilities": {
+        "title": "User Responsibilities",
+        "intro": "You agree to:",
+        "item1": "Use the Service only for lawful business purposes",
+        "item2": "Ensure you have the right to input any data about third parties (prospects, contacts)",
+        "item3": "Not misrepresent AI-generated content as human-written when legally required",
+        "item4": "Maintain appropriate data protection measures for personal data you process"
+      },
+      "acceptableUse": {
+        "title": "Acceptable Use",
+        "intro": "You may not use the Service to:",
+        "prohibited1": "Violate any applicable laws or regulations",
+        "prohibited2": "Infringe on the intellectual property rights of others",
+        "prohibited3": "Harass, spam, or send unsolicited communications",
+        "prohibited4": "Attempt to reverse engineer, scrape, or access the Service in unauthorized ways",
+        "prohibited5": "Use the AI features to generate harmful, discriminatory, or illegal content"
+      },
+      "payment": {
+        "title": "Subscription & Payment",
+        "item1": "Paid plans are billed monthly or annually in advance",
+        "item2": "Prices are in Euros (€) and exclude applicable taxes",
+        "item3": "You can cancel your subscription at any time; access continues until the end of the paid period",
+        "item4": "No refunds for partial subscription periods, except as required by law",
+        "item5": "We may change prices with 30 days' notice; changes apply at your next renewal"
+      },
+      "data": {
+        "title": "Your Data",
+        "intro": "Regarding data you store in the Service:",
+        "item1": "You retain ownership of all User Content you create or upload",
+        "item2": "You grant us a license to process your data to provide the Service",
+        "item3": "We will not use your data to train AI models (other than your personal context within your account)"
+      },
+      "ip": {
+        "title": "Intellectual Property",
+        "item1": "DealMotion owns all rights to the Service, including software, design, and documentation",
+        "item2": "AI-generated content (research, briefs, emails) may be used freely by you for your business purposes",
+        "item3": "You may not copy, modify, or redistribute the Service or its components"
+      },
+      "ai": {
+        "title": "AI-Generated Content",
+        "intro": "The Service uses artificial intelligence to generate content. You acknowledge that:",
+        "item1": "AI-generated content may contain inaccuracies and should be reviewed before use",
+        "item2": "You are responsible for verifying facts and claims in AI-generated content",
+        "item3": "AI suggestions are assistance tools, not professional advice (legal, financial, etc.)"
+      },
+      "liability": {
+        "title": "Limitation of Liability",
+        "intro": "To the maximum extent permitted by law:",
+        "item1": "The Service is provided \"as is\" without warranties of any kind",
+        "item2": "We are not liable for indirect, incidental, or consequential damages",
+        "item3": "Our total liability is limited to the amount you paid in the 12 months prior to the claim"
+      },
+      "termination": {
+        "title": "Termination",
+        "item1": "You may delete your account at any time via Settings → Privacy & Data",
+        "item2": "We may terminate your account for violation of these Terms with prior notice",
+        "item3": "Upon termination, your data will be deleted according to our Privacy Policy",
+        "item4": "Sections on IP, Liability, and Governing Law survive termination"
+      },
+      "law": {
+        "title": "Governing Law",
+        "text": "These Terms are governed by the laws of The Netherlands.",
+        "disputes": "Any disputes will be submitted to the competent court in Amsterdam, The Netherlands."
+      },
+      "changes": {
+        "title": "Changes to Terms",
+        "text": "We may update these Terms with 30 days' notice for material changes. Continued use after the effective date constitutes acceptance."
+      },
+      "contact": {
+        "title": "Contact",
+        "text": "For questions about these Terms, contact us at:"
+      },
+      "seeAlso": {
+        "privacy": "Privacy Policy"
+      }
     }
   }
 }

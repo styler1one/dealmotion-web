@@ -3140,11 +3140,200 @@ CREATE TRIGGER user_prep_preferences_updated_at
     FOR EACH ROW EXECUTE FUNCTION update_autopilot_updated_at();
 
 -- ============================================================
+-- GDPR COMPLIANCE TABLES (v4.1)
+-- ============================================================
+
+-- Add deletion tracking to users table
+ALTER TABLE users ADD COLUMN IF NOT EXISTS 
+    deletion_status TEXT DEFAULT 'active' 
+    CHECK (deletion_status IN ('active', 'pending_deletion', 'deleted', 'anonymized'));
+ALTER TABLE users ADD COLUMN IF NOT EXISTS deletion_requested_at TIMESTAMPTZ;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS deletion_scheduled_at TIMESTAMPTZ;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS deletion_completed_at TIMESTAMPTZ;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS deletion_reason TEXT;
+
+CREATE INDEX IF NOT EXISTS idx_users_deletion_status 
+    ON users(deletion_status) WHERE deletion_status != 'active';
+CREATE INDEX IF NOT EXISTS idx_users_deletion_scheduled 
+    ON users(deletion_scheduled_at) WHERE deletion_status = 'pending_deletion';
+
+-- GDPR Deletion Requests (Audit Trail)
+CREATE TABLE IF NOT EXISTS gdpr_deletion_requests (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL,
+    user_email TEXT NOT NULL,
+    organization_id UUID,
+    requested_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    scheduled_for TIMESTAMPTZ NOT NULL,
+    reason TEXT,
+    status TEXT NOT NULL DEFAULT 'pending' 
+        CHECK (status IN ('pending', 'processing', 'completed', 'cancelled', 'failed')),
+    processing_started_at TIMESTAMPTZ,
+    completed_at TIMESTAMPTZ,
+    cancelled_at TIMESTAMPTZ,
+    cancellation_reason TEXT,
+    deletion_summary JSONB,
+    error_message TEXT,
+    billing_data_anonymized BOOLEAN DEFAULT false,
+    billing_retention_hash TEXT,
+    ip_address TEXT,
+    user_agent TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_gdpr_deletion_user ON gdpr_deletion_requests(user_id);
+CREATE INDEX IF NOT EXISTS idx_gdpr_deletion_status ON gdpr_deletion_requests(status);
+CREATE INDEX IF NOT EXISTS idx_gdpr_deletion_scheduled ON gdpr_deletion_requests(scheduled_for) 
+    WHERE status = 'pending';
+
+-- GDPR Data Exports
+CREATE TABLE IF NOT EXISTS gdpr_data_exports (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    requested_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    status TEXT NOT NULL DEFAULT 'pending' 
+        CHECK (status IN ('pending', 'processing', 'ready', 'downloaded', 'expired', 'failed')),
+    processing_started_at TIMESTAMPTZ,
+    completed_at TIMESTAMPTZ,
+    storage_path TEXT,
+    file_size_bytes INTEGER,
+    download_url TEXT,
+    download_expires_at TIMESTAMPTZ,
+    downloaded_at TIMESTAMPTZ,
+    download_count INTEGER DEFAULT 0,
+    expires_at TIMESTAMPTZ,
+    error_message TEXT,
+    ip_address TEXT,
+    user_agent TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_gdpr_export_user ON gdpr_data_exports(user_id);
+CREATE INDEX IF NOT EXISTS idx_gdpr_export_status ON gdpr_data_exports(status);
+CREATE INDEX IF NOT EXISTS idx_gdpr_export_expires ON gdpr_data_exports(expires_at) WHERE status = 'ready';
+
+-- Billing Archive (Anonymized retention)
+CREATE TABLE IF NOT EXISTS billing_archive (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_hash TEXT NOT NULL,
+    organization_hash TEXT,
+    original_payment_id UUID,
+    stripe_invoice_id TEXT,
+    stripe_payment_intent_id TEXT,
+    stripe_charge_id TEXT,
+    amount_cents INTEGER NOT NULL,
+    currency TEXT DEFAULT 'eur',
+    status TEXT NOT NULL,
+    invoice_pdf_url TEXT,
+    invoice_number TEXT,
+    original_paid_at TIMESTAMPTZ,
+    original_created_at TIMESTAMPTZ,
+    archived_at TIMESTAMPTZ DEFAULT NOW(),
+    archive_reason TEXT DEFAULT 'user_deletion',
+    gdpr_request_id UUID REFERENCES gdpr_deletion_requests(id),
+    retention_expires_at TIMESTAMPTZ DEFAULT NOW() + INTERVAL '7 years'
+);
+
+CREATE INDEX IF NOT EXISTS idx_billing_archive_hash ON billing_archive(user_hash);
+CREATE INDEX IF NOT EXISTS idx_billing_archive_retention ON billing_archive(retention_expires_at);
+
+-- GDPR Exports Storage Bucket
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('gdpr-exports', 'gdpr-exports', false)
+ON CONFLICT (id) DO NOTHING;
+
+-- RLS for GDPR tables
+ALTER TABLE gdpr_deletion_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE gdpr_data_exports ENABLE ROW LEVEL SECURITY;
+ALTER TABLE billing_archive ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own deletion requests" ON gdpr_deletion_requests 
+    FOR SELECT TO authenticated USING (user_id = (SELECT auth.uid()));
+CREATE POLICY "Users can update own pending deletion" ON gdpr_deletion_requests 
+    FOR UPDATE TO authenticated USING (user_id = (SELECT auth.uid()) AND status = 'pending');
+CREATE POLICY "Users can view own exports" ON gdpr_data_exports 
+    FOR SELECT TO authenticated USING (user_id = (SELECT auth.uid()));
+CREATE POLICY "Admin can view billing archive" ON billing_archive 
+    FOR SELECT TO authenticated USING (public.is_admin());
+CREATE POLICY "Service role manages deletion requests" ON gdpr_deletion_requests 
+    FOR ALL TO service_role USING (true);
+CREATE POLICY "Service role manages exports" ON gdpr_data_exports 
+    FOR ALL TO service_role USING (true);
+CREATE POLICY "Service role manages billing archive" ON billing_archive 
+    FOR ALL TO service_role USING (true);
+
+-- GDPR Triggers
+CREATE TRIGGER update_gdpr_deletion_requests_updated_at
+    BEFORE UPDATE ON gdpr_deletion_requests
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_gdpr_data_exports_updated_at
+    BEFORE UPDATE ON gdpr_data_exports
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- GDPR Helper Functions
+CREATE OR REPLACE FUNCTION generate_user_hash(p_user_id UUID)
+RETURNS TEXT AS $$
+BEGIN
+    RETURN encode(
+        digest(p_user_id::text || '-dealmotion-billing-archive-' || extract(epoch from now())::text, 'sha256'),
+        'hex'
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
+
+CREATE OR REPLACE FUNCTION can_user_be_deleted(p_user_id UUID)
+RETURNS TABLE(can_delete BOOLEAN, reason TEXT) AS $$
+DECLARE
+    v_active_subscription BOOLEAN;
+    v_pending_deletion BOOLEAN;
+BEGIN
+    SELECT EXISTS (
+        SELECT 1 FROM public.organization_subscriptions os
+        JOIN public.organization_members om ON os.organization_id = om.organization_id
+        WHERE om.user_id = p_user_id AND os.status = 'active' 
+        AND os.plan_id != 'free' AND os.cancel_at_period_end = false
+    ) INTO v_active_subscription;
+    
+    IF v_active_subscription THEN
+        RETURN QUERY SELECT false, 'Active subscription must be cancelled first';
+        RETURN;
+    END IF;
+    
+    SELECT EXISTS (
+        SELECT 1 FROM public.gdpr_deletion_requests
+        WHERE user_id = p_user_id AND status IN ('pending', 'processing')
+    ) INTO v_pending_deletion;
+    
+    IF v_pending_deletion THEN
+        RETURN QUERY SELECT false, 'Deletion already in progress';
+        RETURN;
+    END IF;
+    
+    RETURN QUERY SELECT true, NULL::TEXT;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
+
+-- ============================================================
 -- END OF SCHEMA
 -- ============================================================
--- Version: 4.0
--- Last Updated: 15 December 2025
+-- Version: 4.1
+-- Last Updated: 23 December 2025
 -- 
+-- Changes in 4.1:
+-- - Added GDPR compliance tables (AVG/GDPR Implementation)
+-- - Added gdpr_deletion_requests table (deletion audit trail)
+-- - Added gdpr_data_exports table (export tracking)
+-- - Added billing_archive table (anonymized billing retention)
+-- - Added deletion tracking columns to users table
+-- - Added gdpr-exports storage bucket
+-- - Added generate_user_hash function
+-- - Added can_user_be_deleted function
+-- - Added RLS policies for all GDPR tables
+--
 -- Changes in 4.0:
 -- - Added autopilot_proposals table (SPEC-045: DealMotion Autopilot)
 -- - Added autopilot_settings table (user configuration)
@@ -3163,12 +3352,12 @@ CREATE TRIGGER user_prep_preferences_updated_at
 -- - Added RLS policies for mobile_recordings
 -- 
 -- Summary:
--- - Tables: 50 (46 + 4 autopilot)
+-- - Tables: 53 (50 + 3 GDPR)
 -- - Views: 2
--- - Functions: 43 (42 + 1 autopilot)
--- - Triggers: 41 (38 + 3 autopilot)
--- - Storage Buckets: 4 (with policies)
--- - Indexes: 215 (202 + 13 autopilot)
+-- - Functions: 45 (43 + 2 GDPR)
+-- - Triggers: 43 (41 + 2 GDPR)
+-- - Storage Buckets: 5 (with policies)
+-- - Indexes: 222 (215 + 7 GDPR)
 -- 
 -- This file is for REFERENCE ONLY. Do not run on existing database!
 -- Use individual migration files for updates.

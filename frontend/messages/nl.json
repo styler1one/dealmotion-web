@@ -1187,7 +1187,8 @@
       "subscription": "Abonnement",
       "integrations": "Integraties",
       "notifications": "Meldingen",
-      "coach": "AI Coach"
+      "coach": "AI Coach",
+      "privacy": "Privacy & Gegevens"
     },
     "coach": {
       "title": "AI Coach (Luna)",
@@ -1320,6 +1321,89 @@
         "saveFailed": "Kon instellingen niet opslaan",
         "resetFailed": "Kon keywords niet resetten",
         "previewFailed": "Kon preview niet laden"
+      }
+    },
+    "privacy": {
+      "title": "Privacy & Gegevens",
+      "description": "Beheer je persoonsgegevens en privacy-instellingen",
+      "dataOverview": {
+        "title": "Je Gegevensoverzicht",
+        "description": "Samenvatting van je opgeslagen persoonsgegevens",
+        "accountCreated": "Account aangemaakt",
+        "profilesTitle": "Profielen",
+        "salesProfile": "Verkoop Profiel",
+        "companyProfile": "Bedrijfsprofiel",
+        "completed": "Ingevuld",
+        "notCompleted": "Niet ingevuld",
+        "connections": "Gekoppelde Services"
+      },
+      "downloadData": {
+        "title": "Download Je Gegevens",
+        "description": "Ontvang een kopie van al je persoonsgegevens in machineleesbaar formaat (JSON)",
+        "button": "Download Mijn Gegevens",
+        "requesting": "Aanvragen...",
+        "requested": "Export Aangevraagd",
+        "requestedDesc": "Je data-export wordt voorbereid. Je ontvangt binnenkort een downloadlink.",
+        "ready": "Export Gereed",
+        "readyDesc": "Je data-export is klaar. De link verloopt over 7 dagen.",
+        "download": "Download Export",
+        "processing": "Export voorbereiden...",
+        "failed": "Export mislukt",
+        "failedDesc": "We konden je export niet voorbereiden. Probeer het opnieuw.",
+        "expired": "Export verlopen",
+        "expiredDesc": "Deze export is verlopen. Vraag een nieuwe aan."
+      },
+      "deleteAccount": {
+        "title": "Account Verwijderen",
+        "description": "Verwijder je account en alle bijbehorende gegevens permanent",
+        "button": "Verwijder Mijn Account",
+        "confirmTitle": "Je Account Verwijderen?",
+        "confirmDesc": "Deze actie kan niet ongedaan worden gemaakt. Na een wachttijd van 48 uur worden je account en alle bijbehorende gegevens permanent verwijderd. Factuurgegevens worden geanonimiseerd en bewaard voor wettelijke naleving.",
+        "confirmButton": "Ja, Verwijder Mijn Account",
+        "cancelButton": "Annuleren",
+        "cancelling": "Annuleren...",
+        "scheduled": "Verwijdering Gepland",
+        "scheduledDesc": "Je account wordt verwijderd op {date}. Je kunt dit op elk moment voor die tijd annuleren.",
+        "cancelDeletion": "Verwijdering Annuleren",
+        "cancelled": "Verwijdering Geannuleerd",
+        "cancelledDesc": "De verwijdering van je account is geannuleerd.",
+        "reason": "Reden (optioneel)",
+        "reasonPlaceholder": "Help ons begrijpen waarom je weggaat...",
+        "gracePeriod": "48 uur wachttijd",
+        "gracePeriodDesc": "Je kunt de verwijdering binnen 48 uur annuleren.",
+        "whatHappens": "Wat er gebeurt als je je account verwijdert:",
+        "deleteProfile": "Je profiel en instellingen worden verwijderd",
+        "deleteContent": "Al je prospects, research en content worden verwijderd",
+        "deleteFiles": "Geüploade bestanden worden permanent verwijderd",
+        "anonBilling": "Factuurgegevens worden geanonimiseerd voor wettelijke naleving",
+        "processing": "Verwijdering verwerken...",
+        "failed": "Verwijdering mislukt",
+        "failedDesc": "We konden je accountverwijdering niet plannen. Probeer het opnieuw of neem contact op met support."
+      },
+      "legal": {
+        "title": "Juridische Documenten",
+        "privacyPolicy": "Privacybeleid",
+        "privacyPolicyDesc": "Hoe we je gegevens verzamelen, gebruiken en beschermen",
+        "terms": "Algemene Voorwaarden",
+        "termsDesc": "Regels voor het gebruik van DealMotion"
+      },
+      "dataCategories": {
+        "prospects": "Prospects",
+        "prospectsDesc": "Bedrijven die je onderzoekt of aan verkoopt",
+        "contacts": "Contacten",
+        "contactsDesc": "Personen bij je prospect bedrijven",
+        "research": "Onderzoeksrapporten",
+        "researchDesc": "AI-gegenereerde bedrijfsonderzoeken",
+        "preparations": "Meeting Voorbereidingen",
+        "preparationsDesc": "AI-gegenereerde meeting briefs",
+        "followups": "Follow-ups",
+        "followupsDesc": "Meeting opnames en samenvattingen",
+        "deals": "Deals",
+        "dealsDesc": "Verkoopkansen die je volgt",
+        "notes": "Notities",
+        "notesDesc": "Je notities over prospects",
+        "files": "Knowledge Base Bestanden",
+        "filesDesc": "Documenten die je hebt geüpload"
       }
     },
     "comingSoon": "Binnenkort"
@@ -2803,6 +2887,260 @@
       "templateCopied": "Email template gekopieerd",
       "pasteInEmail": "Plak in je email client",
       "cancel": "Annuleren"
+    }
+  },
+  "legal": {
+    "privacy": {
+      "title": "Privacybeleid",
+      "lastUpdated": "Laatst bijgewerkt",
+      "lastUpdatedDate": "23 december 2025",
+      "intro": {
+        "title": "Introductie",
+        "text": "DealMotion B.V. (\"wij\", \"ons\" of \"onze\") respecteert je privacy en zet zich in voor de bescherming van je persoonsgegevens. Dit privacybeleid legt uit hoe we je informatie verzamelen, gebruiken en beschermen wanneer je ons AI-aangedreven sales enablement platform gebruikt."
+      },
+      "controller": {
+        "title": "Verwerkingsverantwoordelijke",
+        "company": "DealMotion B.V.",
+        "address": "Amsterdam, Nederland",
+        "country": "Nederland",
+        "email": "E-mail"
+      },
+      "dataCollected": {
+        "title": "Persoonsgegevens die we verzamelen",
+        "intro": "We verzamelen de volgende categorieën persoonsgegevens:",
+        "account": {
+          "title": "Accountgegevens",
+          "item1": "Volledige naam en zakelijk e-mailadres",
+          "item2": "Wachtwoord (versleuteld)",
+          "item3": "Profielinformatie (functie, ervaring, bedrijfsgegevens)"
+        },
+        "content": {
+          "title": "Content die je aanmaakt",
+          "item1": "Prospect- en contactinformatie die je invoert",
+          "item2": "Onderzoeksnotities, meetingvoorbereidingen en follow-up content",
+          "item3": "Geüploade documenten in je knowledge base",
+          "item4": "Meetingopnames en transcripties (bij gebruik van AI Notetaker)"
+        },
+        "technical": {
+          "title": "Technische gegevens",
+          "item1": "IP-adres en browsertype",
+          "item2": "Apparaatinformatie en sessiegegevens",
+          "item3": "Gebruiksanalytics (gebruikte functies, timing)"
+        }
+      },
+      "purposes": {
+        "title": "Hoe we je gegevens gebruiken",
+        "item1": "Leveren en verbeteren van onze AI-aangedreven sales enablement diensten",
+        "item2": "Genereren van gepersonaliseerde research, voorbereiding en follow-up content",
+        "item3": "Verwerken van betalingen en beheren van je abonnement",
+        "item4": "Versturen van transactionele e-mails (accountupdates, servicemeldingen)",
+        "item5": "Waarborgen van beveiliging en voorkomen van fraude"
+      },
+      "legalBasis": {
+        "title": "Rechtsgrond voor verwerking",
+        "contract": "Uitvoering overeenkomst",
+        "contractDesc": "Verwerking noodzakelijk om de dienst te leveren waarop je bent geabonneerd",
+        "consent": "Toestemming",
+        "consentDesc": "Voor optionele functies zoals agenda-integratie",
+        "legitimate": "Gerechtvaardigd belang",
+        "legitimateDesc": "Voor analytics en serviceverbetering",
+        "legal": "Wettelijke verplichting",
+        "legalDesc": "Voor belasting- en boekhoudkundige administratie"
+      },
+      "retention": {
+        "title": "Bewaartermijnen",
+        "intro": "We bewaren je gegevens volgens de volgende principes:",
+        "account": "Accountgegevens: Bewaard zolang je account actief is, verwijderd binnen 30 dagen na accountverwijdering",
+        "content": "Contentgegevens: Direct verwijderd bij accountverwijdering",
+        "billing": "Factuurgegevens: Geanonimiseerd en 7 jaar bewaard voor belastingcompliance",
+        "logs": "Technische logs: Automatisch verwijderd na 90 dagen"
+      },
+      "rights": {
+        "title": "Je rechten onder de AVG",
+        "intro": "Als EU-inwoner heb je de volgende rechten:",
+        "access": "Recht van inzage",
+        "accessDesc": "Een kopie van je persoonsgegevens opvragen",
+        "rectification": "Recht op rectificatie",
+        "rectificationDesc": "Onjuiste persoonsgegevens corrigeren",
+        "erasure": "Recht op vergetelheid",
+        "erasureDesc": "Verwijdering van je persoonsgegevens vragen",
+        "portability": "Recht op dataportabiliteit",
+        "portabilityDesc": "Je gegevens ontvangen in machineleesbaar formaat",
+        "objection": "Recht van bezwaar",
+        "objectionDesc": "Bezwaar maken tegen verwerking op basis van gerechtvaardigd belang",
+        "withdraw": "Recht om toestemming in te trekken",
+        "withdrawDesc": "Toestemming intrekken waar verwerking is gebaseerd op toestemming",
+        "howTo": "Je kunt de meeste van deze rechten rechtstreeks uitoefenen via je accountinstellingen (Instellingen → Privacy & Gegevens). Voor andere verzoeken, neem contact op via privacy@dealmotion.ai."
+      },
+      "transfers": {
+        "title": "Internationale gegevensoverdrachten",
+        "intro": "Sommige van onze dienstverleners bevinden zich buiten de EU. We gebruiken alleen providers die:",
+        "safeguards": "Gecertificeerd zijn onder het EU-US Data Privacy Framework (DPF), Standard Contractual Clauses (SCCs) hebben ondertekend, of gevestigd zijn in landen met een EU-adequaatheidsbesluit."
+      },
+      "subprocessors": {
+        "title": "Subverwerkers",
+        "intro": "We gebruiken de volgende derde partij dienstverleners:",
+        "name": "Dienst",
+        "purpose": "Doel",
+        "location": "Locatie",
+        "supabase": "Database en authenticatie",
+        "vercel": "Frontend hosting",
+        "railway": "Backend hosting",
+        "stripe": "Betalingsverwerking",
+        "anthropic": "AI contentgeneratie (research, prep, follow-up)",
+        "google": "AI research ondersteuning",
+        "pinecone": "Knowledge base vector opslag",
+        "deepgram": "Audio transcriptie",
+        "inngest": "Achtergrondtaakverwerking",
+        "sentry": "Foutmonitoring",
+        "dpfNote": "DPF = EU-US Data Privacy Framework gecertificeerd"
+      },
+      "security": {
+        "title": "Beveiligingsmaatregelen",
+        "intro": "We implementeren passende technische en organisatorische maatregelen:",
+        "encryption": "Versleuteling van gegevens in transit (TLS) en in rust (AES-256)",
+        "access": "Rolgebaseerde toegangscontrole met principe van minste privilege",
+        "monitoring": "Beveiligingsmonitoring en logging (zonder PII)",
+        "testing": "Regelmatige beveiligingsreviews en updates"
+      },
+      "cookies": {
+        "title": "Cookies",
+        "intro": "We gebruiken alleen essentiële cookies:",
+        "essential": "Essentiële cookies",
+        "essentialDesc": "Vereist voor authenticatie en sessiebeheer",
+        "preferences": "Voorkeurscookies",
+        "preferencesDesc": "Slaan je taalvoorkeur op",
+        "noTracking": "We gebruiken geen tracking cookies of advertentiecookies van derden."
+      },
+      "complaints": {
+        "title": "Klachten",
+        "intro": "Als je van mening bent dat we je persoonsgegevens niet correct hebben behandeld, kun je een klacht indienen bij de toezichthouder:",
+        "authority": "Nederlandse toezichthouder",
+        "authorityName": "Autoriteit Persoonsgegevens",
+        "authorityWebsite": "autoriteitpersoonsgegevens.nl"
+      },
+      "changes": {
+        "title": "Wijzigingen in dit beleid",
+        "text": "We kunnen dit privacybeleid van tijd tot tijd bijwerken. We stellen je op de hoogte van belangrijke wijzigingen via e-mail of in-app melding. Voortgezet gebruik van de dienst na wijzigingen betekent acceptatie van het bijgewerkte beleid."
+      },
+      "contact": {
+        "title": "Contact",
+        "text": "Voor privacy-gerelateerde vragen of om je rechten uit te oefenen, neem contact op via:"
+      },
+      "seeAlso": {
+        "terms": "Algemene Voorwaarden"
+      }
+    },
+    "terms": {
+      "title": "Algemene Voorwaarden",
+      "lastUpdated": "Laatst bijgewerkt",
+      "lastUpdatedDate": "23 december 2025",
+      "intro": {
+        "title": "Introductie",
+        "text": "Deze Algemene Voorwaarden (\"Voorwaarden\") regelen je gebruik van DealMotion, een AI-aangedreven B2B sales enablement platform van DealMotion B.V. Door onze dienst te gebruiken, ga je akkoord met deze Voorwaarden."
+      },
+      "definitions": {
+        "title": "Definities",
+        "service": "Dienst",
+        "serviceDesc": "Het DealMotion platform, inclusief webapplicatie, API's en gerelateerde diensten",
+        "user": "Gebruiker",
+        "userDesc": "Elke persoon of entiteit die zich registreert voor en gebruik maakt van de Dienst",
+        "content": "Gebruikerscontent",
+        "contentDesc": "Alle gegevens, tekst, bestanden en andere materialen die je uploadt of aanmaakt in de Dienst",
+        "subscription": "Abonnement",
+        "subscriptionDesc": "Je betaald of gratis plan voor toegang tot de Dienst"
+      },
+      "service": {
+        "title": "Dienstomschrijving",
+        "intro": "DealMotion is een AI-aangedreven sales enablement platform dat biedt:",
+        "feature1": "AI-gegenereerde prospect research en intelligence",
+        "feature2": "Meeting voorbereidingsbriefs",
+        "feature3": "Nabespreking met actiepunten en email concepten",
+        "feature4": "Meeting opname en transcriptie (AI Notetaker)",
+        "feature5": "Knowledge base voor documentopslag en RAG-verrijkte context"
+      },
+      "account": {
+        "title": "Accountregistratie",
+        "item1": "Je moet nauwkeurige en volledige registratiegegevens verstrekken",
+        "item2": "Je bent verantwoordelijk voor het beveiligen van je accountgegevens",
+        "item3": "Je moet ons onmiddellijk op de hoogte stellen van ongeautoriseerde toegang",
+        "item4": "Eén persoon of entiteit per account - accounts delen is niet toegestaan"
+      },
+      "responsibilities": {
+        "title": "Gebruikersverantwoordelijkheden",
+        "intro": "Je gaat akkoord om:",
+        "item1": "De Dienst alleen voor wettige zakelijke doeleinden te gebruiken",
+        "item2": "Te zorgen dat je het recht hebt om gegevens over derden in te voeren (prospects, contacten)",
+        "item3": "AI-gegenereerde content niet als mensgeschreven voor te stellen waar wettelijk vereist",
+        "item4": "Passende gegevensbeschermingsmaatregelen te handhaven voor persoonsgegevens die je verwerkt"
+      },
+      "acceptableUse": {
+        "title": "Acceptabel gebruik",
+        "intro": "Je mag de Dienst niet gebruiken om:",
+        "prohibited1": "Toepasselijke wet- of regelgeving te overtreden",
+        "prohibited2": "Intellectuele eigendomsrechten van anderen te schenden",
+        "prohibited3": "Te intimideren, te spammen of ongevraagde communicatie te versturen",
+        "prohibited4": "Te proberen de Dienst te reverse-engineeren, scrapen of op ongeautoriseerde wijze te benaderen",
+        "prohibited5": "De AI-functies te gebruiken om schadelijke, discriminerende of illegale content te genereren"
+      },
+      "payment": {
+        "title": "Abonnement & Betaling",
+        "item1": "Betaalde plannen worden maandelijks of jaarlijks vooraf gefactureerd",
+        "item2": "Prijzen zijn in Euro's (€) en exclusief toepasselijke belastingen",
+        "item3": "Je kunt je abonnement op elk moment opzeggen; toegang blijft tot het einde van de betaalde periode",
+        "item4": "Geen restitutie voor gedeeltelijke abonnementsperiodes, behalve indien wettelijk vereist",
+        "item5": "We kunnen prijzen wijzigen met 30 dagen opzegtermijn; wijzigingen gelden bij je volgende verlenging"
+      },
+      "data": {
+        "title": "Je gegevens",
+        "intro": "Met betrekking tot gegevens die je opslaat in de Dienst:",
+        "item1": "Je behoudt eigendom van alle Gebruikerscontent die je aanmaakt of uploadt",
+        "item2": "Je verleent ons een licentie om je gegevens te verwerken om de Dienst te leveren",
+        "item3": "We zullen je gegevens niet gebruiken om AI-modellen te trainen (anders dan je persoonlijke context binnen je account)"
+      },
+      "ip": {
+        "title": "Intellectueel eigendom",
+        "item1": "DealMotion bezit alle rechten op de Dienst, inclusief software, ontwerp en documentatie",
+        "item2": "AI-gegenereerde content (research, briefs, emails) mag je vrij gebruiken voor je zakelijke doeleinden",
+        "item3": "Je mag de Dienst of onderdelen ervan niet kopiëren, wijzigen of herdistribueren"
+      },
+      "ai": {
+        "title": "AI-gegenereerde content",
+        "intro": "De Dienst gebruikt kunstmatige intelligentie om content te genereren. Je erkent dat:",
+        "item1": "AI-gegenereerde content onnauwkeurigheden kan bevatten en moet worden gecontroleerd voor gebruik",
+        "item2": "Je verantwoordelijk bent voor het verifiëren van feiten en claims in AI-gegenereerde content",
+        "item3": "AI-suggesties hulpmiddelen zijn, geen professioneel advies (juridisch, financieel, etc.)"
+      },
+      "liability": {
+        "title": "Beperking van aansprakelijkheid",
+        "intro": "Voor zover wettelijk toegestaan:",
+        "item1": "De Dienst wordt geleverd \"zoals deze is\" zonder garanties van welke aard dan ook",
+        "item2": "We zijn niet aansprakelijk voor indirecte, incidentele of gevolgschade",
+        "item3": "Onze totale aansprakelijkheid is beperkt tot het bedrag dat je hebt betaald in de 12 maanden voorafgaand aan de claim"
+      },
+      "termination": {
+        "title": "Beëindiging",
+        "item1": "Je kunt je account op elk moment verwijderen via Instellingen → Privacy & Gegevens",
+        "item2": "We kunnen je account beëindigen bij schending van deze Voorwaarden met voorafgaande kennisgeving",
+        "item3": "Bij beëindiging worden je gegevens verwijderd volgens ons Privacybeleid",
+        "item4": "Bepalingen over IE, Aansprakelijkheid en Toepasselijk recht blijven gelden na beëindiging"
+      },
+      "law": {
+        "title": "Toepasselijk recht",
+        "text": "Op deze Voorwaarden is Nederlands recht van toepassing.",
+        "disputes": "Geschillen worden voorgelegd aan de bevoegde rechtbank in Amsterdam, Nederland."
+      },
+      "changes": {
+        "title": "Wijzigingen in voorwaarden",
+        "text": "We kunnen deze Voorwaarden bijwerken met 30 dagen opzegtermijn voor materiële wijzigingen. Voortgezet gebruik na de ingangsdatum betekent acceptatie."
+      },
+      "contact": {
+        "title": "Contact",
+        "text": "Voor vragen over deze Voorwaarden, neem contact op via:"
+      },
+      "seeAlso": {
+        "privacy": "Privacybeleid"
+      }
     }
   }
 }

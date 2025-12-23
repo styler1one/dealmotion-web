@@ -178,6 +178,12 @@ class Events:
     
     # Profile Finalization (async narrative/summary generation)
     PROFILE_FINALIZE_REQUESTED = "dealmotion/profile.finalize.requested"
+    
+    # GDPR Compliance
+    GDPR_EXECUTE_DELETION = "dealmotion/gdpr.execute.deletion"
+    GDPR_GENERATE_EXPORT = "dealmotion/gdpr.generate.export"
+    GDPR_CLEANUP_EXPIRED_EXPORTS = "dealmotion/gdpr.cleanup.expired-exports"
+    GDPR_PROCESS_SCHEDULED_DELETIONS = "dealmotion/gdpr.process.scheduled-deletions"
 
 
 # =============================================================================
@@ -262,4 +268,11 @@ def get_research_event() -> str:
     if arch == "v2":
         return Events.RESEARCH_REQUESTED_V2
     return Events.RESEARCH_REQUESTED
+
+
+# Export GDPR event constants directly for easy import
+GDPR_EXECUTE_DELETION = Events.GDPR_EXECUTE_DELETION
+GDPR_GENERATE_EXPORT = Events.GDPR_GENERATE_EXPORT
+GDPR_CLEANUP_EXPIRED_EXPORTS = Events.GDPR_CLEANUP_EXPIRED_EXPORTS
+GDPR_PROCESS_SCHEDULED_DELETIONS = Events.GDPR_PROCESS_SCHEDULED_DELETIONS
 

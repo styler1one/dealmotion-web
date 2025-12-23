@@ -51,6 +51,7 @@ import { api } from '@/lib/api'
 import { logger } from '@/lib/logger'
 import { useConfirmDialog } from '@/components/confirm-dialog'
 import { AutoRecordSettings } from '@/components/ai-notetaker/auto-record-settings'
+import { PrivacySettings } from '@/components/privacy'
 import type { User } from '@supabase/supabase-js'
 
 export default function SettingsPage() {
@@ -1073,6 +1074,9 @@ export default function SettingsPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Privacy & Data Settings */}
+          <PrivacySettings />
           </div>
 
           {/* RIGHT COLUMN */}

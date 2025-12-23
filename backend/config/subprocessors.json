@@ -1,0 +1,130 @@
+{
+  "version": "1.0",
+  "last_updated": "2025-12-23",
+  "subprocessors": [
+    {
+      "name": "Supabase",
+      "purpose": "Database hosting, authentication, file storage",
+      "data_categories": ["account_data", "user_content", "files"],
+      "location": "EU",
+      "region": "Frankfurt",
+      "transfer_mechanism": "EU_BASED",
+      "website": "https://supabase.com"
+    },
+    {
+      "name": "Vercel",
+      "purpose": "Frontend hosting, edge network",
+      "data_categories": ["session_data", "cookies"],
+      "location": "EU/US",
+      "transfer_mechanism": "SCCs",
+      "website": "https://vercel.com"
+    },
+    {
+      "name": "Railway",
+      "purpose": "Backend API hosting",
+      "data_categories": ["api_requests", "logs"],
+      "location": "EU",
+      "region": "Amsterdam",
+      "transfer_mechanism": "EU_BASED",
+      "website": "https://railway.app"
+    },
+    {
+      "name": "Stripe",
+      "purpose": "Payment processing, subscription management",
+      "data_categories": ["billing_info", "payment_details"],
+      "location": "US",
+      "transfer_mechanism": "DPF",
+      "website": "https://stripe.com"
+    },
+    {
+      "name": "Anthropic",
+      "purpose": "AI content generation (research, prep, follow-up, coaching)",
+      "data_categories": ["user_prompts", "content_context"],
+      "location": "US",
+      "transfer_mechanism": "DPF",
+      "website": "https://anthropic.com",
+      "model_training_opt_out": true
+    },
+    {
+      "name": "Google AI",
+      "purpose": "AI research assistance, web search",
+      "data_categories": ["company_research_queries"],
+      "location": "US",
+      "transfer_mechanism": "DPF",
+      "website": "https://ai.google.dev",
+      "model_training_opt_out": true
+    },
+    {
+      "name": "Voyage AI",
+      "purpose": "Text embeddings for knowledge base",
+      "data_categories": ["document_text_chunks"],
+      "location": "US",
+      "transfer_mechanism": "DPF",
+      "website": "https://voyage.ai"
+    },
+    {
+      "name": "Deepgram",
+      "purpose": "Audio transcription",
+      "data_categories": ["meeting_audio"],
+      "location": "US",
+      "transfer_mechanism": "DPF",
+      "website": "https://deepgram.com"
+    },
+    {
+      "name": "Pinecone",
+      "purpose": "Vector database for semantic search",
+      "data_categories": ["text_embeddings"],
+      "location": "US",
+      "transfer_mechanism": "DPF",
+      "website": "https://pinecone.io"
+    },
+    {
+      "name": "Inngest",
+      "purpose": "Background job orchestration",
+      "data_categories": ["job_metadata"],
+      "location": "US",
+      "transfer_mechanism": "DPF",
+      "website": "https://inngest.com"
+    },
+    {
+      "name": "Sentry",
+      "purpose": "Error monitoring",
+      "data_categories": ["error_traces"],
+      "location": "US",
+      "transfer_mechanism": "DPF",
+      "website": "https://sentry.io",
+      "pii_sanitized": true
+    },
+    {
+      "name": "SendGrid",
+      "purpose": "Transactional emails",
+      "data_categories": ["email_address", "name"],
+      "location": "US",
+      "transfer_mechanism": "DPF",
+      "website": "https://sendgrid.com"
+    },
+    {
+      "name": "Exa.ai",
+      "purpose": "Prospect discovery, web search",
+      "data_categories": ["company_search_queries"],
+      "location": "US",
+      "transfer_mechanism": "DPF",
+      "website": "https://exa.ai"
+    },
+    {
+      "name": "Recall.ai",
+      "purpose": "AI Notetaker meeting bots",
+      "data_categories": ["meeting_recordings", "transcripts"],
+      "location": "US",
+      "transfer_mechanism": "DPF",
+      "website": "https://recall.ai"
+    }
+  ],
+  "transfer_mechanisms": {
+    "EU_BASED": "Subprocessor is located within the EU - no transfer mechanism required",
+    "DPF": "EU-US Data Privacy Framework certified",
+    "SCCs": "Standard Contractual Clauses",
+    "ADEQUACY": "EU adequacy decision for the country"
+  }
+}
+
