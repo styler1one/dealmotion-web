@@ -131,8 +131,17 @@ class GDPRService:
             if result.data and len(result.data) > 0:
                 row = result.data[0]
                 if not row.get("can_delete"):
-                    reason = row.get("reason", "Unknown reason")
-                    logger.info(f"[GDPR] User {user_id} cannot delete: {reason}")
+                    db_reason = row.get("reason", "")
+                    
+                    # Map database reason to error code for i18n
+                    if "subscription" in db_reason.lower():
+                        error_code = "ACTIVE_SUBSCRIPTION"
+                    elif "in progress" in db_reason.lower() or "pending" in db_reason.lower():
+                        error_code = "DELETION_IN_PROGRESS"
+                    else:
+                        error_code = "GENERIC_ERROR"
+                    
+                    logger.info(f"[GDPR] User {user_id} cannot delete: {db_reason} (code: {error_code})")
                     
                     # Get subscription end date for context
                     sub_result = self.supabase.table("organization_subscriptions").select(
@@ -146,7 +155,7 @@ class GDPRService:
                     if sub_result.data:
                         end_date = sub_result.data.get("current_period_end")
                     
-                    return False, reason, end_date
+                    return False, error_code, end_date
             
             logger.info(f"[GDPR] User {user_id} can delete account")
             return True, None, None

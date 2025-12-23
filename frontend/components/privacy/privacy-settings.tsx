@@ -288,6 +288,18 @@ export function PrivacySettings() {
     new Date().getTime() - new Date(exportStatus.requested_at).getTime() > 2 * 60 * 1000
   
   // Handle account deletion request
+  // Map error codes to translated messages
+  const getDeleteErrorMessage = (errorCode: string) => {
+    switch (errorCode) {
+      case 'ACTIVE_SUBSCRIPTION':
+        return t('deleteAccount.errorActiveSubscription')
+      case 'DELETION_IN_PROGRESS':
+        return t('deleteAccount.errorDeletionInProgress')
+      default:
+        return t('deleteAccount.errorGeneric')
+    }
+  }
+  
   const handleRequestDeletion = async () => {
     const confirmed = await confirm({
       title: t('deleteAccount.confirmTitle'),
@@ -301,13 +313,15 @@ export function PrivacySettings() {
     
     setDeleteLoading(true)
     try {
-      const { data, error } = await api.post<{ success: boolean; scheduled_for: string }>('/api/v1/user/delete', {
+      const { data, error } = await api.post<{ success: boolean; scheduled_for: string; detail?: string }>('/api/v1/user/delete', {
         confirm: true,
         reason: deleteReason || undefined,
       })
       
       if (error) {
-        throw new Error(error.message || 'Deletion request failed')
+        // Check if the error contains an error code
+        const errorCode = error.message || ''
+        throw new Error(errorCode)
       }
       
       toast({
@@ -320,11 +334,16 @@ export function PrivacySettings() {
       // Refresh deletion status
       fetchDeletionStatus()
       
-    } catch (err) {
+    } catch (err: any) {
       logger.error('Deletion request failed', err, { source: 'PrivacySettings' })
+      
+      // Try to extract error code from the error message
+      const errorMessage = err?.message || ''
+      const description = getDeleteErrorMessage(errorMessage)
+      
       toast({
         title: t('deleteAccount.failed'),
-        description: t('deleteAccount.failedDesc'),
+        description,
         variant: 'destructive',
       })
     } finally {
