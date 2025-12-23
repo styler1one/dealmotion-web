@@ -161,7 +161,14 @@ async def schedule_recording(
     # Schedule with Recall.ai
     if recall_service.is_configured():
         # Get user name for personalized bot name (e.g., "Jan's Notetaker")
-        user_name = current_user.get("name") or current_user.get("email", "").split("@")[0]
+        # Name is stored in sales_profiles.full_name
+        user_name = None
+        profile_result = supabase.table("sales_profiles").select("full_name").eq("user_id", user_id).limit(1).execute()
+        if profile_result.data and profile_result.data[0].get("full_name"):
+            user_name = profile_result.data[0].get("full_name")
+        else:
+            # Fallback to email prefix from JWT
+            user_name = current_user.get("email", "").split("@")[0]
         
         config = RecallBotConfig(
             meeting_url=request.meeting_url,

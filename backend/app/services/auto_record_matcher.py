@@ -257,10 +257,16 @@ async def process_calendar_for_auto_record(user_id: str, organization_id: str):
         logger.info(f"[AUTO-RECORD] Settings: mode={settings.get('mode')}, external_only={settings.get('external_only')}, min_duration={settings.get('min_duration_minutes')}")
         
         # Get user name for personalized bot name (e.g., "Jan's Notetaker")
-        user_result = supabase.table("users").select("name, email").eq("id", user_id).limit(1).execute()
+        # Name is stored in sales_profiles.full_name, fallback to email
         user_name = None
-        if user_result.data:
-            user_name = user_result.data[0].get("name") or user_result.data[0].get("email", "").split("@")[0]
+        profile_result = supabase.table("sales_profiles").select("full_name").eq("user_id", user_id).limit(1).execute()
+        if profile_result.data and profile_result.data[0].get("full_name"):
+            user_name = profile_result.data[0].get("full_name")
+        else:
+            # Fallback to email prefix
+            user_result = supabase.table("users").select("email").eq("id", user_id).limit(1).execute()
+            if user_result.data:
+                user_name = user_result.data[0].get("email", "").split("@")[0]
         
         # Get upcoming online meetings that don't already have a scheduled recording
         # Use timezone-aware datetime for proper comparison with stored times
