@@ -451,6 +451,8 @@ Generate appropriate section titles in the output language. Examples:
 
 **{company_name}**
 
+IMPORTANT: "{company_name}" above is the CUSTOMER/PROSPECT company name. Use it exactly as shown. Do NOT replace it with the seller's company name.
+
 | | |
 |---|---|
 | **[Date label]** | {meeting_date} |
@@ -473,7 +475,7 @@ If participants show "[EXTRACT FROM TRANSCRIPT]", carefully identify ALL partici
 
 **CLOSING SIGNATURE:**
 
-[Appropriate closing phrase in output language]
+Use an appropriate closing phrase in the OUTPUT LANGUAGE (e.g., "Met vriendelijke groet," for Dutch, "Best regards," for English, "Mit freundlichen Grüßen," for German).
 
 {sales_name}
 {f'{sales_title}' if sales_title else ''}
