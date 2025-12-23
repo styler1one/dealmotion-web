@@ -1582,6 +1582,72 @@ Search for Dutch business coverage of "{company_name}":
 If no Dutch coverage found: "No significant coverage found in major Dutch business publications"
 """
 
+        # ═══════════════════════════════════════════════════════════════════════
+        # DYNAMIC: BUYER PERSONAS (only if seller has defined personas)
+        # ═══════════════════════════════════════════════════════════════════════
+        
+        if seller_context and seller_context.get("buyer_personas"):
+            personas = seller_context["buyer_personas"]
+            
+            # Build search queries for each persona title
+            persona_searches = []
+            persona_table_rows = []
+            pain_point_focus = []
+            
+            for i, persona in enumerate(personas[:5], 1):
+                title = persona.get("title", "")
+                seniority = persona.get("seniority", "")
+                pains = persona.get("pain_points", [])
+                
+                if title:
+                    # Add search queries
+                    persona_searches.append(f'{i}. "{company_name}" {title}')
+                    persona_searches.append(f'{i}b. site:linkedin.com/in "{company_name}" {title}')
+                    
+                    # Add table row
+                    persona_table_rows.append(f"| [Name] | {title} | {seniority} | [URL] | [Background] |")
+                    
+                    # Collect pain points
+                    if pains:
+                        pain_point_focus.extend(pains[:2])
+            
+            if persona_searches:
+                pain_focus_str = f"\n**Sales Focus**: When researching these personas, look for signals related to: {', '.join(pain_point_focus[:5])}" if pain_point_focus else ""
+                
+                prompts["buyer_personas_dynamic"] = base_context + f"""
+**RESEARCH FOCUS**: Your Target Buyer Personas (Custom Search)
+
+These are the specific roles your sales team targets. Find these people at "{company_name}":
+
+{chr(10).join(persona_searches)}
+
+**REQUIRED OUTPUT**:
+
+## Target Buyer Personas Found
+
+| Name | Title | Seniority | LinkedIn URL | Background |
+|------|-------|-----------|--------------|------------|
+{chr(10).join(persona_table_rows)}
+
+## Persona Insights
+
+For each persona found, note:
+- **Tenure**: How long in role
+- **Previous Experience**: Relevant background
+- **Public Activity**: Speaking, articles, LinkedIn posts
+- **Potential Pain Points**: Based on their role and company situation
+{pain_focus_str}
+
+## Missing Personas
+
+| Target Title | Search Result |
+|--------------|---------------|
+| [Title from your ICP] | Not found / Alternative found: [Name] as [Similar Title] |
+
+{seller_hint}
+"""
+                logger.info(f"Added dynamic buyer_personas prompt with {len(personas)} personas")
+
         return prompts
 
     async def search_company(

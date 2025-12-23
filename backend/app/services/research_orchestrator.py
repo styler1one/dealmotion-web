@@ -381,6 +381,10 @@ class ResearchOrchestrator:
             "target_company_sizes": [],
             "ideal_pain_points": [],
             "target_decision_makers": [],
+            # New: Rich buyer personas for dynamic search
+            "buyer_personas": [],
+            # New: Case studies for industry matching
+            "case_studies": [],
         }
         
         if not organization_id:
@@ -420,10 +424,34 @@ class ResearchOrchestrator:
                 context["ideal_pain_points"] = (icp.get("pain_points", []) or [])[:5]
                 context["target_decision_makers"] = (icp.get("decision_makers", []) or [])[:5]
                 
+                # Buyer personas - rich persona data for dynamic search
+                personas = company.get("buyer_personas", []) or []
+                context["buyer_personas"] = []
+                for p in personas[:5]:
+                    if isinstance(p, dict) and p.get("title"):
+                        context["buyer_personas"].append({
+                            "title": p.get("title"),
+                            "seniority": p.get("seniority", ""),
+                            "pain_points": (p.get("pain_points", []) or [])[:3]
+                        })
+                
+                # Case studies - for industry matching
+                cases = company.get("case_studies", []) or []
+                context["case_studies"] = []
+                for c in cases[:3]:
+                    if isinstance(c, dict) and c.get("customer"):
+                        context["case_studies"].append({
+                            "customer": c.get("customer"),
+                            "industry": c.get("industry", ""),
+                            "results": c.get("results", "")
+                        })
+                
                 logger.info(
                     f"Seller context loaded: {context['company_name']}, "
                     f"products={len(context['products'])}, "
-                    f"pain_points={len(context['ideal_pain_points'])}"
+                    f"pain_points={len(context['ideal_pain_points'])}, "
+                    f"buyer_personas={len(context['buyer_personas'])}, "
+                    f"case_studies={len(context['case_studies'])}"
                 )
             
             # Fallback: Get company name from sales profile

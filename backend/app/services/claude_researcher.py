@@ -72,6 +72,44 @@ class ClaudeResearcher:
         pain_points = ", ".join(seller_context.get("ideal_pain_points", [])[:5]) or "not specified"
         decision_makers = ", ".join(seller_context.get("target_decision_makers", [])[:5]) or "not specified"
         
+        # Buyer personas - rich persona data
+        personas_section = ""
+        buyer_personas = seller_context.get("buyer_personas", [])
+        if buyer_personas:
+            persona_rows = []
+            for p in buyer_personas[:5]:
+                title = p.get("title", "")
+                seniority = p.get("seniority", "")
+                pains = ", ".join(p.get("pain_points", [])[:2]) or "-"
+                if title:
+                    persona_rows.append(f"| {title} | {seniority} | {pains} |")
+            
+            if persona_rows:
+                personas_section = f"""
+| Target Buyer Persona | Seniority | Their Pain Points |
+|---------------------|-----------|-------------------|
+{chr(10).join(persona_rows)}
+"""
+        
+        # Case studies - for industry matching
+        cases_section = ""
+        case_studies = seller_context.get("case_studies", [])
+        if case_studies:
+            case_rows = []
+            for c in case_studies[:3]:
+                customer = c.get("customer", "")
+                industry = c.get("industry", "")
+                results = c.get("results", "")[:50] if c.get("results") else "-"
+                if customer:
+                    case_rows.append(f"| {customer} | {industry} | {results} |")
+            
+            if case_rows:
+                cases_section = f"""
+| Reference Customer | Industry | Results |
+|-------------------|----------|---------|
+{chr(10).join(case_rows)}
+"""
+        
         return f"""
 ## SELLER CONTEXT
 
@@ -92,12 +130,13 @@ Use this to assess FIT and personalize the analysis.
 | Company Sizes | {company_sizes} |
 | Pain Points We Solve | {pain_points} |
 | Typical Decision Makers | {decision_makers} |
-
+{personas_section}{cases_section}
 **YOUR MISSION**:
 1. Assess if this prospect FITS our ICP
 2. Find evidence of the pain points we solve
-3. Identify decision makers matching our typical buyers
+3. Identify decision makers matching our TARGET BUYER PERSONAS above
 4. Suggest use cases based on their situation + our benefits
+5. If we have case studies in similar industries, note the relevance
 """
 
     async def analyze_research_data(
