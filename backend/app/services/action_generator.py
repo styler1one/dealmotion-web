@@ -418,26 +418,23 @@ Read the ENTIRE transcript carefully and extract:
 
 ## DYNAMIC STRUCTURE
 
-Adapt the structure to match the richness and depth of the conversation:
-- **Short check-in (15-20 min)**: Fewer sections, focus on essence and agreements
-- **Standard meeting (30-45 min)**: Include situation, discussion themes, and outlook
-- **Deep/strategic meeting (45+ min)**: Use ALL relevant sections — a rich conversation deserves comprehensive documentation
+Choose sections based on the CONTENT of the conversation, not its length. Ask yourself: what does this customer need to see documented? A rich, strategic conversation deserves comprehensive documentation.
 
 **ALWAYS INCLUDE:**
 
-1. **Header** — Date, subject, participants (use format below)
-2. **The essence** — 2-3 sentences capturing the core theme and key takeaway. A busy executive should understand the meeting in 10 seconds.
-3. **Agreements and next steps** — Table with: Action | Owner | When | Goal (outcome-focused, e.g., "Enable Q2 rollout")
-4. **Closing signature** — Your contact details
+1. **Header** — Date, subject, participants
+2. **The essence** — 2-3 sentences capturing the core theme and key takeaway
+3. **Agreements and next steps** — Table with: Action | Owner | When | Goal
+4. **Closing signature** — Contact details
 
-**INCLUDE FOR SUBSTANTIVE CONVERSATIONS:**
+**AVAILABLE SECTIONS — include when the content warrants it:**
 
-- **Introduction** — Warm, professional opening that acknowledges their situation and sets the tone. Makes the reader feel understood.
-- **Current situation** — If the customer shared context, challenges, or priorities. Describe factually and empathetically.
-- **What we discussed** — Organize into 2-4 thematic sections with clear subheadings. Only include themes that help the customer make progress.
-- **What this means** — Implications, opportunities, dependencies, trade-offs. Advisory perspective. Include this if there are meaningful strategic insights.
-- **Looking ahead** — A possible path forward that builds on their goals. Paint success, invite partnership.
-- **Questions to consider** — 2-3 genuinely useful strategic questions (for complex/strategic conversations).
+- **Introduction** — Include when: a warm opening adds value, the relationship matters, or the customer shared something personal/emotional about their situation.
+- **Current situation** — Include when: the customer described their context, challenges, or priorities. This section shows you listened.
+- **What we discussed** — Include when: there were substantive topics. Organize into 2-4 thematic sections with clear subheadings.
+- **What this means** — Include when: there are strategic implications, opportunities, risks, or trade-offs worth highlighting.
+- **Looking ahead** — Include when: there's a clear path forward or vision that reinforces partnership.
+- **Questions to consider** — Include when: strategic questions would genuinely help the customer prepare for next steps.
 
 **SECTION TITLES:**
 Use sentence case (only first word capitalized, not every word). Generate in the output language. Examples:
