@@ -13,8 +13,6 @@
  * Attribution window: 30 days (enforced server-side, but we expire locally too)
  */
 
-import { v4 as uuidv4 } from 'uuid'
-
 const AFFILIATE_STORAGE_KEY = 'dm_affiliate'
 const AFFILIATE_EXPIRY_DAYS = 30
 
@@ -57,8 +55,10 @@ export function checkAndStoreAffiliateCode(
     return existing
   }
   
-  // Generate new click ID
-  const clickId = uuidv4()
+  // Generate new click ID (using native crypto API)
+  const clickId = typeof crypto !== 'undefined' && crypto.randomUUID 
+    ? crypto.randomUUID() 
+    : `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`
   const now = Date.now()
   const expiresAt = now + (AFFILIATE_EXPIRY_DAYS * 24 * 60 * 60 * 1000)
   
