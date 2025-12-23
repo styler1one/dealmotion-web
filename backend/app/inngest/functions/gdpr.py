@@ -10,6 +10,9 @@ Handles asynchronous GDPR operations:
 
 import logging
 from datetime import datetime, timedelta
+import inngest
+from inngest import TriggerEvent, TriggerCron
+
 from app.inngest.client import inngest_client
 from app.inngest.events import (
     GDPR_EXECUTE_DELETION,
@@ -24,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 @inngest_client.create_function(
     fn_id="gdpr-execute-deletion",
-    trigger=inngest_client.TriggerEvent(event=GDPR_EXECUTE_DELETION),
+    trigger=TriggerEvent(event=GDPR_EXECUTE_DELETION),
     retries=2,
 )
 async def execute_deletion_fn(ctx, step):
@@ -104,7 +107,7 @@ async def execute_deletion_fn(ctx, step):
 
 @inngest_client.create_function(
     fn_id="gdpr-generate-export",
-    trigger=inngest_client.TriggerEvent(event=GDPR_GENERATE_EXPORT),
+    trigger=TriggerEvent(event=GDPR_GENERATE_EXPORT),
     retries=2,
 )
 async def generate_export_fn(ctx, step):
@@ -140,7 +143,7 @@ async def generate_export_fn(ctx, step):
 
 @inngest_client.create_function(
     fn_id="gdpr-cleanup-expired-exports",
-    trigger=inngest_client.TriggerCron(cron="0 3 * * *"),  # Daily at 3 AM
+    trigger=TriggerCron(cron="0 3 * * *"),  # Daily at 3 AM
     retries=1,
 )
 async def cleanup_expired_exports_fn(ctx, step):
@@ -191,7 +194,7 @@ async def cleanup_expired_exports_fn(ctx, step):
 
 @inngest_client.create_function(
     fn_id="gdpr-process-scheduled-deletions",
-    trigger=inngest_client.TriggerCron(cron="*/15 * * * *"),  # Every 15 minutes
+    trigger=TriggerCron(cron="*/15 * * * *"),  # Every 15 minutes
     retries=1,
 )
 async def process_scheduled_deletions_fn(ctx, step):
