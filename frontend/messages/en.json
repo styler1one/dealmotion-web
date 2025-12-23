@@ -1819,7 +1819,7 @@
       "v4": {
         "free": {
           "name": "Free",
-          "description": "Everything included — try 2 complete sales cycles"
+          "description": "Everything included — try a complete sales cycle"
         },
         "pro": {
           "name": "Pro",
@@ -1915,7 +1915,7 @@
         "dedicatedSupport": "Dedicated account manager",
         "value": {
           "tryComplete": "Experience the full workflow",
-          "twoFlows": "2 complete sales cycles included",
+          "twoFlows": "1 complete sales cycle included",
           "unlimited": "Unlimited prospects & meetings*",
           "unlimitedNote": "*Fair use policy",
           "uploadTranscripts": "Upload your own recordings & transcripts",

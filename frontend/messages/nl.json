@@ -1787,7 +1787,7 @@
       "v4": {
         "free": {
           "name": "Gratis",
-          "description": "Alles inbegrepen — probeer 2 complete salescycli"
+          "description": "Alles inbegrepen — probeer een complete salescyclus"
         },
         "pro": {
           "name": "Pro",
@@ -1901,7 +1901,7 @@
         "dedicatedSupport": "Dedicated account manager",
         "value": {
           "tryComplete": "Ervaar de complete workflow",
-          "twoFlows": "2 complete salescycli inbegrepen",
+          "twoFlows": "1 complete salescyclus inbegrepen",
           "unlimited": "Onbeperkt prospects en meetings*",
           "unlimitedNote": "*Fair use policy",
           "uploadTranscripts": "Upload je eigen opnames en transcripts",
