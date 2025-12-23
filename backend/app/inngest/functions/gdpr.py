@@ -143,15 +143,16 @@ async def generate_export_fn(ctx, step):
 
 @inngest_client.create_function(
     fn_id="gdpr-cleanup-expired-exports",
-    trigger=TriggerCron(cron="0 * * * *"),  # Every hour at :00
+    trigger=TriggerCron(cron="0 3 * * *"),  # Daily at 3 AM
     retries=1,
 )
 async def cleanup_expired_exports_fn(ctx, step):
     """
     Cleanup expired data exports.
     
-    Runs hourly to delete expired export files from storage.
-    Exports are valid for 24 hours, then auto-deleted.
+    Runs daily at 3 AM to delete expired export files from storage.
+    Note: On-the-fly expiration in list_exports() handles real-time expiration.
+    This job cleans up any orphaned files.
     """
     logger.info("[GDPR] Running expired exports cleanup")
     
