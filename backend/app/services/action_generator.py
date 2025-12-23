@@ -372,7 +372,9 @@ This is NOT a summary. This is a strategic document that:
 
 {lang_instruction}
 
-**CRITICAL: Write the ENTIRE document in the output language specified above. This includes ALL section titles, table headers, labels, and content. Do not mix languages.**
+**LANGUAGE: Write in the output language specified above.**
+- Section titles, table headers, and labels must be in the output language
+- For content: use the output language naturally, but keep English terms that are commonly used in that language (e.g., in Dutch: "roadmap", "stakeholders", "data warehouse", "cloud", "Team-as-a-Service", "CEO/CFO/CTO"). Don't force awkward translations.
 
 ---
 
