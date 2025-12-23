@@ -134,19 +134,25 @@ async def delete_account(
     
     # Trigger Inngest to process deletion after grace period
     try:
-        from app.inngest.client import inngest
-        from app.inngest.events import GDPR_EXECUTE_DELETION
+        from app.inngest.events import send_event, GDPR_EXECUTE_DELETION
         
-        await inngest.send({
-            "name": GDPR_EXECUTE_DELETION,
-            "data": {
+        logger.info(f"[GDPR] Sending deletion event for user {user_id}, request_id: {result['deletion_request_id']}")
+        
+        event_sent = await send_event(
+            GDPR_EXECUTE_DELETION,
+            {
                 "deletion_request_id": result["deletion_request_id"],
                 "user_id": user_id,
                 "scheduled_for": result["scheduled_for"].isoformat(),
             },
-        })
+        )
+        
+        if event_sent:
+            logger.info(f"[GDPR] Deletion event sent successfully for user {user_id}")
+        else:
+            logger.warning(f"[GDPR] Deletion event not sent for user {user_id} - Inngest may be disabled")
     except Exception as e:
-        logger.error(f"Failed to trigger deletion job: {e}")
+        logger.error(f"[GDPR] Failed to trigger deletion job: {e}", exc_info=True)
         # Don't fail the request - the scheduled job will still run
     
     logger.info(f"Account deletion requested for user {user_id}")
@@ -241,18 +247,24 @@ async def request_data_export(
     
     # Trigger Inngest to generate export
     try:
-        from app.inngest.client import inngest
-        from app.inngest.events import GDPR_GENERATE_EXPORT
+        from app.inngest.events import send_event, GDPR_GENERATE_EXPORT
         
-        await inngest.send({
-            "name": GDPR_GENERATE_EXPORT,
-            "data": {
+        logger.info(f"[GDPR] Sending export event for user {user_id}, export_id: {result['export_id']}")
+        
+        event_sent = await send_event(
+            GDPR_GENERATE_EXPORT,
+            {
                 "export_id": result["export_id"],
                 "user_id": user_id,
             },
-        })
+        )
+        
+        if event_sent:
+            logger.info(f"[GDPR] Export event sent successfully for user {user_id}")
+        else:
+            logger.warning(f"[GDPR] Export event not sent for user {user_id} - Inngest may be disabled")
     except Exception as e:
-        logger.error(f"Failed to trigger export job: {e}")
+        logger.error(f"[GDPR] Failed to trigger export job: {e}", exc_info=True)
     
     logger.info(f"Data export requested for user {user_id}")
     
