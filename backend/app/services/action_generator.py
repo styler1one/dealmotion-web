@@ -418,27 +418,31 @@ Read the ENTIRE transcript carefully and extract:
 
 ## DYNAMIC STRUCTURE
 
-Adapt the structure to the conversation. Not every meeting needs every section.
+Adapt the structure to match the richness and depth of the conversation:
+- **Short check-in (15-20 min)**: Fewer sections, focus on essence and agreements
+- **Standard meeting (30-45 min)**: Include situation, discussion themes, and outlook
+- **Deep/strategic meeting (45+ min)**: Use ALL relevant sections — a rich conversation deserves comprehensive documentation
 
 **ALWAYS INCLUDE:**
 
 1. **Header** — Date, subject, participants (use format below)
-2. **The Essence** — 2-3 sentences capturing the core theme and key takeaway. A busy executive should understand the meeting in 10 seconds.
-3. **Agreements and Next Steps** — Table with: Action | Owner | When | Goal (outcome-focused, e.g., "Enable Q2 rollout")
+2. **The essence** — 2-3 sentences capturing the core theme and key takeaway. A busy executive should understand the meeting in 10 seconds.
+3. **Agreements and next steps** — Table with: Action | Owner | When | Goal (outcome-focused, e.g., "Enable Q2 rollout")
 4. **Closing signature** — Your contact details
 
-**INCLUDE WHEN RELEVANT:**
+**INCLUDE FOR SUBSTANTIVE CONVERSATIONS:**
 
-- **Current Situation** — If the customer shared context, challenges, or priorities. Describe factually and empathetically.
-- **What We Discussed** — Organize into 2-4 thematic sections with clear subheadings. Only include themes that help the customer make progress.
-- **What This Means** — Implications, opportunities, dependencies, trade-offs. Advisory perspective.
-- **Looking Ahead** — A possible path forward that builds on their goals. Paint success, invite partnership.
-- **Questions to Consider** — 2-3 genuinely useful strategic questions (only for complex/strategic conversations).
+- **Introduction** — Warm, professional opening that acknowledges their situation and sets the tone. Makes the reader feel understood.
+- **Current situation** — If the customer shared context, challenges, or priorities. Describe factually and empathetically.
+- **What we discussed** — Organize into 2-4 thematic sections with clear subheadings. Only include themes that help the customer make progress.
+- **What this means** — Implications, opportunities, dependencies, trade-offs. Advisory perspective. Include this if there are meaningful strategic insights.
+- **Looking ahead** — A possible path forward that builds on their goals. Paint success, invite partnership.
+- **Questions to consider** — 2-3 genuinely useful strategic questions (for complex/strategic conversations).
 
 **SECTION TITLES:**
-Generate appropriate section titles in the output language. Examples:
-- English: "The Essence", "Current Situation", "What We Discussed", "Agreements and Next Steps"
-- Dutch: "De Essentie", "Huidige Situatie", "Wat We Bespraken", "Afspraken en Vervolgstappen"
+Use sentence case (only first word capitalized, not every word). Generate in the output language. Examples:
+- English: "The essence", "Current situation", "What we discussed", "Agreements and next steps"
+- Dutch: "De essentie", "Huidige situatie", "Wat we bespraken", "Afspraken en vervolgstappen"
 - German: "Das Wesentliche", "Aktuelle Situation", "Besprochene Themen", "Vereinbarungen und nächste Schritte"
 
 ---
