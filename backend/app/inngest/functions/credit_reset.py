@@ -10,6 +10,7 @@ Schedule: Every day at 00:05 UTC
 
 import logging
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 from inngest import TriggerCron
 from app.inngest.client import inngest_client
 from app.database import get_supabase_service
@@ -46,11 +47,12 @@ async def credit_reset_daily_fn(ctx, step):
         org_id = org["organization_id"]
         credits_total = org["credits_per_month"]
         is_unlimited = credits_total == -1
+        previous_period_end = org.get("previous_period_end")
         
         success = await step.run(
             f"reset-credits-{org_id[:8]}",
-            lambda org_id=org_id, credits_total=credits_total, is_unlimited=is_unlimited: 
-                reset_organization_credits(supabase, org_id, credits_total, is_unlimited)
+            lambda org_id=org_id, credits_total=credits_total, is_unlimited=is_unlimited, prev_end=previous_period_end: 
+                reset_organization_credits(supabase, org_id, credits_total, is_unlimited, prev_end)
         )
         
         if success:
@@ -98,7 +100,7 @@ def find_expired_credit_periods(supabase, now: datetime) -> dict:
                 organizations.append({
                     "organization_id": org_id,
                     "credits_per_month": credits_per_month,
-                    "period_end": row["subscription_period_end"]
+                    "previous_period_end": row["subscription_period_end"]
                 })
         
         logger.info(f"Found {len(organizations)} organizations needing credit reset")
@@ -113,18 +115,28 @@ def reset_organization_credits(
     supabase, 
     organization_id: str, 
     credits_total: int, 
-    is_unlimited: bool
+    is_unlimited: bool,
+    previous_period_end: str = None
 ) -> bool:
-    """Reset credits for a single organization."""
+    """
+    Reset credits for a single organization.
+    
+    The new period starts from the previous period's end date (not the 1st of month).
+    This ensures the billing cycle stays aligned with the original purchase date.
+    """
     try:
         now = datetime.utcnow()
-        period_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         
-        # Calculate period end (1 month from start)
-        if period_start.month == 12:
-            period_end = period_start.replace(year=period_start.year + 1, month=1)
+        # Calculate new period based on PREVIOUS period end (dynamic, not hardcoded)
+        if previous_period_end:
+            # Continue from where the last period ended
+            period_start = datetime.fromisoformat(previous_period_end.replace('Z', '+00:00').replace('+00:00', ''))
         else:
-            period_end = period_start.replace(month=period_start.month + 1)
+            # Fallback: start from now
+            period_start = now
+        
+        # New period is exactly 1 month from the start
+        period_end = period_start + relativedelta(months=1)
         
         # Update credit balance
         supabase.table("credit_balances").update({

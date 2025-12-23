@@ -613,6 +613,21 @@ class SubscriptionService:
                 from app.services.credit_service import get_credit_service
                 credit_service = get_credit_service()
                 
+                # Get Stripe subscription to get the ACTUAL billing period
+                # This ensures credits reset on the purchase anniversary, not the 1st of month
+                try:
+                    stripe_sub = self.stripe.Subscription.retrieve(subscription_id)
+                    billing_period_start = datetime.fromtimestamp(stripe_sub.current_period_start)
+                    billing_period_end = datetime.fromtimestamp(stripe_sub.current_period_end)
+                    logger.info(
+                        f"Stripe billing period for {organization_id}: "
+                        f"{billing_period_start.date()} to {billing_period_end.date()}"
+                    )
+                except Exception as stripe_err:
+                    logger.warning(f"Could not fetch Stripe subscription: {stripe_err}")
+                    billing_period_start = None
+                    billing_period_end = None
+                
                 # Get plan credit allocation
                 plan_response = self.supabase.table("subscription_plans").select(
                     "credits_per_month"
@@ -622,16 +637,19 @@ class SubscriptionService:
                     credits_per_month = plan_response.data.get("credits_per_month", 0)
                     is_unlimited = credits_per_month == -1
                     
-                    # Reset credits for the new billing period
+                    # Reset credits for the new billing period (dynamic based on Stripe)
                     await credit_service.reset_subscription_credits(
                         organization_id=organization_id,
                         credits_total=credits_per_month if not is_unlimited else 0,
-                        is_unlimited=is_unlimited
+                        is_unlimited=is_unlimited,
+                        billing_period_start=billing_period_start,
+                        billing_period_end=billing_period_end
                     )
                     
                     logger.info(
                         f"Reset credits for org {organization_id}: "
-                        f"{credits_per_month} credits, unlimited={is_unlimited}"
+                        f"{credits_per_month} credits, unlimited={is_unlimited}, "
+                        f"period: {billing_period_start} to {billing_period_end}"
                     )
             
             logger.info(f"Invoice paid for org {organization_id}, amount: {amount_paid}")

@@ -17,7 +17,7 @@ Key principles:
 import logging
 from decimal import Decimal
 from typing import Optional, Dict, Any, List, Tuple
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.database import get_supabase_service
 
 logger = logging.getLogger(__name__)
@@ -520,7 +520,9 @@ class CreditService:
         self,
         organization_id: str,
         credits_total: int,
-        is_unlimited: bool = False
+        is_unlimited: bool = False,
+        billing_period_start: Optional[datetime] = None,
+        billing_period_end: Optional[datetime] = None
     ) -> bool:
         """
         Reset subscription credits (called on subscription change or monthly reset).
@@ -529,19 +531,24 @@ class CreditService:
             organization_id: Organization UUID
             credits_total: New total credits for the period
             is_unlimited: Whether this is an unlimited plan
+            billing_period_start: Stripe billing period start (dynamic, based on purchase date)
+            billing_period_end: Stripe billing period end (dynamic, based on purchase date)
         
         Returns:
             True if successful
         """
         try:
             now = datetime.utcnow()
-            period_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
             
-            # Calculate period end
-            if period_start.month == 12:
-                period_end = period_start.replace(year=period_start.year + 1, month=1)
+            # Use Stripe billing cycle if provided, otherwise calculate from now
+            # This ensures the period is dynamic (based on purchase date), not hardcoded to 1st of month
+            if billing_period_start and billing_period_end:
+                period_start = billing_period_start
+                period_end = billing_period_end
             else:
-                period_end = period_start.replace(month=period_start.month + 1)
+                # Fallback: use current date + 1 month (for manual resets or cron jobs)
+                period_start = now
+                period_end = now + timedelta(days=30)  # Approximate 1 month
             
             self.supabase.table("credit_balances").upsert({
                 "organization_id": organization_id,
