@@ -34,6 +34,16 @@ RECALL_API_BASE = REGION_URLS.get(RECALL_REGION, "https://us-east-1.recall.ai/ap
 AI_NOTETAKER_NAME_TEMPLATE = os.getenv("AI_NOTETAKER_NAME", "{name}'s Notetaker")
 AI_NOTETAKER_NAME_FALLBACK = "Notetaker"
 
+# Bot timing settings (in seconds)
+# How long before meeting start time the bot should join
+BOT_JOIN_OFFSET_SECONDS = int(os.getenv("BOT_JOIN_OFFSET_SECONDS", "60"))  # 1 minute early
+
+# How long the bot waits in the waiting room before giving up
+BOT_WAITING_ROOM_TIMEOUT_SECONDS = int(os.getenv("BOT_WAITING_ROOM_TIMEOUT_SECONDS", "600"))  # 10 minutes
+
+# How long the bot stays if it's alone in the meeting
+BOT_AUTOMATIC_LEAVE_TIMEOUT_SECONDS = int(os.getenv("BOT_AUTOMATIC_LEAVE_TIMEOUT_SECONDS", "1200"))  # 20 minutes
+
 
 def get_bot_name(user_name: Optional[str] = None) -> str:
     """
@@ -66,6 +76,19 @@ class RecallBotConfig(BaseModel):
     meeting_url: str
     bot_name: str = AI_NOTETAKER_NAME_FALLBACK
     join_at: Optional[datetime] = None  # None = join immediately
+    
+    # Timing settings - Recall.ai specific
+    # See: https://docs.recall.ai/reference/bot-create
+    automatic_leave: dict = None  # {"waiting_room_timeout": 600, "noone_joined_timeout": 1200}
+    
+    def get_automatic_leave_config(self) -> dict:
+        """Get automatic leave config with defaults."""
+        if self.automatic_leave:
+            return self.automatic_leave
+        return {
+            "waiting_room_timeout": BOT_WAITING_ROOM_TIMEOUT_SECONDS,
+            "noone_joined_timeout": BOT_AUTOMATIC_LEAVE_TIMEOUT_SECONDS,
+        }
 
 
 class RecallBotResponse(BaseModel):
@@ -148,11 +171,17 @@ class RecallService:
         payload = {
             "meeting_url": config.meeting_url,
             "bot_name": config.bot_name,
+            # Automatic leave settings - how long to wait before giving up
+            "automatic_leave": config.get_automatic_leave_config(),
         }
         
         # Add join_at if scheduling for later
+        # Subtract offset so bot joins early (e.g., 1 minute before meeting start)
         if config.join_at:
-            payload["join_at"] = config.join_at.isoformat()
+            from datetime import timedelta
+            early_join_time = config.join_at - timedelta(seconds=BOT_JOIN_OFFSET_SECONDS)
+            payload["join_at"] = early_join_time.isoformat()
+            logger.info(f"Bot scheduled to join {BOT_JOIN_OFFSET_SECONDS}s early: {early_join_time.isoformat()}")
         
         logger.info(f"Creating Recall.ai bot with payload: {payload}")
         
