@@ -815,7 +815,7 @@ class CreditService:
                 "plan_id, subscription_plans(credits_per_month)"
             ).eq("organization_id", organization_id).maybe_single().execute()
             
-            credits_total = 2  # Default free plan
+            credits_total = 25  # Default free plan (25 credits/month)
             is_unlimited = False
             
             if sub_response.data:
