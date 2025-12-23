@@ -1,7 +1,7 @@
 # 🔄 Ways of Working - DealMotion
 
-**Versie**: 3.5  
-**Laatst bijgewerkt**: 9 December 2025
+**Versie**: 3.6  
+**Laatst bijgewerkt**: 23 December 2025
 
 > ⚠️ **Bij elke sessie**: Update de "Handover & Huidige Status" sectie aan het eind!
 
@@ -59,14 +59,24 @@ De AI zal dan:
 
 | Item | Status |
 |------|--------|
-| **Huidige Fase** | Production Ready + Mobile App 82% Complete |
-| **Focus** | SPEC-040: Mobile App (Phase 5: Push Notifications) |
+| **Huidige Fase** | Production Ready + AI Notetaker Fully Automated |
+| **Focus** | SPEC-043: AI Notetaker / Recall.ai Integration |
 | **Blokkeerders** | Geen |
-| **Laatst Gedeployed** | 9 December 2025 |
+| **Laatst Gedeployed** | 23 December 2025 |
 
 ### ✅ Recent Afgerond (laatste 5)
 
-1. **📱 SPEC-040: Mobile App Phase 1-4 Complete** - Alle MUST features werkend (9 Dec) ✅
+1. **🤖 SPEC-043: AI Notetaker Full Automation** - Complete auto-record flow werkend (23 Dec) ✅
+   - **Auto-Record Fix**: Calendar cron sync triggert nu ProspectMatcher + AutoRecordMatcher
+   - **Email Invite Fix**: NameError in `email_invite.py` opgelost (`attendee_emails` → `attendee_info`)
+   - **Personalized Bot Name**: Bot joined nu als "{UserName}'s Notetaker" (bijv. "Jan's Notetaker")
+   - **Bot Timing Config**: Environment variables voor join timing en timeouts
+     - `BOT_JOIN_OFFSET_SECONDS=60` (1 min vroeger joinen)
+     - `BOT_WAITING_ROOM_TIMEOUT_SECONDS=600` (10 min wachtkamer)
+     - `BOT_AUTOMATIC_LEAVE_TIMEOUT_SECONDS=1200` (20 min als niemand joint)
+   - **Autopilot Fix**: NameError in `autopilot_orchestrator.py` opgelost
+   - **Debug Endpoints**: Toegevoegd voor troubleshooting auto-record flow
+2. **📱 SPEC-040: Mobile App Phase 1-4 Complete** - Alle MUST features werkend (9 Dec) ✅
    - Bottom Navigation (5 tabs) + Quick Actions Sheet
    - Home Dashboard met live stats
    - Meetings Screen met calendar data
@@ -75,38 +85,40 @@ De AI zal dan:
    - Prospect Hub met Notes (add/pin/delete)
    - **Code Quality**: 0 errors, 0 warnings, 30 info hints
    - **TODO**: Push notifications, Offline caching, App Store submission
-2. **🖥️ SPEC-038 Phase 4: Microsoft 365 + Teams** - Volledige integratie werkend (8 Dec) ✅
+3. **🖥️ SPEC-038 Phase 4: Microsoft 365 + Teams** - Volledige integratie werkend (8 Dec) ✅
    - Microsoft 365 Calendar OAuth flow
    - Calendar sync met Microsoft Graph API
    - Teams recordings & transcripts import
-3. **🔥 SPEC-038 Phase 3: Fireflies Integration** - Volledige integratie werkend (8 Dec) ✅
+4. **🔥 SPEC-038 Phase 3: Fireflies Integration** - Volledige integratie werkend (8 Dec) ✅
    - API key connection met Fernet encryption
    - Auto-sync elke 5 minuten (Inngest cron)
    - Import Modal met prospect/contact/prep linking
-4. **📅 SPEC-038 Phase 1: Meetings & Calendar Integration** - Google Calendar volledig werkend (7 Dec) ✅
+5. **📅 SPEC-038 Phase 1: Meetings & Calendar Integration** - Google Calendar volledig werkend (7 Dec) ✅
    - 19 sprints voltooid
    - Google Calendar OAuth flow (connect/disconnect)
    - Calendar sync service met 15-min auto-refresh (Inngest)
-5. **🔧 Frontend Code Quality Review** - TypeScript & accessibility verbeteringen (6 Dec) ✅
 
 ### 📋 Volgende Stappen
 
-1. **SPEC-040 Phase 5: Push Notifications** - Firebase Cloud Messaging
+1. **Beta launch** - Eerste beta users uitnodigen
+   - AI Notetaker werkt volledig automatisch
+   - Prospect/Contact matching werkt automatisch
+   - Personalized bot naming actief
+2. **SPEC-040 Phase 5: Push Notifications** - Firebase Cloud Messaging
    - Firebase project setup
    - FCM token registration
    - Permission request flow
    - Deep link routing from notifications
-2. **SPEC-040 Phase 5.2: Offline Caching** - Hive caching
+3. **SPEC-040 Phase 5.2: Offline Caching** - Hive caching
    - Meetings cache
    - Prospects cache
    - Documents cache
    - Sync on app open
-3. **SPEC-040 Phase 6: App Store Release** - Submit naar App Store & Play Store
+4. **SPEC-040 Phase 6: App Store Release** - Submit naar App Store & Play Store
    - App Store assets
    - Play Store assets
    - TestFlight beta
-4. **SPEC-038 Phase 4.5-4.7: Browser Recording** - Opnemen in de browser (optional)
-5. **Beta launch** - Eerste beta users uitnodigen
+5. **SPEC-038 Phase 4.5-4.7: Browser Recording** - Opnemen in de browser (optional)
 
 ### 📚 Belangrijke Documenten voor Context
 
@@ -153,6 +165,10 @@ De AI zal dan:
 - **Email**: Inbox nodig voor `support@dealmotion.ai` en `sales@dealmotion.ai`
 - **Stripe**: Flow Pack product moet nog worden aangemaakt in Stripe dashboard
 - **Flow Refund**: Bij delete research wordt flow nog niet teruggeteld
+- **Railway Env Vars**: Bot timing instellingen geconfigureerd in Railway:
+  - `BOT_JOIN_OFFSET_SECONDS=60`
+  - `BOT_WAITING_ROOM_TIMEOUT_SECONDS=600`
+  - `BOT_AUTOMATIC_LEAVE_TIMEOUT_SECONDS=1200`
 
 ### 🧠 Context voor AI Assistant
 
@@ -196,6 +212,7 @@ De AI zal dan:
 | **Inngest** | Workflow orchestration | https://app.inngest.com | - |
 | **Pinecone** | Vector database | https://app.pinecone.io | - |
 | **Deepgram** | Audio transcriptie | https://console.deepgram.com | - |
+| **Recall.ai** | AI Meeting Bots | https://recall.ai | - |
 
 ### API Keys & Secrets
 
