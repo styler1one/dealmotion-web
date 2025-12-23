@@ -372,6 +372,8 @@ This is NOT a summary. This is a strategic document that:
 
 {lang_instruction}
 
+**CRITICAL: Write the ENTIRE document in the output language specified above. This includes ALL section titles, table headers, labels, and content. Do not mix languages.**
+
 ---
 
 ## CORE PRINCIPLES
@@ -396,7 +398,7 @@ Read the ENTIRE transcript carefully and extract:
 
 | Category | What to capture | Why it matters |
 |----------|-----------------|----------------|
-| **People** | Every name, role, organization, relationship to decision-making | Relationship assets, DMU mapping |
+| **People** | Every name + their role/title + organization. If role unclear, infer from context (e.g., "leads the IT team" → IT Manager) | Relationship assets, DMU mapping |
 | **Technologies** | Systems, platforms, tools + status (current/planned/replacing) | Solution context |
 | **Timelines** | Dates, deadlines, phases, "Q2", "next year", "by 2027" | Urgency and planning |
 | **Organizations** | Partners, vendors, competitors mentioned | Customer's ecosystem |
@@ -408,39 +410,57 @@ Read the ENTIRE transcript carefully and extract:
 
 ## QUALITY STANDARDS
 
-- Every sentence adds value for the customer
+**Writing style:**
 - Flowing prose with clear paragraph structure
+- Every sentence adds value for the customer
 - Thorough without being verbose — depth over padding
-- Tables are fine for structured data (actions, people)
-- Avoid bullet points in narrative sections
+
+**When to use quotes:**
+- Include 2-4 direct quotes that capture the customer's voice authentically
+- Choose quotes that reveal priorities, concerns, or memorable phrases
+- Weave quotes naturally into the narrative
+
+**When to use tables:**
+- Agreements/action items → always table format
+- Do NOT use tables elsewhere unless listing many structured items
+
+**When to use bullets:**
+- Only in "Questions to consider" section
+- Avoid bullets in narrative sections — use prose instead
 
 ---
 
 ## DYNAMIC STRUCTURE
 
-Choose sections based on the CONTENT of the conversation, not its length. Ask yourself: what does this customer need to see documented? A rich, strategic conversation deserves comprehensive documentation.
+Choose sections based on the CONTENT of the conversation. A rich, strategic conversation deserves comprehensive documentation.
 
 **ALWAYS INCLUDE:**
 
-1. **Header** — Date, subject, participants
+1. **Header** — Date, subject, participants with roles
 2. **The essence** — 2-3 sentences capturing the core theme and key takeaway
 3. **Agreements and next steps** — Table with: Action | Owner | When | Goal
 4. **Closing signature** — Contact details
 
 **AVAILABLE SECTIONS — include when the content warrants it:**
 
-- **Introduction** — Include when: a warm opening adds value, the relationship matters, or the customer shared something personal/emotional about their situation.
-- **Current situation** — Include when: the customer described their context, challenges, or priorities. This section shows you listened.
-- **What we discussed** — Include when: there were substantive topics. Organize into 2-4 thematic sections with clear subheadings.
-- **What this means** — Include when: there are strategic implications, opportunities, risks, or trade-offs worth highlighting.
-- **Looking ahead** — Include when: there's a clear path forward or vision that reinforces partnership.
-- **Questions to consider** — Include when: strategic questions would genuinely help the customer prepare for next steps.
+| Section | Include when... | Purpose |
+|---------|-----------------|---------|
+| **Introduction** | The relationship matters, or customer shared something personal about their situation | Warm opening that shows you listened |
+| **Current situation** | Customer described context, challenges, priorities | Demonstrates deep understanding |
+| **What we discussed** | There were substantive topics (use 2-4 thematic subheadings) | Organized thematic coverage |
+| **What this means** | There are strategic implications, opportunities, risks, trade-offs | Advisory perspective and insight |
+| **Looking ahead** | There's a vision beyond the immediate next steps | Paints a picture of partnership and success |
+| **Questions to consider** | Strategic questions would genuinely help customer prepare | Thought-provoking, not leading |
+
+**IMPORTANT: "Looking ahead" ≠ "Agreements"**
+- "Agreements" = concrete actions with owners and dates
+- "Looking ahead" = broader vision, strategic direction, what success could look like
 
 **SECTION TITLES:**
-Use sentence case (only first word capitalized, not every word). Generate in the output language. Examples:
-- English: "The essence", "Current situation", "What we discussed", "Agreements and next steps"
-- Dutch: "De essentie", "Huidige situatie", "Wat we bespraken", "Afspraken en vervolgstappen"
-- German: "Das Wesentliche", "Aktuelle Situation", "Besprochene Themen", "Vereinbarungen und nächste Schritte"
+Use sentence case (only first word capitalized). Generate in the output language:
+- Dutch: "De essentie", "Huidige situatie", "Wat we bespraken", "Wat dit betekent", "Afspraken en vervolgstappen", "Vooruitblik", "Vragen ter overweging"
+- English: "The essence", "Current situation", "What we discussed", "What this means", "Agreements and next steps", "Looking ahead", "Questions to consider"
+- German: "Das Wesentliche", "Aktuelle Situation", "Was wir besprochen haben", "Was das bedeutet", "Vereinbarungen und nächste Schritte", "Ausblick", "Fragen zur Überlegung"
 
 ---
 
@@ -448,11 +468,11 @@ Use sentence case (only first word capitalized, not every word). Generate in the
 
 **HEADER:**
 
-# [Meeting Report / Gespreksverslag / Gesprächsprotokoll — in output language]
+# [Gespreksverslag / Meeting report / Gesprächsprotokoll — in output language]
 
 **{company_name}**
 
-IMPORTANT: "{company_name}" above is the CUSTOMER/PROSPECT company name. Use it exactly as shown. Do NOT replace it with the seller's company name.
+IMPORTANT: "{company_name}" above is the CUSTOMER/PROSPECT company name. Use it exactly as shown.
 
 | | |
 |---|---|
@@ -460,23 +480,35 @@ IMPORTANT: "{company_name}" above is the CUSTOMER/PROSPECT company name. Use it 
 | **[Subject label]** | {meeting_subject} |
 | **[Participants label]** | {attendees_value} |
 
-If participants show "[EXTRACT FROM TRANSCRIPT]", carefully identify ALL participants from the transcript:
-- Look for introductions, greetings, people addressing each other by name
-- Format: "Name (Role/Title)", "Name (Role/Title)"
+**PARTICIPANT FORMATTING:**
+- Always include role/title for each person: "Name (Role, Organization)"
+- If roles are provided, use them exactly
+- If "[EXTRACT FROM TRANSCRIPT]" appears, identify ALL participants from the transcript:
+  - Look for introductions, greetings, how people address each other
+  - Infer roles from context (e.g., "I run the IT department" → IT Director)
+  - Format: "Jan de Vries (CFO, Acme BV), Petra Smit (Data Lead, Acme BV)"
 
 ---
 
-**AGREEMENTS TABLE FORMAT:**
+**AGREEMENTS TABLE:**
 
-| [Action] | [Owner] | [When] | [Goal] |
-|----------|---------|--------|--------|
-| [Specific action] | [Name] | [Date/Week] | [Outcome, e.g., "Finalize vendor shortlist"] |
+Use column headers in the output language:
+- Dutch: Actie | Eigenaar | Wanneer | Doel
+- English: Action | Owner | When | Goal
+- German: Aktion | Verantwortlich | Wann | Ziel
+
+| [Action header] | [Owner header] | [When header] | [Goal header] |
+|-----------------|----------------|---------------|---------------|
+| [Specific action] | [Name] | [Date/timeframe] | [Outcome-focused goal] |
 
 ---
 
-**CLOSING SIGNATURE:**
+**CLOSING:**
 
-Use an appropriate closing phrase in the OUTPUT LANGUAGE (e.g., "Met vriendelijke groet," for Dutch, "Best regards," for English, "Mit freundlichen Grüßen," for German).
+Use an appropriate closing phrase in the output language:
+- Dutch: "Met vriendelijke groet,"
+- English: "Best regards,"
+- German: "Mit freundlichen Grüßen,"
 
 {sales_name}
 {f'{sales_title}' if sales_title else ''}
@@ -492,14 +524,16 @@ Use an appropriate closing phrase in the OUTPUT LANGUAGE (e.g., "Met vriendelijk
 
 Now create the meeting report. Remember: this is diplomacy with structure.
 
-GENERAL RULES:
-- Always prioritise clarity over completeness.
-- Avoid internal jargon, technical noise or sales-heavy framing.
-- Maintain a confident, empathetic senior-consultant tone.
-- Position next steps as measures that strengthen the customer's progress, not your pipeline.
-- Reference specific moments or quotes from the conversation to show genuine understanding.
+**FINAL CHECKLIST:**
+✓ All section titles in output language (no mixing)
+✓ All table headers in output language
+✓ Participants include roles/titles
+✓ 2-4 authentic quotes woven into narrative
+✓ Agreements table uses Goal column (outcome-focused)
+✓ "Looking ahead" is about vision, not action items
+✓ Sentence case for all headings
 
-Generate the complete Customer Report now:"""
+Generate the complete meeting report:"""
     
     def _prompt_share_email(self, context_text: str, lang_instruction: str, context: Dict) -> str:
         """Prompt for share email generation - CUSTOMER-FACING, uses style rules"""
