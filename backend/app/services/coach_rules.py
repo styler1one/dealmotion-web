@@ -6,7 +6,7 @@ This service evaluates rules to generate suggestions based on user context.
 """
 
 from typing import List, Dict, Any, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 
 from app.models.coach import (
@@ -314,8 +314,8 @@ async def build_user_context(
     context = UserContext(
         user_id=user_id,
         organization_id=primary_org_id,
-        current_hour=datetime.now().hour,
-        current_day_of_week=datetime.now().weekday(),
+        current_hour=datetime.now(timezone.utc).hour,
+        current_day_of_week=datetime.now(timezone.utc).weekday(),
     )
     
     try:
@@ -437,7 +437,8 @@ async def build_user_context(
                     context.followups_without_actions.append(followup)
         
         # Get inactive prospects (no activity in 7+ days) - check ALL organizations
-        week_ago = (datetime.now() - timedelta(days=7)).isoformat()
+        now_utc = datetime.now(timezone.utc)
+        week_ago = (now_utc - timedelta(days=7)).isoformat()
         
         for org_id in organization_ids:
             inactive_research = supabase.table("research_briefs") \
@@ -449,9 +450,14 @@ async def build_user_context(
             
             if inactive_research.data:
                 for research in inactive_research.data:
-                    days_ago = (datetime.now() - datetime.fromisoformat(
-                        research.get("completed_at", datetime.now().isoformat()).replace("Z", "+00:00")
-                    )).days
+                    completed_at_str = research.get("completed_at", now_utc.isoformat())
+                    # Handle both "Z" suffix and no timezone
+                    completed_at_str = completed_at_str.replace("Z", "+00:00")
+                    completed_at = datetime.fromisoformat(completed_at_str)
+                    # Make naive datetimes UTC-aware
+                    if completed_at.tzinfo is None:
+                        completed_at = completed_at.replace(tzinfo=timezone.utc)
+                    days_ago = (now_utc - completed_at).days
                     
                     if days_ago >= 7:
                         context.inactive_prospects.append({

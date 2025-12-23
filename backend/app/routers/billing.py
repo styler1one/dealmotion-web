@@ -359,9 +359,11 @@ async def get_usage(current_user: dict = Depends(get_current_user)):
         balance = await credit_service.get_balance(organization_id)
         
         # Format for backward compatibility with frontend
-        total = balance.get("subscription_credits_total", 0)
-        used = balance.get("subscription_credits_used", 0)
-        remaining = balance.get("total_credits_available", 0)
+        # Convert floats to ints to match UsageMetric model
+        total = int(balance.get("subscription_credits_total", 0) or 0)
+        used = int(balance.get("subscription_credits_used", 0) or 0)
+        remaining_raw = balance.get("total_credits_available", 0)
+        remaining = int(remaining_raw) if remaining_raw != -1 else -1
         unlimited = balance.get("is_unlimited", False)
         
         usage = {
