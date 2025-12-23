@@ -468,13 +468,15 @@ Use sentence case (only first word capitalized). Generate in the output language
 
 ## DOCUMENT FORMAT
 
-**HEADER:**
+**HEADER — copy this structure exactly:**
 
-# [Gespreksverslag / Meeting report / Gesprächsprotokoll — in output language]
+```
+# [Title in output language: Gespreksverslag / Meeting report / Gesprächsprotokoll]
 
 **{company_name}**
+```
 
-IMPORTANT: "{company_name}" above is the CUSTOMER/PROSPECT company name. Use it exactly as shown.
+⚠️ STOP: The company name "{company_name}" is the CUSTOMER (the prospect you met with). This is NOT {seller_company}. Output exactly: **{company_name}**
 
 | | |
 |---|---|
@@ -527,12 +529,12 @@ Use an appropriate closing phrase in the output language:
 Now create the meeting report. Remember: this is diplomacy with structure.
 
 **FINAL CHECKLIST:**
-✓ All section titles in output language (no mixing)
+✓ Header shows CUSTOMER company name ("{company_name}"), NOT seller company
+✓ All section titles in output language
 ✓ All table headers in output language
 ✓ Participants include roles/titles
 ✓ 2-4 authentic quotes woven into narrative
-✓ Agreements table uses Goal column (outcome-focused)
-✓ "Looking ahead" is about vision, not action items
+✓ Agreements table uses Doel/Goal column (outcome-focused)
 ✓ Sentence case for all headings
 
 Generate the complete meeting report:"""
