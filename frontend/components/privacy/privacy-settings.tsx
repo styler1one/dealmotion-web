@@ -19,7 +19,9 @@ import {
   Building2,
   Calendar,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  RefreshCw,
+  X
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useToast } from '@/components/ui/use-toast'
@@ -196,6 +198,66 @@ export function PrivacySettings() {
       logger.error('Download tracking failed', err, { source: 'PrivacySettings' })
     }
   }
+  
+  // Handle retry export (for stuck exports)
+  const handleRetryExport = async () => {
+    if (!exportStatus) return
+    
+    setExportLoading(true)
+    try {
+      const { data, error } = await api.post<{ success: boolean; export_id: string }>(
+        `/api/v1/user/export/${exportStatus.export_id}/retry`, 
+        {}
+      )
+      
+      if (error) {
+        throw new Error(error.message || 'Retry failed')
+      }
+      
+      toast({
+        title: t('downloadData.requested'),
+        description: t('downloadData.requestedDesc'),
+      })
+      
+      // Start polling for status
+      setExportPolling(true)
+      fetchExportStatus()
+      
+    } catch (err) {
+      logger.error('Export retry failed', err, { source: 'PrivacySettings' })
+      toast({
+        title: t('downloadData.failed'),
+        description: t('downloadData.failedDesc'),
+        variant: 'destructive',
+      })
+    } finally {
+      setExportLoading(false)
+    }
+  }
+  
+  // Handle cancel export
+  const handleCancelExport = async () => {
+    if (!exportStatus) return
+    
+    try {
+      await api.delete(`/api/v1/user/export/${exportStatus.export_id}`)
+      
+      toast({
+        title: 'Export cancelled',
+      })
+      
+      setExportStatus(null)
+      setExportPolling(false)
+      
+    } catch (err) {
+      logger.error('Export cancel failed', err, { source: 'PrivacySettings' })
+    }
+  }
+  
+  // Check if export is stuck (pending/processing for more than 2 minutes)
+  const isExportStuck = exportStatus && 
+    (exportStatus.status === 'pending' || exportStatus.status === 'processing') &&
+    new Date().getTime() - new Date(exportStatus.requested_at).getTime() > 2 * 60 * 1000
   
   // Handle account deletion request
   const handleRequestDeletion = async () => {
@@ -430,20 +492,26 @@ export function PrivacySettings() {
                 ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' 
                 : exportStatus.status === 'failed' || exportStatus.status === 'expired'
                   ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-                  : 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+                  : isExportStuck
+                    ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'
+                    : 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
             }`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   {exportStatus.status === 'ready' && <Check className="h-4 w-4 text-green-600" />}
-                  {(exportStatus.status === 'pending' || exportStatus.status === 'processing') && (
+                  {(exportStatus.status === 'pending' || exportStatus.status === 'processing') && !isExportStuck && (
                     <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                  )}
+                  {isExportStuck && (
+                    <AlertTriangle className="h-4 w-4 text-amber-600" />
                   )}
                   {(exportStatus.status === 'failed' || exportStatus.status === 'expired') && (
                     <AlertTriangle className="h-4 w-4 text-red-600" />
                   )}
                   <span className="text-sm font-medium">
                     {exportStatus.status === 'ready' && t('downloadData.ready')}
-                    {(exportStatus.status === 'pending' || exportStatus.status === 'processing') && t('downloadData.processing')}
+                    {(exportStatus.status === 'pending' || exportStatus.status === 'processing') && !isExportStuck && t('downloadData.processing')}
+                    {isExportStuck && t('downloadData.stuck')}
                     {exportStatus.status === 'failed' && t('downloadData.failed')}
                     {exportStatus.status === 'expired' && t('downloadData.expired')}
                   </span>
@@ -464,6 +532,35 @@ export function PrivacySettings() {
                   <Download className="h-4 w-4" />
                   {t('downloadData.download')}
                 </Button>
+              )}
+              
+              {/* Retry/Cancel buttons for stuck or failed exports */}
+              {(isExportStuck || exportStatus.status === 'failed') && (
+                <div className="flex gap-2 mt-3">
+                  <Button 
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 gap-2"
+                    onClick={handleRetryExport}
+                    disabled={exportLoading}
+                  >
+                    {exportLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <RefreshCw className="h-4 w-4" />
+                    )}
+                    {t('downloadData.retry')}
+                  </Button>
+                  <Button 
+                    size="sm"
+                    variant="ghost"
+                    className="gap-2"
+                    onClick={handleCancelExport}
+                  >
+                    <X className="h-4 w-4" />
+                    {t('downloadData.cancel')}
+                  </Button>
+                </div>
               )}
             </div>
           )}

@@ -361,6 +361,110 @@ async def record_export_download(
     return {"success": True}
 
 
+@router.post("/export/{export_id}/retry")
+async def retry_export(
+    export_id: str,
+    request: Request,
+    current_user: dict = Depends(get_current_user),
+    service: GDPRService = Depends(get_gdpr_service),
+):
+    """
+    Retry a stuck or failed export.
+    
+    Cancels the existing export and creates a new one.
+    """
+    user_id = current_user.get("sub")
+    ip_address, user_agent = get_client_info(request)
+    
+    # Get organization ID
+    supabase = get_supabase_service()
+    org_result = supabase.table("organization_members").select(
+        "organization_id"
+    ).eq("user_id", user_id).limit(1).single().execute()
+    
+    if not org_result.data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User organization not found"
+        )
+    
+    organization_id = org_result.data["organization_id"]
+    
+    # Cancel the stuck export
+    supabase.table("gdpr_data_exports").update({
+        "status": "cancelled",
+    }).eq("id", export_id).eq("user_id", user_id).execute()
+    
+    logger.info(f"[GDPR] Cancelled stuck export {export_id} for user {user_id}")
+    
+    # Create new export request
+    result = await service.request_export(
+        user_id=user_id,
+        organization_id=organization_id,
+        ip_address=ip_address,
+        user_agent=user_agent,
+    )
+    
+    if not result.get("success"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=result.get("message", "Failed to request export")
+        )
+    
+    # Trigger Inngest to generate export
+    try:
+        from app.inngest.events import send_event, GDPR_GENERATE_EXPORT
+        
+        logger.info(f"[GDPR] Sending export event for retry, user {user_id}, export_id: {result['export_id']}")
+        
+        event_sent = await send_event(
+            GDPR_GENERATE_EXPORT,
+            {
+                "export_id": result["export_id"],
+                "user_id": user_id,
+            },
+        )
+        
+        if event_sent:
+            logger.info(f"[GDPR] Retry export event sent successfully for user {user_id}")
+        else:
+            logger.warning(f"[GDPR] Retry export event not sent for user {user_id} - Inngest may be disabled")
+    except Exception as e:
+        logger.error(f"[GDPR] Failed to trigger retry export job: {e}", exc_info=True)
+    
+    return {
+        "success": True,
+        "message": "Export retry initiated",
+        "export_id": result["export_id"],
+    }
+
+
+@router.delete("/export/{export_id}")
+async def cancel_export(
+    export_id: str,
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Cancel a pending or processing export.
+    """
+    user_id = current_user.get("sub")
+    
+    supabase = get_supabase_service()
+    
+    # Only cancel if pending or processing
+    result = supabase.table("gdpr_data_exports").update({
+        "status": "cancelled",
+    }).eq("id", export_id).eq("user_id", user_id).in_(
+        "status", ["pending", "processing"]
+    ).execute()
+    
+    if result.data and len(result.data) > 0:
+        logger.info(f"[GDPR] Cancelled export {export_id} for user {user_id}")
+        return {"success": True, "message": "Export cancelled"}
+    
+    return {"success": False, "message": "Export not found or already completed"}
+
+
 # ============================================================
 # DATA SUMMARY ENDPOINT
 # ============================================================
