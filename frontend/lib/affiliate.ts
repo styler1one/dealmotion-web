@@ -15,6 +15,7 @@
 
 const AFFILIATE_STORAGE_KEY = 'dm_affiliate'
 const AFFILIATE_EXPIRY_DAYS = 30
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 interface AffiliateData {
   code: string
@@ -165,7 +166,7 @@ export async function trackAffiliateClick(
   }
 ): Promise<boolean> {
   try {
-    const response = await fetch('/api/v1/affiliate/clicks', {
+    const response = await fetch(`${API_BASE_URL}/api/v1/affiliate/clicks`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -198,7 +199,7 @@ export async function validateAffiliateCode(code: string): Promise<{
   affiliateName: string | null
 }> {
   try {
-    const response = await fetch(`/api/v1/affiliate/validate/${encodeURIComponent(code)}`)
+    const response = await fetch(`${API_BASE_URL}/api/v1/affiliate/validate/${encodeURIComponent(code)}`)
     const result = await response.json()
     
     updateAffiliateValidation(result.valid, result.affiliate_name || null)

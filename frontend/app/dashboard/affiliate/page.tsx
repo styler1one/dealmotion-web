@@ -103,7 +103,7 @@ export default function AffiliateDashboardPage() {
     const checkAffiliateStatus = async () => {
         try {
             setLoading(true)
-            const response = await api.get<{ is_affiliate: boolean; affiliate?: AffiliateData }>('/affiliate/status')
+            const response = await api.get<{ is_affiliate: boolean; affiliate?: AffiliateData }>('/api/v1/affiliate/status')
             
             if (response.data?.is_affiliate) {
                 setIsAffiliate(true)
@@ -122,7 +122,7 @@ export default function AffiliateDashboardPage() {
 
     const loadDashboard = async () => {
         try {
-            const response = await api.get<DashboardData>('/affiliate/dashboard')
+            const response = await api.get<DashboardData>('/api/v1/affiliate/dashboard')
             if (response.data) {
                 setDashboardData(response.data)
             }
@@ -137,7 +137,7 @@ export default function AffiliateDashboardPage() {
             setApplying(true)
             setError(null)
             
-            const response = await api.post<{ is_affiliate: boolean; affiliate?: AffiliateData }>('/affiliate/apply', {
+            const response = await api.post<{ is_affiliate: boolean; affiliate?: AffiliateData }>('/api/v1/affiliate/apply', {
                 application_notes: null // Could add a form for this
             })
             
@@ -171,7 +171,7 @@ export default function AffiliateDashboardPage() {
             const returnUrl = `${window.location.origin}/dashboard/affiliate?connect=success`
             const refreshUrl = `${window.location.origin}/dashboard/affiliate?connect=refresh`
             
-            const response = await api.post<{ url: string }>('/affiliate/connect/onboarding', {
+            const response = await api.post<{ url: string }>('/api/v1/affiliate/connect/onboarding', {
                 return_url: returnUrl,
                 refresh_url: refreshUrl
             })
