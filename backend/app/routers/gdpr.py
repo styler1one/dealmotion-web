@@ -390,12 +390,13 @@ async def retry_export(
     
     organization_id = org_result.data["organization_id"]
     
-    # Cancel the stuck export
+    # Mark the stuck export as failed (to allow retry)
     supabase.table("gdpr_data_exports").update({
-        "status": "cancelled",
+        "status": "failed",
+        "error_message": "Cancelled by user for retry",
     }).eq("id", export_id).eq("user_id", user_id).execute()
     
-    logger.info(f"[GDPR] Cancelled stuck export {export_id} for user {user_id}")
+    logger.info(f"[GDPR] Marked stuck export {export_id} as failed for user {user_id}")
     
     # Create new export request
     result = await service.request_export(
@@ -451,9 +452,10 @@ async def cancel_export(
     
     supabase = get_supabase_service()
     
-    # Only cancel if pending or processing
+    # Only cancel if pending or processing - mark as failed since 'cancelled' is not a valid status
     result = supabase.table("gdpr_data_exports").update({
-        "status": "cancelled",
+        "status": "failed",
+        "error_message": "Cancelled by user",
     }).eq("id", export_id).eq("user_id", user_id).in_(
         "status", ["pending", "processing"]
     ).execute()
