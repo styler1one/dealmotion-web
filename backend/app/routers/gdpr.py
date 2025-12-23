@@ -333,6 +333,7 @@ async def list_exports(
                 completed_at=e.get("completed_at"),
                 download_url=e.get("download_url"),
                 download_expires_at=e.get("download_expires_at"),
+                expires_at=e.get("expires_at"),
                 file_size_bytes=e.get("file_size_bytes"),
                 download_count=e.get("download_count", 0),
                 error_message=e.get("error_message"),

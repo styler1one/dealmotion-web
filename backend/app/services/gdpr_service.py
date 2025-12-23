@@ -996,13 +996,58 @@ This export was generated pursuant to your rights under the GDPR (General Data P
             return None
     
     async def list_exports(self, user_id: str) -> List[Dict[str, Any]]:
-        """List all exports for a user."""
+        """List all exports for a user.
+        
+        Also handles on-the-fly expiration of ready exports.
+        """
         try:
             result = self.supabase.table("gdpr_data_exports").select("*").eq(
                 "user_id", user_id
             ).order("created_at", desc=True).limit(10).execute()
             
-            return result.data or []
+            if not result.data:
+                return []
+            
+            now = datetime.utcnow()
+            exports = []
+            
+            for export in result.data:
+                # Check if this "ready" export has expired
+                if export.get("status") == ExportStatus.READY.value and export.get("expires_at"):
+                    try:
+                        expires_at = datetime.fromisoformat(export["expires_at"].replace("Z", "+00:00"))
+                        # Make 'now' timezone-aware for comparison
+                        if expires_at.tzinfo:
+                            from datetime import timezone
+                            now_aware = datetime.now(timezone.utc)
+                        else:
+                            now_aware = now
+                        
+                        if expires_at < now_aware:
+                            # Mark as expired and clean up
+                            logger.info(f"Marking export {export['id']} as expired (on-the-fly)")
+                            
+                            # Delete file from storage if exists
+                            if export.get("storage_path"):
+                                try:
+                                    self.supabase.storage.from_("gdpr-exports").remove([export["storage_path"]])
+                                except Exception as storage_err:
+                                    logger.warning(f"Failed to delete export file: {storage_err}")
+                            
+                            # Update status to expired
+                            self.supabase.table("gdpr_data_exports").update({
+                                "status": ExportStatus.EXPIRED.value,
+                                "download_url": None,
+                            }).eq("id", export["id"]).execute()
+                            
+                            export["status"] = ExportStatus.EXPIRED.value
+                            export["download_url"] = None
+                    except Exception as exp_err:
+                        logger.warning(f"Error checking export expiration: {exp_err}")
+                
+                exports.append(export)
+            
+            return exports
             
         except Exception as e:
             logger.error(f"Error listing exports: {e}")

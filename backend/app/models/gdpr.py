@@ -117,6 +117,7 @@ class ExportStatusResponse(BaseModel):
     completed_at: Optional[datetime] = None
     download_url: Optional[str] = None
     download_expires_at: Optional[datetime] = None
+    expires_at: Optional[datetime] = None  # When the export will be auto-deleted
     file_size_bytes: Optional[int] = None
     download_count: int = 0
     error_message: Optional[str] = None
