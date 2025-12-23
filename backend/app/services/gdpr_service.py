@@ -119,14 +119,21 @@ class GDPRService:
         """
         try:
             # Check for active paid subscription
+            logger.info(f"[GDPR] Checking if user {user_id} can delete account")
+            
             result = self.supabase.rpc(
                 "can_user_be_deleted",
                 {"p_user_id": user_id}
             ).execute()
             
+            logger.info(f"[GDPR] can_user_be_deleted result: {result.data}")
+            
             if result.data and len(result.data) > 0:
                 row = result.data[0]
                 if not row.get("can_delete"):
+                    reason = row.get("reason", "Unknown reason")
+                    logger.info(f"[GDPR] User {user_id} cannot delete: {reason}")
+                    
                     # Get subscription end date for context
                     sub_result = self.supabase.table("organization_subscriptions").select(
                         "current_period_end"
@@ -139,13 +146,14 @@ class GDPRService:
                     if sub_result.data:
                         end_date = sub_result.data.get("current_period_end")
                     
-                    return False, row.get("reason"), end_date
+                    return False, reason, end_date
             
+            logger.info(f"[GDPR] User {user_id} can delete account")
             return True, None, None
             
         except Exception as e:
-            logger.error(f"Error checking deletion eligibility: {e}")
-            return False, "Error checking account status", None
+            logger.error(f"[GDPR] Error checking deletion eligibility: {e}", exc_info=True)
+            return False, f"Error checking account status: {str(e)}", None
     
     # ============================================================
     # DELETION REQUEST
@@ -165,9 +173,12 @@ class GDPRService:
         Returns deletion request details.
         """
         try:
+            logger.info(f"[GDPR] Deletion request for user {user_id}")
+            
             # Check if deletion is allowed
             can_delete, block_reason, _ = await self.can_delete_account(user_id)
             if not can_delete:
+                logger.warning(f"[GDPR] Deletion blocked for user {user_id}: {block_reason}")
                 return {
                     "success": False,
                     "message": block_reason or "Cannot delete account at this time"
