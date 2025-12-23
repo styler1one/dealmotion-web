@@ -1353,7 +1353,8 @@
         "requested": "Export Requested",
         "requestedDesc": "Your data export is being prepared. You'll receive a download link shortly.",
         "ready": "Export Ready",
-        "readyDesc": "Your data export is ready. The link expires in 7 days.",
+        "readyDesc": "Your data export is ready.",
+        "expiresIn": "Expires in {hours} hours",
         "download": "Download Export",
         "processing": "Preparing export...",
         "stuck": "Export stuck",
@@ -1363,7 +1364,12 @@
         "failed": "Export failed",
         "failedDesc": "We couldn't prepare your export. Please try again.",
         "expired": "Export expired",
-        "expiredDesc": "This export has expired. Request a new one."
+        "expiredDesc": "This export has expired. Request a new one.",
+        "rateLimited": "Rate Limited",
+        "rateLimitedDesc": "You can request a new export in {hours} hours.",
+        "alreadyReady": "Export Available",
+        "alreadyReadyDesc": "Your recent data export is still available for download.",
+        "rateInfo": "You can request one data export per 24 hours. Exports are available for 24 hours."
       },
       "deleteAccount": {
         "title": "Delete Account",

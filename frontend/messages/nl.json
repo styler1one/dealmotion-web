@@ -1345,7 +1345,8 @@
         "requested": "Export Aangevraagd",
         "requestedDesc": "Je data-export wordt voorbereid. Je ontvangt binnenkort een downloadlink.",
         "ready": "Export Gereed",
-        "readyDesc": "Je data-export is klaar. De link verloopt over 7 dagen.",
+        "readyDesc": "Je data-export is klaar.",
+        "expiresIn": "Verloopt over {hours} uur",
         "download": "Download Export",
         "processing": "Export voorbereiden...",
         "stuck": "Export vastgelopen",
@@ -1355,7 +1356,12 @@
         "failed": "Export mislukt",
         "failedDesc": "We konden je export niet voorbereiden. Probeer het opnieuw.",
         "expired": "Export verlopen",
-        "expiredDesc": "Deze export is verlopen. Vraag een nieuwe aan."
+        "expiredDesc": "Deze export is verlopen. Vraag een nieuwe aan.",
+        "rateLimited": "Limiet Bereikt",
+        "rateLimitedDesc": "Je kunt over {hours} uur een nieuwe export aanvragen.",
+        "alreadyReady": "Export Beschikbaar",
+        "alreadyReadyDesc": "Je recente data-export is nog beschikbaar om te downloaden.",
+        "rateInfo": "Je kunt één data-export per 24 uur aanvragen. Exports zijn 24 uur beschikbaar."
       },
       "deleteAccount": {
         "title": "Account Verwijderen",

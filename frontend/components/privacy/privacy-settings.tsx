@@ -57,6 +57,7 @@ interface ExportStatus {
   download_url: string | null
   download_expires_at: string | null
   file_size_bytes: number | null
+  expires_at: string | null
 }
 
 interface DeletionStatus {
@@ -157,10 +158,37 @@ export function PrivacySettings() {
   const handleRequestExport = async () => {
     setExportLoading(true)
     try {
-      const { data, error } = await api.post<{ success: boolean; export_id: string }>('/api/v1/user/export', {})
+      const { data, error } = await api.post<{ 
+        success: boolean
+        export_id: string
+        message?: string
+        rate_limited?: boolean
+        already_ready?: boolean
+        hours_remaining?: number
+      }>('/api/v1/user/export', {})
       
       if (error) {
         throw new Error(error.message || 'Export request failed')
+      }
+      
+      // Handle rate limiting
+      if (data?.rate_limited) {
+        toast({
+          title: t('downloadData.rateLimited'),
+          description: t('downloadData.rateLimitedDesc', { hours: data.hours_remaining || 24 }),
+          variant: 'destructive',
+        })
+        return
+      }
+      
+      // If export is already ready, just refresh
+      if (data?.already_ready) {
+        toast({
+          title: t('downloadData.alreadyReady'),
+          description: t('downloadData.alreadyReadyDesc'),
+        })
+        fetchExportStatus()
+        return
       }
       
       toast({
@@ -523,15 +551,29 @@ export function PrivacySettings() {
                 )}
               </div>
               
-              {exportStatus.status === 'ready' && exportStatus.download_url && (
-                <Button 
-                  size="sm" 
-                  className="w-full mt-3 gap-2"
-                  onClick={handleDownload}
-                >
-                  <Download className="h-4 w-4" />
-                  {t('downloadData.download')}
-                </Button>
+              {exportStatus.status === 'ready' && (
+                <>
+                  {/* Expiration info */}
+                  {exportStatus.expires_at && (
+                    <p className="text-xs text-green-600 dark:text-green-400 mt-1 flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {t('downloadData.expiresIn', { 
+                        hours: Math.max(1, Math.round((new Date(exportStatus.expires_at).getTime() - Date.now()) / (1000 * 60 * 60)))
+                      })}
+                    </p>
+                  )}
+                  
+                  {exportStatus.download_url && (
+                    <Button 
+                      size="sm" 
+                      className="w-full mt-3 gap-2"
+                      onClick={handleDownload}
+                    >
+                      <Download className="h-4 w-4" />
+                      {t('downloadData.download')}
+                    </Button>
+                  )}
+                </>
               )}
               
               {/* Retry/Cancel buttons for stuck or failed exports */}
@@ -565,24 +607,33 @@ export function PrivacySettings() {
             </div>
           )}
           
-          <Button
-            variant="outline"
-            onClick={handleRequestExport}
-            disabled={exportLoading || exportPolling}
-            className="gap-2"
-          >
-            {exportLoading || exportPolling ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                {t('downloadData.requesting')}
-              </>
-            ) : (
-              <>
-                <Download className="h-4 w-4" />
-                {t('downloadData.button')}
+          {/* Don't show button if there's already a ready export */}
+          {(!exportStatus || exportStatus.status !== 'ready') && (
+            <Button
+              variant="outline"
+              onClick={handleRequestExport}
+              disabled={exportLoading || exportPolling}
+              className="gap-2"
+            >
+              {exportLoading || exportPolling ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {t('downloadData.requesting')}
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4" />
+                  {t('downloadData.button')}
               </>
             )}
           </Button>
+          )}
+          
+          {/* Rate limit info */}
+          <p className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            {t('downloadData.rateInfo')}
+          </p>
         </div>
         
         {/* Legal Documents */}

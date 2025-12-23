@@ -38,8 +38,11 @@ logger = logging.getLogger(__name__)
 # Grace period for deletion (48 hours)
 DELETION_GRACE_PERIOD_HOURS = 48
 
-# Export expiration (7 days)
-EXPORT_EXPIRATION_DAYS = 7
+# Export settings
+# Exports are available for 24 hours, then auto-deleted
+EXPORT_EXPIRATION_HOURS = 24
+# Users can only request one export per 24-hour period
+EXPORT_COOLDOWN_HOURS = 24
 
 # Tables to clean during deletion (in order of dependency)
 TABLES_TO_DELETE = [
@@ -644,24 +647,73 @@ class GDPRService:
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """Request a data export."""
+        """Request a data export.
+        
+        Rate limited to 1 request per 24 hours.
+        Exports are available for 24 hours before auto-deletion.
+        """
         try:
-            # Check for existing pending export
-            existing = self.supabase.table("gdpr_data_exports").select("*").eq(
+            now = datetime.utcnow()
+            cooldown_cutoff = now - timedelta(hours=EXPORT_COOLDOWN_HOURS)
+            
+            # Check for existing pending/processing export
+            pending = self.supabase.table("gdpr_data_exports").select("*").eq(
                 "user_id", user_id
             ).in_(
                 "status", [ExportStatus.PENDING.value, ExportStatus.PROCESSING.value]
             ).execute()
             
-            if existing.data and len(existing.data) > 0:
+            if pending.data and len(pending.data) > 0:
                 return {
                     "success": False,
                     "message": "Export already in progress",
-                    "export_id": existing.data[0]["id"],
+                    "export_id": pending.data[0]["id"],
+                    "rate_limited": False,
                 }
             
-            # Create export request
-            expires_at = datetime.utcnow() + timedelta(days=EXPORT_EXPIRATION_DAYS)
+            # Check for existing valid (ready) export that hasn't expired
+            ready_export = self.supabase.table("gdpr_data_exports").select("*").eq(
+                "user_id", user_id
+            ).eq(
+                "status", ExportStatus.READY.value
+            ).gt(
+                "expires_at", now.isoformat()
+            ).order("created_at", desc=True).limit(1).execute()
+            
+            if ready_export.data and len(ready_export.data) > 0:
+                export = ready_export.data[0]
+                return {
+                    "success": True,
+                    "message": "Export already available",
+                    "export_id": export["id"],
+                    "already_ready": True,
+                }
+            
+            # Check rate limit: was there a successful export in the last 24 hours?
+            recent_export = self.supabase.table("gdpr_data_exports").select("*").eq(
+                "user_id", user_id
+            ).in_(
+                "status", [ExportStatus.READY.value, ExportStatus.DOWNLOADED.value]
+            ).gte(
+                "completed_at", cooldown_cutoff.isoformat()
+            ).order("completed_at", desc=True).limit(1).execute()
+            
+            if recent_export.data and len(recent_export.data) > 0:
+                last_export = recent_export.data[0]
+                completed_at = datetime.fromisoformat(last_export["completed_at"].replace("Z", "+00:00"))
+                next_available = completed_at + timedelta(hours=EXPORT_COOLDOWN_HOURS)
+                hours_remaining = max(0, (next_available - now).total_seconds() / 3600)
+                
+                return {
+                    "success": False,
+                    "message": f"Rate limit: You can request a new export in {hours_remaining:.1f} hours",
+                    "rate_limited": True,
+                    "next_available_at": next_available.isoformat(),
+                    "hours_remaining": round(hours_remaining, 1),
+                }
+            
+            # Create export request with 24-hour expiration
+            expires_at = now + timedelta(hours=EXPORT_EXPIRATION_HOURS)
             
             result = self.supabase.table("gdpr_data_exports").insert({
                 "user_id": user_id,
@@ -678,15 +730,16 @@ class GDPRService:
             export_request = result.data[0]
             
             # Estimated completion (usually quick, but set 5 minutes for safety)
-            estimated_completion = datetime.utcnow() + timedelta(minutes=5)
+            estimated_completion = now + timedelta(minutes=5)
             
-            logger.info(f"Export requested for user {user_id}")
+            logger.info(f"Export requested for user {user_id} (expires in {EXPORT_EXPIRATION_HOURS}h)")
             
             return {
                 "success": True,
                 "message": "Data export requested",
                 "export_id": export_request["id"],
                 "estimated_completion": estimated_completion,
+                "expires_at": expires_at.isoformat(),
             }
             
         except Exception as e:
