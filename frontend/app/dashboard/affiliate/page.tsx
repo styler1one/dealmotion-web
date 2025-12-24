@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -87,6 +87,7 @@ interface DashboardData {
 export default function AffiliateDashboardPage() {
     const t = useTranslations('affiliate')
     const router = useRouter()
+    const searchParams = useSearchParams()
     const [loading, setLoading] = useState(true)
     const [applying, setApplying] = useState(false)
     const [isAffiliate, setIsAffiliate] = useState(false)
@@ -94,11 +95,42 @@ export default function AffiliateDashboardPage() {
     const [error, setError] = useState<string | null>(null)
     const [copied, setCopied] = useState(false)
     const [connectLoading, setConnectLoading] = useState(false)
+    const [syncingConnect, setSyncingConnect] = useState(false)
 
     // Check affiliate status on load
     useEffect(() => {
-        checkAffiliateStatus()
-    }, [])
+        const connectStatus = searchParams.get('connect')
+        
+        if (connectStatus === 'success' || connectStatus === 'refresh') {
+            // User returned from Stripe Connect onboarding - sync the status
+            syncConnectStatus()
+        } else {
+            checkAffiliateStatus()
+        }
+    }, [searchParams])
+    
+    // Sync Connect status from Stripe and reload dashboard
+    const syncConnectStatus = async () => {
+        try {
+            setSyncingConnect(true)
+            setLoading(true)
+            
+            // First sync status from Stripe
+            await api.get('/api/v1/affiliate/connect/status')
+            
+            // Then reload the dashboard
+            await checkAffiliateStatus()
+            
+            // Clear the query parameter
+            router.replace('/dashboard/affiliate')
+        } catch (err) {
+            console.error('Error syncing Connect status:', err)
+            // Still try to load the dashboard
+            await checkAffiliateStatus()
+        } finally {
+            setSyncingConnect(false)
+        }
+    }
 
     const checkAffiliateStatus = async () => {
         try {
