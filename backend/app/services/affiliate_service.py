@@ -93,6 +93,8 @@ class AffiliateService:
     
     def __init__(self):
         self.supabase = get_supabase_service()
+        if self.supabase is None:
+            logger.error("Failed to initialize Supabase client for AffiliateService")
         self.stripe = stripe
     
     # =========================================================================
@@ -102,10 +104,18 @@ class AffiliateService:
     async def get_affiliate_by_user(self, user_id: str) -> Optional[Dict[str, Any]]:
         """Get affiliate record for a user, if they are an affiliate."""
         try:
+            if self.supabase is None:
+                logger.error("Supabase client not initialized")
+                return None
+                
             response = self.supabase.table("affiliates").select("*").eq(
                 "user_id", user_id
             ).maybe_single().execute()
             
+            if response is None:
+                logger.warning("Supabase returned None response - affiliates table may not exist")
+                return None
+                
             return response.data
         except Exception as e:
             logger.error(f"Error getting affiliate by user: {e}")
@@ -222,9 +232,15 @@ class AffiliateService:
                 "activated_at": activated_at,
             }
             
+            if self.supabase is None:
+                raise ValueError("Database connection not available")
+            
             response = self.supabase.table("affiliates").insert(
                 affiliate_data
             ).execute()
+            
+            if response is None:
+                raise ValueError("Failed to create affiliate - database may not be ready")
             
             affiliate = response.data[0] if response.data else None
             
