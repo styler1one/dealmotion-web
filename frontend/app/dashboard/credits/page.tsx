@@ -51,6 +51,7 @@ interface CreditBalance {
   pack_credits_remaining: number
   total_credits_available: number
   is_unlimited: boolean
+  is_free_plan: boolean
   period_start: string | null
   period_end: string | null
 }

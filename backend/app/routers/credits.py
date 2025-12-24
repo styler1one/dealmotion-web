@@ -32,8 +32,9 @@ class CreditBalanceResponse(BaseModel):
     pack_credits_remaining: float = Field(description="Credits from purchased packs")
     total_credits_available: float = Field(description="Total credits available")
     is_unlimited: bool = Field(description="Whether this is an unlimited plan")
+    is_free_plan: bool = Field(default=False, description="Whether this is a free plan (one-time credits)")
     period_start: Optional[str] = Field(None, description="Current billing period start")
-    period_end: Optional[str] = Field(None, description="Current billing period end")
+    period_end: Optional[str] = Field(None, description="Current billing period end (null for free plan)")
     
     class Config:
         json_schema_extra = {
@@ -178,14 +179,15 @@ async def get_credit_balance(
         # If credit system not yet initialized, return defaults
         logger.warning(f"Credit balance not found for org {organization_id}, returning defaults")
         return CreditBalanceResponse(
-            subscription_credits_total=25,  # Free plan default (25 credits/month)
+            subscription_credits_total=25,  # Free plan default (25 one-time credits)
             subscription_credits_used=0,
             subscription_credits_remaining=25,
             pack_credits_remaining=0,
             total_credits_available=25,
             is_unlimited=False,
+            is_free_plan=True,
             period_start=None,
-            period_end=None
+            period_end=None  # Free plan has no period (one-time credits)
         )
     
     return CreditBalanceResponse(
@@ -195,8 +197,9 @@ async def get_credit_balance(
         pack_credits_remaining=balance.get("pack_credits_remaining", 0),
         total_credits_available=balance.get("total_credits_available", 0) if not balance.get("is_unlimited") else -1,
         is_unlimited=balance.get("is_unlimited", False),
+        is_free_plan=balance.get("is_free_plan", False),
         period_start=balance.get("period_start"),
-        period_end=balance.get("period_end")
+        period_end=balance.get("period_end")  # Will be null for free plan
     )
 
 

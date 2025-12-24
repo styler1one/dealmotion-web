@@ -149,6 +149,17 @@ class CreditService:
             sub_remaining = max(0, sub_total - sub_used) if not is_unlimited else float('inf')
             total = float('inf') if is_unlimited else (sub_remaining + pack_remaining)
             
+            # Check if free plan - free users have one-time credits, no period reset
+            is_free_plan = False
+            try:
+                plan_response = self.supabase.table("organization_subscriptions").select(
+                    "plan_id"
+                ).eq("organization_id", organization_id).maybe_single().execute()
+                if plan_response.data:
+                    is_free_plan = plan_response.data.get("plan_id") == "free"
+            except Exception:
+                pass  # Default to showing period for safety
+            
             return {
                 "subscription_credits_total": sub_total,
                 "subscription_credits_used": sub_used,
@@ -156,8 +167,9 @@ class CreditService:
                 "pack_credits_remaining": pack_remaining,
                 "total_credits_available": total if not is_unlimited else -1,
                 "is_unlimited": is_unlimited,
-                "period_start": data.get("subscription_period_start"),
-                "period_end": data.get("subscription_period_end"),
+                "is_free_plan": is_free_plan,
+                "period_start": data.get("subscription_period_start") if not is_free_plan else None,
+                "period_end": data.get("subscription_period_end") if not is_free_plan else None,
             }
             
         except Exception as e:
@@ -170,6 +182,7 @@ class CreditService:
                 "pack_credits_remaining": 0,
                 "total_credits_available": 0,
                 "is_unlimited": False,
+                "is_free_plan": True,  # Assume free plan on error (safest default)
                 "period_start": None,
                 "period_end": None,
                 "error": str(e),

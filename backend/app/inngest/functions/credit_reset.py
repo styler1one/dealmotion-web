@@ -68,7 +68,7 @@ async def credit_reset_daily_fn(ctx, step):
 
 
 def find_expired_credit_periods(supabase, now: datetime) -> dict:
-    """Find all organizations with expired credit periods."""
+    """Find all organizations with expired credit periods (excluding free plan)."""
     try:
         # Query credit_balances where period has ended
         # Join with organization_subscriptions to get plan info
@@ -84,16 +84,24 @@ def find_expired_credit_periods(supabase, now: datetime) -> dict:
             return {"organizations": []}
         
         # For each organization, get their plan's credit allocation
+        # SKIP free plan - free users get one-time credits that don't reset
         organizations = []
         for row in response.data:
             org_id = row["organization_id"]
             
-            # Get plan credits
+            # Get plan info
             plan_response = supabase.table("organization_subscriptions").select(
                 "plan_id, subscription_plans(credits_per_month)"
             ).eq("organization_id", org_id).single().execute()
             
             if plan_response.data:
+                plan_id = plan_response.data.get("plan_id", "")
+                
+                # Skip free plan - free users get one-time credits only
+                if plan_id == "free":
+                    logger.debug(f"Skipping free plan org {org_id} - no monthly reset")
+                    continue
+                
                 plan_data = plan_response.data.get("subscription_plans", {})
                 credits_per_month = plan_data.get("credits_per_month", 25) if plan_data else 25
                 
@@ -103,7 +111,7 @@ def find_expired_credit_periods(supabase, now: datetime) -> dict:
                     "previous_period_end": row["subscription_period_end"]
                 })
         
-        logger.info(f"Found {len(organizations)} organizations needing credit reset")
+        logger.info(f"Found {len(organizations)} paid organizations needing credit reset")
         return {"organizations": organizations}
         
     except Exception as e:

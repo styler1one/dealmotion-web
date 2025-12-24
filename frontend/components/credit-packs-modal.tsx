@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Loader2, Zap, Star, Crown, Check, Plus, Package } from 'lucide-react'
+import { Loader2, Zap, Star, Crown, Check, Plus, Package, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils'
 import { api } from '@/lib/api'
 import { useToast } from '@/components/ui/use-toast'
 import { useTranslations } from 'next-intl'
+import { useRouter } from 'next/navigation'
 
 interface CreditPack {
   id: string
@@ -28,6 +29,10 @@ interface CreditPack {
   best_value?: boolean
 }
 
+interface CreditBalance {
+  is_free_plan: boolean
+}
+
 interface CreditPacksModalProps {
   className?: string
   onSuccess?: () => void
@@ -37,26 +42,37 @@ interface CreditPacksModalProps {
 export function CreditPacksModal({ className, onSuccess, trigger }: CreditPacksModalProps) {
   const { toast } = useToast()
   const t = useTranslations('credits')
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [packs, setPacks] = useState<CreditPack[]>([])
   const [loading, setLoading] = useState(true)
   const [purchasing, setPurchasing] = useState<string | null>(null)
+  const [isFreePlan, setIsFreePlan] = useState<boolean | null>(null)
 
   useEffect(() => {
     if (open) {
-      fetchPacks()
+      fetchData()
     }
   }, [open])
 
-  const fetchPacks = async () => {
+  const fetchData = async () => {
     setLoading(true)
     try {
-      const response = await api.get<CreditPack[]>('/api/v1/billing/flow-packs/products')
-      if (response.data) {
-        setPacks(response.data)
+      // Check if user is on free plan
+      const balanceRes = await api.get<CreditBalance>('/api/v1/credits/balance')
+      if (balanceRes.data) {
+        setIsFreePlan(balanceRes.data.is_free_plan)
+      }
+      
+      // Only fetch packs if not on free plan
+      if (!balanceRes.data?.is_free_plan) {
+        const packsRes = await api.get<CreditPack[]>('/api/v1/billing/flow-packs/products')
+        if (packsRes.data) {
+          setPacks(packsRes.data)
+        }
       }
     } catch (err) {
-      console.error('Failed to load credit packs:', err)
+      console.error('Failed to load data:', err)
     } finally {
       setLoading(false)
     }
@@ -119,6 +135,29 @@ export function CreditPacksModal({ className, onSuccess, trigger }: CreditPacksM
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+          </div>
+        ) : isFreePlan ? (
+          // Free plan users must upgrade to Pro/Pro+ first
+          <div className="text-center py-8 space-y-4">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/30 mb-2">
+              <Package className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              {t('upgradeRequired')}
+            </h3>
+            <p className="text-sm text-slate-500 max-w-sm mx-auto">
+              {t('upgradeRequiredDescription')}
+            </p>
+            <Button 
+              onClick={() => {
+                setOpen(false)
+                router.push('/pricing')
+              }}
+              className="gap-2"
+            >
+              {t('viewPlans')}
+              <ArrowRight className="h-4 w-4" />
+            </Button>
           </div>
         ) : packs.length === 0 ? (
           <div className="text-center py-8 text-slate-500">

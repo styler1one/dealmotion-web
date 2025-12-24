@@ -20,6 +20,7 @@ interface CreditBalance {
   pack_credits_remaining: number
   total_credits_available: number
   is_unlimited: boolean
+  is_free_plan: boolean
   period_end: string | null
 }
 
@@ -87,8 +88,8 @@ export function CreditWidget({ className }: CreditWidgetProps) {
   const isWarning = !balance.is_unlimited && percentage >= 70
   const isExhausted = !balance.is_unlimited && balance.total_credits_available <= 0
 
-  // Format remaining days
-  const daysLeft = balance.period_end 
+  // Format remaining days - only for paid plans (free plan credits don't reset)
+  const daysLeft = balance.period_end && !balance.is_free_plan
     ? Math.max(0, Math.ceil((new Date(balance.period_end).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
     : null
 

@@ -548,6 +548,9 @@ async def create_flow_pack_checkout(
     Create Stripe Checkout session for flow pack purchase
     
     Returns URL to redirect user to Stripe Checkout for one-time payment
+    
+    Note: Credit packs can only be purchased by Pro or Pro+ subscribers.
+    Free plan users must upgrade first.
     """
     try:
         user_id = current_user.get("sub") or current_user.get("id")
@@ -559,6 +562,19 @@ async def create_flow_pack_checkout(
         
         if not user_email:
             raise HTTPException(status_code=400, detail="User email not found")
+        
+        # Check subscription - credit packs are only for Pro/Pro+ subscribers
+        subscription_service = get_subscription_service()
+        subscription = await subscription_service.get_subscription(organization_id)
+        
+        plan_id = subscription.get("plan_id", "free") if subscription else "free"
+        allowed_plans = ["pro_monthly", "pro_yearly", "pro_plus_monthly", "pro_plus_yearly"]
+        
+        if plan_id not in allowed_plans:
+            raise HTTPException(
+                status_code=403, 
+                detail="Credit packs are only available for Pro and Pro+ subscribers. Please upgrade your plan first."
+            )
         
         # Default URLs
         success_url = request.success_url or f"{FRONTEND_URL}/billing/success"
