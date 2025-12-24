@@ -93,6 +93,15 @@ class ProfileService:
             if response.data and len(response.data) > 0:
                 profile = response.data[0]
                 
+                # Sync full_name to users table if present
+                if profile_data.get("full_name"):
+                    try:
+                        self.client.table("users").update({
+                            "full_name": profile_data["full_name"]
+                        }).eq("id", user_id).execute()
+                    except Exception as sync_error:
+                        print(f"Warning: Failed to sync full_name to users table: {sync_error}")
+                
                 # Create version record
                 self._create_version_record(
                     profile_type="sales",
@@ -150,6 +159,15 @@ class ProfileService:
             
             if response.data and len(response.data) > 0:
                 profile = response.data[0]
+                
+                # Sync full_name to users table if it was updated
+                if "full_name" in updates and updates["full_name"]:
+                    try:
+                        self.client.table("users").update({
+                            "full_name": updates["full_name"]
+                        }).eq("id", user_id).execute()
+                    except Exception as sync_error:
+                        print(f"Warning: Failed to sync full_name to users table: {sync_error}")
                 
                 # Create version record
                 self._create_version_record(
