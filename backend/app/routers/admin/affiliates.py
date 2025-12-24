@@ -98,7 +98,7 @@ class AffiliateStatsResponse(BaseModel):
 # LIST & STATS ENDPOINTS
 # =============================================================================
 
-@router.get("/", response_model=AffiliateListResponse)
+@router.get("", response_model=AffiliateListResponse)
 async def list_affiliates(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
