@@ -48,9 +48,10 @@ async def approve_commissions_fn(ctx, step):
     
     affiliate_service = get_affiliate_service()
     
+    # Use step.run with an async function directly
     approved_count = await step.run(
         "approve-commissions",
-        lambda: affiliate_service.approve_pending_commissions()
+        affiliate_service.approve_pending_commissions
     )
     
     logger.info(f"Commission approval complete: {approved_count} commissions approved")
@@ -87,8 +88,11 @@ async def process_payouts_fn(ctx, step):
     supabase = get_supabase_service()
     affiliate_service = get_affiliate_service()
     
-    # Find eligible affiliates
-    eligible = await step.run("find-eligible-affiliates", lambda: _find_eligible_affiliates(supabase))
+    # Find eligible affiliates (sync function)
+    def find_eligible():
+        return _find_eligible_affiliates(supabase)
+    
+    eligible = await step.run("find-eligible-affiliates", find_eligible)
     
     if not eligible:
         logger.info("No affiliates eligible for payout")
@@ -111,9 +115,13 @@ async def process_payouts_fn(ctx, step):
         logger.info(f"Processing payout for affiliate {affiliate_code}: {balance} cents")
         
         try:
+            # Create a bound async function for this specific affiliate
+            async def process_payout_for_affiliate(aid=affiliate_id):
+                return await affiliate_service.process_payout(aid)
+            
             payout = await step.run(
                 f"payout-{affiliate_id[:8]}",
-                lambda aid=affiliate_id: affiliate_service.process_payout(aid)
+                process_payout_for_affiliate
             )
             
             if payout:
@@ -196,16 +204,17 @@ async def sync_connect_status_fn(ctx, step):
     supabase = get_supabase_service()
     affiliate_service = get_affiliate_service()
     
-    # Find affiliates with Connect accounts
-    response = await step.run("find-connected-affiliates", lambda: 
-        supabase.table("affiliates").select(
+    # Find affiliates with Connect accounts (sync function)
+    def find_connected():
+        return supabase.table("affiliates").select(
             "id, affiliate_code, stripe_connect_account_id"
         ).not_.is_(
             "stripe_connect_account_id", "null"
         ).neq(
             "stripe_connect_status", "disabled"
         ).execute()
-    )
+    
+    response = await step.run("find-connected-affiliates", find_connected)
     
     affiliates = response.data or []
     
@@ -216,9 +225,13 @@ async def sync_connect_status_fn(ctx, step):
     synced = 0
     for affiliate in affiliates:
         try:
+            # Create a bound async function for this specific affiliate
+            async def sync_for_affiliate(aid=affiliate["id"]):
+                return await affiliate_service.sync_connect_account_status(aid)
+            
             await step.run(
                 f"sync-{affiliate['id'][:8]}",
-                lambda aid=affiliate["id"]: affiliate_service.sync_connect_account_status(aid)
+                sync_for_affiliate
             )
             synced += 1
         except Exception as e:
@@ -255,14 +268,15 @@ async def cleanup_clicks_fn(ctx, step):
     supabase = get_supabase_service()
     now = datetime.utcnow()
     
-    # Delete expired, non-converted clicks
-    deleted = await step.run("delete-expired-clicks", lambda:
-        supabase.table("affiliate_clicks").delete().eq(
+    # Delete expired, non-converted clicks (sync function)
+    def delete_expired():
+        return supabase.table("affiliate_clicks").delete().eq(
             "converted_to_signup", False
         ).lt(
             "expires_at", now.isoformat()
         ).execute()
-    )
+    
+    deleted = await step.run("delete-expired-clicks", delete_expired)
     
     deleted_count = len(deleted.data or [])
     
@@ -285,4 +299,3 @@ affiliate_functions = [
     sync_connect_status_fn,
     cleanup_clicks_fn,
 ]
-

@@ -193,6 +193,7 @@ async def _process_affiliate_commission(invoice: dict) -> None:
     Called after invoice.paid webhook handling.
     """
     try:
+        supabase = get_supabase_service()
         customer_id = invoice.get("customer")
         amount_paid = invoice.get("amount_paid", 0)
         invoice_id = invoice.get("id")
@@ -310,6 +311,7 @@ async def _handle_connect_account_updated(account: dict) -> None:
     Updates affiliate's Connect status based on account state.
     """
     try:
+        supabase = get_supabase_service()
         account_id = account.get("id")
         
         # Find affiliate by Connect account ID

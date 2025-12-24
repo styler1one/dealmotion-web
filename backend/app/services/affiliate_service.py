@@ -854,9 +854,19 @@ class AffiliateService:
     # STRIPE CONNECT
     # =========================================================================
     
-    async def create_connect_account(self, affiliate_id: str, email: str) -> Optional[str]:
+    async def create_connect_account(
+        self, 
+        affiliate_id: str, 
+        email: str,
+        country: str = "NL"
+    ) -> Optional[str]:
         """
         Create a Stripe Connect Express account for an affiliate.
+        
+        Args:
+            affiliate_id: The affiliate ID
+            email: The affiliate's email
+            country: Two-letter ISO country code (default: NL for Netherlands)
         
         Returns:
             The Stripe account ID, or None if failed
@@ -867,7 +877,7 @@ class AffiliateService:
             # for most platforms. We won't actually use card_payments.
             account = self.stripe.Account.create(
                 type="express",
-                country="NL",
+                country=country,
                 email=email,
                 capabilities={
                     "card_payments": {"requested": True},
