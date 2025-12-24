@@ -138,6 +138,14 @@ async def list_affiliates(
             if user_response.data:
                 user_email = user_response.data.get("email")
                 user_name = user_response.data.get("full_name")
+            
+            # If no name in users table, check sales_profiles
+            if not user_name:
+                profile_response = supabase.table("sales_profiles").select(
+                    "full_name"
+                ).eq("user_id", a["user_id"]).maybe_single().execute()
+                if profile_response.data:
+                    user_name = profile_response.data.get("full_name")
         except Exception as e:
             logger.warning(f"Failed to fetch user for affiliate {a['id']}: {e}")
         
@@ -254,6 +262,15 @@ async def get_affiliate_detail(
         "id, email, full_name, created_at"
     ).eq("id", affiliate["user_id"]).single().execute()
     
+    # If no name in users table, check sales_profiles
+    user_data = user_response.data or {}
+    if not user_data.get("full_name"):
+        profile_response = supabase.table("sales_profiles").select(
+            "full_name"
+        ).eq("user_id", affiliate["user_id"]).maybe_single().execute()
+        if profile_response.data and profile_response.data.get("full_name"):
+            user_data["full_name"] = profile_response.data.get("full_name")
+    
     # Get organization
     org_response = supabase.table("organizations").select(
         "id, name, created_at"
@@ -300,7 +317,7 @@ async def get_affiliate_detail(
     
     return AffiliateDetailResponse(
         affiliate=affiliate,
-        user=user_response.data or {},
+        user=user_data,
         organization=org_response.data or {},
         recent_referrals=referrals_response.data or [],
         recent_commissions=commissions_response.data or [],
