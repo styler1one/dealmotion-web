@@ -863,11 +863,14 @@ class AffiliateService:
         """
         try:
             # Create Express account
+            # Note: Stripe requires card_payments capability alongside transfers
+            # for most platforms. We won't actually use card_payments.
             account = self.stripe.Account.create(
                 type="express",
                 country="NL",
                 email=email,
                 capabilities={
+                    "card_payments": {"requested": True},
                     "transfers": {"requested": True},
                 },
                 business_type="individual",
