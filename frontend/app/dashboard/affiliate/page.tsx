@@ -219,6 +219,22 @@ export default function AffiliateDashboardPage() {
         }
     }
 
+    const handleOpenStripeDashboard = async () => {
+        try {
+            setConnectLoading(true)
+            const response = await api.get<{ url: string }>('/api/v1/affiliate/connect/dashboard')
+            
+            if (response.data?.url) {
+                window.open(response.data.url, '_blank')
+            }
+        } catch (err: any) {
+            console.error('Error opening Stripe dashboard:', err)
+            setError(err?.message || t('errorConnect'))
+        } finally {
+            setConnectLoading(false)
+        }
+    }
+
     const formatCurrency = (cents: number) => {
         return new Intl.NumberFormat('nl-NL', {
             style: 'currency',
@@ -479,9 +495,20 @@ export default function AffiliateDashboardPage() {
                     </CardHeader>
                     <CardContent>
                         {affiliate?.stripe_payouts_enabled ? (
-                            <div className="flex items-center gap-2 text-green-600">
-                                <Check className="h-5 w-5" />
-                                <span>{t('dashboard.payout.enabled')}</span>
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2 text-green-600">
+                                    <Check className="h-5 w-5" />
+                                    <span>{t('dashboard.payout.enabled')}</span>
+                                </div>
+                                <Button 
+                                    variant="outline"
+                                    onClick={handleOpenStripeDashboard}
+                                    disabled={connectLoading}
+                                >
+                                    {connectLoading && <RefreshCw className="mr-2 h-4 w-4 animate-spin" />}
+                                    {t('dashboard.payout.viewDashboard')}
+                                    <ExternalLink className="ml-2 h-4 w-4" />
+                                </Button>
                             </div>
                         ) : (
                             <div className="space-y-3">

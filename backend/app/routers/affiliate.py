@@ -542,6 +542,42 @@ async def get_connect_status(
     )
 
 
+class ExpressDashboardResponse(BaseModel):
+    """Response with Stripe Express Dashboard URL."""
+    url: str
+
+
+@router.get("/connect/dashboard", response_model=ExpressDashboardResponse)
+async def get_express_dashboard_link(
+    user_org: tuple = Depends(get_user_org)
+):
+    """
+    Get Stripe Express Dashboard login link.
+    
+    Allows affiliates to access their Stripe dashboard to view
+    transfers, payout history, manage bank details, etc.
+    """
+    user_id, organization_id = user_org
+    affiliate_service = get_affiliate_service()
+    
+    affiliate = await affiliate_service.get_affiliate_by_user(user_id)
+    if not affiliate:
+        raise HTTPException(status_code=404, detail="Not an affiliate")
+    
+    if not affiliate.get("stripe_payouts_enabled"):
+        raise HTTPException(
+            status_code=400, 
+            detail="Stripe Connect must be fully set up first"
+        )
+    
+    url = await affiliate_service.get_express_dashboard_url(affiliate["id"])
+    
+    if not url:
+        raise HTTPException(status_code=500, detail="Could not generate dashboard link")
+    
+    return ExpressDashboardResponse(url=url)
+
+
 # =============================================================================
 # SETTINGS ENDPOINTS
 # =============================================================================

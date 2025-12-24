@@ -3354,7 +3354,8 @@
         "desc": "Set up Stripe Connect to receive your payouts",
         "enabled": "Payouts enabled",
         "setupRequired": "Connect your bank account to receive payouts",
-        "setupButton": "Set Up Payouts"
+        "setupButton": "Set Up Payouts",
+        "viewDashboard": "View Stripe Dashboard"
       },
       "tabs": {
         "referrals": "Referrals",

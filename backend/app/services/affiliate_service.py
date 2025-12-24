@@ -974,6 +974,42 @@ class AffiliateService:
             logger.error(f"Error getting onboarding URL: {e}")
             return None
     
+    async def get_express_dashboard_url(self, affiliate_id: str) -> Optional[str]:
+        """
+        Get Stripe Express Dashboard login link for an affiliate.
+        
+        This allows affiliates to access their Stripe dashboard to:
+        - View incoming transfers
+        - See payout history
+        - Manage bank account details
+        - Access tax information
+        
+        Returns:
+            The Express Dashboard URL, or None if failed
+        """
+        try:
+            affiliate = await self.get_affiliate_by_id(affiliate_id)
+            if not affiliate:
+                return None
+            
+            account_id = affiliate.get("stripe_connect_account_id")
+            if not account_id:
+                logger.warning(f"Affiliate {affiliate_id} has no Connect account")
+                return None
+            
+            if not affiliate.get("stripe_payouts_enabled"):
+                logger.warning(f"Affiliate {affiliate_id} Connect not fully set up")
+                return None
+            
+            # Create Express Dashboard login link
+            login_link = self.stripe.Account.create_login_link(account_id)
+            
+            return login_link.url
+            
+        except Exception as e:
+            logger.error(f"Error creating Express Dashboard link: {e}")
+            return None
+    
     async def sync_connect_account_status(self, affiliate_id: str) -> bool:
         """
         Sync Stripe Connect account status from Stripe.

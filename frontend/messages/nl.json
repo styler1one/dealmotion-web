@@ -3197,7 +3197,8 @@
         "desc": "Stel Stripe Connect in om je uitbetalingen te ontvangen",
         "enabled": "Uitbetalingen ingeschakeld",
         "setupRequired": "Koppel je bankrekening om uitbetalingen te ontvangen",
-        "setupButton": "Uitbetaling Instellen"
+        "setupButton": "Uitbetaling Instellen",
+        "viewDashboard": "Bekijk Stripe Dashboard"
       },
       "tabs": {
         "referrals": "Referrals",
