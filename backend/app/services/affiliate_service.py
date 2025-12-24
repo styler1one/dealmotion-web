@@ -107,7 +107,10 @@ class AffiliateService:
             if self.supabase is None:
                 logger.error("Supabase client not initialized")
                 return None
-                
+            
+            # Debug: Check if we can access the table
+            logger.debug(f"Querying affiliates table for user_id={user_id}")
+            
             response = self.supabase.table("affiliates").select("*").eq(
                 "user_id", user_id
             ).maybe_single().execute()
@@ -115,10 +118,15 @@ class AffiliateService:
             if response is None:
                 logger.warning("Supabase returned None response - affiliates table may not exist")
                 return None
+            
+            # Check for API errors in response
+            if hasattr(response, 'error') and response.error:
+                logger.error(f"Supabase API error: {response.error}")
+                return None
                 
             return response.data
         except Exception as e:
-            logger.error(f"Error getting affiliate by user: {e}")
+            logger.error(f"Error getting affiliate by user: {e}", exc_info=True)
             return None
     
     async def get_affiliate_by_code(self, affiliate_code: str) -> Optional[Dict[str, Any]]:
@@ -1413,23 +1421,30 @@ class AffiliateService:
     
     async def _can_user_become_affiliate(self, user_id: str) -> Dict[str, Any]:
         """Check if user can become an affiliate."""
-        # Check if already an affiliate
-        existing = self.supabase.table("affiliates").select(
-            "id"
-        ).eq("user_id", user_id).maybe_single().execute()
-        
-        if existing.data:
-            return {"allowed": False, "reason": "User is already an affiliate"}
-        
-        # Check if user was referred (can't be affiliate if referred)
-        referral = self.supabase.table("affiliate_referrals").select(
-            "id"
-        ).eq("referred_user_id", user_id).maybe_single().execute()
-        
-        if referral.data:
-            return {"allowed": False, "reason": "Referred users cannot become affiliates"}
-        
-        return {"allowed": True, "reason": None}
+        try:
+            if self.supabase is None:
+                return {"allowed": False, "reason": "Database connection not available"}
+            
+            # Check if already an affiliate
+            existing = self.supabase.table("affiliates").select(
+                "id"
+            ).eq("user_id", user_id).maybe_single().execute()
+            
+            if existing and existing.data:
+                return {"allowed": False, "reason": "User is already an affiliate"}
+            
+            # Check if user was referred (can't be affiliate if referred)
+            referral = self.supabase.table("affiliate_referrals").select(
+                "id"
+            ).eq("referred_user_id", user_id).maybe_single().execute()
+            
+            if referral and referral.data:
+                return {"allowed": False, "reason": "Referred users cannot become affiliates"}
+            
+            return {"allowed": True, "reason": None}
+        except Exception as e:
+            logger.error(f"Error checking if user can become affiliate: {e}", exc_info=True)
+            return {"allowed": False, "reason": f"Error checking eligibility: {str(e)}"}
     
     async def _generate_affiliate_code(self) -> str:
         """Generate a unique affiliate code."""
@@ -1438,12 +1453,17 @@ class AffiliateService:
         for _ in range(10):  # Max 10 attempts
             code = "AFF_" + "".join(secrets.choice(chars) for _ in range(6))
             
-            # Check if exists
-            existing = self.supabase.table("affiliates").select(
-                "id"
-            ).eq("affiliate_code", code).maybe_single().execute()
-            
-            if not existing.data:
+            try:
+                # Check if exists
+                existing = self.supabase.table("affiliates").select(
+                    "id"
+                ).eq("affiliate_code", code).maybe_single().execute()
+                
+                if not existing or not existing.data:
+                    return code
+            except Exception as e:
+                logger.warning(f"Error checking affiliate code uniqueness: {e}")
+                # If we can't check, assume it's unique
                 return code
         
         # Fallback: use timestamp
