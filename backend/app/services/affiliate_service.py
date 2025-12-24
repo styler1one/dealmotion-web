@@ -391,12 +391,14 @@ class AffiliateService:
             
             self.supabase.table("affiliate_clicks").insert(click_data).execute()
             
-            # Update affiliate stats
+            # Update affiliate stats (use 'or 0' to handle NULL values from database)
+            current_clicks = affiliate.get("total_clicks") or 0
+            new_clicks = current_clicks + 1
             self.supabase.table("affiliates").update({
-                "total_clicks": affiliate.get("total_clicks", 0) + 1
+                "total_clicks": new_clicks
             }).eq("id", affiliate["id"]).execute()
             
-            logger.info(f"Click recorded for affiliate {affiliate['id']}, new total: {affiliate.get('total_clicks', 0) + 1}")
+            logger.info(f"Click recorded for affiliate {affiliate['id']}, new total: {new_clicks}")
             return True
             
         except Exception as e:
@@ -497,7 +499,7 @@ class AffiliateService:
             if referral:
                 # Update affiliate stats
                 self.supabase.table("affiliates").update({
-                    "total_signups": affiliate.get("total_signups", 0) + 1
+                    "total_signups": (affiliate.get("total_signups") or 0) + 1
                 }).eq("id", affiliate["id"]).execute()
                 
                 # Update user record with affiliate reference
@@ -682,8 +684,8 @@ class AffiliateService:
                     conversion_increment = 1 if not referral.get("converted") else 0
                     
                     self.supabase.table("affiliates").update({
-                        "total_conversions": affiliate_record.get("total_conversions", 0) + conversion_increment,
-                        "total_earned_cents": (affiliate_record.get("total_earned_cents", 0) or 0) + commission_amount_cents,
+                        "total_conversions": (affiliate_record.get("total_conversions") or 0) + conversion_increment,
+                        "total_earned_cents": (affiliate_record.get("total_earned_cents") or 0) + commission_amount_cents,
                     }).eq("id", affiliate_id).execute()
                 
                 # Log event
@@ -1370,15 +1372,15 @@ class AffiliateService:
                     "stripe_payouts_enabled": affiliate.get("stripe_payouts_enabled", False),
                 },
                 "stats": {
-                    "total_clicks": affiliate.get("total_clicks", 0),
-                    "total_signups": affiliate.get("total_signups", 0),
-                    "total_conversions": affiliate.get("total_conversions", 0),
+                    "total_clicks": affiliate.get("total_clicks") or 0,
+                    "total_signups": affiliate.get("total_signups") or 0,
+                    "total_conversions": affiliate.get("total_conversions") or 0,
                     "conversion_rate": round(
-                        (affiliate.get("total_conversions", 0) / affiliate.get("total_signups", 1)) * 100, 1
-                    ) if affiliate.get("total_signups", 0) > 0 else 0,
-                    "total_earned_cents": affiliate.get("total_earned_cents", 0),
-                    "total_paid_cents": affiliate.get("total_paid_cents", 0),
-                    "current_balance_cents": affiliate.get("current_balance_cents", 0),
+                        ((affiliate.get("total_conversions") or 0) / (affiliate.get("total_signups") or 1)) * 100, 1
+                    ) if (affiliate.get("total_signups") or 0) > 0 else 0,
+                    "total_earned_cents": affiliate.get("total_earned_cents") or 0,
+                    "total_paid_cents": affiliate.get("total_paid_cents") or 0,
+                    "current_balance_cents": affiliate.get("current_balance_cents") or 0,
                     "pending_commissions_cents": pending_amount,
                 },
                 "recent_referrals": referrals_response.data or [],
