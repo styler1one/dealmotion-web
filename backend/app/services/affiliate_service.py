@@ -116,7 +116,7 @@ class AffiliateService:
             ).maybe_single().execute()
             
             if response is None:
-                logger.warning("Supabase returned None response - affiliates table may not exist")
+                logger.debug(f"No affiliate found for user_id={user_id}")
                 return None
             
             # Check for API errors in response
