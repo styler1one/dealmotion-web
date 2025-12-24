@@ -178,11 +178,11 @@ async def get_credit_balance(
         # If credit system not yet initialized, return defaults
         logger.warning(f"Credit balance not found for org {organization_id}, returning defaults")
         return CreditBalanceResponse(
-            subscription_credits_total=2,  # Free plan default
+            subscription_credits_total=25,  # Free plan default (25 credits/month)
             subscription_credits_used=0,
-            subscription_credits_remaining=2,
+            subscription_credits_remaining=25,
             pack_credits_remaining=0,
-            total_credits_available=2,
+            total_credits_available=25,
             is_unlimited=False,
             period_start=None,
             period_end=None

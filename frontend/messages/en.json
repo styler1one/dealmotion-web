@@ -2385,7 +2385,7 @@
     "and": "and",
     "privacyPolicy": "Privacy Policy",
     "checkYourEmail": "Check your email",
-    "confirmationEmailSent": "We've sent a confirmation link to {email}. Click the link to verify your account.",
+    "confirmationEmailSent": "We've sent a confirmation link to {email}. Click the link to verify your account. Didn't receive an email? Check your spam folder.",
     "backToLogin": "Back to login",
     "userAlreadyExists": "An account with this email already exists. Please log in instead.",
     "errors": {

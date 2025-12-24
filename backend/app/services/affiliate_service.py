@@ -346,6 +346,8 @@ class AffiliateService:
             True if click was recorded, False otherwise
         """
         try:
+            logger.info(f"Tracking click for affiliate code: {affiliate_code}, click_id: {click_id}")
+            
             # Get affiliate
             affiliate = await self.get_affiliate_by_code(affiliate_code)
             if not affiliate:
@@ -394,10 +396,11 @@ class AffiliateService:
                 "total_clicks": affiliate.get("total_clicks", 0) + 1
             }).eq("id", affiliate["id"]).execute()
             
+            logger.info(f"Click recorded for affiliate {affiliate['id']}, new total: {affiliate.get('total_clicks', 0) + 1}")
             return True
             
         except Exception as e:
-            logger.error(f"Error tracking click: {e}")
+            logger.error(f"Error tracking click for {affiliate_code}: {e}", exc_info=True)
             return False
     
     async def get_click_by_id(self, click_id: str) -> Optional[Dict[str, Any]]:

@@ -2371,7 +2371,7 @@
     "and": "en",
     "privacyPolicy": "Privacybeleid",
     "checkYourEmail": "Check je email",
-    "confirmationEmailSent": "We hebben een bevestigingslink gestuurd naar {email}. Klik op de link om je account te verifiëren.",
+    "confirmationEmailSent": "We hebben een bevestigingslink gestuurd naar {email}. Klik op de link om je account te verifiëren. Geen email ontvangen? Check je spam folder.",
     "backToLogin": "Terug naar inloggen",
     "userAlreadyExists": "Een account met dit emailadres bestaat al. Log in.",
     "errors": {
