@@ -111,26 +111,15 @@ async def list_affiliates(
     """
     supabase = get_supabase_service()
     
-    # Build query
-    query = supabase.table("affiliates").select(
-        """
-        *,
-        users!affiliates_user_id_fkey (
-            email,
-            full_name
-        )
-        """,
-        count="exact"
-    )
+    # Build query - fetch affiliates first
+    query = supabase.table("affiliates").select("*", count="exact")
     
     if status:
         query = query.eq("status", status)
     
     if search:
-        # Search by affiliate code or user email
-        query = query.or_(
-            f"affiliate_code.ilike.%{search}%"
-        )
+        # Search by affiliate code
+        query = query.ilike("affiliate_code", f"%{search}%")
     
     offset = (page - 1) * page_size
     response = query.order(
@@ -139,7 +128,19 @@ async def list_affiliates(
     
     affiliates = []
     for a in (response.data or []):
-        user_data = a.pop("users", {}) or {}
+        # Fetch user data separately
+        user_email = None
+        user_name = None
+        try:
+            user_response = supabase.table("users").select(
+                "email, full_name"
+            ).eq("id", a["user_id"]).maybe_single().execute()
+            if user_response.data:
+                user_email = user_response.data.get("email")
+                user_name = user_response.data.get("full_name")
+        except Exception as e:
+            logger.warning(f"Failed to fetch user for affiliate {a['id']}: {e}")
+        
         affiliates.append(AffiliateListItem(
             id=a["id"],
             user_id=a["user_id"],
@@ -156,8 +157,8 @@ async def list_affiliates(
             current_balance_cents=a.get("current_balance_cents", 0) or 0,
             created_at=a["created_at"],
             activated_at=a.get("activated_at"),
-            user_email=user_data.get("email"),
-            user_name=user_data.get("full_name"),
+            user_email=user_email,
+            user_name=user_name,
         ))
     
     return AffiliateListResponse(
