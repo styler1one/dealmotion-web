@@ -242,7 +242,7 @@ export default function AdminAffiliatesPage() {
                       <td className="px-4 py-3">
                         <div>
                           <div className="font-medium text-slate-900 dark:text-white">
-                            {affiliate.user_name || 'No name'}
+                            {affiliate.user_name || affiliate.user_email?.split('@')[0] || 'Unknown'}
                           </div>
                           <div className="text-sm text-slate-500">{affiliate.user_email}</div>
                         </div>
