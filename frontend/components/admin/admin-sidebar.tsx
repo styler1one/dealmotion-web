@@ -56,6 +56,14 @@ const navigationItems = [
     roles: ['super_admin', 'admin'] as AdminRole[],
   },
   {
+    key: 'affiliates',
+    label: 'Affiliates',
+    href: '/admin/affiliates',
+    icon: Icons.gift,
+    color: 'text-pink-400',
+    roles: ['super_admin', 'admin'] as AdminRole[],
+  },
+  {
     key: 'audit',
     label: 'Audit Log',
     href: '/admin/audit',

@@ -344,4 +344,127 @@ export const adminApi = {
     const response = await api.get<Blob>(`${BASE}/audit/export?${query.toString()}`)
     return response.data as Blob
   },
+
+  // ============================================================
+  // Affiliate API
+  // ============================================================
+
+  // List affiliates
+  listAffiliates: async (params: {
+    page?: number
+    pageSize?: number
+    status?: string
+    search?: string
+  }): Promise<AffiliateListResponse> => {
+    const query = new URLSearchParams()
+    if (params.page) query.set('page', params.page.toString())
+    if (params.pageSize) query.set('page_size', params.pageSize.toString())
+    if (params.status) query.set('status', params.status)
+    if (params.search) query.set('search', params.search)
+    
+    const response = await api.get<AffiliateListResponse>(`${BASE}/affiliates?${query.toString()}`)
+    return response.data as AffiliateListResponse
+  },
+
+  // Get affiliate stats
+  getAffiliateStats: async (): Promise<AffiliateProgramStats> => {
+    const response = await api.get<AffiliateProgramStats>(`${BASE}/affiliates/stats`)
+    return response.data as AffiliateProgramStats
+  },
+
+  // Get affiliate detail
+  getAffiliateDetail: async (affiliateId: string): Promise<AffiliateDetail> => {
+    const response = await api.get<AffiliateDetail>(`${BASE}/affiliates/${affiliateId}`)
+    return response.data as AffiliateDetail
+  },
+
+  // Update affiliate status
+  updateAffiliateStatus: async (affiliateId: string, status: string, reason?: string): Promise<{ success: boolean }> => {
+    const response = await api.patch<{ success: boolean }>(`${BASE}/affiliates/${affiliateId}/status`, {
+      status,
+      reason,
+    })
+    return response.data as { success: boolean }
+  },
+
+  // Update affiliate commission rates
+  updateAffiliateRates: async (affiliateId: string, rates: {
+    commission_rate_subscription?: number
+    commission_rate_credits?: number
+  }): Promise<{ success: boolean; updated: Record<string, number> }> => {
+    const response = await api.patch<{ success: boolean; updated: Record<string, number> }>(
+      `${BASE}/affiliates/${affiliateId}/commission-rates`,
+      rates
+    )
+    return response.data as { success: boolean; updated: Record<string, number> }
+  },
+
+  // Trigger manual payout
+  triggerAffiliatePayout: async (affiliateId: string): Promise<{ success: boolean; payout?: any }> => {
+    const response = await api.post<{ success: boolean; payout?: any }>(
+      `${BASE}/affiliates/${affiliateId}/trigger-payout`
+    )
+    return response.data as { success: boolean; payout?: any }
+  },
+
+  // Sync Connect status
+  syncAffiliateConnect: async (affiliateId: string): Promise<{ success: boolean }> => {
+    const response = await api.post<{ success: boolean }>(
+      `${BASE}/affiliates/${affiliateId}/sync-connect`
+    )
+    return response.data as { success: boolean }
+  },
+}
+
+// ============================================================
+// Affiliate Types
+// ============================================================
+
+export interface AffiliateListItem {
+  id: string
+  user_id: string
+  organization_id: string
+  affiliate_code: string
+  status: string
+  stripe_connect_status: string
+  stripe_payouts_enabled: boolean
+  total_clicks: number
+  total_signups: number
+  total_conversions: number
+  total_earned_cents: number
+  total_paid_cents: number
+  current_balance_cents: number
+  created_at: string
+  activated_at: string | null
+  user_email: string | null
+  user_name: string | null
+}
+
+export interface AffiliateListResponse {
+  affiliates: AffiliateListItem[]
+  total: number
+  page: number
+  page_size: number
+}
+
+export interface AffiliateProgramStats {
+  total_affiliates: number
+  active_affiliates: number
+  pending_affiliates: number
+  total_referrals: number
+  total_conversions: number
+  total_revenue_cents: number
+  total_commissions_cents: number
+  total_paid_cents: number
+  pending_payouts_cents: number
+}
+
+export interface AffiliateDetail {
+  affiliate: any
+  user: any
+  organization: any
+  recent_referrals: any[]
+  recent_commissions: any[]
+  recent_payouts: any[]
+  stats: any
 }
