@@ -20,15 +20,14 @@ import hmac
 import hashlib
 import os
 
-from app.deps import get_current_user, get_user_org, require_feature
+from app.deps import get_current_user, get_user_org
 from app.database import get_supabase_service
 from app.services.recall_service import recall_service, RecallBotConfig, get_bot_name
 from app.inngest.events import send_event, use_inngest_for, Events
 
 logger = logging.getLogger(__name__)
 
-# Feature check dependency for AI Notetaker
-require_ai_notetaker = require_feature("ai_notetaker")
+# Note: All features are now available to everyone - credits determine usage
 
 router = APIRouter()
 
@@ -102,7 +101,6 @@ async def schedule_recording(
     request: ScheduleRecordingRequest,
     current_user: dict = Depends(get_current_user),
     user_org: tuple = Depends(get_user_org),
-    _feature_check: None = Depends(require_ai_notetaker),
 ):
     """
     Schedule AI Notetaker to join a meeting.
@@ -218,7 +216,6 @@ async def list_scheduled_recordings(
     status: Optional[str] = None,
     current_user: dict = Depends(get_current_user),
     user_org: tuple = Depends(get_user_org),
-    _feature_check: None = Depends(require_ai_notetaker),
 ):
     """
     List all scheduled/active recordings for the user's organization.
@@ -273,7 +270,6 @@ async def get_recording(
     recording_id: str,
     current_user: dict = Depends(get_current_user),
     user_org: tuple = Depends(get_user_org),
-    _feature_check: None = Depends(require_ai_notetaker),
 ):
     """
     Get details of a specific scheduled recording.
@@ -318,7 +314,6 @@ async def cancel_recording(
     recording_id: str,
     current_user: dict = Depends(get_current_user),
     user_org: tuple = Depends(get_user_org),
-    _feature_check: None = Depends(require_ai_notetaker),
 ):
     """
     Cancel a scheduled recording.
