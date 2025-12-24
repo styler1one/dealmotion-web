@@ -1888,11 +1888,13 @@
         },
         "pro": {
           "name": "Pro",
-          "description": "Stop met urenlang voorbereiden"
+          "description": "Stop met urenlang voorbereiden",
+          "settingsDesc": "Stop met urenlang voorbereiden"
         },
         "proPlus": {
           "name": "Pro+",
-          "description": "Nooit meer noteren — AI doet het voor je"
+          "description": "Nooit meer noteren — AI doet het voor je",
+          "settingsDesc": "Nooit meer noteren — AI doet het voor je"
         },
         "enterprise": {
           "name": "Enterprise",

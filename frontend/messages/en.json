@@ -1920,11 +1920,13 @@
         },
         "pro": {
           "name": "Pro",
-          "description": "Stop wasting hours on research & prep"
+          "description": "Stop wasting hours on research & prep",
+          "settingsDesc": "Stop wasting hours on research & prep"
         },
         "proPlus": {
           "name": "Pro+",
-          "description": "Never take notes again — AI does it for you"
+          "description": "Never take notes again — AI does it for you",
+          "settingsDesc": "Never take notes again — AI does it for you"
         },
         "enterprise": {
           "name": "Enterprise",
