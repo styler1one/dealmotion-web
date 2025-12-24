@@ -63,10 +63,10 @@ export function AutoRecordSettings() {
   const tAiNotetaker = useTranslations('aiNotetaker')
   const tCommon = useTranslations('common')
   const { toast } = useToast()
-  const { isFeatureAvailable, loading: billingLoading } = useBilling()
+  const { loading: billingLoading } = useBilling()
 
-  // Check if AI Notetaker feature is available (Pro+ only)
-  const hasAiNotetaker = isFeatureAvailable('ai_notetaker')
+  // All features are available to everyone - credits determine usage
+  const hasAiNotetaker = true
 
   const [settings, setSettings] = useState<AutoRecordSettings>({
     enabled: false,

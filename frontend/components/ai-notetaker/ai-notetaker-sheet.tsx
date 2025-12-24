@@ -51,10 +51,10 @@ export function AINotetakerSheet({
   const tCommon = useTranslations('common')
   const { toast } = useToast()
   const supabase = createClientComponentClient()
-  const { isFeatureAvailable, loading: billingLoading } = useBilling()
+  const { loading: billingLoading } = useBilling()
 
-  // Check if AI Notetaker feature is available (Pro+ only)
-  const hasAiNotetaker = isFeatureAvailable('ai_notetaker')
+  // All features are available to everyone - credits determine usage
+  const hasAiNotetaker = true
 
   // Form state
   const [meetingUrl, setMeetingUrl] = useState('')

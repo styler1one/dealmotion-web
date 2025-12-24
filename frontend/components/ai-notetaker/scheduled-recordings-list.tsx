@@ -51,8 +51,8 @@ export function ScheduledRecordingsList({
   const [recordingToCancel, setRecordingToCancel] = useState<ScheduledRecording | null>(null)
   const [cancelling, setCancelling] = useState(false)
 
-  // Check if AI Notetaker feature is available (Pro+ only)
-  const hasAiNotetaker = isFeatureAvailable('ai_notetaker')
+  // All features are available to everyone - credits determine usage
+  const hasAiNotetaker = true
 
   // Fetch scheduled recordings (only if feature is available)
   const fetchRecordings = async () => {

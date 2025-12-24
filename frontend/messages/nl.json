@@ -3180,6 +3180,13 @@
       "subtitle": "Volg je referrals en inkomsten",
       "referralLink": "Jouw Referral Link",
       "referralLinkDesc": "Deel deze link om commissie te verdienen op nieuwe aanmeldingen",
+      "commissionRates": {
+        "title": "Jouw Commissie Tarieven",
+        "subscription": "Abonnementen",
+        "subscriptionDesc": "Pro & Pro+ maandelijks/jaarlijks",
+        "credits": "Credit Packs",
+        "creditsDesc": "Alle credit pack aankopen"
+      },
       "stats": {
         "clicks": "Totaal Kliks",
         "signups": "Aanmeldingen",

@@ -3337,6 +3337,13 @@
       "subtitle": "Track your referrals and earnings",
       "referralLink": "Your Referral Link",
       "referralLinkDesc": "Share this link to earn commissions on new signups",
+      "commissionRates": {
+        "title": "Your Commission Rates",
+        "subscription": "Subscriptions",
+        "subscriptionDesc": "Pro & Pro+ monthly/yearly",
+        "credits": "Credit Packs",
+        "creditsDesc": "All credit pack purchases"
+      },
       "stats": {
         "clicks": "Total Clicks",
         "signups": "Signups",

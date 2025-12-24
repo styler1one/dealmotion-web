@@ -1169,13 +1169,13 @@ export default function SettingsPage() {
                               <span className="font-semibold text-slate-900 dark:text-white">Pro</span>
                             </div>
                             <div className="mb-3">
-                              <div className="text-xs text-slate-400 line-through">€79,95</div>
+                              <div className="text-xs text-slate-400 line-through">€99</div>
                               <div className="flex items-baseline gap-0.5">
-                                <span className="text-2xl font-bold text-slate-900 dark:text-white">€49,95</span>
+                                <span className="text-2xl font-bold text-slate-900 dark:text-white">€75</span>
                                 <span className="text-sm text-slate-500">/mo</span>
                               </div>
                             </div>
-                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">{tBilling('plans.v4.pro.description') || 'Unlimited flows'}</p>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">{tBilling('plans.v4.pro.settingsDesc') || 'Stop met urenlang voorbereiden'}</p>
                             <Button 
                               size="sm"
                               onClick={() => handleUpgradeToPlan('pro_monthly')}
@@ -1201,13 +1201,13 @@ export default function SettingsPage() {
                               <span className="font-semibold text-slate-900 dark:text-white">Pro+</span>
                             </div>
                             <div className="mb-3">
-                              <div className="text-xs text-slate-400 line-through">€99,95</div>
+                              <div className="text-xs text-slate-400 line-through">€149</div>
                               <div className="flex items-baseline gap-0.5">
-                                <span className="text-2xl font-bold text-slate-900 dark:text-white">€69,95</span>
+                                <span className="text-2xl font-bold text-slate-900 dark:text-white">€125</span>
                                 <span className="text-sm text-slate-500">/mo</span>
                               </div>
                             </div>
-                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">{tBilling('plans.v4.proPlus.description') || 'Includes AI Notetaker'}</p>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">{tBilling('plans.v4.proPlus.settingsDesc') || 'Nooit meer noteren — AI doet het voor je'}</p>
                             <Button 
                               size="sm"
                               onClick={() => handleUpgradeToPlan('pro_plus_monthly')}

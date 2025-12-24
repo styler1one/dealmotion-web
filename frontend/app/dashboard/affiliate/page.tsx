@@ -409,6 +409,35 @@ export default function AffiliateDashboardPage() {
                 </CardContent>
             </Card>
 
+            {/* Commission Rates Info */}
+            <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border-green-200 dark:border-green-800">
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-green-700 dark:text-green-400">{t('dashboard.commissionRates.title')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/50 flex items-center justify-center">
+                                <span className="text-xl font-bold text-green-600">15%</span>
+                            </div>
+                            <div>
+                                <p className="font-medium text-slate-900 dark:text-white">{t('dashboard.commissionRates.subscription')}</p>
+                                <p className="text-sm text-slate-500">{t('dashboard.commissionRates.subscriptionDesc')}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/50 flex items-center justify-center">
+                                <span className="text-xl font-bold text-green-600">10%</span>
+                            </div>
+                            <div>
+                                <p className="font-medium text-slate-900 dark:text-white">{t('dashboard.commissionRates.credits')}</p>
+                                <p className="text-sm text-slate-500">{t('dashboard.commissionRates.creditsDesc')}</p>
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
             {/* Stats Grid */}
             <div className="grid gap-4 md:grid-cols-4">
                 <Card>
