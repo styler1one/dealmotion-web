@@ -117,10 +117,15 @@ CREATE POLICY "affiliate_commissions_select" ON affiliate_commissions
         OR (select auth.role()) = 'service_role'
     );
 
-CREATE POLICY "affiliate_commissions_all" ON affiliate_commissions
-    FOR ALL USING (
-        (select auth.role()) = 'service_role'
-    );
+-- Separate policies for INSERT/UPDATE/DELETE (not FOR ALL to avoid SELECT overlap)
+CREATE POLICY "affiliate_commissions_insert" ON affiliate_commissions
+    FOR INSERT WITH CHECK ((select auth.role()) = 'service_role');
+
+CREATE POLICY "affiliate_commissions_update" ON affiliate_commissions
+    FOR UPDATE USING ((select auth.role()) = 'service_role');
+
+CREATE POLICY "affiliate_commissions_delete" ON affiliate_commissions
+    FOR DELETE USING ((select auth.role()) = 'service_role');
 
 -- ============================================================
 -- AFFILIATE_PAYOUTS
@@ -136,10 +141,14 @@ CREATE POLICY "affiliate_payouts_select" ON affiliate_payouts
         OR (select auth.role()) = 'service_role'
     );
 
-CREATE POLICY "affiliate_payouts_all" ON affiliate_payouts
-    FOR ALL USING (
-        (select auth.role()) = 'service_role'
-    );
+CREATE POLICY "affiliate_payouts_insert" ON affiliate_payouts
+    FOR INSERT WITH CHECK ((select auth.role()) = 'service_role');
+
+CREATE POLICY "affiliate_payouts_update" ON affiliate_payouts
+    FOR UPDATE USING ((select auth.role()) = 'service_role');
+
+CREATE POLICY "affiliate_payouts_delete" ON affiliate_payouts
+    FOR DELETE USING ((select auth.role()) = 'service_role');
 
 -- ============================================================
 -- AFFILIATE_EVENTS
@@ -155,10 +164,14 @@ CREATE POLICY "affiliate_events_select" ON affiliate_events
         OR (select auth.role()) = 'service_role'
     );
 
-CREATE POLICY "affiliate_events_all" ON affiliate_events
-    FOR ALL USING (
-        (select auth.role()) = 'service_role'
-    );
+CREATE POLICY "affiliate_events_insert" ON affiliate_events
+    FOR INSERT WITH CHECK ((select auth.role()) = 'service_role');
+
+CREATE POLICY "affiliate_events_update" ON affiliate_events
+    FOR UPDATE USING ((select auth.role()) = 'service_role');
+
+CREATE POLICY "affiliate_events_delete" ON affiliate_events
+    FOR DELETE USING ((select auth.role()) = 'service_role');
 
 -- ============================================================
 -- MAGIC_ONBOARDING_SESSIONS
@@ -330,10 +343,14 @@ CREATE POLICY "credit_transactions_select" ON credit_transactions
         OR (select auth.role()) = 'service_role'
     );
 
-CREATE POLICY "credit_transactions_all" ON credit_transactions
-    FOR ALL USING (
-        (select auth.role()) = 'service_role'
-    );
+CREATE POLICY "credit_transactions_insert" ON credit_transactions
+    FOR INSERT WITH CHECK ((select auth.role()) = 'service_role');
+
+CREATE POLICY "credit_transactions_update" ON credit_transactions
+    FOR UPDATE USING ((select auth.role()) = 'service_role');
+
+CREATE POLICY "credit_transactions_delete" ON credit_transactions
+    FOR DELETE USING ((select auth.role()) = 'service_role');
 
 -- ============================================================
 -- CREDIT_BALANCES
@@ -350,10 +367,14 @@ CREATE POLICY "credit_balances_select" ON credit_balances
         OR (select auth.role()) = 'service_role'
     );
 
-CREATE POLICY "credit_balances_all" ON credit_balances
-    FOR ALL USING (
-        (select auth.role()) = 'service_role'
-    );
+CREATE POLICY "credit_balances_insert" ON credit_balances
+    FOR INSERT WITH CHECK ((select auth.role()) = 'service_role');
+
+CREATE POLICY "credit_balances_update" ON credit_balances
+    FOR UPDATE USING ((select auth.role()) = 'service_role');
+
+CREATE POLICY "credit_balances_delete" ON credit_balances
+    FOR DELETE USING ((select auth.role()) = 'service_role');
 
 -- ============================================================
 -- DONE
