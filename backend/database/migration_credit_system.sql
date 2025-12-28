@@ -144,7 +144,11 @@ UPDATE subscription_plans SET credits_per_month = -1 WHERE id = 'unlimited_solo'
 -- ============================================================
 -- 6. MONTHLY USAGE AGGREGATION VIEW
 -- ============================================================
-CREATE OR REPLACE VIEW api_usage_monthly AS
+-- Using security_invoker = true to respect RLS policies of the querying user
+DROP VIEW IF EXISTS api_usage_monthly;
+CREATE VIEW api_usage_monthly
+WITH (security_invoker = true)
+AS
 SELECT 
     organization_id,
     date_trunc('month', created_at) as month,
@@ -162,10 +166,16 @@ SELECT
 FROM api_usage_logs
 GROUP BY organization_id, date_trunc('month', created_at), api_provider, api_service, model;
 
+GRANT SELECT ON api_usage_monthly TO authenticated;
+GRANT SELECT ON api_usage_monthly TO service_role;
+
 -- ============================================================
 -- 7. DAILY USAGE AGGREGATION VIEW
 -- ============================================================
-CREATE OR REPLACE VIEW api_usage_daily AS
+DROP VIEW IF EXISTS api_usage_daily;
+CREATE VIEW api_usage_daily
+WITH (security_invoker = true)
+AS
 SELECT 
     organization_id,
     date_trunc('day', created_at) as day,
@@ -179,10 +189,16 @@ SELECT
 FROM api_usage_logs
 GROUP BY organization_id, date_trunc('day', created_at), api_provider;
 
+GRANT SELECT ON api_usage_daily TO authenticated;
+GRANT SELECT ON api_usage_daily TO service_role;
+
 -- ============================================================
 -- 8. ORGANIZATION USAGE SUMMARY VIEW
 -- ============================================================
-CREATE OR REPLACE VIEW organization_usage_summary AS
+DROP VIEW IF EXISTS organization_usage_summary;
+CREATE VIEW organization_usage_summary
+WITH (security_invoker = true)
+AS
 SELECT 
     cb.organization_id,
     cb.subscription_credits_total,
@@ -204,6 +220,9 @@ LEFT JOIN (
     WHERE created_at >= date_trunc('month', NOW())
     GROUP BY organization_id
 ) usage ON cb.organization_id = usage.organization_id;
+
+GRANT SELECT ON organization_usage_summary TO authenticated;
+GRANT SELECT ON organization_usage_summary TO service_role;
 
 -- ============================================================
 -- 9. RLS POLICIES
