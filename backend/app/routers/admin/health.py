@@ -186,6 +186,8 @@ async def get_health_overview(
     )
     
     services = []
+    logs_to_write = []
+    
     for check in checks:
         if isinstance(check, Exception):
             # Handle unexpected errors
@@ -193,17 +195,23 @@ async def get_health_overview(
             continue
         if check:
             services.append(check)
-            
-            # Log to database for trending
+            logs_to_write.append({
+                "p_service_name": check.name,
+                "p_status": check.status,
+                "p_response_time_ms": check.response_time_ms,
+                "p_error_message": check.error_message
+            })
+    
+    # Write logs in background (non-blocking)
+    async def write_logs_async():
+        for log_data in logs_to_write:
             try:
-                supabase.rpc("log_service_health", {
-                    "p_service_name": check.name,
-                    "p_status": check.status,
-                    "p_response_time_ms": check.response_time_ms,
-                    "p_error_message": check.error_message
-                }).execute()
+                supabase.rpc("log_service_health", log_data).execute()
             except Exception as e:
                 logger.warning(f"Failed to log health check: {e}")
+    
+    # Fire and forget - don't wait for logging to complete
+    asyncio.create_task(write_logs_async())
     
     # Calculate overall status
     statuses = [s.status for s in services]
@@ -235,66 +243,62 @@ async def get_service_uptime(
 ):
     """
     Get uptime statistics for all services (24h, 7d, 30d).
+    Optimized: fetches all data in 4 queries instead of 4 per service.
     """
     supabase = get_supabase_service()
     
-    uptimes = []
-    
-    for service_name, config in SERVICE_CONFIG.items():
-        try:
-            # Query uptime views
-            result_24h = supabase.from_("admin_service_uptime_24h") \
-                .select("*") \
-                .eq("service_name", service_name) \
-                .limit(1) \
-                .execute()
-            
-            result_7d = supabase.from_("admin_service_uptime_7d") \
-                .select("*") \
-                .eq("service_name", service_name) \
-                .limit(1) \
-                .execute()
-            
-            result_30d = supabase.from_("admin_service_uptime_30d") \
-                .select("*") \
-                .eq("service_name", service_name) \
-                .limit(1) \
-                .execute()
-            
-            # Get last incident
-            incident_result = supabase.table("admin_service_health_logs") \
-                .select("checked_at") \
-                .eq("service_name", service_name) \
-                .neq("status", "healthy") \
-                .order("checked_at", desc=True) \
-                .limit(1) \
-                .execute()
-            
-            data_24h = result_24h.data[0] if result_24h.data else {}
-            data_7d = result_7d.data[0] if result_7d.data else {}
-            data_30d = result_30d.data[0] if result_30d.data else {}
-            
-            uptimes.append(ServiceUptime(
-                service_name=service_name,
-                display_name=config["display_name"],
-                uptime_percent_24h=float(data_24h.get("uptime_percent", 100)),
-                uptime_percent_7d=float(data_7d.get("uptime_percent", 100)),
-                uptime_percent_30d=float(data_30d.get("uptime_percent", 100)),
-                avg_response_time_ms=int(data_30d.get("avg_response_time_ms", 0)) if data_30d.get("avg_response_time_ms") else None,
-                total_checks_30d=int(data_30d.get("total_checks", 0)),
-                last_incident=incident_result.data[0]["checked_at"] if incident_result.data else None
-            ))
-        except Exception as e:
-            logger.error(f"Error getting uptime for {service_name}: {e}")
-            # Return with no data rather than failing
-            uptimes.append(ServiceUptime(
-                service_name=service_name,
+    # Fetch all data in batch queries (4 queries total instead of 44)
+    try:
+        result_24h = supabase.from_("admin_service_uptime_24h").select("*").execute()
+        result_7d = supabase.from_("admin_service_uptime_7d").select("*").execute()
+        result_30d = supabase.from_("admin_service_uptime_30d").select("*").execute()
+        incidents = supabase.table("admin_service_health_logs") \
+            .select("service_name, checked_at") \
+            .neq("status", "healthy") \
+            .order("checked_at", desc=True) \
+            .execute()
+    except Exception as e:
+        logger.error(f"Error fetching uptime data: {e}")
+        # Return default data for all services
+        return [
+            ServiceUptime(
+                service_name=name,
                 display_name=config["display_name"],
                 uptime_percent_24h=100,
                 uptime_percent_7d=100,
                 uptime_percent_30d=100,
                 total_checks_30d=0
-            ))
+            )
+            for name, config in SERVICE_CONFIG.items()
+        ]
+    
+    # Index by service_name for O(1) lookup
+    data_24h_map = {r["service_name"]: r for r in (result_24h.data or [])}
+    data_7d_map = {r["service_name"]: r for r in (result_7d.data or [])}
+    data_30d_map = {r["service_name"]: r for r in (result_30d.data or [])}
+    
+    # Get last incident per service (first occurrence since ordered desc)
+    incidents_map = {}
+    for inc in (incidents.data or []):
+        if inc["service_name"] not in incidents_map:
+            incidents_map[inc["service_name"]] = inc["checked_at"]
+    
+    uptimes = []
+    for service_name, config in SERVICE_CONFIG.items():
+        data_24h = data_24h_map.get(service_name, {})
+        data_7d = data_7d_map.get(service_name, {})
+        data_30d = data_30d_map.get(service_name, {})
+        
+        uptimes.append(ServiceUptime(
+            service_name=service_name,
+            display_name=config["display_name"],
+            uptime_percent_24h=float(data_24h.get("uptime_percent", 100)),
+            uptime_percent_7d=float(data_7d.get("uptime_percent", 100)),
+            uptime_percent_30d=float(data_30d.get("uptime_percent", 100)),
+            avg_response_time_ms=int(data_30d.get("avg_response_time_ms", 0)) if data_30d.get("avg_response_time_ms") else None,
+            total_checks_30d=int(data_30d.get("total_checks", 0)),
+            last_incident=incidents_map.get(service_name)
+        ))
     
     return uptimes
 
@@ -306,61 +310,71 @@ async def get_health_trends(
 ):
     """
     Get daily health trends for all services.
+    Optimized: single batch query instead of one per service.
     """
     supabase = get_supabase_service()
     start_date = datetime.utcnow() - timedelta(days=days)
     
-    services_trends = []
+    # Single batch query for all services
+    try:
+        result = supabase.table("admin_service_health_logs") \
+            .select("service_name, checked_at, status, response_time_ms") \
+            .gte("checked_at", start_date.isoformat()) \
+            .order("checked_at", desc=False) \
+            .execute()
+    except Exception as e:
+        logger.error(f"Error fetching health trends: {e}")
+        return HealthTrendsResponse(services=[], period_days=days)
     
+    # Group by service and date in memory
+    service_daily_data: Dict[str, Dict[str, Dict]] = {}
+    
+    for row in (result.data or []):
+        svc = row["service_name"]
+        date = row["checked_at"][:10]  # YYYY-MM-DD
+        
+        if svc not in service_daily_data:
+            service_daily_data[svc] = {}
+        
+        if date not in service_daily_data[svc]:
+            service_daily_data[svc][date] = {
+                "total": 0,
+                "healthy": 0,
+                "response_times": [],
+                "incidents": 0
+            }
+        
+        service_daily_data[svc][date]["total"] += 1
+        if row["status"] == "healthy":
+            service_daily_data[svc][date]["healthy"] += 1
+        else:
+            service_daily_data[svc][date]["incidents"] += 1
+        if row.get("response_time_ms"):
+            service_daily_data[svc][date]["response_times"].append(row["response_time_ms"])
+    
+    # Build response
+    services_trends = []
     for service_name, config in SERVICE_CONFIG.items():
-        try:
-            # Get daily aggregates
-            result = supabase.table("admin_service_health_logs") \
-                .select("checked_at, status, response_time_ms") \
-                .eq("service_name", service_name) \
-                .gte("checked_at", start_date.isoformat()) \
-                .order("checked_at", desc=False) \
-                .execute()
+        daily_data = service_daily_data.get(service_name, {})
+        
+        trend_points = []
+        for date in sorted(daily_data.keys()):
+            data = daily_data[date]
+            uptime = (data["healthy"] / data["total"] * 100) if data["total"] > 0 else 100
+            avg_rt = int(sum(data["response_times"]) / len(data["response_times"])) if data["response_times"] else None
             
-            # Group by date
-            daily_data: Dict[str, Dict] = {}
-            for row in (result.data or []):
-                date = row["checked_at"][:10]  # YYYY-MM-DD
-                if date not in daily_data:
-                    daily_data[date] = {
-                        "total": 0,
-                        "healthy": 0,
-                        "response_times": [],
-                        "incidents": 0
-                    }
-                daily_data[date]["total"] += 1
-                if row["status"] == "healthy":
-                    daily_data[date]["healthy"] += 1
-                else:
-                    daily_data[date]["incidents"] += 1
-                if row.get("response_time_ms"):
-                    daily_data[date]["response_times"].append(row["response_time_ms"])
-            
-            trend_points = []
-            for date in sorted(daily_data.keys()):
-                data = daily_data[date]
-                uptime = (data["healthy"] / data["total"] * 100) if data["total"] > 0 else 100
-                avg_rt = int(sum(data["response_times"]) / len(data["response_times"])) if data["response_times"] else None
-                
-                trend_points.append(HealthTrendPoint(
-                    date=date,
-                    uptime_percent=round(uptime, 2),
-                    avg_response_time_ms=avg_rt,
-                    incident_count=data["incidents"]
-                ))
-            
-            services_trends.append(ServiceHealthTrend(
-                service_name=service_name,
-                display_name=config["display_name"],
-                trend_data=trend_points
+            trend_points.append(HealthTrendPoint(
+                date=date,
+                uptime_percent=round(uptime, 2),
+                avg_response_time_ms=avg_rt,
+                incident_count=data["incidents"]
             ))
-        except Exception as e:
-            logger.error(f"Error getting trends for {service_name}: {e}")
+        
+        services_trends.append(ServiceHealthTrend(
+            service_name=service_name,
+            display_name=config["display_name"],
+            trend_data=trend_points
+        ))
     
     return HealthTrendsResponse(
         services=services_trends,
@@ -1124,38 +1138,22 @@ async def _check_sendgrid_health() -> ServiceStatus:
 # ============================================================
 
 async def _get_job_stats(supabase, table_name: str, since: str) -> dict:
-    """Get job statistics from a table."""
+    """
+    Get job statistics from a table.
+    Optimized: single query to get all status counts instead of 4 queries.
+    """
     try:
-        # Total
-        total_result = supabase.table(table_name) \
-            .select("id", count="exact") \
+        # Single query to get all statuses, then count in memory
+        result = supabase.table(table_name) \
+            .select("status") \
             .gte("created_at", since) \
             .execute()
-        total = total_result.count or 0
         
-        # Completed
-        completed_result = supabase.table(table_name) \
-            .select("id", count="exact") \
-            .gte("created_at", since) \
-            .eq("status", "completed") \
-            .execute()
-        completed = completed_result.count or 0
-        
-        # Failed
-        failed_result = supabase.table(table_name) \
-            .select("id", count="exact") \
-            .gte("created_at", since) \
-            .eq("status", "failed") \
-            .execute()
-        failed = failed_result.count or 0
-        
-        # Pending/Processing
-        pending_result = supabase.table(table_name) \
-            .select("id", count="exact") \
-            .gte("created_at", since) \
-            .in_("status", ["pending", "processing", "queued"]) \
-            .execute()
-        pending = pending_result.count or 0
+        statuses = [r.get("status", "unknown") for r in (result.data or [])]
+        total = len(statuses)
+        completed = sum(1 for s in statuses if s == "completed")
+        failed = sum(1 for s in statuses if s == "failed")
+        pending = sum(1 for s in statuses if s in ("pending", "processing", "queued"))
         
         success_rate = (completed / total * 100) if total > 0 else 0.0
         
