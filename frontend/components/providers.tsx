@@ -9,6 +9,7 @@ import { ConfirmDialogProvider } from '@/components/confirm-dialog'
 import { InsufficientCreditsProvider } from '@/components/insufficient-credits-modal'
 import { Toaster } from '@/components/ui/toaster'
 import { PostHogProvider } from '@/lib/posthog'
+import { AffiliateTracker } from '@/components/affiliate-tracker'
 
 interface ProvidersProps {
   children: ReactNode
@@ -43,6 +44,7 @@ export function Providers({ children }: ProvidersProps) {
               <BillingProvider>
                 <ConfirmDialogProvider>
                   <InsufficientCreditsProvider>
+                    <AffiliateTracker />
                     {children}
                     <Toaster />
                   </InsufficientCreditsProvider>

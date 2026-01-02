@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useSearchParams, usePathname } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { AuthForm } from '@/components/auth/auth-form'
 import { Icons } from '@/components/icons'
@@ -9,8 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useTranslations } from 'next-intl'
 import { Logo } from '@/components/dealmotion-logo'
 import { 
-    checkAndStoreAffiliateCode, 
-    trackAffiliateClick, 
+    getStoredAffiliateData,
     validateAffiliateCode,
     getAffiliateDisplayInfo
 } from '@/lib/affiliate'
@@ -18,7 +17,6 @@ import { UserCheck } from 'lucide-react'
 
 export default function SignupPage() {
     const searchParams = useSearchParams()
-    const pathname = usePathname()
     const error = searchParams.get('error')
     const t = useTranslations('authForm')
     const tAuth = useTranslations('auth.signup')
@@ -31,40 +29,33 @@ export default function SignupPage() {
         code: string | null
     }>({ hasAffiliate: false, affiliateName: null, code: null })
     
-    // Track affiliate referral on page load
+    // Check for affiliate info to display banner (tracking is handled globally by AffiliateTracker)
     useEffect(() => {
         const initAffiliate = async () => {
-            // Check for ?ref= parameter and store
-            const params = new URLSearchParams(searchParams.toString())
-            const affiliateData = checkAndStoreAffiliateCode(params, pathname)
+            // Get stored affiliate data (set by global AffiliateTracker)
+            const affiliateData = getStoredAffiliateData()
             
-            if (affiliateData && !affiliateData.validated) {
-                // Validate the code and track the click
-                const [validation] = await Promise.all([
-                    validateAffiliateCode(affiliateData.code),
-                    trackAffiliateClick(affiliateData, {
-                        utm_source: params.get('utm_source'),
-                        utm_medium: params.get('utm_medium'),
-                        utm_campaign: params.get('utm_campaign'),
-                    })
-                ])
-                
-                if (validation.valid) {
-                    setAffiliateInfo({
-                        hasAffiliate: true,
-                        affiliateName: validation.affiliateName,
-                        code: affiliateData.code,
-                    })
+            if (affiliateData) {
+                // Validate the code to get affiliate name for display
+                if (!affiliateData.validated) {
+                    const validation = await validateAffiliateCode(affiliateData.code)
+                    if (validation.valid) {
+                        setAffiliateInfo({
+                            hasAffiliate: true,
+                            affiliateName: validation.affiliateName,
+                            code: affiliateData.code,
+                        })
+                    }
+                } else {
+                    // Already validated, use display info
+                    const stored = getAffiliateDisplayInfo()
+                    setAffiliateInfo(stored)
                 }
-            } else {
-                // Check if we have stored affiliate info
-                const stored = getAffiliateDisplayInfo()
-                setAffiliateInfo(stored)
             }
         }
         
         initAffiliate()
-    }, [searchParams, pathname])
+    }, [searchParams])
 
     // Error messages for OAuth errors
     const errorMessages: Record<string, string> = {
