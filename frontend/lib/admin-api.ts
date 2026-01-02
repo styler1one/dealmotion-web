@@ -22,6 +22,16 @@ import type {
   AdminAlert,
   HealthOverview,
   JobHealthResponse,
+  ServiceUptime,
+  HealthTrendsResponse,
+  IncidentsResponse,
+  CostSummary,
+  CostsByService,
+  CostsByAction,
+  CostTrend,
+  CostTrendByService,
+  CostsByUser,
+  CostProjection,
   BillingOverview,
   TransactionListResponse,
   FailedPaymentsResponse,
@@ -306,6 +316,72 @@ export const adminApi = {
   getJobHealth: async (): Promise<JobHealthResponse> => {
     const response = await api.get<JobHealthResponse>(`${BASE}/health/jobs`)
     return response.data as JobHealthResponse
+  },
+
+  // Get service uptime
+  getServiceUptime: async (): Promise<ServiceUptime[]> => {
+    const response = await api.get<ServiceUptime[]>(`${BASE}/health/uptime`)
+    return response.data as ServiceUptime[]
+  },
+
+  // Get health trends
+  getHealthTrends: async (days: number = 30): Promise<HealthTrendsResponse> => {
+    const response = await api.get<HealthTrendsResponse>(`${BASE}/health/trends?days=${days}`)
+    return response.data as HealthTrendsResponse
+  },
+
+  // Get recent incidents
+  getRecentIncidents: async (limit: number = 50, service?: string): Promise<IncidentsResponse> => {
+    const query = new URLSearchParams({ limit: limit.toString() })
+    if (service) query.set('service', service)
+    const response = await api.get<IncidentsResponse>(`${BASE}/health/incidents?${query.toString()}`)
+    return response.data as IncidentsResponse
+  },
+
+  // ============================================================
+  // Cost API
+  // ============================================================
+
+  // Get cost summary
+  getCostSummary: async (days: number = 30): Promise<CostSummary> => {
+    const response = await api.get<CostSummary>(`${BASE}/costs/summary?days=${days}`)
+    return response.data as CostSummary
+  },
+
+  // Get costs by service
+  getCostsByService: async (days: number = 30): Promise<CostsByService> => {
+    const response = await api.get<CostsByService>(`${BASE}/costs/by-service?days=${days}`)
+    return response.data as CostsByService
+  },
+
+  // Get costs by action
+  getCostsByAction: async (days: number = 30): Promise<CostsByAction> => {
+    const response = await api.get<CostsByAction>(`${BASE}/costs/by-action?days=${days}`)
+    return response.data as CostsByAction
+  },
+
+  // Get cost trend
+  getCostTrend: async (days: number = 30): Promise<CostTrend> => {
+    const response = await api.get<CostTrend>(`${BASE}/costs/trend?days=${days}`)
+    return response.data as CostTrend
+  },
+
+  // Get cost trend by service
+  getCostTrendByService: async (days: number = 30): Promise<CostTrendByService> => {
+    const response = await api.get<CostTrendByService>(`${BASE}/costs/trend-by-service?days=${days}`)
+    return response.data as CostTrendByService
+  },
+
+  // Get top users by cost
+  getTopUsersByCost: async (days: number = 30, limit: number = 20): Promise<CostsByUser> => {
+    const response = await api.get<CostsByUser>(`${BASE}/costs/top-users?days=${days}&limit=${limit}`)
+    return response.data as CostsByUser
+  },
+
+  // Get cost projection
+  getCostProjection: async (): Promise<CostProjection> => {
+    const response = await api.get<CostProjection>(`${BASE}/costs/projection`)
+    return response.data as CostProjection
   },
 
   // ============================================================

@@ -244,29 +244,181 @@ export interface AlertListResponse {
 
 export interface ServiceStatus {
   name: string
-  status: 'healthy' | 'degraded' | 'down'
+  displayName: string
+  status: 'healthy' | 'degraded' | 'down' | 'unknown'
   responseTimeMs?: number
   lastCheck: string
   details?: string
+  errorMessage?: string
+  isCritical: boolean
 }
 
 export interface HealthOverview {
   overallStatus: 'healthy' | 'degraded' | 'down'
+  healthyCount: number
+  degradedCount: number
+  downCount: number
   services: ServiceStatus[]
   lastUpdated: string
 }
 
+export interface ServiceUptime {
+  serviceName: string
+  displayName: string
+  uptimePercent24h: number
+  uptimePercent7d: number
+  uptimePercent30d: number
+  avgResponseTimeMs?: number
+  totalChecks30d: number
+  lastIncident?: string
+}
+
+export interface HealthTrendPoint {
+  date: string
+  uptimePercent: number
+  avgResponseTimeMs?: number
+  incidentCount: number
+}
+
+export interface ServiceHealthTrend {
+  serviceName: string
+  displayName: string
+  trendData: HealthTrendPoint[]
+}
+
+export interface HealthTrendsResponse {
+  services: ServiceHealthTrend[]
+  periodDays: number
+}
+
+export interface RecentIncident {
+  id: string
+  serviceName: string
+  displayName: string
+  status: string
+  errorMessage?: string
+  occurredAt: string
+  durationMinutes?: number
+  resolved: boolean
+}
+
+export interface IncidentsResponse {
+  incidents: RecentIncident[]
+  total: number
+}
+
 export interface JobStats {
   name: string
+  displayName: string
   total24h: number
   completed: number
   failed: number
+  pending: number
   successRate: number
+  avgDurationSeconds?: number
 }
 
 export interface JobHealthResponse {
   jobs: JobStats[]
   overallSuccessRate: number
+  totalJobs24h: number
+  totalFailed24h: number
+}
+
+// ============================================================
+// Cost Types
+// ============================================================
+
+export interface CostSummary {
+  totalCostCents: number
+  totalCostFormatted: string
+  periodStart: string
+  periodEnd: string
+  comparisonPeriodCostCents: number
+  changePercent: number
+  projectedMonthlyCostCents: number
+}
+
+export interface ServiceCost {
+  serviceName: string
+  displayName: string
+  costCents: number
+  costFormatted: string
+  percentOfTotal: number
+  requestCount: number
+  tokensUsed?: number
+  minutesUsed?: number
+  queriesUsed?: number
+}
+
+export interface CostsByService {
+  services: ServiceCost[]
+  totalCostCents: number
+  periodStart: string
+  periodEnd: string
+}
+
+export interface ActionCost {
+  actionName: string
+  displayName: string
+  costCents: number
+  costFormatted: string
+  count: number
+  avgCostCents: number
+}
+
+export interface CostsByAction {
+  actions: ActionCost[]
+  totalCostCents: number
+}
+
+export interface DailyCost {
+  date: string
+  costCents: number
+  requestCount: number
+}
+
+export interface CostTrend {
+  data: DailyCost[]
+  totalCostCents: number
+  avgDailyCostCents: number
+  periodDays: number
+}
+
+export interface ServiceDailyCost {
+  serviceName: string
+  displayName: string
+  dailyCosts: DailyCost[]
+  totalCostCents: number
+}
+
+export interface CostTrendByService {
+  services: ServiceDailyCost[]
+  periodDays: number
+}
+
+export interface TopUser {
+  userId: string
+  email?: string
+  organizationName?: string
+  costCents: number
+  costFormatted: string
+  requestCount: number
+}
+
+export interface CostsByUser {
+  users: TopUser[]
+  totalUsers: number
+}
+
+export interface CostProjection {
+  currentMonthActualCents: number
+  currentMonthProjectedCents: number
+  daysElapsed: number
+  daysRemaining: number
+  dailyAverageCents: number
+  budgetCents?: number
+  budgetPercentUsed?: number
 }
 
 // ============================================================
