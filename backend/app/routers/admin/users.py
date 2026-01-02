@@ -705,27 +705,25 @@ async def extend_user_trial(
     
     # Get current trial end
     sub_result = supabase.table("organization_subscriptions") \
-        .select("trial_ends_at") \
+        .select("trial_end") \
         .eq("organization_id", org_id) \
-        .maybe_single() \
+        .limit(1) \
         .execute()
     
-    if not sub_result.data:
+    if not sub_result.data or len(sub_result.data) == 0:
         raise HTTPException(status_code=404, detail="No subscription found")
     
     # Calculate new trial end
-    current_end = sub_result.data.get("trial_ends_at")
+    current_end = sub_result.data[0].get("trial_end")
     if current_end:
-        from datetime import timedelta
         current_dt = datetime.fromisoformat(current_end.replace("Z", "+00:00"))
         new_end = current_dt + timedelta(days=data.days)
     else:
-        from datetime import timedelta
         new_end = datetime.utcnow() + timedelta(days=data.days)
     
-    # Update trial end
+    # Update trial end (column is 'trial_end' not 'trial_ends_at')
     supabase.table("organization_subscriptions") \
-        .update({"trial_ends_at": new_end.isoformat()}) \
+        .update({"trial_end": new_end.isoformat()}) \
         .eq("organization_id", org_id) \
         .execute()
     
@@ -1617,7 +1615,7 @@ async def _enrich_user_data(supabase, user: dict) -> dict:
             # Get subscription - Use .limit(1) instead of .maybe_single() to avoid 204 errors
             try:
                 sub_result = supabase.table("organization_subscriptions") \
-                    .select("plan_id, status, stripe_customer_id, trial_ends_at, subscription_plans(id, name, features)") \
+                    .select("plan_id, status, stripe_customer_id, trial_end, subscription_plans(id, name, features)") \
                     .eq("organization_id", org_id) \
                     .limit(1) \
                     .execute()
@@ -1629,7 +1627,7 @@ async def _enrich_user_data(supabase, user: dict) -> dict:
                     result["plan_name"] = PLAN_NAMES.get(plan_id, plan_id.replace("_", " ").title())
                     result["subscription_status"] = sub_data.get("status")
                     result["stripe_customer_id"] = sub_data.get("stripe_customer_id")
-                    result["trial_ends_at"] = sub_data.get("trial_ends_at")
+                    result["trial_ends_at"] = sub_data.get("trial_end")  # Column is 'trial_end' not 'trial_ends_at'
                     
                     # Check if subscription has suspended status
                     if sub_data.get("status") == "suspended":
