@@ -18,8 +18,8 @@ interface TranscriptionUsage extends UsageMetric {
 }
 
 interface Usage {
-  period_start: string
-  period_end?: string
+  period_start: string | null  // null for free plan (no monthly reset)
+  period_end?: string | null
   // v2: Primary metric
   flow?: UsageMetric
   // v1 compatibility
