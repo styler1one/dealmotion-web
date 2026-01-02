@@ -346,9 +346,17 @@ async def list_users(
         for credit in (credits_result.data or []):
             org_id = credit.get("organization_id")
             credits_used = credit.get("subscription_credits_used", 0) or 0
-            credits_total = credit.get("subscription_credits_total", 25) or 25
+            credits_total = credit.get("subscription_credits_total", 0) or 0
             pack_balance = credit.get("pack_credits_remaining", 0) or 0
             is_unlimited = credit.get("is_unlimited", False)
+            
+            # Get the plan's credits_per_month for this org (if available)
+            plan_credits = org_sub_map.get(org_id, {}).get("credits_per_month", 25)
+            
+            # Use credits_total only if it's valid (>= 25 for free plan minimum)
+            # Otherwise use the plan's credits_per_month
+            if credits_total < 25 and not is_unlimited:
+                credits_total = plan_credits
             
             org_credit_map[org_id] = {
                 "credits_used": int(credits_used),
@@ -652,7 +660,7 @@ async def get_user_detail(
         is_suspended=user_data.get("is_suspended", False),
         credit_usage=CreditUsage(
             used=user_data.get("flow_count", 0),
-            limit=user_data.get("flow_limit", 2),
+            limit=user_data.get("flow_limit", 25),  # Default to Free plan (25 credits)
             pack_balance=user_data.get("pack_balance", 0)
         ),
         health_score=score,
@@ -2053,36 +2061,40 @@ async def _get_health_data(supabase, user_id: str) -> dict:
         except Exception:
             pass
         
-        # Get flow usage percentage from usage_records and subscription_plans
+        # Get credit usage percentage from credit_balances
         try:
-            # Get current month's flow count
-            current_month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-            usage_result = supabase.table("usage_records") \
-                .select("flow_count") \
+            credit_result = supabase.table("credit_balances") \
+                .select("subscription_credits_total, subscription_credits_used, is_unlimited") \
                 .eq("organization_id", org_id) \
-                .gte("period_start", current_month_start.isoformat()) \
                 .limit(1) \
                 .execute()
             
-            flow_count = 0
-            if usage_result and usage_result.data and len(usage_result.data) > 0:
-                flow_count = usage_result.data[0].get("flow_count", 0) or 0
+            credits_used = 0
+            credit_limit = 25  # Default to Free plan
             
-            # Get flow limit from subscription
-            sub_result = supabase.table("organization_subscriptions") \
-                .select("subscription_plans(features)") \
-                .eq("organization_id", org_id) \
-                .in_("status", ["active", "trialing"]) \
-                .limit(1) \
-                .execute()
+            if credit_result and credit_result.data and len(credit_result.data) > 0:
+                cb = credit_result.data[0]
+                credits_used = int(cb.get("subscription_credits_used", 0) or 0)
+                
+                if cb.get("is_unlimited"):
+                    credit_limit = -1
+                else:
+                    credit_limit = int(cb.get("subscription_credits_total", 25) or 25)
+                    # Fallback if old value (< 25)
+                    if credit_limit < 25:
+                        # Get from subscription_plans
+                        sub_result = supabase.table("organization_subscriptions") \
+                            .select("subscription_plans(credits_per_month)") \
+                            .eq("organization_id", org_id) \
+                            .limit(1) \
+                            .execute()
+                        if sub_result and sub_result.data and len(sub_result.data) > 0:
+                            plan_credits = (sub_result.data[0].get("subscription_plans") or {}).get("credits_per_month")
+                            if plan_credits and plan_credits > 0:
+                                credit_limit = plan_credits
             
-            flow_limit = 2
-            if sub_result and sub_result.data and len(sub_result.data) > 0:
-                features = (sub_result.data[0].get("subscription_plans") or {}).get("features") or {}
-                flow_limit = features.get("flow_limit", 2) or 2
-            
-            if flow_limit > 0:
-                health_data["flow_usage_percent"] = round((flow_count / flow_limit) * 100, 1)
+            if credit_limit > 0:
+                health_data["flow_usage_percent"] = round((credits_used / credit_limit) * 100, 1)
         except Exception:
             pass
         
