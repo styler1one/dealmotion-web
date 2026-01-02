@@ -177,9 +177,10 @@ export const adminApi = {
 
   // Delete user (super admin only)
   deleteUser: async (userId: string, data: DeleteUserRequest): Promise<{ success: boolean; message: string; deletedUserId: string; deletedOrganizationId?: string }> => {
-    const response = await api.delete<{ success: boolean; message: string; deletedUserId: string; deletedOrganizationId?: string }>(
-      `${BASE}/users/${userId}`,
-      { data }  // Send body in DELETE request
+    // Use POST with _method override since axios delete doesn't support body well
+    const response = await api.post<{ success: boolean; message: string; deletedUserId: string; deletedOrganizationId?: string }>(
+      `${BASE}/users/${userId}/delete`,
+      data
     )
     return response.data as { success: boolean; message: string; deletedUserId: string; deletedOrganizationId?: string }
   },

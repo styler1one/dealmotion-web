@@ -1452,7 +1452,7 @@ async def unsuspend_user(
     return {"success": True, "message": f"User {user.data['email']} has been unsuspended"}
 
 
-@router.delete("/{user_id}")
+@router.post("/{user_id}/delete")
 async def delete_user(
     user_id: str,
     data: DeleteUserRequest,
@@ -1468,6 +1468,7 @@ async def delete_user(
     - Cancels any active subscriptions
     
     Only super_admin can perform this action.
+    Uses POST instead of DELETE to support request body.
     """
     supabase = get_supabase_service()
     
