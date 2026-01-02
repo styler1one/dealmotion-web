@@ -432,7 +432,7 @@ async def get_job_health(
         ("preparation", "meeting_preps", "Meeting Preparations"),
         ("followup", "followups", "Follow-ups"),
         ("knowledge_base", "knowledge_base_files", "Knowledge Base"),
-        ("transcription", "meeting_recordings", "Transcriptions"),
+        ("transcription", "mobile_recordings", "Transcriptions"),
     ]
     
     jobs = []

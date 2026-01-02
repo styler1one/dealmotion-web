@@ -27,12 +27,14 @@ export default function AdminHealthPage() {
   const [incidents, setIncidents] = useState<IncidentsResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState('overview')
 
   const fetchData = async (isRefresh = false) => {
     try {
       if (isRefresh) setRefreshing(true)
       else setLoading(true)
+      setError(null)
       
       const [healthData, jobsData, uptimeData, trendsData, incidentsData] = await Promise.all([
         adminApi.getHealthOverview(),
@@ -49,6 +51,7 @@ export default function AdminHealthPage() {
       setIncidents(incidentsData)
     } catch (err) {
       console.error('Failed to fetch health data:', err)
+      setError(err instanceof Error ? err.message : 'Failed to load health data')
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -134,6 +137,24 @@ export default function AdminHealthPage() {
           <Icons.spinner className="h-10 w-10 animate-spin text-teal-500 mx-auto mb-4" />
           <p className="text-slate-500">Loading health data...</p>
         </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6 text-center">
+            <Icons.alertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold mb-2">Failed to load health data</h2>
+            <p className="text-slate-500 mb-4">{error}</p>
+            <Button onClick={() => fetchData()}>
+              <Icons.refresh className="h-4 w-4 mr-2" />
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     )
   }
