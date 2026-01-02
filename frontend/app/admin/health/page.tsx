@@ -25,35 +25,81 @@ export default function AdminHealthPage() {
   const [uptime, setUptime] = useState<ServiceUptime[]>([])
   const [trends, setTrends] = useState<HealthTrendsResponse | null>(null)
   const [incidents, setIncidents] = useState<IncidentsResponse | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [initialLoading, setInitialLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState('overview')
+  
+  // Track loading state per section for progressive loading
+  const [loadingStates, setLoadingStates] = useState({
+    jobs: true,
+    uptime: true,
+    trends: true,
+    incidents: true,
+    health: true,
+  })
 
   const fetchData = async (isRefresh = false) => {
     try {
-      if (isRefresh) setRefreshing(true)
-      else setLoading(true)
+      if (isRefresh) {
+        setRefreshing(true)
+      } else {
+        setInitialLoading(true)
+        setLoadingStates({ jobs: true, uptime: true, trends: true, incidents: true, health: true })
+      }
       setError(null)
       
-      const [healthData, jobsData, uptimeData, trendsData, incidentsData] = await Promise.all([
-        adminApi.getHealthOverview(),
-        adminApi.getJobHealth(),
-        adminApi.getServiceUptime(),
-        adminApi.getHealthTrends(30),
-        adminApi.getRecentIncidents(50),
-      ])
+      // Fire all requests but update state as each completes (progressive loading)
+      // Load fast endpoints first, slow health check last
       
-      setHealth(healthData)
-      setJobs(jobsData)
-      setUptime(uptimeData)
-      setTrends(trendsData)
-      setIncidents(incidentsData)
+      // Fast endpoints - load in parallel
+      adminApi.getJobHealth()
+        .then(data => {
+          setJobs(data)
+          setLoadingStates(prev => ({ ...prev, jobs: false }))
+        })
+        .catch(err => console.error('Failed to fetch jobs:', err))
+      
+      adminApi.getServiceUptime()
+        .then(data => {
+          setUptime(data)
+          setLoadingStates(prev => ({ ...prev, uptime: false }))
+        })
+        .catch(err => console.error('Failed to fetch uptime:', err))
+      
+      adminApi.getHealthTrends(30)
+        .then(data => {
+          setTrends(data)
+          setLoadingStates(prev => ({ ...prev, trends: false }))
+        })
+        .catch(err => console.error('Failed to fetch trends:', err))
+      
+      adminApi.getRecentIncidents(50)
+        .then(data => {
+          setIncidents(data)
+          setLoadingStates(prev => ({ ...prev, incidents: false }))
+        })
+        .catch(err => console.error('Failed to fetch incidents:', err))
+      
+      // Slow endpoint - real-time health checks to external services
+      adminApi.getHealthOverview()
+        .then(data => {
+          setHealth(data)
+          setLoadingStates(prev => ({ ...prev, health: false }))
+          setInitialLoading(false)
+          setRefreshing(false)
+        })
+        .catch(err => {
+          console.error('Failed to fetch health overview:', err)
+          setError(err instanceof Error ? err.message : 'Failed to load health data')
+          setInitialLoading(false)
+          setRefreshing(false)
+        })
+        
     } catch (err) {
       console.error('Failed to fetch health data:', err)
       setError(err instanceof Error ? err.message : 'Failed to load health data')
-    } finally {
-      setLoading(false)
+      setInitialLoading(false)
       setRefreshing(false)
     }
   }
@@ -134,16 +180,21 @@ export default function AdminHealthPage() {
     }))
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <div className="text-center">
-          <Icons.spinner className="h-10 w-10 animate-spin text-teal-500 mx-auto mb-4" />
-          <p className="text-slate-500">Loading health data...</p>
+  // Section loading skeleton component
+  const SectionSkeleton = ({ rows = 3 }: { rows?: number }) => (
+    <div className="space-y-4 animate-pulse">
+      {Array.from({ length: rows }).map((_, i) => (
+        <div key={i} className="flex items-center gap-4 p-4 rounded-lg bg-slate-100 dark:bg-slate-800">
+          <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-700" />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/3" />
+            <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-2/3" />
+          </div>
+          <div className="h-6 w-16 bg-slate-200 dark:bg-slate-700 rounded" />
         </div>
-      </div>
-    )
-  }
+      ))}
+    </div>
+  )
 
   if (error) {
     return (
@@ -255,6 +306,9 @@ export default function AdminHealthPage() {
               <CardDescription>Real-time health status of all external services</CardDescription>
             </CardHeader>
             <CardContent>
+              {loadingStates.health ? (
+                <SectionSkeleton rows={6} />
+              ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {health?.services.map((service: ServiceStatus) => {
                   // Handle both camelCase and snake_case
@@ -315,6 +369,7 @@ export default function AdminHealthPage() {
                   )
                 })}
               </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -327,6 +382,9 @@ export default function AdminHealthPage() {
               <CardDescription>Historical uptime percentages and response times</CardDescription>
             </CardHeader>
             <CardContent>
+              {loadingStates.uptime ? (
+                <SectionSkeleton rows={6} />
+              ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
@@ -403,6 +461,7 @@ export default function AdminHealthPage() {
                   </tbody>
                 </table>
               </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -420,6 +479,9 @@ export default function AdminHealthPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
+                {loadingStates.jobs ? (
+                  <SectionSkeleton rows={5} />
+                ) : (
                 <div className="space-y-6">
                   {jobs?.jobs.map((job: JobStats) => {
                     // Handle both camelCase and snake_case
@@ -480,6 +542,7 @@ export default function AdminHealthPage() {
                     </div>
                   )}
                 </div>
+                )}
               </CardContent>
             </Card>
 
