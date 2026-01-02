@@ -1600,42 +1600,44 @@ async def _enrich_user_data(supabase, user: dict) -> dict:
     }
     
     try:
-        # Get organization
+        # Get organization - Use .limit(1) instead of .maybe_single() to avoid 204 errors
         org_result = supabase.table("organization_members") \
             .select("organization_id, organizations(name)") \
             .eq("user_id", user["id"]) \
-            .maybe_single() \
+            .limit(1) \
             .execute()
         
-        if org_result and org_result.data:
-            result["organization_id"] = org_result.data["organization_id"]
-            result["organization_name"] = org_result.data["organizations"]["name"] if org_result.data.get("organizations") else None
+        if org_result and org_result.data and len(org_result.data) > 0:
+            org_data = org_result.data[0]
+            result["organization_id"] = org_data["organization_id"]
+            result["organization_name"] = org_data["organizations"]["name"] if org_data.get("organizations") else None
             
-            org_id = org_result.data["organization_id"]
+            org_id = org_data["organization_id"]
             
-            # Get subscription - FIX: Get the full plan info including name
+            # Get subscription - Use .limit(1) instead of .maybe_single() to avoid 204 errors
             try:
                 sub_result = supabase.table("organization_subscriptions") \
                     .select("plan_id, status, stripe_customer_id, trial_ends_at, subscription_plans(id, name, features)") \
                     .eq("organization_id", org_id) \
-                    .maybe_single() \
+                    .limit(1) \
                     .execute()
                 
-                if sub_result and sub_result.data:
-                    plan_id = sub_result.data.get("plan_id", "free")
+                if sub_result and sub_result.data and len(sub_result.data) > 0:
+                    sub_data = sub_result.data[0]
+                    plan_id = sub_data.get("plan_id", "free")
                     result["plan"] = plan_id
                     result["plan_name"] = PLAN_NAMES.get(plan_id, plan_id.replace("_", " ").title())
-                    result["subscription_status"] = sub_result.data.get("status")
-                    result["stripe_customer_id"] = sub_result.data.get("stripe_customer_id")
-                    result["trial_ends_at"] = sub_result.data.get("trial_ends_at")
+                    result["subscription_status"] = sub_data.get("status")
+                    result["stripe_customer_id"] = sub_data.get("stripe_customer_id")
+                    result["trial_ends_at"] = sub_data.get("trial_ends_at")
                     
                     # Check if subscription has suspended status
-                    if sub_result.data.get("status") == "suspended":
+                    if sub_data.get("status") == "suspended":
                         result["is_suspended"] = True
                     
                     # Get plan features for flow limit
-                    if sub_result.data.get("subscription_plans"):
-                        features = sub_result.data["subscription_plans"].get("features", {})
+                    if sub_data.get("subscription_plans"):
+                        features = sub_data["subscription_plans"].get("features", {})
                         if features:
                             result["flow_limit"] = features.get("flow_limit", 2)
                             # -1 means unlimited
@@ -1651,11 +1653,11 @@ async def _enrich_user_data(supabase, user: dict) -> dict:
                     .select("flow_count") \
                     .eq("organization_id", org_id) \
                     .gte("period_start", current_month.isoformat()) \
-                    .maybe_single() \
+                    .limit(1) \
                     .execute()
                 
-                if usage_result and usage_result.data:
-                    result["flow_count"] = usage_result.data.get("flow_count", 0) or 0
+                if usage_result and usage_result.data and len(usage_result.data) > 0:
+                    result["flow_count"] = usage_result.data[0].get("flow_count", 0) or 0
             except Exception as e:
                 print(f"Error getting usage for org {org_id}: {e}")
             
@@ -1720,23 +1722,23 @@ async def _get_health_data(supabase, user_id: str) -> dict:
         org_result = supabase.table("organization_members") \
             .select("organization_id") \
             .eq("user_id", user_id) \
-            .maybe_single() \
+            .limit(1) \
             .execute()
         
-        if not org_result or not org_result.data:
+        if not org_result or not org_result.data or len(org_result.data) == 0:
             return health_data
         
-        org_id = org_result.data["organization_id"]
+        org_id = org_result.data[0]["organization_id"]
         
         # Get plan from subscription
         try:
             sub_result = supabase.table("organization_subscriptions") \
                 .select("plan_id") \
                 .eq("organization_id", org_id) \
-                .maybe_single() \
+                .limit(1) \
                 .execute()
-            if sub_result and sub_result.data:
-                health_data["plan"] = sub_result.data.get("plan_id", "free")
+            if sub_result and sub_result.data and len(sub_result.data) > 0:
+                health_data["plan"] = sub_result.data[0].get("plan_id", "free")
         except Exception:
             pass
         
@@ -1847,21 +1849,25 @@ async def _get_health_data(supabase, user_id: str) -> dict:
                 .select("flow_count") \
                 .eq("organization_id", org_id) \
                 .gte("period_start", current_month_start.isoformat()) \
-                .maybe_single() \
+                .limit(1) \
                 .execute()
             
-            flow_count = (usage_result.data or {}).get("flow_count", 0) or 0
+            flow_count = 0
+            if usage_result and usage_result.data and len(usage_result.data) > 0:
+                flow_count = usage_result.data[0].get("flow_count", 0) or 0
             
             # Get flow limit from subscription
             sub_result = supabase.table("organization_subscriptions") \
                 .select("subscription_plans(features)") \
                 .eq("organization_id", org_id) \
                 .in_("status", ["active", "trialing"]) \
-                .maybe_single() \
+                .limit(1) \
                 .execute()
             
-            features = ((sub_result.data or {}).get("subscription_plans") or {}).get("features") or {}
-            flow_limit = features.get("flow_limit", 2) or 2
+            flow_limit = 2
+            if sub_result and sub_result.data and len(sub_result.data) > 0:
+                features = (sub_result.data[0].get("subscription_plans") or {}).get("features") or {}
+                flow_limit = features.get("flow_limit", 2) or 2
             
             if flow_limit > 0:
                 health_data["flow_usage_percent"] = round((flow_count / flow_limit) * 100, 1)
@@ -1873,24 +1879,24 @@ async def _get_health_data(supabase, user_id: str) -> dict:
             profile_result = supabase.table("sales_profiles") \
                 .select("profile_completeness") \
                 .eq("user_id", user_id) \
-                .maybe_single() \
+                .limit(1) \
                 .execute()
             
-            if profile_result and profile_result.data:
-                health_data["profile_completeness"] = profile_result.data.get("profile_completeness", 0) or 0
+            if profile_result and profile_result.data and len(profile_result.data) > 0:
+                health_data["profile_completeness"] = profile_result.data[0].get("profile_completeness", 0) or 0
             else:
                 # Calculate completeness based on user data
                 user_result = supabase.table("users") \
                     .select("full_name, email") \
                     .eq("id", user_id) \
-                    .maybe_single() \
+                    .limit(1) \
                     .execute()
                 
                 completeness = 0
-                if user_result and user_result.data:
-                    if user_result.data.get("email"):
+                if user_result and user_result.data and len(user_result.data) > 0:
+                    if user_result.data[0].get("email"):
                         completeness += 20
-                    if user_result.data.get("full_name"):
+                    if user_result.data[0].get("full_name"):
                         completeness += 20
                     # Check if they have any organization
                     completeness += 20  # They have an org
@@ -1903,11 +1909,11 @@ async def _get_health_data(supabase, user_id: str) -> dict:
             sub_result = supabase.table("organization_subscriptions") \
                 .select("status, stripe_customer_id") \
                 .eq("organization_id", org_id) \
-                .maybe_single() \
+                .limit(1) \
                 .execute()
             
-            if sub_result and sub_result.data:
-                status = sub_result.data.get("status", "")
+            if sub_result and sub_result.data and len(sub_result.data) > 0:
+                status = sub_result.data[0].get("status", "")
                 health_data["has_failed_payment"] = status in ["past_due", "unpaid", "incomplete"]
         except Exception:
             pass
