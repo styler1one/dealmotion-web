@@ -103,13 +103,13 @@ async def get_billing_overview(
         try:
             # Get active subscriptions with their plan prices
             subs_result = supabase.table("organization_subscriptions") \
-                .select("plan_id, subscription_plans(price_monthly_cents)") \
+                .select("plan_id, subscription_plans(price_cents)") \
                 .eq("status", "active") \
                 .execute()
             
             for sub in (subs_result.data or []):
                 if sub.get("subscription_plans"):
-                    price = sub["subscription_plans"].get("price_monthly_cents", 0) or 0
+                    price = sub["subscription_plans"].get("price_cents", 0) or 0
                     if price > 0:
                         mrr_cents += price
                         paid_users += 1

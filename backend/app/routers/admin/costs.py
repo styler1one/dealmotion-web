@@ -520,7 +520,7 @@ async def get_top_users_by_cost(
         .execute() if user_ids else None
     
     user_orgs = {}
-    for row in (org_result.data or []):
+    for row in (org_result.data if org_result else []) or []:
         if row.get("organizations"):
             user_orgs[row["user_id"]] = row["organizations"].get("name")
     

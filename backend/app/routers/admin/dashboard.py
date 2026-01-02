@@ -172,14 +172,14 @@ async def _calculate_mrr_change(supabase) -> float:
         
         # Get current month subscriptions revenue
         current_subs = supabase.table("organization_subscriptions") \
-            .select("plan_id, subscription_plans(price_monthly_cents)") \
+            .select("plan_id, subscription_plans(price_cents)") \
             .in_("status", ["active", "trialing"]) \
             .execute()
         
         current_mrr = 0
         for sub in (current_subs.data or []):
             if sub.get("subscription_plans"):
-                current_mrr += sub["subscription_plans"].get("price_monthly_cents", 0) or 0
+                current_mrr += sub["subscription_plans"].get("price_cents", 0) or 0
         
         # Get previous month's payments total (approximation of previous MRR)
         prev_payments = supabase.table("payment_history") \
@@ -194,14 +194,14 @@ async def _calculate_mrr_change(supabase) -> float:
         # If no previous data, check if we have active subs that existed last month
         if prev_mrr == 0:
             prev_subs = supabase.table("organization_subscriptions") \
-                .select("plan_id, subscription_plans(price_monthly_cents), created_at") \
+                .select("plan_id, subscription_plans(price_cents), created_at") \
                 .in_("status", ["active", "trialing", "canceled"]) \
                 .lt("created_at", current_month_start.isoformat()) \
                 .execute()
             
             for sub in (prev_subs.data or []):
                 if sub.get("subscription_plans"):
-                    prev_mrr += sub["subscription_plans"].get("price_monthly_cents", 0) or 0
+                    prev_mrr += sub["subscription_plans"].get("price_cents", 0) or 0
         
         # Calculate percentage change
         if prev_mrr > 0:
@@ -273,13 +273,13 @@ async def _calculate_metrics_fallback(supabase) -> DashboardMetrics:
     try:
         # Get active/trialing subscriptions with their plan prices
         subs_result = supabase.table("organization_subscriptions") \
-            .select("plan_id, subscription_plans(price_monthly_cents)") \
+            .select("plan_id, subscription_plans(price_cents)") \
             .in_("status", ["active", "trialing"]) \
             .execute()
         
         for sub in (subs_result.data or []):
             if sub.get("subscription_plans"):
-                mrr_cents += sub["subscription_plans"].get("price_monthly_cents", 0) or 0
+                mrr_cents += sub["subscription_plans"].get("price_cents", 0) or 0
     except Exception:
         pass
     
@@ -709,67 +709,89 @@ async def get_recent_activity(
     with user info.
     """
     supabase = get_supabase_service()
-    activities = []
+    raw_activities = []
     
     try:
-        # Get recent research briefs
+        # Get recent research briefs (without user join - FK goes to auth.users not public.users)
         researches = supabase.table("research_briefs") \
-            .select("id, user_id, company_name, status, created_at, users(email, full_name)") \
+            .select("id, user_id, company_name, status, created_at") \
             .order("created_at", desc=True) \
             .limit(limit) \
             .execute()
         
         for r in (researches.data or []):
-            user_data = r.get("users") or {}
-            activities.append(RecentActivityItem(
-                id=r["id"],
-                type="research",
-                user_name=user_data.get("full_name") or "Unknown",
-                user_email=user_data.get("email") or "",
-                user_id=r.get("user_id") or "",
-                title=r.get("company_name") or "Unknown Company",
-                status=r.get("status") or "unknown",
-                created_at=r.get("created_at") or ""
-            ))
+            raw_activities.append({
+                "id": r["id"],
+                "type": "research",
+                "user_id": r.get("user_id") or "",
+                "title": r.get("company_name") or "Unknown Company",
+                "status": r.get("status") or "unknown",
+                "created_at": r.get("created_at") or ""
+            })
         
         # Get recent meeting preps
         preps = supabase.table("meeting_preps") \
-            .select("id, user_id, prospect_company_name, status, created_at, users(email, full_name)") \
+            .select("id, user_id, prospect_company_name, status, created_at") \
             .order("created_at", desc=True) \
             .limit(limit) \
             .execute()
         
         for p in (preps.data or []):
-            user_data = p.get("users") or {}
-            activities.append(RecentActivityItem(
-                id=p["id"],
-                type="preparation",
-                user_name=user_data.get("full_name") or "Unknown",
-                user_email=user_data.get("email") or "",
-                user_id=p.get("user_id") or "",
-                title=p.get("prospect_company_name") or "Meeting Prep",
-                status=p.get("status") or "unknown",
-                created_at=p.get("created_at") or ""
-            ))
+            raw_activities.append({
+                "id": p["id"],
+                "type": "preparation",
+                "user_id": p.get("user_id") or "",
+                "title": p.get("prospect_company_name") or "Meeting Prep",
+                "status": p.get("status") or "unknown",
+                "created_at": p.get("created_at") or ""
+            })
         
         # Get recent followups
         followups = supabase.table("followups") \
-            .select("id, user_id, prospect_company_name, status, created_at, users(email, full_name)") \
+            .select("id, user_id, prospect_company_name, status, created_at") \
             .order("created_at", desc=True) \
             .limit(limit) \
             .execute()
         
         for f in (followups.data or []):
-            user_data = f.get("users") or {}
+            raw_activities.append({
+                "id": f["id"],
+                "type": "followup",
+                "user_id": f.get("user_id") or "",
+                "title": f.get("prospect_company_name") or "Follow-up",
+                "status": f.get("status") or "unknown",
+                "created_at": f.get("created_at") or ""
+            })
+        
+        # Collect unique user_ids and batch query users
+        user_ids = list(set(a["user_id"] for a in raw_activities if a["user_id"]))
+        user_map = {}
+        
+        if user_ids:
+            users_result = supabase.table("users") \
+                .select("id, email, full_name") \
+                .in_("id", user_ids) \
+                .execute()
+            
+            for u in (users_result.data or []):
+                user_map[u["id"]] = {
+                    "email": u.get("email") or "",
+                    "full_name": u.get("full_name") or ""
+                }
+        
+        # Build activities with user info
+        activities = []
+        for a in raw_activities:
+            user_data = user_map.get(a["user_id"], {})
             activities.append(RecentActivityItem(
-                id=f["id"],
-                type="followup",
+                id=a["id"],
+                type=a["type"],
                 user_name=user_data.get("full_name") or "Unknown",
                 user_email=user_data.get("email") or "",
-                user_id=f.get("user_id") or "",
-                title=f.get("prospect_company_name") or "Follow-up",
-                status=f.get("status") or "unknown",
-                created_at=f.get("created_at") or ""
+                user_id=a["user_id"],
+                title=a["title"],
+                status=a["status"],
+                created_at=a["created_at"]
             ))
         
         # Sort all by created_at and take top N
