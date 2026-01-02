@@ -48,6 +48,14 @@ const navigationItems = [
     roles: ['super_admin', 'admin', 'support', 'viewer'] as AdminRole[],
   },
   {
+    key: 'costs',
+    label: 'API Costs',
+    href: '/admin/costs',
+    icon: Icons.dollarSign,
+    color: 'text-emerald-400',
+    roles: ['super_admin', 'admin'] as AdminRole[],
+  },
+  {
     key: 'billing',
     label: 'Billing',
     href: '/admin/billing',
