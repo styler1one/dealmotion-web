@@ -55,7 +55,10 @@ export interface CreditPackInfo {
   creditsRemaining: number
   purchasedAt: string
   status: string
-  source: 'purchased' | 'bonus' | 'promotional'
+  source?: 'purchased' | 'bonus' | 'promotional'
+  // Backwards compatibility (from backend during transition)
+  flowsPurchased?: number
+  flowsRemaining?: number
 }
 
 // Backwards compatibility alias
@@ -77,7 +80,7 @@ export interface AdminUserDetail extends AdminUserListItem {
   totalPreps: number
   totalFollowups: number
   errorCount30d: number
-  creditPacks: CreditPackInfo[]
+  creditPacks?: CreditPackInfo[]
   adminNotes: AdminNoteInfo[]
   suspendedAt?: string
   suspendedReason?: string
