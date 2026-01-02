@@ -18,6 +18,7 @@ ALTER TABLE admin_alert_history ENABLE ROW LEVEL SECURITY;
 -- ============================================================
 -- 2. Create admin-only policies
 -- These tables should only be accessible by admins via service key
+-- Admin users are tracked in admin_users table
 -- ============================================================
 
 -- admin_service_health_logs
@@ -26,9 +27,9 @@ CREATE POLICY "Admin only health logs" ON admin_service_health_logs
     FOR ALL
     USING (
         EXISTS (
-            SELECT 1 FROM users 
-            WHERE id = (select auth.uid()) 
-            AND is_admin = TRUE
+            SELECT 1 FROM admin_users 
+            WHERE user_id = (select auth.uid()) 
+            AND is_active = TRUE
         )
     );
 
@@ -38,9 +39,9 @@ CREATE POLICY "Admin only alert configs" ON admin_alert_configs
     FOR ALL
     USING (
         EXISTS (
-            SELECT 1 FROM users 
-            WHERE id = (select auth.uid()) 
-            AND is_admin = TRUE
+            SELECT 1 FROM admin_users 
+            WHERE user_id = (select auth.uid()) 
+            AND is_active = TRUE
         )
     );
 
@@ -50,9 +51,9 @@ CREATE POLICY "Admin only alert history" ON admin_alert_history
     FOR ALL
     USING (
         EXISTS (
-            SELECT 1 FROM users 
-            WHERE id = (select auth.uid()) 
-            AND is_admin = TRUE
+            SELECT 1 FROM admin_users 
+            WHERE user_id = (select auth.uid()) 
+            AND is_active = TRUE
         )
     );
 
