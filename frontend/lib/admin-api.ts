@@ -30,8 +30,7 @@ import type {
   NoteResponse,
   NoteCreate,
   NoteUpdate,
-  ResetFlowsRequest,
-  AddFlowsRequest,
+  ResetCreditsRequest,
   AddCreditsRequest,
   ExtendTrialRequest,
   ChangePlanRequest,
@@ -118,15 +117,9 @@ export const adminApi = {
     return response.data as UserActivityResponse
   },
 
-  // Reset user flows
-  resetFlows: async (userId: string, data: ResetFlowsRequest): Promise<{ success: boolean; message: string }> => {
-    const response = await api.post<{ success: boolean; message: string }>(`${BASE}/users/${userId}/reset-flows`, data)
-    return response.data as { success: boolean; message: string }
-  },
-
-  // Add bonus flows (legacy - use addCredits instead)
-  addFlows: async (userId: string, data: AddFlowsRequest): Promise<{ success: boolean; message: string }> => {
-    const response = await api.post<{ success: boolean; message: string }>(`${BASE}/users/${userId}/add-flows`, data)
+  // Reset user's monthly credits
+  resetCredits: async (userId: string, data: ResetCreditsRequest): Promise<{ success: boolean; message: string }> => {
+    const response = await api.post<{ success: boolean; message: string }>(`${BASE}/users/${userId}/reset-credits`, data)
     return response.data as { success: boolean; message: string }
   },
 

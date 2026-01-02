@@ -25,14 +25,10 @@ router = APIRouter(prefix="/users", tags=["admin-users"])
 
 
 class CreditUsage(CamelModel):
-    """Credit usage for a user (renamed from FlowUsage)"""
+    """Credit usage for a user"""
     used: int
     limit: int
     pack_balance: int
-
-
-# Alias for backwards compatibility
-FlowUsage = CreditUsage
 
 
 class AdminUserListItem(CamelModel):
@@ -45,30 +41,21 @@ class AdminUserListItem(CamelModel):
     plan_name: Optional[str] = None  # Human-readable plan name
     subscription_status: Optional[str] = None
     is_suspended: bool = False
-    credit_usage: CreditUsage  # Renamed from flow_usage
+    credit_usage: CreditUsage
     health_score: int
     health_status: str
     last_active: Optional[datetime] = None
     created_at: datetime
-    
-    # Backwards compatibility alias
-    @property
-    def flow_usage(self) -> CreditUsage:
-        return self.credit_usage
 
 
 class CreditPackInfo(CamelModel):
-    """Credit pack info (renamed from FlowPackInfo)"""
+    """Credit pack info"""
     id: str
-    credits_purchased: int  # Renamed from flows_purchased
-    credits_remaining: int  # Renamed from flows_remaining
+    credits_purchased: int
+    credits_remaining: int
     purchased_at: datetime
     status: str
     source: str = "purchased"  # 'purchased', 'bonus', 'promotional'
-
-
-# Alias for backwards compatibility
-FlowPackInfo = CreditPackInfo
 
 
 class AdminNoteInfo(CamelModel):
@@ -87,15 +74,10 @@ class AdminUserDetail(AdminUserListItem):
     total_preps: int = 0
     total_followups: int = 0
     error_count_30d: int = 0
-    credit_packs: List[CreditPackInfo] = []  # Renamed from flow_packs
+    credit_packs: List[CreditPackInfo] = []
     admin_notes: List[AdminNoteInfo] = []
     suspended_at: Optional[datetime] = None
     suspended_reason: Optional[str] = None
-    
-    # Backwards compatibility alias
-    @property
-    def flow_packs(self) -> List[CreditPackInfo]:
-        return self.credit_packs
 
 
 class UserListResponse(CamelModel):
@@ -169,14 +151,8 @@ class HealthBreakdown(CamelModel):
 
 # Request Models
 
-class ResetFlowsRequest(BaseModel):
+class ResetCreditsRequest(BaseModel):
     """Reset monthly credit usage"""
-    reason: str
-
-
-class AddFlowsRequest(BaseModel):
-    """Add bonus credits (legacy name for backwards compatibility)"""
-    flows: int
     reason: str
 
 
@@ -334,7 +310,7 @@ async def list_users(
                 "credits_per_month": credits_per_month,
             }
     
-    # ========== BATCH QUERY 3: Credit balances (replaces usage_records + flow_packs) ==========
+    # ========== BATCH QUERY 3: Credit balances ==========
     # Map: org_id -> {credits_used, credits_total, pack_balance, is_unlimited}
     org_credit_map: Dict[str, Dict] = {}
     if org_ids:
@@ -473,7 +449,7 @@ async def list_users(
             "days_since_last_activity": days_inactive,
             "error_count_30d": error_data["error_count"],
             "error_rate_30d": (error_data["error_count"] / error_data["total_count"] * 100) if error_data["total_count"] > 0 else 0,
-            "flow_usage_percent": (credits_used / credit_limit * 100) if credit_limit > 0 else 0,
+            "credit_usage_percent": (credits_used / credit_limit * 100) if credit_limit > 0 else 0,
             "profile_completeness": profile_completeness,
             "has_failed_payment": has_failed_payment,
         }
@@ -575,7 +551,7 @@ async def get_user_detail(
     health_data = await _get_health_data(supabase, user_id)
     score = calculate_health_score(health_data)
     
-    # Get credit packs
+    # Get credit packs (stored in flow_packs table)
     packs_result = supabase.table("flow_packs") \
         .select("id, flows_purchased, flows_remaining, purchased_at, status, price_cents") \
         .eq("organization_id", user_data.get("organization_id")) \
@@ -659,8 +635,8 @@ async def get_user_detail(
         subscription_status=user_data.get("subscription_status"),
         is_suspended=user_data.get("is_suspended", False),
         credit_usage=CreditUsage(
-            used=user_data.get("flow_count", 0),
-            limit=user_data.get("flow_limit", 25),  # Default to Free plan (25 credits)
+            used=user_data.get("credits_used", 0),
+            limit=user_data.get("credit_limit", 25),  # Default to Free plan (25 credits)
             pack_balance=user_data.get("pack_balance", 0)
         ),
         health_score=score,
@@ -776,14 +752,14 @@ async def get_user_activity(
     )
 
 
-@router.post("/{user_id}/reset-flows")
-async def reset_user_flows(
+@router.post("/{user_id}/reset-credits")
+async def reset_user_credits(
     user_id: str,
-    data: ResetFlowsRequest,
+    data: ResetCreditsRequest,
     request: Request,
     admin: AdminContext = Depends(require_admin_role("super_admin", "admin", "support"))
 ):
-    """Reset a user's monthly flow count to 0."""
+    """Reset a user's monthly credit usage to 0."""
     supabase = get_supabase_service()
     
     # Get user email for logging
@@ -803,27 +779,25 @@ async def reset_user_flows(
     
     org_id = org_result.data["organization_id"]
     
-    # Get current flow count for logging
-    usage_result = supabase.table("usage_records") \
-        .select("flow_count") \
+    # Get current credit usage for logging
+    credit_result = supabase.table("credit_balances") \
+        .select("subscription_credits_used") \
         .eq("organization_id", org_id) \
-        .gte("period_start", datetime.utcnow().replace(day=1).isoformat()) \
         .maybe_single() \
         .execute()
     
-    old_count = usage_result.data["flow_count"] if usage_result.data else 0
+    old_count = int(credit_result.data["subscription_credits_used"]) if credit_result.data else 0
     
-    # Reset flows
-    supabase.table("usage_records") \
-        .update({"flow_count": 0, "updated_at": datetime.utcnow().isoformat()}) \
+    # Reset credits
+    supabase.table("credit_balances") \
+        .update({"subscription_credits_used": 0, "updated_at": datetime.utcnow().isoformat()}) \
         .eq("organization_id", org_id) \
-        .gte("period_start", datetime.utcnow().replace(day=1).isoformat()) \
         .execute()
     
     # Log action
     await log_admin_action(
         admin_id=admin.admin_id,
-        action="user.reset_flows",
+        action="user.reset_credits",
         target_type="user",
         target_id=UUID(user_id),
         target_identifier=user.data["email"],
@@ -831,60 +805,7 @@ async def reset_user_flows(
         request=request
     )
     
-    return {"success": True, "message": f"Reset flow count from {old_count} to 0"}
-
-
-@router.post("/{user_id}/add-flows")
-async def add_user_flows(
-    user_id: str,
-    data: AddFlowsRequest,
-    request: Request,
-    admin: AdminContext = Depends(require_admin_role("super_admin", "admin"))
-):
-    """Add bonus flows to a user (creates a flow pack)."""
-    supabase = get_supabase_service()
-    
-    if data.flows < 1 or data.flows > 100:
-        raise HTTPException(status_code=400, detail="Flows must be between 1 and 100")
-    
-    # Get user email for logging
-    user = supabase.table("users").select("email").eq("id", user_id).maybe_single().execute()
-    if not user.data:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    # Get organization
-    org_result = supabase.table("organization_members") \
-        .select("organization_id") \
-        .eq("user_id", user_id) \
-        .maybe_single() \
-        .execute()
-    
-    if not org_result.data:
-        raise HTTPException(status_code=404, detail="User has no organization")
-    
-    org_id = org_result.data["organization_id"]
-    
-    # Create a bonus flow pack
-    supabase.table("flow_packs").insert({
-        "organization_id": org_id,
-        "flows_purchased": data.flows,
-        "flows_remaining": data.flows,
-        "price_cents": 0,  # Free bonus
-        "status": "active"
-    }).execute()
-    
-    # Log action
-    await log_admin_action(
-        admin_id=admin.admin_id,
-        action="user.add_flows",
-        target_type="user",
-        target_id=UUID(user_id),
-        target_identifier=user.data["email"],
-        details={"flows_added": data.flows, "reason": data.reason},
-        request=request
-    )
-    
-    return {"success": True, "message": f"Added {data.flows} bonus flows"}
+    return {"success": True, "message": f"Reset credit usage from {old_count} to 0"}
 
 
 @router.post("/{user_id}/extend-trial")
@@ -998,9 +919,9 @@ async def export_user_data(
         usage = supabase.table("usage_records").select("*").eq("organization_id", org_id).execute()
         export_data["usage_records"] = usage.data
         
-        # Get flow packs
+        # Get credit packs
         packs = supabase.table("flow_packs").select("*").eq("organization_id", org_id).execute()
-        export_data["flow_packs"] = packs.data
+        export_data["credit_packs"] = packs.data
         
         # Get sales profile
         profile = supabase.table("sales_profiles").select("*").eq("organization_id", org_id).maybe_single().execute()
@@ -1317,7 +1238,7 @@ async def get_user_health_breakdown(
     
     # Low usage penalty (max -15) - only for paid plans
     if health_data.get("plan") != "free":
-        usage_percent = health_data.get("flow_usage_percent", 0)
+        usage_percent = health_data.get("credit_usage_percent", 0)
         if usage_percent < 0.1:
             usage_score = 0
         elif usage_percent < 0.3:
@@ -1475,11 +1396,11 @@ async def add_user_credits(
     
     org_id = org_result.data["organization_id"]
     
-    # Create a bonus credit pack (stored in flow_packs table)
+    # Create a bonus credit pack
     supabase.table("flow_packs").insert({
         "organization_id": org_id,
-        "flows_purchased": data.credits,
-        "flows_remaining": data.credits,
+        "flows_purchased": data.credits,  # DB column name
+        "flows_remaining": data.credits,  # DB column name
         "price_cents": 0,  # Free bonus
         "status": "active"
     }).execute()
@@ -1744,7 +1665,7 @@ async def delete_user(
         # 7. Delete prospects
         supabase.table("prospects").delete().eq("organization_id", org_id).execute()
         
-        # 8. Delete flow packs
+        # 8. Delete credit packs
         supabase.table("flow_packs").delete().eq("organization_id", org_id).execute()
         
         # 9. Delete usage records
@@ -1812,8 +1733,8 @@ async def _enrich_user_data(supabase, user: dict) -> dict:
         "organization_name": None,
         "plan": "free",
         "plan_name": "Free",
-        "flow_count": 0,  # Credits used
-        "flow_limit": 25,  # Credit limit (25 for free)
+        "credits_used": 0,
+        "credit_limit": 25,  # Credit limit (25 for free)
         "pack_balance": 0,
         "subscription_status": None,
         "stripe_customer_id": None,
@@ -1861,7 +1782,7 @@ async def _enrich_user_data(supabase, user: dict) -> dict:
                     credits_per_month = plan_data.get("credits_per_month")
                     if credits_per_month is None:
                         credits_per_month = PLAN_CREDITS.get(plan_id, 25)
-                    result["flow_limit"] = credits_per_month
+                    result["credit_limit"] = credits_per_month
                     
                     # Check if subscription has suspended status
                     if sub_data.get("status") == "suspended":
@@ -1879,16 +1800,16 @@ async def _enrich_user_data(supabase, user: dict) -> dict:
                 
                 if credit_result and credit_result.data and len(credit_result.data) > 0:
                     credit_data = credit_result.data[0]
-                    result["flow_count"] = int(credit_data.get("subscription_credits_used", 0) or 0)
+                    result["credits_used"] = int(credit_data.get("subscription_credits_used", 0) or 0)
                     
                     # Use credit_balances total if available, otherwise keep plan default
                     credits_total = credit_data.get("subscription_credits_total")
                     if credits_total is not None and credits_total > 0:
-                        result["flow_limit"] = int(credits_total)
+                        result["credit_limit"] = int(credits_total)
                     
                     # Check unlimited flag
                     if credit_data.get("is_unlimited"):
-                        result["flow_limit"] = -1
+                        result["credit_limit"] = -1
                     
                     # Pack balance from pack_credits_remaining
                     result["pack_balance"] = int(credit_data.get("pack_credits_remaining", 0) or 0)
@@ -1932,7 +1853,7 @@ async def _get_health_data(supabase, user_id: str) -> dict:
         "days_since_last_activity": 999,
         "error_count_30d": 0,
         "error_rate_30d": 0.0,
-        "flow_usage_percent": 0,
+        "credit_usage_percent": 0,
         "profile_completeness": 0,
         "has_failed_payment": False
     }
@@ -2094,7 +2015,7 @@ async def _get_health_data(supabase, user_id: str) -> dict:
                                 credit_limit = plan_credits
             
             if credit_limit > 0:
-                health_data["flow_usage_percent"] = round((credits_used / credit_limit) * 100, 1)
+                health_data["credit_usage_percent"] = round((credits_used / credit_limit) * 100, 1)
         except Exception:
             pass
         

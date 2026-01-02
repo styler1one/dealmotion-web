@@ -3,6 +3,7 @@
  * =================
  * 
  * Type definitions for the admin panel.
+ * All credit-related (previously "flow") terminology is now unified as "credits".
  */
 
 // ============================================================
@@ -27,9 +28,6 @@ export interface CreditUsage {
   packBalance: number
 }
 
-// Backwards compatibility alias
-export type FlowUsage = CreditUsage
-
 export interface AdminUserListItem {
   id: string
   email: string
@@ -45,8 +43,6 @@ export interface AdminUserListItem {
   healthStatus: HealthStatus
   lastActive?: string
   createdAt: string
-  // Backwards compatibility
-  flowUsage?: CreditUsage
 }
 
 export interface CreditPackInfo {
@@ -56,13 +52,7 @@ export interface CreditPackInfo {
   purchasedAt: string
   status: string
   source?: 'purchased' | 'bonus' | 'promotional'
-  // Backwards compatibility (from backend during transition)
-  flowsPurchased?: number
-  flowsRemaining?: number
 }
-
-// Backwards compatibility alias
-export type FlowPackInfo = CreditPackInfo
 
 export interface AdminNoteInfo {
   id: string
@@ -84,8 +74,6 @@ export interface AdminUserDetail extends AdminUserListItem {
   adminNotes: AdminNoteInfo[]
   suspendedAt?: string
   suspendedReason?: string
-  // Backwards compatibility
-  flowPacks?: CreditPackInfo[]
 }
 
 export interface AvailablePlan {
@@ -392,12 +380,7 @@ export interface NoteListResponse {
 // Request Types
 // ============================================================
 
-export interface ResetFlowsRequest {
-  reason: string
-}
-
-export interface AddFlowsRequest {
-  flows: number
+export interface ResetCreditsRequest {
   reason: string
 }
 
@@ -432,4 +415,3 @@ export interface DeleteUserRequest {
 export interface ResolveAlertRequest {
   notes?: string
 }
-

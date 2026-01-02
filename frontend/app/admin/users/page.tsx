@@ -282,7 +282,7 @@ export default function AdminUsersPage() {
                       </td>
                       <td className="px-4 py-3 text-sm">
                         {(() => {
-                          const usage = user.creditUsage || user.flowUsage
+                          const usage = user.creditUsage
                           if (!usage) return '-'
                           return (
                             <>

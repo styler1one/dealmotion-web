@@ -69,12 +69,6 @@ export default function AdminUserDetailPage() {
   const [availablePlans, setAvailablePlans] = useState<AvailablePlan[]>([])
   const [deleteConfirmed, setDeleteConfirmed] = useState(false)
   
-  // Legacy alias for backwards compatibility
-  const flowsToAdd = creditsToAdd
-  const setFlowsToAdd = setCreditsToAdd
-  const showAddFlowsDialog = showAddCreditsDialog
-  const setShowAddFlowsDialog = setShowAddCreditsDialog
-
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type })
   }
@@ -125,7 +119,7 @@ export default function AdminUserDetailPage() {
     if (!actionReason.trim()) return
     setActionLoading(true)
     try {
-      await adminApi.resetFlows(userId, { reason: actionReason })
+      await adminApi.resetCredits(userId, { reason: actionReason })
       await refreshUserData()
       setShowResetDialog(false)
       setActionReason('')
@@ -137,9 +131,6 @@ export default function AdminUserDetailPage() {
       setActionLoading(false)
     }
   }
-  
-  // Legacy alias
-  const handleResetFlows = handleResetCredits
 
   const handleAddCredits = async () => {
     if (!actionReason.trim() || creditsToAdd < 1) return
@@ -158,9 +149,6 @@ export default function AdminUserDetailPage() {
       setActionLoading(false)
     }
   }
-  
-  // Legacy alias
-  const handleAddFlows = handleAddCredits
 
   const handleExtendTrial = async () => {
     if (!actionReason.trim() || daysToExtend < 1) return
@@ -485,7 +473,7 @@ export default function AdminUserDetailPage() {
             <div className="text-sm text-slate-500">Credits Used</div>
             <div className="text-lg font-semibold">
               {(() => {
-                const usage = user.creditUsage || user.flowUsage
+                const usage = user.creditUsage
                 if (!usage) return '-'
                 return (
                   <>
@@ -681,12 +669,12 @@ export default function AdminUserDetailPage() {
               </CardHeader>
               <CardContent>
                 {(() => {
-                  const packs = user.creditPacks || user.flowPacks || []
+                  const packs = user.creditPacks || []
                   return packs.length > 0 ? (
                     <div className="space-y-3">
                       {packs.map((pack) => {
-                        const remaining = pack.creditsRemaining ?? pack.flowsRemaining ?? 0
-                        const purchased = pack.creditsPurchased ?? pack.flowsPurchased ?? 0
+                        const remaining = pack.creditsRemaining
+                        const purchased = pack.creditsPurchased
                         return (
                           <div key={pack.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                             <div>
