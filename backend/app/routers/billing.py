@@ -68,7 +68,7 @@ class UsageMetric(BaseModel):
 
 
 class UsageResponse(BaseModel):
-    period_start: str
+    period_start: Optional[str] = None  # None for free plan (no monthly reset)
     period_end: Optional[str] = None
     # v2: Primary metric
     flow: Optional[UsageMetric] = None
