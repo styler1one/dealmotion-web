@@ -13,6 +13,7 @@ from app.database import get_supabase_service
 from app.services.google_calendar import google_calendar_service
 from app.services.microsoft_calendar import microsoft_calendar_service
 from app.services.calendar_sync import calendar_sync_service
+from app.services.encryption import encrypt_token
 from app.inngest.events import send_event, Events
 from typing import Tuple
 
@@ -223,14 +224,16 @@ async def google_auth_callback(
             "user_id", user_id
         ).eq("provider", "google").execute()
         
-        # TODO: Implement proper encryption with pgsodium
-        # For now, store tokens directly as strings (will be stored as BYTEA)
+        # Encrypt tokens before storage for security
+        encrypted_access = encrypt_token(tokens["access_token"])
+        encrypted_refresh = encrypt_token(tokens.get("refresh_token", "")) if tokens.get("refresh_token") else None
+        
         connection_data = {
             "organization_id": organization_id,
             "user_id": user_id,
             "provider": "google",
-            "access_token_encrypted": tokens["access_token"],
-            "refresh_token_encrypted": tokens.get("refresh_token"),
+            "access_token_encrypted": encrypted_access,
+            "refresh_token_encrypted": encrypted_refresh,
             "token_expires_at": tokens.get("token_expires_at"),
             "email": email,
             "sync_enabled": True,
@@ -276,7 +279,7 @@ async def google_auth_callback(
         logger.error(f"Google OAuth callback error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to connect Google Calendar: {str(e)}"
+            detail="Failed to connect Google Calendar. Please try again."
         )
 
 
@@ -355,13 +358,16 @@ async def microsoft_auth_callback(
             "user_id", user_id
         ).eq("provider", "microsoft").execute()
         
-        # Store connection
+        # Encrypt tokens before storage for security
+        encrypted_access = encrypt_token(tokens["access_token"])
+        encrypted_refresh = encrypt_token(tokens.get("refresh_token", "")) if tokens.get("refresh_token") else None
+        
         connection_data = {
             "organization_id": organization_id,
             "user_id": user_id,
             "provider": "microsoft",
-            "access_token_encrypted": tokens["access_token"],
-            "refresh_token_encrypted": tokens.get("refresh_token"),
+            "access_token_encrypted": encrypted_access,
+            "refresh_token_encrypted": encrypted_refresh,
             "token_expires_at": None,  # TODO: Calculate from expires_in
             "email": email,
             "sync_enabled": True,
@@ -407,7 +413,7 @@ async def microsoft_auth_callback(
         logger.error(f"Microsoft OAuth callback error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to connect Microsoft Calendar: {str(e)}"
+            detail="Failed to connect Microsoft Calendar. Please try again."
         )
 
 
@@ -464,7 +470,7 @@ async def disconnect_calendar(
         logger.error(f"Disconnect error for {provider}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to disconnect {provider} calendar: {str(e)}"
+            detail=f"Failed to disconnect {provider} calendar. Please try again."
         )
 
 
@@ -565,7 +571,7 @@ async def trigger_calendar_sync(
         logger.error(f"Calendar sync failed: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Sync failed: {str(e)}"
+            detail="Calendar sync failed. Please try again."
         )
 
 
@@ -636,7 +642,7 @@ async def trigger_prospect_matching(
         
     except Exception as e:
         logger.error(f"Failed to trigger prospect matching: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to trigger prospect matching. Please try again.")
 
 
 

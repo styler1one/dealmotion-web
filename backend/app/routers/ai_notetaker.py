@@ -621,4 +621,4 @@ async def handle_inbound_email(request: Request):
     except Exception as e:
         logger.error(f"Error handling inbound email: {e}")
         # Still return 200 to prevent SendGrid retries on our errors
-        return {"status": "error", "message": str(e)}
+        return {"status": "error", "message": "Internal processing error"}

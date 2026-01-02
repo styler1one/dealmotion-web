@@ -12,7 +12,7 @@ import httpx
 from app.deps import get_current_user, get_user_org
 from app.database import get_supabase_service
 from app.services.fireflies_service import FirefliesService, sync_fireflies_recordings
-from app.services.encryption import encrypt_api_key, is_encryption_secure
+from app.services.encryption import encrypt_api_key, encrypt_token, is_encryption_secure
 
 # Try to import Inngest for async processing
 try:
@@ -494,7 +494,7 @@ async def sync_fireflies(
         logger.error(f"Fireflies sync failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Sync failed: {str(e)}"
+            detail="Sync failed. Please check your Fireflies connection and try again."
         )
 
 
@@ -702,7 +702,7 @@ async def import_fireflies_recording(
         logger.error(f"Error importing Fireflies recording: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Import failed: {str(e)}"
+            detail="Import failed. Please try again."
         )
 
 
@@ -806,10 +806,11 @@ async def sync_teams_recordings(
         new_tokens = microsoft_calendar_service.refresh_access_token(refresh_token)
         if new_tokens:
             access_token = new_tokens["access_token"]
-            # Update stored tokens
+            # Update stored tokens (encrypted)
+            new_refresh = new_tokens.get("refresh_token", refresh_token)
             supabase.table("calendar_connections").update({
-                "access_token_encrypted": access_token,
-                "refresh_token_encrypted": new_tokens.get("refresh_token", refresh_token),
+                "access_token_encrypted": encrypt_token(access_token),
+                "refresh_token_encrypted": encrypt_token(new_refresh) if new_refresh else None,
             }).eq("id", conn["id"]).execute()
     
     try:
@@ -840,7 +841,7 @@ async def sync_teams_recordings(
         logger.error(f"Teams sync failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Teams sync failed: {str(e)}"
+            detail="Teams sync failed. Please check your Microsoft connection and try again."
         )
 
 
@@ -993,6 +994,6 @@ async def import_teams_recording(
         logger.error(f"Error importing Teams recording: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Import failed: {str(e)}"
+            detail="Import failed. Please try again."
         )
 

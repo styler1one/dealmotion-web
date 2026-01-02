@@ -246,9 +246,10 @@ async def start_company_interview(
         return CompanyInterviewStartResponse(**result)
         
     except Exception as e:
+        logger.error(f"Failed to start company interview: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to start company interview: {str(e)}"
+            detail="Failed to start company interview. Please try again."
         )
 
 
@@ -286,9 +287,10 @@ async def submit_company_answer(
         )
         
     except Exception as e:
+        logger.error(f"Failed to submit answer: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to submit answer: {str(e)}"
+            detail="Failed to submit answer. Please try again."
         )
 
 
@@ -382,10 +384,10 @@ async def complete_company_interview(
     except HTTPException:
         raise
     except Exception as e:
-        print(f"ERROR: Failed to complete company interview: {str(e)}")
+        logger.error(f"Failed to complete company interview: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to complete interview: {str(e)}"
+            detail="Failed to complete interview. Please try again."
         )
 
 
@@ -482,9 +484,10 @@ async def search_company_options(
         )
         
     except Exception as e:
+        logger.error(f"Failed to search companies: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to search companies: {str(e)}"
+            detail="Failed to search companies. Please try again."
         )
 
 
@@ -581,9 +584,10 @@ async def generate_company_magic_profile(
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(f"Failed to start company profile generation: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to start company profile generation: {str(e)}"
+            detail="Failed to start company profile generation. Please try again."
         )
 
 
@@ -635,9 +639,10 @@ async def get_company_magic_status(
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(f"Failed to get session status: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get session status: {str(e)}"
+            detail="Failed to get session status. Please try again."
         )
 
 
@@ -692,9 +697,10 @@ async def confirm_company_magic_onboarding(
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(f"Failed to save company profile: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to save company profile: {str(e)}"
+            detail="Failed to save company profile. Please try again."
         )
 
 
@@ -761,10 +767,10 @@ async def create_company_profile(
     except HTTPException:
         raise
     except Exception as e:
-        print(f"ERROR: Failed to create company profile: {str(e)}")
+        logger.error(f"Failed to create company profile: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create company profile: {str(e)}"
+            detail="Failed to create company profile. Please try again."
         )
 
 
@@ -806,9 +812,10 @@ async def get_company_profile(
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(f"Failed to get company profile: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get company profile: {str(e)}"
+            detail="Failed to get company profile. Please try again."
         )
 
 
@@ -869,9 +876,10 @@ async def update_company_profile(
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(f"Failed to update company profile: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update company profile: {str(e)}"
+            detail="Failed to update company profile. Please try again."
         )
 
 
@@ -901,9 +909,10 @@ async def delete_company_profile(
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(f"Failed to delete company profile: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete company profile: {str(e)}"
+            detail="Failed to delete company profile. Please try again."
         )
 
 
@@ -944,7 +953,8 @@ async def check_company_profile_exists(
         }
         
     except Exception as e:
+        logger.error(f"Failed to check company profile: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to check company profile: {str(e)}"
+            detail="Failed to check company profile status. Please try again."
         )

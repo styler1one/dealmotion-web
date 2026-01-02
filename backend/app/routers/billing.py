@@ -264,7 +264,7 @@ async def create_portal(
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Error creating portal: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to create billing portal. Please try again.")
 
 
 # ==========================================
@@ -300,7 +300,7 @@ async def cancel_subscription(current_user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Error canceling subscription: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to cancel subscription. Please try again.")
 
 
 @router.post("/reactivate")
@@ -332,7 +332,7 @@ async def reactivate_subscription(current_user: dict = Depends(get_current_user)
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Error reactivating subscription: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to reactivate subscription. Please try again.")
 
 
 # ==========================================
@@ -390,7 +390,7 @@ async def get_usage(current_user: dict = Depends(get_current_user)):
         raise
     except Exception as e:
         logger.error(f"Error getting usage: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to get usage data. Please try again.")
 
 
 @router.post("/check-limit")
@@ -442,7 +442,7 @@ async def check_limit(
         raise
     except Exception as e:
         logger.error(f"Error checking limit: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to check limit. Please try again.")
 
 
 # ==========================================
@@ -520,7 +520,7 @@ async def get_flow_pack_balance(current_user: dict = Depends(get_current_user)):
         raise
     except Exception as e:
         logger.error(f"Error getting flow pack balance: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to get credit balance. Please try again.")
 
 
 @router.get("/flow-packs/products", response_model=List[FlowPackProductResponse])
@@ -536,7 +536,7 @@ async def get_flow_pack_products(current_user: dict = Depends(get_current_user))
         
     except Exception as e:
         logger.error(f"Error getting flow pack products: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to load credit packs. Please try again.")
 
 
 @router.post("/flow-packs/checkout", response_model=CheckoutResponse)
@@ -597,7 +597,7 @@ async def create_flow_pack_checkout(
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Error creating flow pack checkout: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to create checkout. Please try again.")
 
 
 @router.get("/flow-packs/history")
@@ -624,5 +624,5 @@ async def get_flow_pack_history(
         raise
     except Exception as e:
         logger.error(f"Error getting flow pack history: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to load purchase history. Please try again.")
 

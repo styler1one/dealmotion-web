@@ -17,6 +17,7 @@ from googleapiclient.errors import HttpError
 from app.database import get_supabase_service
 # ProspectMatcher is now called via Inngest after sync completes
 from app.services.microsoft_calendar import microsoft_calendar_service
+from app.services.encryption import encrypt_token, decrypt_token
 
 logger = logging.getLogger(__name__)
 
@@ -68,47 +69,25 @@ class CalendarSyncService:
         self.supabase = get_supabase_service()
     
     def _decode_token(self, stored_token) -> str:
-        """Decode a stored token from database."""
-        try:
-            # Handle different storage formats
-            if stored_token is None:
-                return ""
-            
-            # If it's bytes (from BYTEA column), decode to string
-            if isinstance(stored_token, bytes):
-                return stored_token.decode('utf-8')
-            
-            # If it's already a string
-            if isinstance(stored_token, str):
-                # Check if it's PostgreSQL hex format (starts with \x)
-                if stored_token.startswith('\\x'):
-                    # Convert hex string to bytes, then to string
-                    hex_data = stored_token[2:]  # Remove \x prefix
-                    return bytes.fromhex(hex_data).decode('utf-8')
-                
-                # Check if it looks like a valid token already
-                if stored_token.startswith('ya29'):
-                    return stored_token
-                
-                # Try base64 decode for legacy data
-                try:
-                    padding_needed = len(stored_token) % 4
-                    if padding_needed:
-                        stored_token_padded = stored_token + '=' * (4 - padding_needed)
-                    else:
-                        stored_token_padded = stored_token
-                    decoded = base64.b64decode(stored_token_padded).decode('utf-8')
-                    if decoded.startswith('ya29'):
-                        return decoded
-                except (ValueError, UnicodeDecodeError):
-                    pass
-                
-                return stored_token
-            
-            return str(stored_token)
-        except Exception as e:
-            logger.error(f"Failed to decode token: {e}")
+        """
+        Decode and decrypt a stored token from database.
+        
+        Uses the centralized decrypt_token function which handles:
+        - Fernet encrypted tokens (fernet:...)
+        - Base64 encoded tokens (base64:...)
+        - Legacy plain text tokens
+        - PostgreSQL hex format (\\x...)
+        """
+        if stored_token is None:
+            return ""
+        
+        # Use centralized decryption that handles all formats
+        decrypted = decrypt_token(stored_token)
+        if decrypted is None:
+            logger.error("Failed to decrypt token")
             raise ValueError("Invalid token encoding")
+        
+        return decrypted
     
     def _get_google_credentials(self, connection: Dict) -> Optional[Credentials]:
         """Build Google credentials from stored connection data."""
@@ -132,10 +111,10 @@ class CalendarSyncService:
                 request = google.auth.transport.requests.Request()
                 credentials.refresh(request)
                 
-                # Update stored tokens
-                new_access_token = base64.b64encode(credentials.token.encode()).decode()
+                # Update stored tokens (encrypted)
+                encrypted_access = encrypt_token(credentials.token)
                 self.supabase.table("calendar_connections").update({
-                    "access_token_encrypted": new_access_token,
+                    "access_token_encrypted": encrypted_access,
                     "token_expires_at": credentials.expiry.isoformat() if credentials.expiry else None,
                 }).eq("id", connection["id"]).execute()
                 
@@ -409,10 +388,11 @@ class CalendarSyncService:
                 new_tokens = microsoft_calendar_service.refresh_access_token(refresh_token)
                 if new_tokens:
                     access_token = new_tokens["access_token"]
-                    # Update stored tokens
+                    # Update stored tokens (encrypted)
+                    new_refresh = new_tokens.get("refresh_token", refresh_token)
                     self.supabase.table("calendar_connections").update({
-                        "access_token_encrypted": access_token,
-                        "refresh_token_encrypted": new_tokens.get("refresh_token", refresh_token),
+                        "access_token_encrypted": encrypt_token(access_token),
+                        "refresh_token_encrypted": encrypt_token(new_refresh) if new_refresh else None,
                     }).eq("id", connection_id).execute()
             
             # Fetch events from Microsoft Graph

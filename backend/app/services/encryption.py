@@ -143,3 +143,106 @@ def is_encryption_secure() -> bool:
     """Check if we're using secure encryption (vs fallback base64)."""
     return _FERNET is not None
 
+
+# =============================================================================
+# OAuth Token Encryption (for calendar connections, etc.)
+# =============================================================================
+
+def encrypt_token(token: str) -> str:
+    """
+    Encrypt an OAuth token for secure database storage.
+    
+    Args:
+        token: Plain text OAuth token (access_token or refresh_token)
+        
+    Returns:
+        Encrypted token string (Fernet encrypted, or base64 with prefix for fallback)
+    """
+    if not token:
+        return ""
+    
+    if _FERNET:
+        # Use Fernet encryption - prefix with 'fernet:' for identification
+        encrypted = _FERNET.encrypt(token.encode())
+        return f"fernet:{encrypted.decode()}"
+    else:
+        # Fallback to base64 with prefix (NOT secure, only for development)
+        logger.warning("Using base64 encoding for OAuth token (not secure!)")
+        encoded = base64.b64encode(token.encode()).decode()
+        return f"base64:{encoded}"
+
+
+def decrypt_token(encrypted_token: str) -> Optional[str]:
+    """
+    Decrypt an OAuth token from database storage.
+    
+    Handles multiple formats:
+    - 'fernet:...' - Fernet encrypted
+    - 'base64:...' - Base64 encoded (legacy/fallback)
+    - Plain text - Legacy unencrypted tokens (for backwards compatibility)
+    
+    Args:
+        encrypted_token: Encrypted token string from database
+        
+    Returns:
+        Decrypted token string, or None if decryption fails
+    """
+    if not encrypted_token:
+        return None
+    
+    # Handle bytes from BYTEA column
+    if isinstance(encrypted_token, bytes):
+        encrypted_token = encrypted_token.decode('utf-8')
+    
+    # Handle PostgreSQL hex format
+    if encrypted_token.startswith('\\x'):
+        try:
+            hex_data = encrypted_token[2:]
+            encrypted_token = bytes.fromhex(hex_data).decode('utf-8')
+        except Exception as e:
+            logger.error(f"Failed to decode hex token: {e}")
+            return None
+    
+    # Check for encryption prefix
+    if encrypted_token.startswith('fernet:'):
+        if not _FERNET:
+            logger.error("Cannot decrypt Fernet-encrypted token: encryption not available")
+            return None
+        try:
+            encrypted_data = encrypted_token[7:]  # Remove 'fernet:' prefix
+            decrypted = _FERNET.decrypt(encrypted_data.encode())
+            return decrypted.decode()
+        except Exception as e:
+            logger.error(f"Failed to decrypt Fernet token: {e}")
+            return None
+    
+    elif encrypted_token.startswith('base64:'):
+        try:
+            encoded_data = encrypted_token[7:]  # Remove 'base64:' prefix
+            return base64.b64decode(encoded_data.encode()).decode()
+        except Exception as e:
+            logger.error(f"Failed to decode base64 token: {e}")
+            return None
+    
+    else:
+        # Legacy: plain text token or old base64 format
+        # Check if it looks like a valid OAuth token (Google starts with 'ya29', MS varies)
+        if encrypted_token.startswith('ya29') or encrypted_token.startswith('eyJ'):
+            logger.warning("Found unencrypted OAuth token - consider re-authenticating")
+            return encrypted_token
+        
+        # Try base64 decode for very old legacy data
+        try:
+            padding_needed = len(encrypted_token) % 4
+            if padding_needed:
+                padded = encrypted_token + '=' * (4 - padding_needed)
+            else:
+                padded = encrypted_token
+            decoded = base64.b64decode(padded).decode('utf-8')
+            if decoded.startswith('ya29') or decoded.startswith('eyJ'):
+                return decoded
+        except (ValueError, UnicodeDecodeError):
+            pass
+        
+        # Return as-is if we can't determine the format
+        return encrypted_token

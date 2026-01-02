@@ -366,7 +366,7 @@ async def trigger_auto_record(
         
     except Exception as e:
         logger.error(f"Failed to trigger auto-record: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to trigger: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to trigger auto-record. Please try again.")
 
 
 @router.get("/debug/meetings")
@@ -446,4 +446,4 @@ async def debug_meetings(
         
     except Exception as e:
         logger.error(f"Failed to get debug meetings: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch meeting data. Please try again.")
