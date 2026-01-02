@@ -32,8 +32,14 @@ import type {
   NoteUpdate,
   ResetFlowsRequest,
   AddFlowsRequest,
+  AddCreditsRequest,
   ExtendTrialRequest,
+  ChangePlanRequest,
+  SuspendUserRequest,
+  UnsuspendUserRequest,
+  DeleteUserRequest,
   ResolveAlertRequest,
+  AvailablePlan,
 } from '@/types/admin'
 
 const BASE = '/api/v1/admin'
@@ -118,9 +124,18 @@ export const adminApi = {
     return response.data as { success: boolean; message: string }
   },
 
-  // Add bonus flows
+  // Add bonus flows (legacy - use addCredits instead)
   addFlows: async (userId: string, data: AddFlowsRequest): Promise<{ success: boolean; message: string }> => {
     const response = await api.post<{ success: boolean; message: string }>(`${BASE}/users/${userId}/add-flows`, data)
+    return response.data as { success: boolean; message: string }
+  },
+
+  // Add bonus credits
+  addCredits: async (userId: string, data: AddCreditsRequest): Promise<{ success: boolean; message: string }> => {
+    const response = await api.post<{ success: boolean; message: string }>(`${BASE}/users/${userId}/add-credits`, {
+      credits: data.credits,
+      reason: data.reason,
+    })
     return response.data as { success: boolean; message: string }
   },
 
@@ -128,6 +143,45 @@ export const adminApi = {
   extendTrial: async (userId: string, data: ExtendTrialRequest): Promise<{ success: boolean; message: string; newEnd: string }> => {
     const response = await api.post<{ success: boolean; message: string; newEnd: string }>(`${BASE}/users/${userId}/extend-trial`, data)
     return response.data as { success: boolean; message: string; newEnd: string }
+  },
+
+  // Get available plans
+  getAvailablePlans: async (): Promise<{ plans: AvailablePlan[] }> => {
+    const response = await api.get<{ plans: AvailablePlan[] }>(`${BASE}/users/plans/available`)
+    return response.data as { plans: AvailablePlan[] }
+  },
+
+  // Change user plan
+  changePlan: async (userId: string, data: ChangePlanRequest): Promise<{ success: boolean; message: string; oldPlan: string; newPlan: string }> => {
+    const response = await api.patch<{ success: boolean; message: string; oldPlan: string; newPlan: string }>(
+      `${BASE}/users/${userId}/plan`,
+      {
+        plan_id: data.planId,
+        reason: data.reason,
+      }
+    )
+    return response.data as { success: boolean; message: string; oldPlan: string; newPlan: string }
+  },
+
+  // Suspend user
+  suspendUser: async (userId: string, data: SuspendUserRequest): Promise<{ success: boolean; message: string }> => {
+    const response = await api.post<{ success: boolean; message: string }>(`${BASE}/users/${userId}/suspend`, data)
+    return response.data as { success: boolean; message: string }
+  },
+
+  // Unsuspend user
+  unsuspendUser: async (userId: string, data: UnsuspendUserRequest): Promise<{ success: boolean; message: string }> => {
+    const response = await api.post<{ success: boolean; message: string }>(`${BASE}/users/${userId}/unsuspend`, data)
+    return response.data as { success: boolean; message: string }
+  },
+
+  // Delete user (super admin only)
+  deleteUser: async (userId: string, data: DeleteUserRequest): Promise<{ success: boolean; message: string; deletedUserId: string; deletedOrganizationId?: string }> => {
+    const response = await api.delete<{ success: boolean; message: string; deletedUserId: string; deletedOrganizationId?: string }>(
+      `${BASE}/users/${userId}`,
+      { data }  // Send body in DELETE request
+    )
+    return response.data as { success: boolean; message: string; deletedUserId: string; deletedOrganizationId?: string }
   },
 
   // Export user data

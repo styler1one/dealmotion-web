@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Icons } from '@/components/icons'
 import { cn } from '@/lib/utils'
-import type { AdminUserDetail, ActivityItem, UserBillingResponse, UserErrorsResponse, HealthBreakdown } from '@/types/admin'
+import type { AdminUserDetail, ActivityItem, UserBillingResponse, UserErrorsResponse, HealthBreakdown, AvailablePlan } from '@/types/admin'
 
 // Simple toast notification component
 function Toast({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) {
@@ -48,20 +48,32 @@ export default function AdminUserDetailPage() {
   
   // Action dialogs
   const [showResetDialog, setShowResetDialog] = useState(false)
-  const [showAddFlowsDialog, setShowAddFlowsDialog] = useState(false)
+  const [showAddCreditsDialog, setShowAddCreditsDialog] = useState(false)
   const [showExtendTrialDialog, setShowExtendTrialDialog] = useState(false)
   const [showNoteDialog, setShowNoteDialog] = useState(false)
   const [showEditNoteDialog, setShowEditNoteDialog] = useState(false)
   const [showDeleteNoteDialog, setShowDeleteNoteDialog] = useState(false)
+  const [showChangePlanDialog, setShowChangePlanDialog] = useState(false)
+  const [showSuspendDialog, setShowSuspendDialog] = useState(false)
+  const [showDeleteUserDialog, setShowDeleteUserDialog] = useState(false)
   
   // Action form state
   const [actionReason, setActionReason] = useState('')
-  const [flowsToAdd, setFlowsToAdd] = useState(5)
+  const [creditsToAdd, setCreditsToAdd] = useState(10)
   const [daysToExtend, setDaysToExtend] = useState(7)
   const [noteContent, setNoteContent] = useState('')
   const [notePinned, setNotePinned] = useState(false)
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
+  const [selectedPlanId, setSelectedPlanId] = useState('')
+  const [availablePlans, setAvailablePlans] = useState<AvailablePlan[]>([])
+  const [deleteConfirmed, setDeleteConfirmed] = useState(false)
+  
+  // Legacy alias for backwards compatibility
+  const flowsToAdd = creditsToAdd
+  const setFlowsToAdd = setCreditsToAdd
+  const showAddFlowsDialog = showAddCreditsDialog
+  const setShowAddFlowsDialog = setShowAddCreditsDialog
 
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type })
@@ -109,7 +121,7 @@ export default function AdminUserDetailPage() {
     }
   }
 
-  const handleResetFlows = async () => {
+  const handleResetCredits = async () => {
     if (!actionReason.trim()) return
     setActionLoading(true)
     try {
@@ -117,32 +129,38 @@ export default function AdminUserDetailPage() {
       await refreshUserData()
       setShowResetDialog(false)
       setActionReason('')
-      showToast('Monthly flows reset successfully', 'success')
+      showToast('Monthly credits reset successfully', 'success')
     } catch (err) {
-      console.error('Failed to reset flows:', err)
-      showToast('Failed to reset flows', 'error')
+      console.error('Failed to reset credits:', err)
+      showToast('Failed to reset credits', 'error')
     } finally {
       setActionLoading(false)
     }
   }
+  
+  // Legacy alias
+  const handleResetFlows = handleResetCredits
 
-  const handleAddFlows = async () => {
-    if (!actionReason.trim() || flowsToAdd < 1) return
+  const handleAddCredits = async () => {
+    if (!actionReason.trim() || creditsToAdd < 1) return
     setActionLoading(true)
     try {
-      await adminApi.addFlows(userId, { flows: flowsToAdd, reason: actionReason })
+      await adminApi.addCredits(userId, { credits: creditsToAdd, reason: actionReason })
       await refreshUserData()
-      setShowAddFlowsDialog(false)
+      setShowAddCreditsDialog(false)
       setActionReason('')
-      setFlowsToAdd(5)
-      showToast(`Added ${flowsToAdd} bonus flows`, 'success')
+      setCreditsToAdd(10)
+      showToast(`Added ${creditsToAdd} bonus credits`, 'success')
     } catch (err) {
-      console.error('Failed to add flows:', err)
-      showToast('Failed to add flows', 'error')
+      console.error('Failed to add credits:', err)
+      showToast('Failed to add credits', 'error')
     } finally {
       setActionLoading(false)
     }
   }
+  
+  // Legacy alias
+  const handleAddFlows = handleAddCredits
 
   const handleExtendTrial = async () => {
     if (!actionReason.trim() || daysToExtend < 1) return
@@ -159,6 +177,73 @@ export default function AdminUserDetailPage() {
       showToast('Failed to extend trial', 'error')
     } finally {
       setActionLoading(false)
+    }
+  }
+
+  const handleChangePlan = async () => {
+    if (!actionReason.trim() || !selectedPlanId) return
+    setActionLoading(true)
+    try {
+      await adminApi.changePlan(userId, { planId: selectedPlanId, reason: actionReason })
+      await refreshUserData()
+      setShowChangePlanDialog(false)
+      setActionReason('')
+      setSelectedPlanId('')
+      showToast('Plan changed successfully', 'success')
+    } catch (err) {
+      console.error('Failed to change plan:', err)
+      showToast('Failed to change plan', 'error')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleSuspendUser = async () => {
+    if (!actionReason.trim()) return
+    setActionLoading(true)
+    try {
+      if (user?.isSuspended) {
+        await adminApi.unsuspendUser(userId, { reason: actionReason })
+        showToast('User unsuspended successfully', 'success')
+      } else {
+        await adminApi.suspendUser(userId, { reason: actionReason })
+        showToast('User suspended successfully', 'success')
+      }
+      await refreshUserData()
+      setShowSuspendDialog(false)
+      setActionReason('')
+    } catch (err) {
+      console.error('Failed to suspend/unsuspend user:', err)
+      showToast('Failed to update user status', 'error')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleDeleteUser = async () => {
+    if (!actionReason.trim() || !deleteConfirmed) return
+    setActionLoading(true)
+    try {
+      await adminApi.deleteUser(userId, { reason: actionReason, confirm: true })
+      showToast('User deleted successfully', 'success')
+      router.push('/admin/users')
+    } catch (err) {
+      console.error('Failed to delete user:', err)
+      showToast('Failed to delete user', 'error')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const openChangePlanDialog = async () => {
+    try {
+      const { plans } = await adminApi.getAvailablePlans()
+      setAvailablePlans(plans)
+      setSelectedPlanId(user?.plan || 'free')
+      setShowChangePlanDialog(true)
+    } catch (err) {
+      console.error('Failed to load plans:', err)
+      showToast('Failed to load available plans', 'error')
     }
   }
 
@@ -291,7 +376,7 @@ export default function AdminUserDetailPage() {
   const tabs = [
     { key: 'overview', label: 'Overview', icon: Icons.user },
     { key: 'activity', label: 'Activity', icon: Icons.activity },
-    { key: 'flow_packs', label: 'Flow Packs', icon: Icons.package },
+    { key: 'credit_packs', label: 'Credit Packs', icon: Icons.package },
     { key: 'billing', label: 'Billing', icon: Icons.creditCard },
     { key: 'errors', label: 'Errors', icon: Icons.alertTriangle, badge: user.errorCount30d > 0 ? user.errorCount30d : undefined },
     { key: 'notes', label: 'Notes', icon: Icons.fileText, badge: user.adminNotes.length > 0 ? user.adminNotes.length : undefined },
@@ -328,8 +413,10 @@ export default function AdminUserDetailPage() {
           {/* Avatar */}
           <div className={cn(
             'w-16 h-16 rounded-full flex items-center justify-center text-xl font-semibold',
-            user.plan === 'unlimited_solo' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
-            user.plan === 'pro_solo' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+            user.isSuspended ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+            user.plan?.includes('pro_plus') ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
+            user.plan?.includes('pro') && user.plan !== 'free' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+            user.plan === 'enterprise' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
             'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
           )}>
             {getInitials(user.fullName, user.email)}
@@ -343,10 +430,28 @@ export default function AdminUserDetailPage() {
               <Icons.arrowLeft className="h-4 w-4 mr-1" />
               Back to Users
             </Button>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-              {user.fullName || user.email}
-            </h1>
-            <p className="text-slate-500">{user.email}</p>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                {user.fullName || user.email}
+              </h1>
+              {user.isSuspended && (
+                <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                  Suspended
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-slate-500">{user.email}</p>
+              <span className="text-slate-300">•</span>
+              <span className={cn(
+                'text-sm font-medium',
+                user.plan?.includes('pro_plus') ? 'text-purple-600 dark:text-purple-400' :
+                user.plan?.includes('pro') && user.plan !== 'free' ? 'text-blue-600 dark:text-blue-400' :
+                'text-slate-500'
+              )}>
+                {user.planName || user.plan?.replace('_', ' ')}
+              </span>
+            </div>
           </div>
         </div>
         <div className="flex gap-2">
@@ -362,23 +467,36 @@ export default function AdminUserDetailPage() {
         <Card>
           <CardContent className="p-4">
             <div className="text-sm text-slate-500">Plan</div>
-            <div className="text-lg font-semibold capitalize">{user.plan.replace('_', ' ')}</div>
+            <div className="text-lg font-semibold">{user.planName || user.plan?.replace('_', ' ')}</div>
             {user.subscriptionStatus === 'trialing' && user.trialEndsAt && (
               <div className="text-xs text-amber-500 mt-1">
                 Trial ends {new Date(user.trialEndsAt).toLocaleDateString()}
+              </div>
+            )}
+            {user.subscriptionStatus === 'suspended' && (
+              <div className="text-xs text-red-500 mt-1">
+                Account suspended
               </div>
             )}
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-sm text-slate-500">Flows Used</div>
+            <div className="text-sm text-slate-500">Credits Used</div>
             <div className="text-lg font-semibold">
-              {user.flowUsage.used}
-              {user.flowUsage.limit !== -1 ? `/${user.flowUsage.limit}` : ' (∞)'}
-              {user.flowUsage.packBalance > 0 && (
-                <span className="text-sm text-purple-500 ml-1">+{user.flowUsage.packBalance}</span>
-              )}
+              {(() => {
+                const usage = user.creditUsage || user.flowUsage
+                if (!usage) return '-'
+                return (
+                  <>
+                    {usage.used}
+                    {usage.limit !== -1 ? `/${usage.limit}` : ' (∞)'}
+                    {usage.packBalance > 0 && (
+                      <span className="text-sm text-purple-500 ml-1">+{usage.packBalance}</span>
+                    )}
+                  </>
+                )
+              })()}
             </div>
           </CardContent>
         </Card>
@@ -552,45 +670,52 @@ export default function AdminUserDetailPage() {
             </Card>
           )}
 
-          {activeTab === 'flow_packs' && (
+          {activeTab === 'credit_packs' && (
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Flow Packs</CardTitle>
-                <Button size="sm" onClick={() => setShowAddFlowsDialog(true)}>
+                <CardTitle>Credit Packs</CardTitle>
+                <Button size="sm" onClick={() => setShowAddCreditsDialog(true)}>
                   <Icons.plus className="h-4 w-4 mr-1" />
-                  Add Pack
+                  Add Credits
                 </Button>
               </CardHeader>
               <CardContent>
-                {user.flowPacks.length > 0 ? (
-                  <div className="space-y-3">
-                    {user.flowPacks.map((pack) => (
-                      <div key={pack.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                        <div>
-                          <div className="font-medium">
-                            {pack.flowsRemaining} / {pack.flowsPurchased} flows remaining
+                {(() => {
+                  const packs = user.creditPacks || user.flowPacks || []
+                  return packs.length > 0 ? (
+                    <div className="space-y-3">
+                      {packs.map((pack) => {
+                        const remaining = pack.creditsRemaining ?? pack.flowsRemaining ?? 0
+                        const purchased = pack.creditsPurchased ?? pack.flowsPurchased ?? 0
+                        return (
+                          <div key={pack.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                            <div>
+                              <div className="font-medium">
+                                {remaining} / {purchased} credits remaining
+                              </div>
+                              <div className="text-xs text-slate-500">
+                                {pack.source === 'bonus' ? 'Bonus pack' : 'Purchased'} • {new Date(pack.purchasedAt).toLocaleDateString()}
+                              </div>
+                            </div>
+                            <span className={cn(
+                              'px-2 py-0.5 rounded-full text-xs font-medium',
+                              pack.status === 'active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                              pack.status === 'depleted' ? 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400' :
+                              'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                            )}>
+                              {pack.status}
+                            </span>
                           </div>
-                          <div className="text-xs text-slate-500">
-                            Purchased {new Date(pack.purchasedAt).toLocaleDateString()}
-                          </div>
-                        </div>
-                        <span className={cn(
-                          'px-2 py-0.5 rounded-full text-xs font-medium',
-                          pack.status === 'active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                          pack.status === 'depleted' ? 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400' :
-                          'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                        )}>
-                          {pack.status}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-slate-500">
-                    <Icons.package className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    No flow packs
-                  </div>
-                )}
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-slate-500">
+                      <Icons.package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      No credit packs
+                    </div>
+                  )
+                })()}
               </CardContent>
             </Card>
           )}
@@ -865,22 +990,35 @@ export default function AdminUserDetailPage() {
               <CardTitle className="text-lg">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
+              {/* Plan Management */}
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={openChangePlanDialog}
+              >
+                <Icons.sparkles className="h-4 w-4 mr-2" />
+                Change Plan
+              </Button>
+              
+              {/* Credit Management */}
               <Button 
                 variant="outline" 
                 className="w-full justify-start"
                 onClick={() => setShowResetDialog(true)}
               >
                 <Icons.refresh className="h-4 w-4 mr-2" />
-                Reset Monthly Flows
+                Reset Monthly Credits
               </Button>
               <Button 
                 variant="outline" 
                 className="w-full justify-start"
-                onClick={() => setShowAddFlowsDialog(true)}
+                onClick={() => setShowAddCreditsDialog(true)}
               >
                 <Icons.plus className="h-4 w-4 mr-2" />
-                Add Bonus Flows
+                Add Bonus Credits
               </Button>
+              
+              {/* Trial Extension */}
               {(user.subscriptionStatus === 'trialing' || user.plan === 'free') && (
                 <Button 
                   variant="outline" 
@@ -891,6 +1029,8 @@ export default function AdminUserDetailPage() {
                   Extend Trial
                 </Button>
               )}
+              
+              {/* Notes */}
               <Button 
                 variant="outline" 
                 className="w-full justify-start"
@@ -899,6 +1039,8 @@ export default function AdminUserDetailPage() {
                 <Icons.fileText className="h-4 w-4 mr-2" />
                 Add Note
               </Button>
+              
+              {/* Stripe Link */}
               {user.stripeCustomerId && (
                 <Button 
                   variant="outline" 
@@ -909,6 +1051,38 @@ export default function AdminUserDetailPage() {
                   View in Stripe
                 </Button>
               )}
+              
+              {/* Divider */}
+              <div className="border-t border-slate-200 dark:border-slate-700 my-3" />
+              
+              {/* Suspend/Unsuspend */}
+              <Button 
+                variant={user.isSuspended ? "outline" : "destructive"}
+                className="w-full justify-start"
+                onClick={() => setShowSuspendDialog(true)}
+              >
+                {user.isSuspended ? (
+                  <>
+                    <Icons.checkCircle className="h-4 w-4 mr-2" />
+                    Unsuspend User
+                  </>
+                ) : (
+                  <>
+                    <Icons.ban className="h-4 w-4 mr-2" />
+                    Suspend User
+                  </>
+                )}
+              </Button>
+              
+              {/* Delete User */}
+              <Button 
+                variant="destructive"
+                className="w-full justify-start"
+                onClick={() => setShowDeleteUserDialog(true)}
+              >
+                <Icons.trash className="h-4 w-4 mr-2" />
+                Delete User
+              </Button>
             </CardContent>
           </Card>
 
@@ -1049,16 +1223,16 @@ export default function AdminUserDetailPage() {
         </div>
       </div>
 
-      {/* Reset Flows Dialog */}
+      {/* Reset Credits Dialog */}
       {showResetDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <Card className="w-full max-w-md mx-4">
             <CardHeader>
-              <CardTitle>Reset Monthly Flows</CardTitle>
+              <CardTitle>Reset Monthly Credits</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-slate-500">
-                This will reset the user&apos;s monthly flow count to 0. Please provide a reason.
+                This will reset the user&apos;s monthly credit count to 0. Please provide a reason.
               </p>
               <Textarea
                 placeholder="Reason for reset..."
@@ -1070,11 +1244,11 @@ export default function AdminUserDetailPage() {
                   Cancel
                 </Button>
                 <Button 
-                  onClick={handleResetFlows}
+                  onClick={handleResetCredits}
                   disabled={!actionReason.trim() || actionLoading}
                 >
                   {actionLoading ? <Icons.spinner className="h-4 w-4 animate-spin mr-2" /> : null}
-                  Reset Flows
+                  Reset Credits
                 </Button>
               </div>
             </CardContent>
@@ -1082,42 +1256,42 @@ export default function AdminUserDetailPage() {
         </div>
       )}
 
-      {/* Add Flows Dialog */}
-      {showAddFlowsDialog && (
+      {/* Add Credits Dialog */}
+      {showAddCreditsDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <Card className="w-full max-w-md mx-4">
             <CardHeader>
-              <CardTitle>Add Bonus Flows</CardTitle>
+              <CardTitle>Add Bonus Credits</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-slate-500">
-                This will create a new flow pack with the specified number of bonus flows.
+                This will create a new credit pack with the specified number of bonus credits.
               </p>
               <div>
-                <label className="text-sm font-medium">Number of Flows</label>
+                <label className="text-sm font-medium">Number of Credits</label>
                 <Input
                   type="number"
                   min={1}
-                  max={100}
-                  value={flowsToAdd}
-                  onChange={(e) => setFlowsToAdd(parseInt(e.target.value) || 5)}
+                  max={1000}
+                  value={creditsToAdd}
+                  onChange={(e) => setCreditsToAdd(parseInt(e.target.value) || 10)}
                 />
               </div>
               <Textarea
-                placeholder="Reason for bonus flows..."
+                placeholder="Reason for bonus credits..."
                 value={actionReason}
                 onChange={(e) => setActionReason(e.target.value)}
               />
               <div className="flex gap-2 justify-end">
-                <Button variant="outline" onClick={() => { setShowAddFlowsDialog(false); setActionReason(''); setFlowsToAdd(5) }}>
+                <Button variant="outline" onClick={() => { setShowAddCreditsDialog(false); setActionReason(''); setCreditsToAdd(10) }}>
                   Cancel
                 </Button>
                 <Button 
-                  onClick={handleAddFlows}
-                  disabled={!actionReason.trim() || flowsToAdd < 1 || actionLoading}
+                  onClick={handleAddCredits}
+                  disabled={!actionReason.trim() || creditsToAdd < 1 || actionLoading}
                 >
                   {actionLoading ? <Icons.spinner className="h-4 w-4 animate-spin mr-2" /> : null}
-                  Add {flowsToAdd} Flows
+                  Add {creditsToAdd} Credits
                 </Button>
               </div>
             </CardContent>
@@ -1275,6 +1449,162 @@ export default function AdminUserDetailPage() {
                 >
                   {actionLoading ? <Icons.spinner className="h-4 w-4 animate-spin mr-2" /> : null}
                   Delete Note
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Change Plan Dialog */}
+      {showChangePlanDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <Card className="w-full max-w-md mx-4">
+            <CardHeader>
+              <CardTitle>Change Subscription Plan</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-slate-500">
+                Change the user&apos;s subscription plan. This will take effect immediately.
+              </p>
+              <div>
+                <label className="text-sm font-medium">Select Plan</label>
+                <select
+                  value={selectedPlanId}
+                  onChange={(e) => setSelectedPlanId(e.target.value)}
+                  className="w-full mt-1 h-10 px-3 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"
+                >
+                  {availablePlans.map((plan) => (
+                    <option key={plan.id} value={plan.id}>
+                      {plan.name} {plan.priceCents > 0 ? `(€${(plan.priceCents / 100).toFixed(2)})` : '(Free)'}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <Textarea
+                placeholder="Reason for plan change..."
+                value={actionReason}
+                onChange={(e) => setActionReason(e.target.value)}
+              />
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => { setShowChangePlanDialog(false); setActionReason(''); setSelectedPlanId('') }}>
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleChangePlan}
+                  disabled={!actionReason.trim() || !selectedPlanId || selectedPlanId === user?.plan || actionLoading}
+                >
+                  {actionLoading ? <Icons.spinner className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Change Plan
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Suspend/Unsuspend User Dialog */}
+      {showSuspendDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <Card className="w-full max-w-md mx-4">
+            <CardHeader>
+              <CardTitle>{user?.isSuspended ? 'Unsuspend User' : 'Suspend User'}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {user?.isSuspended ? (
+                <p className="text-sm text-slate-500">
+                  This will unsuspend the user account, allowing them to log in again.
+                  {user.suspendedReason && (
+                    <span className="block mt-2 text-amber-600 dark:text-amber-400">
+                      Originally suspended for: {user.suspendedReason}
+                    </span>
+                  )}
+                </p>
+              ) : (
+                <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                  <p className="text-sm text-red-700 dark:text-red-400">
+                    <strong>Warning:</strong> Suspending this user will:
+                  </p>
+                  <ul className="text-sm text-red-600 dark:text-red-400 list-disc ml-5 mt-2">
+                    <li>Prevent them from logging in</li>
+                    <li>Pause their subscription</li>
+                    <li>Block access to all features</li>
+                  </ul>
+                </div>
+              )}
+              <Textarea
+                placeholder={user?.isSuspended ? "Reason for unsuspending (optional)..." : "Reason for suspension..."}
+                value={actionReason}
+                onChange={(e) => setActionReason(e.target.value)}
+              />
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => { setShowSuspendDialog(false); setActionReason('') }}>
+                  Cancel
+                </Button>
+                <Button 
+                  variant={user?.isSuspended ? "default" : "destructive"}
+                  onClick={handleSuspendUser}
+                  disabled={(!user?.isSuspended && !actionReason.trim()) || actionLoading}
+                >
+                  {actionLoading ? <Icons.spinner className="h-4 w-4 animate-spin mr-2" /> : null}
+                  {user?.isSuspended ? 'Unsuspend User' : 'Suspend User'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Delete User Dialog */}
+      {showDeleteUserDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <Card className="w-full max-w-md mx-4">
+            <CardHeader>
+              <CardTitle className="text-red-600">Delete User Account</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <p className="text-sm text-red-700 dark:text-red-400 font-medium">
+                  ⚠️ This action is permanent and cannot be undone!
+                </p>
+                <p className="text-sm text-red-600 dark:text-red-400 mt-2">
+                  Deleting this user will permanently remove:
+                </p>
+                <ul className="text-sm text-red-600 dark:text-red-400 list-disc ml-5 mt-1">
+                  <li>User account and profile</li>
+                  <li>All research briefs and meeting preps</li>
+                  <li>Follow-ups and prospect data</li>
+                  <li>Organization and subscription</li>
+                  <li>Credit packs and usage history</li>
+                </ul>
+              </div>
+              <Textarea
+                placeholder="Reason for deletion (required)..."
+                value={actionReason}
+                onChange={(e) => setActionReason(e.target.value)}
+              />
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={deleteConfirmed}
+                  onChange={(e) => setDeleteConfirmed(e.target.checked)}
+                  className="rounded border-red-300 text-red-600 focus:ring-red-500"
+                />
+                <span className="text-sm text-red-600 dark:text-red-400">
+                  I understand this action is permanent and want to delete this user
+                </span>
+              </label>
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => { setShowDeleteUserDialog(false); setActionReason(''); setDeleteConfirmed(false) }}>
+                  Cancel
+                </Button>
+                <Button 
+                  variant="destructive"
+                  onClick={handleDeleteUser}
+                  disabled={!actionReason.trim() || !deleteConfirmed || actionLoading}
+                >
+                  {actionLoading ? <Icons.spinner className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Delete User Permanently
                 </Button>
               </div>
             </CardContent>

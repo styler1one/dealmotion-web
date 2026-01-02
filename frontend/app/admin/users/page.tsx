@@ -78,25 +78,40 @@ export default function AdminUsersPage() {
     )
   }
 
-  const getPlanBadge = (plan: string) => {
+  const getPlanBadge = (plan: string, planName?: string) => {
     const colors: Record<string, string> = {
       free: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+      pro_monthly: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+      pro_yearly: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+      pro_plus_monthly: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+      pro_plus_yearly: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+      enterprise: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+      // Legacy plans
       pro_solo: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
       unlimited_solo: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-      enterprise: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
     }
     const labels: Record<string, string> = {
       free: 'Free',
+      pro_monthly: 'Pro',
+      pro_yearly: 'Pro',
+      pro_plus_monthly: 'Pro+',
+      pro_plus_yearly: 'Pro+',
+      enterprise: 'Enterprise',
       pro_solo: 'Pro Solo',
       unlimited_solo: 'Unlimited',
-      enterprise: 'Enterprise',
     }
     return (
       <span className={cn('px-2 py-0.5 rounded-full text-xs font-medium', colors[plan] || colors.free)}>
-        {labels[plan] || plan}
+        {planName || labels[plan] || plan.replace('_', ' ')}
       </span>
     )
   }
+
+  const getSuspendedBadge = () => (
+    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+      Suspended
+    </span>
+  )
 
   const getSortIcon = (field: string) => {
     if (sortBy !== field) return <Icons.arrowUpDown className="h-3 w-3 opacity-30" />
@@ -141,8 +156,10 @@ export default function AdminUsersPage() {
             >
               <option value="">All Plans</option>
               <option value="free">Free</option>
-              <option value="pro_solo">Pro Solo</option>
-              <option value="unlimited_solo">Unlimited Solo</option>
+              <option value="pro_monthly">Pro (Monthly)</option>
+              <option value="pro_yearly">Pro (Yearly)</option>
+              <option value="pro_plus_monthly">Pro+ (Monthly)</option>
+              <option value="pro_plus_yearly">Pro+ (Yearly)</option>
               <option value="enterprise">Enterprise</option>
             </select>
             <select
@@ -209,7 +226,7 @@ export default function AdminUsersPage() {
                       Plan
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                      Flows
+                      Credits
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                       Health
@@ -238,8 +255,10 @@ export default function AdminUsersPage() {
                           {/* Avatar */}
                           <div className={cn(
                             'w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium',
-                            user.plan === 'unlimited_solo' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
-                            user.plan === 'pro_solo' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                            user.isSuspended ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                            user.plan?.includes('pro_plus') ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
+                            user.plan?.includes('pro') && user.plan !== 'free' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                            user.plan === 'enterprise' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
                             'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
                           )}>
                             {getInitials(user.fullName, user.email)}
@@ -256,23 +275,34 @@ export default function AdminUsersPage() {
                         {user.organizationName || '-'}
                       </td>
                       <td className="px-4 py-3">
-                        {getPlanBadge(user.plan)}
+                        <div className="flex items-center gap-2">
+                          {getPlanBadge(user.plan, user.planName)}
+                          {user.isSuspended && getSuspendedBadge()}
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-sm">
-                        <span className={cn(
-                          user.flowUsage.limit === -1 ? 'text-slate-500' :
-                          user.flowUsage.used >= user.flowUsage.limit ? 'text-red-500 font-medium' :
-                          'text-slate-500'
-                        )}>
-                          {user.flowUsage.used}
-                          {user.flowUsage.limit !== -1 && `/${user.flowUsage.limit}`}
-                          {user.flowUsage.limit === -1 && ' (∞)'}
-                        </span>
-                        {user.flowUsage.packBalance > 0 && (
-                          <span className="ml-1 text-xs text-purple-500">
-                            +{user.flowUsage.packBalance}
-                          </span>
-                        )}
+                        {(() => {
+                          const usage = user.creditUsage || user.flowUsage
+                          if (!usage) return '-'
+                          return (
+                            <>
+                              <span className={cn(
+                                usage.limit === -1 ? 'text-slate-500' :
+                                usage.used >= usage.limit ? 'text-red-500 font-medium' :
+                                'text-slate-500'
+                              )}>
+                                {usage.used}
+                                {usage.limit !== -1 && `/${usage.limit}`}
+                                {usage.limit === -1 && ' (∞)'}
+                              </span>
+                              {usage.packBalance > 0 && (
+                                <span className="ml-1 text-xs text-purple-500">
+                                  +{usage.packBalance}
+                                </span>
+                              )}
+                            </>
+                          )
+                        })()}
                       </td>
                       <td className="px-4 py-3">
                         {getHealthBadge(user.healthStatus, user.healthScore)}

@@ -21,11 +21,14 @@ export type HealthStatus = 'healthy' | 'at_risk' | 'critical'
 // User Types
 // ============================================================
 
-export interface FlowUsage {
+export interface CreditUsage {
   used: number
   limit: number
   packBalance: number
 }
+
+// Backwards compatibility alias
+export type FlowUsage = CreditUsage
 
 export interface AdminUserListItem {
   id: string
@@ -34,20 +37,29 @@ export interface AdminUserListItem {
   organizationId?: string
   organizationName?: string
   plan: string
-  flowUsage: FlowUsage
+  planName?: string
+  subscriptionStatus?: string
+  isSuspended: boolean
+  creditUsage: CreditUsage
   healthScore: number
   healthStatus: HealthStatus
   lastActive?: string
   createdAt: string
+  // Backwards compatibility
+  flowUsage?: CreditUsage
 }
 
-export interface FlowPackInfo {
+export interface CreditPackInfo {
   id: string
-  flowsPurchased: number
-  flowsRemaining: number
+  creditsPurchased: number
+  creditsRemaining: number
   purchasedAt: string
   status: string
+  source: 'purchased' | 'bonus' | 'promotional'
 }
+
+// Backwards compatibility alias
+export type FlowPackInfo = CreditPackInfo
 
 export interface AdminNoteInfo {
   id: string
@@ -59,15 +71,24 @@ export interface AdminNoteInfo {
 
 export interface AdminUserDetail extends AdminUserListItem {
   stripeCustomerId?: string
-  subscriptionStatus?: string
   trialEndsAt?: string
   profileCompleteness: number
   totalResearches: number
   totalPreps: number
   totalFollowups: number
   errorCount30d: number
-  flowPacks: FlowPackInfo[]
+  creditPacks: CreditPackInfo[]
   adminNotes: AdminNoteInfo[]
+  suspendedAt?: string
+  suspendedReason?: string
+  // Backwards compatibility
+  flowPacks?: CreditPackInfo[]
+}
+
+export interface AvailablePlan {
+  id: string
+  name: string
+  priceCents: number
 }
 
 export interface UserListResponse {
@@ -377,9 +398,32 @@ export interface AddFlowsRequest {
   reason: string
 }
 
+export interface AddCreditsRequest {
+  credits: number
+  reason: string
+}
+
 export interface ExtendTrialRequest {
   days: number
   reason: string
+}
+
+export interface ChangePlanRequest {
+  planId: string
+  reason: string
+}
+
+export interface SuspendUserRequest {
+  reason: string
+}
+
+export interface UnsuspendUserRequest {
+  reason?: string
+}
+
+export interface DeleteUserRequest {
+  reason: string
+  confirm: boolean
 }
 
 export interface ResolveAlertRequest {

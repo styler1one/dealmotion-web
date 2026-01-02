@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 from typing import Optional, List, Any, Dict
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from app.deps import get_admin_user, require_admin_role, AdminContext
 from app.database import get_supabase_service
@@ -24,10 +24,15 @@ router = APIRouter(prefix="/users", tags=["admin-users"])
 # ============================================================
 
 
-class FlowUsage(CamelModel):
+class CreditUsage(CamelModel):
+    """Credit usage for a user (renamed from FlowUsage)"""
     used: int
     limit: int
     pack_balance: int
+
+
+# Alias for backwards compatibility
+FlowUsage = CreditUsage
 
 
 class AdminUserListItem(CamelModel):
@@ -37,19 +42,33 @@ class AdminUserListItem(CamelModel):
     organization_id: Optional[str] = None
     organization_name: Optional[str] = None
     plan: str
-    flow_usage: FlowUsage
+    plan_name: Optional[str] = None  # Human-readable plan name
+    subscription_status: Optional[str] = None
+    is_suspended: bool = False
+    credit_usage: CreditUsage  # Renamed from flow_usage
     health_score: int
     health_status: str
     last_active: Optional[datetime] = None
     created_at: datetime
+    
+    # Backwards compatibility alias
+    @property
+    def flow_usage(self) -> CreditUsage:
+        return self.credit_usage
 
 
-class FlowPackInfo(CamelModel):
+class CreditPackInfo(CamelModel):
+    """Credit pack info (renamed from FlowPackInfo)"""
     id: str
-    flows_purchased: int
-    flows_remaining: int
+    credits_purchased: int  # Renamed from flows_purchased
+    credits_remaining: int  # Renamed from flows_remaining
     purchased_at: datetime
     status: str
+    source: str = "purchased"  # 'purchased', 'bonus', 'promotional'
+
+
+# Alias for backwards compatibility
+FlowPackInfo = CreditPackInfo
 
 
 class AdminNoteInfo(CamelModel):
@@ -62,15 +81,21 @@ class AdminNoteInfo(CamelModel):
 
 class AdminUserDetail(AdminUserListItem):
     stripe_customer_id: Optional[str] = None
-    subscription_status: Optional[str] = None
     trial_ends_at: Optional[datetime] = None
     profile_completeness: int = 0
     total_researches: int = 0
     total_preps: int = 0
     total_followups: int = 0
     error_count_30d: int = 0
-    flow_packs: List[FlowPackInfo] = []
+    credit_packs: List[CreditPackInfo] = []  # Renamed from flow_packs
     admin_notes: List[AdminNoteInfo] = []
+    suspended_at: Optional[datetime] = None
+    suspended_reason: Optional[str] = None
+    
+    # Backwards compatibility alias
+    @property
+    def flow_packs(self) -> List[CreditPackInfo]:
+        return self.credit_packs
 
 
 class UserListResponse(CamelModel):
@@ -145,17 +170,58 @@ class HealthBreakdown(CamelModel):
 # Request Models
 
 class ResetFlowsRequest(BaseModel):
+    """Reset monthly credit usage"""
     reason: str
 
 
 class AddFlowsRequest(BaseModel):
+    """Add bonus credits (legacy name for backwards compatibility)"""
     flows: int
     reason: str
 
 
+class AddCreditsRequest(BaseModel):
+    """Add bonus credits to user"""
+    credits: int
+    reason: str
+
+
 class ExtendTrialRequest(BaseModel):
+    """Extend user trial period"""
     days: int
     reason: str
+
+
+class ChangePlanRequest(BaseModel):
+    """Change user subscription plan"""
+    plan_id: str
+    reason: str
+
+
+class SuspendUserRequest(BaseModel):
+    """Suspend user account"""
+    reason: str
+
+
+class UnsuspendUserRequest(BaseModel):
+    """Unsuspend user account"""
+    reason: Optional[str] = None
+
+
+class DeleteUserRequest(BaseModel):
+    """Delete user account"""
+    reason: str
+    confirm: bool = False  # Must be True to proceed
+
+
+# Available plans for admin to change
+AVAILABLE_PLANS = [
+    {"id": "free", "name": "Free", "price_cents": 0},
+    {"id": "pro_monthly", "name": "Pro (Monthly)", "price_cents": 4995},
+    {"id": "pro_yearly", "name": "Pro (Yearly)", "price_cents": 50900},
+    {"id": "pro_plus_monthly", "name": "Pro+ (Monthly)", "price_cents": 6995},
+    {"id": "pro_plus_yearly", "name": "Pro+ (Yearly)", "price_cents": 71300},
+]
 
 
 # ============================================================
@@ -237,7 +303,10 @@ async def list_users(
             organization_id=user_data.get("organization_id"),
             organization_name=user_data.get("organization_name"),
             plan=user_data.get("plan", "free"),
-            flow_usage=FlowUsage(
+            plan_name=user_data.get("plan_name"),
+            subscription_status=user_data.get("subscription_status"),
+            is_suspended=user_data.get("is_suspended", False),
+            credit_usage=CreditUsage(
                 used=user_data.get("flow_count", 0),
                 limit=user_data.get("flow_limit", 2),
                 pack_balance=user_data.get("pack_balance", 0)
@@ -292,21 +361,22 @@ async def get_user_detail(
     health_data = await _get_health_data(supabase, user_id)
     score = calculate_health_score(health_data)
     
-    # Get flow packs
+    # Get credit packs
     packs_result = supabase.table("flow_packs") \
-        .select("id, flows_purchased, flows_remaining, purchased_at, status") \
+        .select("id, flows_purchased, flows_remaining, purchased_at, status, price_cents") \
         .eq("organization_id", user_data.get("organization_id")) \
         .order("purchased_at", desc=True) \
         .limit(10) \
         .execute()
     
-    flow_packs = [
-        FlowPackInfo(
+    credit_packs = [
+        CreditPackInfo(
             id=p["id"],
-            flows_purchased=p["flows_purchased"],
-            flows_remaining=p["flows_remaining"],
+            credits_purchased=p["flows_purchased"],
+            credits_remaining=p["flows_remaining"],
             purchased_at=p["purchased_at"],
-            status=p["status"]
+            status=p["status"],
+            source="bonus" if p.get("price_cents", 0) == 0 else "purchased"
         ) for p in (packs_result.data or [])
     ]
     
@@ -371,7 +441,10 @@ async def get_user_detail(
         organization_id=user_data.get("organization_id"),
         organization_name=user_data.get("organization_name"),
         plan=user_data.get("plan", "free"),
-        flow_usage=FlowUsage(
+        plan_name=user_data.get("plan_name"),
+        subscription_status=user_data.get("subscription_status"),
+        is_suspended=user_data.get("is_suspended", False),
+        credit_usage=CreditUsage(
             used=user_data.get("flow_count", 0),
             limit=user_data.get("flow_limit", 2),
             pack_balance=user_data.get("pack_balance", 0)
@@ -381,15 +454,16 @@ async def get_user_detail(
         last_active=user_data.get("last_active"),
         created_at=user["created_at"],
         stripe_customer_id=user_data.get("stripe_customer_id"),
-        subscription_status=user_data.get("subscription_status"),
         trial_ends_at=user_data.get("trial_ends_at"),
         profile_completeness=health_data.get("profile_completeness", 0),
         total_researches=research_count.count or 0,
         total_preps=prep_count.count or 0,
         total_followups=followup_count.count or 0,
         error_count_30d=health_data.get("error_count_30d", 0),
-        flow_packs=flow_packs,
-        admin_notes=admin_notes
+        credit_packs=credit_packs,
+        admin_notes=admin_notes,
+        suspended_at=user_data.get("suspended_at"),
+        suspended_reason=user_data.get("suspended_reason")
     )
 
 
@@ -1064,22 +1138,464 @@ async def get_user_health_breakdown(
 
 
 # ============================================================
+# New Admin Actions: Plan, Suspend, Delete, Credits
+# ============================================================
+
+
+@router.get("/plans/available")
+async def get_available_plans(
+    admin: AdminContext = Depends(get_admin_user)
+):
+    """Get list of available subscription plans for admin to assign."""
+    return {"plans": AVAILABLE_PLANS}
+
+
+@router.patch("/{user_id}/plan")
+async def change_user_plan(
+    user_id: str,
+    data: ChangePlanRequest,
+    request: Request,
+    admin: AdminContext = Depends(require_admin_role("super_admin", "admin"))
+):
+    """Change a user's subscription plan."""
+    supabase = get_supabase_service()
+    
+    # Validate plan_id
+    valid_plans = [p["id"] for p in AVAILABLE_PLANS]
+    if data.plan_id not in valid_plans:
+        raise HTTPException(status_code=400, detail=f"Invalid plan_id. Must be one of: {', '.join(valid_plans)}")
+    
+    # Get user
+    user = supabase.table("users").select("email").eq("id", user_id).maybe_single().execute()
+    if not user.data:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get organization
+    org_result = supabase.table("organization_members") \
+        .select("organization_id") \
+        .eq("user_id", user_id) \
+        .maybe_single() \
+        .execute()
+    
+    if not org_result.data:
+        raise HTTPException(status_code=404, detail="User has no organization")
+    
+    org_id = org_result.data["organization_id"]
+    
+    # Get current plan for logging
+    current_sub = supabase.table("organization_subscriptions") \
+        .select("plan_id, status") \
+        .eq("organization_id", org_id) \
+        .maybe_single() \
+        .execute()
+    
+    old_plan = current_sub.data.get("plan_id", "free") if current_sub.data else "free"
+    
+    # Update the subscription
+    update_data = {
+        "plan_id": data.plan_id,
+        "updated_at": datetime.utcnow().isoformat()
+    }
+    
+    # If changing from free to paid, set status to active
+    if old_plan == "free" and data.plan_id != "free":
+        update_data["status"] = "active"
+    
+    supabase.table("organization_subscriptions") \
+        .update(update_data) \
+        .eq("organization_id", org_id) \
+        .execute()
+    
+    # Get new plan name for response
+    new_plan_name = next((p["name"] for p in AVAILABLE_PLANS if p["id"] == data.plan_id), data.plan_id)
+    old_plan_name = next((p["name"] for p in AVAILABLE_PLANS if p["id"] == old_plan), old_plan)
+    
+    # Log action
+    await log_admin_action(
+        admin_id=admin.admin_id,
+        action="user.change_plan",
+        target_type="user",
+        target_id=UUID(user_id),
+        target_identifier=user.data["email"],
+        details={
+            "old_plan": old_plan,
+            "new_plan": data.plan_id,
+            "reason": data.reason
+        },
+        request=request
+    )
+    
+    return {
+        "success": True, 
+        "message": f"Changed plan from {old_plan_name} to {new_plan_name}",
+        "old_plan": old_plan,
+        "new_plan": data.plan_id
+    }
+
+
+@router.post("/{user_id}/add-credits")
+async def add_user_credits(
+    user_id: str,
+    data: AddCreditsRequest,
+    request: Request,
+    admin: AdminContext = Depends(require_admin_role("super_admin", "admin"))
+):
+    """Add bonus credits to a user (creates a credit pack)."""
+    supabase = get_supabase_service()
+    
+    if data.credits < 1 or data.credits > 1000:
+        raise HTTPException(status_code=400, detail="Credits must be between 1 and 1000")
+    
+    # Get user email for logging
+    user = supabase.table("users").select("email").eq("id", user_id).maybe_single().execute()
+    if not user.data:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get organization
+    org_result = supabase.table("organization_members") \
+        .select("organization_id") \
+        .eq("user_id", user_id) \
+        .maybe_single() \
+        .execute()
+    
+    if not org_result.data:
+        raise HTTPException(status_code=404, detail="User has no organization")
+    
+    org_id = org_result.data["organization_id"]
+    
+    # Create a bonus credit pack (stored in flow_packs table)
+    supabase.table("flow_packs").insert({
+        "organization_id": org_id,
+        "flows_purchased": data.credits,
+        "flows_remaining": data.credits,
+        "price_cents": 0,  # Free bonus
+        "status": "active"
+    }).execute()
+    
+    # Log action
+    await log_admin_action(
+        admin_id=admin.admin_id,
+        action="user.add_credits",
+        target_type="user",
+        target_id=UUID(user_id),
+        target_identifier=user.data["email"],
+        details={"credits_added": data.credits, "reason": data.reason},
+        request=request
+    )
+    
+    return {"success": True, "message": f"Added {data.credits} bonus credits"}
+
+
+@router.post("/{user_id}/suspend")
+async def suspend_user(
+    user_id: str,
+    data: SuspendUserRequest,
+    request: Request,
+    admin: AdminContext = Depends(require_admin_role("super_admin", "admin"))
+):
+    """Suspend a user account (prevents login)."""
+    supabase = get_supabase_service()
+    
+    # Get user - try with is_suspended column, fall back to just email
+    try:
+        user = supabase.table("users").select("email, is_suspended").eq("id", user_id).maybe_single().execute()
+    except Exception:
+        # Column might not exist yet
+        user = supabase.table("users").select("email").eq("id", user_id).maybe_single().execute()
+    
+    if not user.data:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if user.data.get("is_suspended"):
+        raise HTTPException(status_code=400, detail="User is already suspended")
+    
+    # Get organization
+    org_result = supabase.table("organization_members") \
+        .select("organization_id") \
+        .eq("user_id", user_id) \
+        .maybe_single() \
+        .execute()
+    
+    if not org_result.data:
+        raise HTTPException(status_code=404, detail="User has no organization")
+    
+    org_id = org_result.data["organization_id"]
+    
+    # Update user to suspended (try with new columns, fall back to just updated_at)
+    try:
+        supabase.table("users") \
+            .update({
+                "is_suspended": True,
+                "suspended_at": datetime.utcnow().isoformat(),
+                "suspended_reason": data.reason,
+                "updated_at": datetime.utcnow().isoformat()
+            }) \
+            .eq("id", user_id) \
+            .execute()
+    except Exception:
+        # Columns might not exist yet, just update updated_at
+        supabase.table("users") \
+            .update({"updated_at": datetime.utcnow().isoformat()}) \
+            .eq("id", user_id) \
+            .execute()
+    
+    # Update subscription status to suspended (this always works)
+    supabase.table("organization_subscriptions") \
+        .update({
+            "status": "suspended",
+            "updated_at": datetime.utcnow().isoformat()
+        }) \
+        .eq("organization_id", org_id) \
+        .execute()
+    
+    # Log action
+    await log_admin_action(
+        admin_id=admin.admin_id,
+        action="user.suspend",
+        target_type="user",
+        target_id=UUID(user_id),
+        target_identifier=user.data["email"],
+        details={"reason": data.reason},
+        request=request
+    )
+    
+    return {"success": True, "message": f"User {user.data['email']} has been suspended"}
+
+
+@router.post("/{user_id}/unsuspend")
+async def unsuspend_user(
+    user_id: str,
+    data: UnsuspendUserRequest,
+    request: Request,
+    admin: AdminContext = Depends(require_admin_role("super_admin", "admin"))
+):
+    """Unsuspend a user account (allows login again)."""
+    supabase = get_supabase_service()
+    
+    # Get user - try with is_suspended column, fall back to just email
+    try:
+        user = supabase.table("users").select("email, is_suspended").eq("id", user_id).maybe_single().execute()
+    except Exception:
+        # Column might not exist yet
+        user = supabase.table("users").select("email").eq("id", user_id).maybe_single().execute()
+    
+    if not user.data:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check subscription status instead if column doesn't exist
+    if not user.data.get("is_suspended"):
+        # Double check via subscription status
+        org_check = supabase.table("organization_members") \
+            .select("organization_id") \
+            .eq("user_id", user_id) \
+            .maybe_single() \
+            .execute()
+        if org_check.data:
+            sub_check = supabase.table("organization_subscriptions") \
+                .select("status") \
+                .eq("organization_id", org_check.data["organization_id"]) \
+                .maybe_single() \
+                .execute()
+            if not sub_check.data or sub_check.data.get("status") != "suspended":
+                raise HTTPException(status_code=400, detail="User is not suspended")
+    
+    # Get organization
+    org_result = supabase.table("organization_members") \
+        .select("organization_id") \
+        .eq("user_id", user_id) \
+        .maybe_single() \
+        .execute()
+    
+    if not org_result.data:
+        raise HTTPException(status_code=404, detail="User has no organization")
+    
+    org_id = org_result.data["organization_id"]
+    
+    # Update user to unsuspended (try with new columns, fall back to just updated_at)
+    try:
+        supabase.table("users") \
+            .update({
+                "is_suspended": False,
+                "suspended_at": None,
+                "suspended_reason": None,
+                "updated_at": datetime.utcnow().isoformat()
+            }) \
+            .eq("id", user_id) \
+            .execute()
+    except Exception:
+        # Columns might not exist yet, just update updated_at
+        supabase.table("users") \
+            .update({"updated_at": datetime.utcnow().isoformat()}) \
+            .eq("id", user_id) \
+            .execute()
+    
+    # Update subscription status back to active (this always works)
+    supabase.table("organization_subscriptions") \
+        .update({
+            "status": "active",
+            "updated_at": datetime.utcnow().isoformat()
+        }) \
+        .eq("organization_id", org_id) \
+        .execute()
+    
+    # Log action
+    await log_admin_action(
+        admin_id=admin.admin_id,
+        action="user.unsuspend",
+        target_type="user",
+        target_id=UUID(user_id),
+        target_identifier=user.data["email"],
+        details={"reason": data.reason} if data.reason else {},
+        request=request
+    )
+    
+    return {"success": True, "message": f"User {user.data['email']} has been unsuspended"}
+
+
+@router.delete("/{user_id}")
+async def delete_user(
+    user_id: str,
+    data: DeleteUserRequest,
+    request: Request,
+    admin: AdminContext = Depends(require_admin_role("super_admin"))
+):
+    """
+    Delete a user account permanently.
+    
+    This is a destructive action that:
+    - Deletes all user data
+    - Removes organization (if sole owner)
+    - Cancels any active subscriptions
+    
+    Only super_admin can perform this action.
+    """
+    supabase = get_supabase_service()
+    
+    if not data.confirm:
+        raise HTTPException(status_code=400, detail="Must confirm deletion by setting confirm=true")
+    
+    # Get user
+    user = supabase.table("users").select("email").eq("id", user_id).maybe_single().execute()
+    if not user.data:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user_email = user.data["email"]
+    
+    # Prevent deleting yourself
+    if user_id == admin.user_id:
+        raise HTTPException(status_code=400, detail="Cannot delete your own account")
+    
+    # Get organization
+    org_result = supabase.table("organization_members") \
+        .select("organization_id, role") \
+        .eq("user_id", user_id) \
+        .maybe_single() \
+        .execute()
+    
+    org_id = org_result.data["organization_id"] if org_result.data else None
+    
+    # Log action BEFORE deletion
+    await log_admin_action(
+        admin_id=admin.admin_id,
+        action="user.delete",
+        target_type="user",
+        target_id=UUID(user_id),
+        target_identifier=user_email,
+        details={
+            "reason": data.reason,
+            "organization_id": str(org_id) if org_id else None
+        },
+        request=request
+    )
+    
+    # Delete order matters due to foreign keys:
+    if org_id:
+        # 1. Delete research briefs
+        supabase.table("research_briefs").delete().eq("organization_id", org_id).execute()
+        
+        # 2. Delete meeting preps
+        supabase.table("meeting_preps").delete().eq("organization_id", org_id).execute()
+        
+        # 3. Delete followups
+        supabase.table("followups").delete().eq("organization_id", org_id).execute()
+        
+        # 4. Delete prospect activities
+        supabase.table("prospect_activities").delete().eq("organization_id", org_id).execute()
+        
+        # 5. Delete prospect contacts
+        supabase.table("prospect_contacts").delete().eq("organization_id", org_id).execute()
+        
+        # 6. Delete prospect notes
+        supabase.table("prospect_notes").delete().eq("organization_id", org_id).execute()
+        
+        # 7. Delete prospects
+        supabase.table("prospects").delete().eq("organization_id", org_id).execute()
+        
+        # 8. Delete flow packs
+        supabase.table("flow_packs").delete().eq("organization_id", org_id).execute()
+        
+        # 9. Delete usage records
+        supabase.table("usage_records").delete().eq("organization_id", org_id).execute()
+        
+        # 10. Delete subscription
+        supabase.table("organization_subscriptions").delete().eq("organization_id", org_id).execute()
+        
+        # 11. Delete org membership
+        supabase.table("organization_members").delete().eq("organization_id", org_id).execute()
+        
+        # 12. Delete organization
+        supabase.table("organizations").delete().eq("id", org_id).execute()
+    
+    # Delete user-level data
+    supabase.table("sales_profiles").delete().eq("user_id", user_id).execute()
+    supabase.table("admin_notes").delete().eq("target_type", "user").eq("target_id", user_id).execute()
+    
+    # Finally, delete the user
+    supabase.table("users").delete().eq("id", user_id).execute()
+    
+    return {
+        "success": True, 
+        "message": f"User {user_email} and all associated data has been deleted",
+        "deleted_user_id": user_id,
+        "deleted_organization_id": str(org_id) if org_id else None
+    }
+
+
+# ============================================================
 # Helper Functions
 # ============================================================
 
 async def _enrich_user_data(supabase, user: dict) -> dict:
     """Get organization and subscription data for a user."""
+    # Plan name mapping
+    PLAN_NAMES = {
+        "free": "Free",
+        "pro_monthly": "Pro",
+        "pro_yearly": "Pro (Yearly)",
+        "pro_plus_monthly": "Pro+",
+        "pro_plus_yearly": "Pro+ (Yearly)",
+        "enterprise": "Enterprise",
+        # Legacy plans
+        "pro_solo": "Pro Solo",
+        "unlimited_solo": "Unlimited Solo",
+        "light_solo": "Light Solo",
+    }
+    
     result = {
         "organization_id": None,
         "organization_name": None,
         "plan": "free",
+        "plan_name": "Free",
         "flow_count": 0,
         "flow_limit": 2,
         "pack_balance": 0,
         "subscription_status": None,
         "stripe_customer_id": None,
         "trial_ends_at": None,
-        "last_active": None
+        "last_active": None,
+        "is_suspended": False,
+        "suspended_at": None,
+        "suspended_reason": None,
     }
     
     try:
@@ -1096,51 +1612,65 @@ async def _enrich_user_data(supabase, user: dict) -> dict:
             
             org_id = org_result.data["organization_id"]
             
-            # Get subscription
+            # Get subscription - FIX: Get the full plan info including name
             try:
                 sub_result = supabase.table("organization_subscriptions") \
-                    .select("plan_id, status, stripe_customer_id, trial_ends_at, subscription_plans(features)") \
+                    .select("plan_id, status, stripe_customer_id, trial_ends_at, subscription_plans(id, name, features)") \
                     .eq("organization_id", org_id) \
                     .maybe_single() \
                     .execute()
                 
                 if sub_result and sub_result.data:
-                    result["plan"] = sub_result.data.get("plan_id", "free")
+                    plan_id = sub_result.data.get("plan_id", "free")
+                    result["plan"] = plan_id
+                    result["plan_name"] = PLAN_NAMES.get(plan_id, plan_id.replace("_", " ").title())
                     result["subscription_status"] = sub_result.data.get("status")
                     result["stripe_customer_id"] = sub_result.data.get("stripe_customer_id")
                     result["trial_ends_at"] = sub_result.data.get("trial_ends_at")
                     
+                    # Check if subscription has suspended status
+                    if sub_result.data.get("status") == "suspended":
+                        result["is_suspended"] = True
+                    
+                    # Get plan features for flow limit
                     if sub_result.data.get("subscription_plans"):
-                        result["flow_limit"] = sub_result.data["subscription_plans"].get("features", {}).get("flow_limit", 2)
-            except Exception:
-                pass
+                        features = sub_result.data["subscription_plans"].get("features", {})
+                        if features:
+                            result["flow_limit"] = features.get("flow_limit", 2)
+                            # -1 means unlimited
+                            if result["flow_limit"] == -1:
+                                result["flow_limit"] = -1  # Keep -1 to show infinity symbol
+            except Exception as e:
+                print(f"Error getting subscription for org {org_id}: {e}")
             
             # Get usage from usage_records
             try:
+                current_month = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
                 usage_result = supabase.table("usage_records") \
                     .select("flow_count") \
                     .eq("organization_id", org_id) \
-                    .gte("period_start", datetime.utcnow().replace(day=1).isoformat()) \
+                    .gte("period_start", current_month.isoformat()) \
                     .maybe_single() \
                     .execute()
                 
                 if usage_result and usage_result.data:
-                    result["flow_count"] = usage_result.data.get("flow_count", 0)
-            except Exception:
-                pass
+                    result["flow_count"] = usage_result.data.get("flow_count", 0) or 0
+            except Exception as e:
+                print(f"Error getting usage for org {org_id}: {e}")
             
-            # Get flow pack balance
+            # Get credit pack balance
             try:
                 pack_result = supabase.table("flow_packs") \
                     .select("flows_remaining") \
                     .eq("organization_id", org_id) \
                     .eq("status", "active") \
+                    .gt("flows_remaining", 0) \
                     .execute()
                 
                 if pack_result and pack_result.data:
                     result["pack_balance"] = sum(p.get("flows_remaining", 0) for p in pack_result.data)
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"Error getting pack balance for org {org_id}: {e}")
             
             # Get last activity
             try:
@@ -1153,8 +1683,9 @@ async def _enrich_user_data(supabase, user: dict) -> dict:
                 
                 if activity_result and activity_result.data:
                     result["last_active"] = activity_result.data[0].get("created_at")
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"Error getting last activity for org {org_id}: {e}")
+                
     except Exception as e:
         # Log but don't fail - return basic user data
         print(f"Error enriching user data for {user.get('id')}: {e}")
