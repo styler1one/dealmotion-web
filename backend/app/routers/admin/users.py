@@ -242,6 +242,8 @@ async def list_users(
     """
     List all users with pagination and filtering.
     
+    OPTIMIZED: Uses batch queries to avoid N+1 query problem.
+    
     Filters:
     - search: Search in email, name, organization name
     - plan: Filter by subscription plan
@@ -252,74 +254,275 @@ async def list_users(
     """
     supabase = get_supabase_service()
     
-    # Build base query - get all users with their org membership
+    # Plan name mapping
+    PLAN_NAMES = {
+        "free": "Free",
+        "pro_monthly": "Pro",
+        "pro_yearly": "Pro (Yearly)",
+        "pro_plus_monthly": "Pro+",
+        "pro_plus_yearly": "Pro+ (Yearly)",
+        "enterprise": "Enterprise",
+        "pro_solo": "Pro Solo",
+        "unlimited_solo": "Unlimited Solo",
+        "light_solo": "Light Solo",
+    }
+    
+    # Get users with optional search filter
     query = supabase.table("users").select(
-        "id, email, full_name, created_at",
+        "id, email, full_name, created_at, is_suspended, suspended_at, suspended_reason",
         count="exact"
     )
     
-    # Get users first
-    users_result = query.range(offset, offset + limit - 1).execute()
+    # Apply sorting
+    if sort_by in ["created_at", "email"]:
+        query = query.order(sort_by, desc=(sort_order == "desc"))
+    
+    users_result = query.execute()
     
     if not users_result.data:
         return UserListResponse(users=[], total=0, offset=offset, limit=limit)
     
-    # Enrich with organization and subscription data
+    all_users = users_result.data
+    user_ids = [u["id"] for u in all_users]
+    
+    # ========== BATCH QUERY 1: Organization membership ==========
+    org_members_result = supabase.table("organization_members") \
+        .select("user_id, organization_id, organizations(name)") \
+        .in_("user_id", user_ids) \
+        .execute()
+    
+    # Map: user_id -> {org_id, org_name}
+    user_org_map: Dict[str, Dict] = {}
+    org_ids = set()
+    for member in (org_members_result.data or []):
+        uid = member.get("user_id")
+        org_id = member.get("organization_id")
+        org_name = (member.get("organizations") or {}).get("name")
+        if uid:
+            user_org_map[uid] = {"org_id": org_id, "org_name": org_name}
+            if org_id:
+                org_ids.add(org_id)
+    
+    # ========== BATCH QUERY 2: Subscriptions with plan features ==========
+    # Map: org_id -> {plan_id, plan_name, status, flow_limit}
+    org_sub_map: Dict[str, Dict] = {}
+    if org_ids:
+        subs_result = supabase.table("organization_subscriptions") \
+            .select("organization_id, plan_id, status, subscription_plans(id, name, features)") \
+            .in_("organization_id", list(org_ids)) \
+            .execute()
+        
+        for sub in (subs_result.data or []):
+            org_id = sub.get("organization_id")
+            plan_id = sub.get("plan_id", "free")
+            plan_data = sub.get("subscription_plans") or {}
+            features = plan_data.get("features") or {}
+            # flow_limit: -1 means unlimited
+            flow_limit = features.get("flow_limit", 2)
+            if flow_limit is None:
+                flow_limit = 2
+            
+            org_sub_map[org_id] = {
+                "plan_id": plan_id,
+                "plan_name": PLAN_NAMES.get(plan_id, plan_id.replace("_", " ").title()),
+                "status": sub.get("status"),
+                "flow_limit": flow_limit,
+            }
+    
+    # ========== BATCH QUERY 3: Current month usage ==========
+    # Map: org_id -> flow_count
+    org_usage_map: Dict[str, int] = {}
+    if org_ids:
+        current_month = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        usage_result = supabase.table("usage_records") \
+            .select("organization_id, flow_count") \
+            .in_("organization_id", list(org_ids)) \
+            .gte("period_start", current_month.isoformat()) \
+            .execute()
+        
+        for usage in (usage_result.data or []):
+            org_id = usage.get("organization_id")
+            org_usage_map[org_id] = usage.get("flow_count", 0) or 0
+    
+    # ========== BATCH QUERY 4: Active flow packs ==========
+    # Map: org_id -> pack_balance
+    org_pack_map: Dict[str, int] = {}
+    if org_ids:
+        packs_result = supabase.table("flow_packs") \
+            .select("organization_id, flows_remaining") \
+            .in_("organization_id", list(org_ids)) \
+            .eq("status", "active") \
+            .gt("flows_remaining", 0) \
+            .execute()
+        
+        for pack in (packs_result.data or []):
+            org_id = pack.get("organization_id")
+            balance = pack.get("flows_remaining", 0) or 0
+            org_pack_map[org_id] = org_pack_map.get(org_id, 0) + balance
+    
+    # ========== BATCH QUERY 5: Last activity ==========
+    # Map: org_id -> last_active datetime
+    org_activity_map: Dict[str, str] = {}
+    if org_ids:
+        # Get most recent activity per org (limit to 1000 to avoid huge queries)
+        activities_result = supabase.table("prospect_activities") \
+            .select("organization_id, created_at") \
+            .in_("organization_id", list(org_ids)) \
+            .order("created_at", desc=True) \
+            .limit(1000) \
+            .execute()
+        
+        for activity in (activities_result.data or []):
+            org_id = activity.get("organization_id")
+            if org_id and org_id not in org_activity_map:
+                org_activity_map[org_id] = activity.get("created_at")
+    
+    # ========== BATCH QUERY 6: Health data components ==========
+    month_ago = datetime.utcnow() - timedelta(days=30)
+    
+    # 6a. Error counts from research_briefs
+    user_error_map: Dict[str, Dict] = {uid: {"error_count": 0, "total_count": 0} for uid in user_ids}
+    briefs_result = supabase.table("research_briefs") \
+        .select("user_id, status") \
+        .in_("user_id", user_ids) \
+        .gte("created_at", month_ago.isoformat()) \
+        .execute()
+    
+    for brief in (briefs_result.data or []):
+        uid = brief.get("user_id")
+        if uid and uid in user_error_map:
+            user_error_map[uid]["total_count"] += 1
+            if brief.get("status") == "failed":
+                user_error_map[uid]["error_count"] += 1
+    
+    # 6b. Profile completeness
+    user_profile_map: Dict[str, int] = {}
+    profiles_result = supabase.table("sales_profiles") \
+        .select("user_id, profile_completeness") \
+        .in_("user_id", user_ids) \
+        .execute()
+    
+    for profile in (profiles_result.data or []):
+        uid = profile.get("user_id")
+        if uid:
+            user_profile_map[uid] = profile.get("profile_completeness", 0) or 0
+    
+    # 6c. Failed payments per org
+    org_failed_payments: set = set()
+    if org_ids:
+        failed_result = supabase.table("payment_history") \
+            .select("organization_id") \
+            .eq("status", "failed") \
+            .in_("organization_id", list(org_ids)) \
+            .gte("created_at", month_ago.isoformat()) \
+            .execute()
+        
+        for payment in (failed_result.data or []):
+            org_failed_payments.add(payment.get("organization_id"))
+    
+    # ========== BUILD USER LIST ==========
     enriched_users = []
-    for user in users_result.data:
-        user_data = await _enrich_user_data(supabase, user)
+    for user in all_users:
+        uid = user["id"]
+        
+        # Get org data
+        org_data = user_org_map.get(uid, {})
+        org_id = org_data.get("org_id")
+        org_name = org_data.get("org_name")
+        
+        # Get subscription data
+        sub_data = org_sub_map.get(org_id, {}) if org_id else {}
+        user_plan = sub_data.get("plan_id", "free")
+        user_plan_name = sub_data.get("plan_name", "Free")
+        user_status = sub_data.get("status")
+        flow_limit = sub_data.get("flow_limit", 2)
+        
+        # Get usage data
+        flow_count = org_usage_map.get(org_id, 0) if org_id else 0
+        pack_balance = org_pack_map.get(org_id, 0) if org_id else 0
+        last_active = org_activity_map.get(org_id) if org_id else None
+        
+        # Get health data
+        error_data = user_error_map.get(uid, {"error_count": 0, "total_count": 0})
+        profile_completeness = user_profile_map.get(uid, 0)
+        has_failed_payment = org_id in org_failed_payments if org_id else False
+        
+        # Calculate days since last activity
+        days_inactive = 999
+        if last_active:
+            try:
+                last_dt = datetime.fromisoformat(last_active.replace("Z", "+00:00"))
+                days_inactive = (datetime.utcnow().replace(tzinfo=last_dt.tzinfo) - last_dt).days
+            except:
+                pass
+        
+        # Calculate health score
+        health_data = {
+            "plan": user_plan,
+            "days_since_last_activity": days_inactive,
+            "error_count_30d": error_data["error_count"],
+            "error_rate_30d": (error_data["error_count"] / error_data["total_count"] * 100) if error_data["total_count"] > 0 else 0,
+            "flow_usage_percent": (flow_count / flow_limit * 100) if flow_limit > 0 else 0,
+            "profile_completeness": profile_completeness,
+            "has_failed_payment": has_failed_payment,
+        }
+        score = calculate_health_score(health_data)
+        status = get_health_status(score)
+        
+        # Check if user is suspended
+        is_suspended = user.get("is_suspended", False) or user_status == "suspended"
         
         # Apply filters
-        if plan and user_data.get("plan") != plan:
+        if plan and user_plan != plan:
             continue
         
-        if health_status:
-            health_data = await _get_health_data(supabase, user["id"])
-            score = calculate_health_score(health_data)
-            status = get_health_status(score)
-            if status != health_status:
-                continue
-            user_data["health_score"] = score
-            user_data["health_status"] = status
-        else:
-            health_data = await _get_health_data(supabase, user["id"])
-            score = calculate_health_score(health_data)
-            user_data["health_score"] = score
-            user_data["health_status"] = get_health_status(score)
+        if health_status and status != health_status:
+            continue
         
         if search:
             search_lower = search.lower()
             if not (
                 search_lower in user.get("email", "").lower() or
                 search_lower in (user.get("full_name") or "").lower() or
-                search_lower in (user_data.get("organization_name") or "").lower()
+                search_lower in (org_name or "").lower()
             ):
                 continue
         
         enriched_users.append(AdminUserListItem(
-            id=user["id"],
+            id=uid,
             email=user["email"],
             full_name=user.get("full_name"),
-            organization_id=user_data.get("organization_id"),
-            organization_name=user_data.get("organization_name"),
-            plan=user_data.get("plan", "free"),
-            plan_name=user_data.get("plan_name"),
-            subscription_status=user_data.get("subscription_status"),
-            is_suspended=user_data.get("is_suspended", False),
+            organization_id=org_id,
+            organization_name=org_name,
+            plan=user_plan,
+            plan_name=user_plan_name,
+            subscription_status=user_status,
+            is_suspended=is_suspended,
             credit_usage=CreditUsage(
-                used=user_data.get("flow_count", 0),
-                limit=user_data.get("flow_limit", 2),
-                pack_balance=user_data.get("pack_balance", 0)
+                used=flow_count,
+                limit=flow_limit,
+                pack_balance=pack_balance
             ),
-            health_score=user_data.get("health_score", 0),
-            health_status=user_data.get("health_status", "healthy"),
-            last_active=user_data.get("last_active"),
+            health_score=score,
+            health_status=status,
+            last_active=last_active,
             created_at=user["created_at"]
         ))
     
+    # Apply sorting for last_active (done in memory since it's from a different table)
+    if sort_by == "last_active":
+        enriched_users.sort(
+            key=lambda u: u.last_active or datetime.min.isoformat(),
+            reverse=(sort_order == "desc")
+        )
+    
+    # Apply pagination (after filtering)
+    total_filtered = len(enriched_users)
+    paginated_users = enriched_users[offset:offset + limit]
+    
     return UserListResponse(
-        users=enriched_users,
-        total=users_result.count or len(enriched_users),
+        users=paginated_users,
+        total=total_filtered,
         offset=offset,
         limit=limit
     )
