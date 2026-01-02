@@ -303,12 +303,12 @@ async def list_users(
             if org_id:
                 org_ids.add(org_id)
     
-    # ========== BATCH QUERY 2: Subscriptions with plan features ==========
-    # Map: org_id -> {plan_id, plan_name, status, flow_limit}
+    # ========== BATCH QUERY 2: Subscriptions with plan info ==========
+    # Map: org_id -> {plan_id, plan_name, status}
     org_sub_map: Dict[str, Dict] = {}
     if org_ids:
         subs_result = supabase.table("organization_subscriptions") \
-            .select("organization_id, plan_id, status, subscription_plans(id, name, features)") \
+            .select("organization_id, plan_id, status, subscription_plans(id, name, credits_per_month)") \
             .in_("organization_id", list(org_ids)) \
             .execute()
         
@@ -316,49 +316,46 @@ async def list_users(
             org_id = sub.get("organization_id")
             plan_id = sub.get("plan_id", "free")
             plan_data = sub.get("subscription_plans") or {}
-            features = plan_data.get("features") or {}
-            # flow_limit: -1 means unlimited
-            flow_limit = features.get("flow_limit", 2)
-            if flow_limit is None:
-                flow_limit = 2
+            # Get credits_per_month from plan: Free=25, Pro=250, Pro+=600, Enterprise=-1
+            credits_per_month = plan_data.get("credits_per_month")
+            if credits_per_month is None:
+                # Fallback for legacy: free=25, pro=250, pro+=600
+                if "pro_plus" in plan_id:
+                    credits_per_month = 600
+                elif "pro" in plan_id:
+                    credits_per_month = 250
+                else:
+                    credits_per_month = 25
             
             org_sub_map[org_id] = {
                 "plan_id": plan_id,
                 "plan_name": PLAN_NAMES.get(plan_id, plan_id.replace("_", " ").title()),
                 "status": sub.get("status"),
-                "flow_limit": flow_limit,
+                "credits_per_month": credits_per_month,
             }
     
-    # ========== BATCH QUERY 3: Current month usage ==========
-    # Map: org_id -> flow_count
-    org_usage_map: Dict[str, int] = {}
+    # ========== BATCH QUERY 3: Credit balances (replaces usage_records + flow_packs) ==========
+    # Map: org_id -> {credits_used, credits_total, pack_balance, is_unlimited}
+    org_credit_map: Dict[str, Dict] = {}
     if org_ids:
-        current_month = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        usage_result = supabase.table("usage_records") \
-            .select("organization_id, flow_count") \
+        credits_result = supabase.table("credit_balances") \
+            .select("organization_id, subscription_credits_total, subscription_credits_used, pack_credits_remaining, bonus_credits_remaining, is_unlimited") \
             .in_("organization_id", list(org_ids)) \
-            .gte("period_start", current_month.isoformat()) \
             .execute()
         
-        for usage in (usage_result.data or []):
-            org_id = usage.get("organization_id")
-            org_usage_map[org_id] = usage.get("flow_count", 0) or 0
-    
-    # ========== BATCH QUERY 4: Active flow packs ==========
-    # Map: org_id -> pack_balance
-    org_pack_map: Dict[str, int] = {}
-    if org_ids:
-        packs_result = supabase.table("flow_packs") \
-            .select("organization_id, flows_remaining") \
-            .in_("organization_id", list(org_ids)) \
-            .eq("status", "active") \
-            .gt("flows_remaining", 0) \
-            .execute()
-        
-        for pack in (packs_result.data or []):
-            org_id = pack.get("organization_id")
-            balance = pack.get("flows_remaining", 0) or 0
-            org_pack_map[org_id] = org_pack_map.get(org_id, 0) + balance
+        for credit in (credits_result.data or []):
+            org_id = credit.get("organization_id")
+            credits_used = credit.get("subscription_credits_used", 0) or 0
+            credits_total = credit.get("subscription_credits_total", 25) or 25
+            pack_balance = (credit.get("pack_credits_remaining", 0) or 0) + (credit.get("bonus_credits_remaining", 0) or 0)
+            is_unlimited = credit.get("is_unlimited", False)
+            
+            org_credit_map[org_id] = {
+                "credits_used": int(credits_used),
+                "credits_total": int(credits_total),
+                "pack_balance": int(pack_balance),
+                "is_unlimited": is_unlimited,
+            }
     
     # ========== BATCH QUERY 5: Last activity ==========
     # Map: org_id -> last_active datetime
@@ -435,12 +432,18 @@ async def list_users(
         user_plan = sub_data.get("plan_id", "free")
         user_plan_name = sub_data.get("plan_name", "Free")
         user_status = sub_data.get("status")
-        flow_limit = sub_data.get("flow_limit", 2)
+        credits_per_month = sub_data.get("credits_per_month", 25)
         
-        # Get usage data
-        flow_count = org_usage_map.get(org_id, 0) if org_id else 0
-        pack_balance = org_pack_map.get(org_id, 0) if org_id else 0
+        # Get credit balance data
+        credit_data = org_credit_map.get(org_id, {}) if org_id else {}
+        credits_used = credit_data.get("credits_used", 0)
+        credits_total = credit_data.get("credits_total", credits_per_month)
+        pack_balance = credit_data.get("pack_balance", 0)
+        is_unlimited = credit_data.get("is_unlimited", False)
         last_active = org_activity_map.get(org_id) if org_id else None
+        
+        # Use credits_total from credit_balances, or fallback to plan's credits_per_month
+        credit_limit = -1 if is_unlimited else (credits_total if credits_total > 0 else credits_per_month)
         
         # Get health data
         error_data = user_error_map.get(uid, {"error_count": 0, "total_count": 0})
@@ -462,7 +465,7 @@ async def list_users(
             "days_since_last_activity": days_inactive,
             "error_count_30d": error_data["error_count"],
             "error_rate_30d": (error_data["error_count"] / error_data["total_count"] * 100) if error_data["total_count"] > 0 else 0,
-            "flow_usage_percent": (flow_count / flow_limit * 100) if flow_limit > 0 else 0,
+            "flow_usage_percent": (credits_used / credit_limit * 100) if credit_limit > 0 else 0,
             "profile_completeness": profile_completeness,
             "has_failed_payment": has_failed_payment,
         }
@@ -499,8 +502,8 @@ async def list_users(
             subscription_status=user_status,
             is_suspended=is_suspended,
             credit_usage=CreditUsage(
-                used=flow_count,
-                limit=flow_limit,
+                used=credits_used,
+                limit=credit_limit,
                 pack_balance=pack_balance
             ),
             health_score=score,
@@ -1783,13 +1786,26 @@ async def _enrich_user_data(supabase, user: dict) -> dict:
         "light_solo": "Light Solo",
     }
     
+    # Default credit limits per plan
+    PLAN_CREDITS = {
+        "free": 25,
+        "pro_monthly": 250,
+        "pro_yearly": 250,
+        "pro_plus_monthly": 600,
+        "pro_plus_yearly": 600,
+        "enterprise": -1,  # Unlimited
+        "pro_solo": 250,
+        "unlimited_solo": -1,
+        "light_solo": 25,
+    }
+    
     result = {
         "organization_id": None,
         "organization_name": None,
         "plan": "free",
         "plan_name": "Free",
-        "flow_count": 0,
-        "flow_limit": 2,
+        "flow_count": 0,  # Credits used
+        "flow_limit": 25,  # Credit limit (25 for free)
         "pack_balance": 0,
         "subscription_status": None,
         "stripe_customer_id": None,
@@ -1815,10 +1831,10 @@ async def _enrich_user_data(supabase, user: dict) -> dict:
             
             org_id = org_data["organization_id"]
             
-            # Get subscription - Use .limit(1) instead of .maybe_single() to avoid 204 errors
+            # Get subscription with plan's credits_per_month
             try:
                 sub_result = supabase.table("organization_subscriptions") \
-                    .select("plan_id, status, stripe_customer_id, trial_end, subscription_plans(id, name, features)") \
+                    .select("plan_id, status, stripe_customer_id, trial_end, subscription_plans(id, name, credits_per_month)") \
                     .eq("organization_id", org_id) \
                     .limit(1) \
                     .execute()
@@ -1830,51 +1846,48 @@ async def _enrich_user_data(supabase, user: dict) -> dict:
                     result["plan_name"] = PLAN_NAMES.get(plan_id, plan_id.replace("_", " ").title())
                     result["subscription_status"] = sub_data.get("status")
                     result["stripe_customer_id"] = sub_data.get("stripe_customer_id")
-                    result["trial_ends_at"] = sub_data.get("trial_end")  # Column is 'trial_end' not 'trial_ends_at'
+                    result["trial_ends_at"] = sub_data.get("trial_end")
+                    
+                    # Get credits_per_month from plan or use default
+                    plan_data = sub_data.get("subscription_plans") or {}
+                    credits_per_month = plan_data.get("credits_per_month")
+                    if credits_per_month is None:
+                        credits_per_month = PLAN_CREDITS.get(plan_id, 25)
+                    result["flow_limit"] = credits_per_month
                     
                     # Check if subscription has suspended status
                     if sub_data.get("status") == "suspended":
                         result["is_suspended"] = True
-                    
-                    # Get plan features for flow limit
-                    if sub_data.get("subscription_plans"):
-                        features = sub_data["subscription_plans"].get("features", {})
-                        if features:
-                            result["flow_limit"] = features.get("flow_limit", 2)
-                            # -1 means unlimited
-                            if result["flow_limit"] == -1:
-                                result["flow_limit"] = -1  # Keep -1 to show infinity symbol
             except Exception as e:
                 print(f"Error getting subscription for org {org_id}: {e}")
             
-            # Get usage from usage_records
+            # Get credit balance from credit_balances table
             try:
-                current_month = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-                usage_result = supabase.table("usage_records") \
-                    .select("flow_count") \
+                credit_result = supabase.table("credit_balances") \
+                    .select("subscription_credits_total, subscription_credits_used, pack_credits_remaining, bonus_credits_remaining, is_unlimited") \
                     .eq("organization_id", org_id) \
-                    .gte("period_start", current_month.isoformat()) \
                     .limit(1) \
                     .execute()
                 
-                if usage_result and usage_result.data and len(usage_result.data) > 0:
-                    result["flow_count"] = usage_result.data[0].get("flow_count", 0) or 0
+                if credit_result and credit_result.data and len(credit_result.data) > 0:
+                    credit_data = credit_result.data[0]
+                    result["flow_count"] = int(credit_data.get("subscription_credits_used", 0) or 0)
+                    
+                    # Use credit_balances total if available, otherwise keep plan default
+                    credits_total = credit_data.get("subscription_credits_total")
+                    if credits_total is not None and credits_total > 0:
+                        result["flow_limit"] = int(credits_total)
+                    
+                    # Check unlimited flag
+                    if credit_data.get("is_unlimited"):
+                        result["flow_limit"] = -1
+                    
+                    # Pack balance = pack_credits + bonus_credits
+                    pack_balance = (credit_data.get("pack_credits_remaining", 0) or 0) + \
+                                   (credit_data.get("bonus_credits_remaining", 0) or 0)
+                    result["pack_balance"] = int(pack_balance)
             except Exception as e:
-                print(f"Error getting usage for org {org_id}: {e}")
-            
-            # Get credit pack balance
-            try:
-                pack_result = supabase.table("flow_packs") \
-                    .select("flows_remaining") \
-                    .eq("organization_id", org_id) \
-                    .eq("status", "active") \
-                    .gt("flows_remaining", 0) \
-                    .execute()
-                
-                if pack_result and pack_result.data:
-                    result["pack_balance"] = sum(p.get("flows_remaining", 0) for p in pack_result.data)
-            except Exception as e:
-                print(f"Error getting pack balance for org {org_id}: {e}")
+                print(f"Error getting credit balance for org {org_id}: {e}")
             
             # Get last activity
             try:
