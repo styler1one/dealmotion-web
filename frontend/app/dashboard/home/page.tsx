@@ -11,7 +11,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { DashboardLayout } from '@/components/layout'
-import { AutopilotProvider, AutopilotHome } from '@/components/autopilot'
+import { AutopilotHome } from '@/components/autopilot'
 import { Icons } from '@/components/icons'
 import type { User } from '@supabase/supabase-js'
 
@@ -50,9 +50,7 @@ export default function AutopilotHomePage() {
   return (
     <DashboardLayout user={user}>
       <div className="p-4 lg:p-6">
-        <AutopilotProvider>
-          <AutopilotHome />
-        </AutopilotProvider>
+        <AutopilotHome />
       </div>
     </DashboardLayout>
   )
