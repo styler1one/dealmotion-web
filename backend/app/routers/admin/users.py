@@ -339,7 +339,7 @@ async def list_users(
     org_credit_map: Dict[str, Dict] = {}
     if org_ids:
         credits_result = supabase.table("credit_balances") \
-            .select("organization_id, subscription_credits_total, subscription_credits_used, pack_credits_remaining, bonus_credits_remaining, is_unlimited") \
+            .select("organization_id, subscription_credits_total, subscription_credits_used, pack_credits_remaining, is_unlimited") \
             .in_("organization_id", list(org_ids)) \
             .execute()
         
@@ -347,7 +347,7 @@ async def list_users(
             org_id = credit.get("organization_id")
             credits_used = credit.get("subscription_credits_used", 0) or 0
             credits_total = credit.get("subscription_credits_total", 25) or 25
-            pack_balance = (credit.get("pack_credits_remaining", 0) or 0) + (credit.get("bonus_credits_remaining", 0) or 0)
+            pack_balance = credit.get("pack_credits_remaining", 0) or 0
             is_unlimited = credit.get("is_unlimited", False)
             
             org_credit_map[org_id] = {
@@ -1864,7 +1864,7 @@ async def _enrich_user_data(supabase, user: dict) -> dict:
             # Get credit balance from credit_balances table
             try:
                 credit_result = supabase.table("credit_balances") \
-                    .select("subscription_credits_total, subscription_credits_used, pack_credits_remaining, bonus_credits_remaining, is_unlimited") \
+                    .select("subscription_credits_total, subscription_credits_used, pack_credits_remaining, is_unlimited") \
                     .eq("organization_id", org_id) \
                     .limit(1) \
                     .execute()
@@ -1882,10 +1882,8 @@ async def _enrich_user_data(supabase, user: dict) -> dict:
                     if credit_data.get("is_unlimited"):
                         result["flow_limit"] = -1
                     
-                    # Pack balance = pack_credits + bonus_credits
-                    pack_balance = (credit_data.get("pack_credits_remaining", 0) or 0) + \
-                                   (credit_data.get("bonus_credits_remaining", 0) or 0)
-                    result["pack_balance"] = int(pack_balance)
+                    # Pack balance from pack_credits_remaining
+                    result["pack_balance"] = int(credit_data.get("pack_credits_remaining", 0) or 0)
             except Exception as e:
                 print(f"Error getting credit balance for org {org_id}: {e}")
             
