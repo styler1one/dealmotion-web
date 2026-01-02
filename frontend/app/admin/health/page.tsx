@@ -381,7 +381,7 @@ export default function AdminHealthPage() {
                           <td className="py-4">
                             {/* Mini uptime chart */}
                             <div className="flex items-end gap-[2px] h-6">
-                              {bars.length > 0 ? bars.map((bar, i) => (
+                              {bars.length > 0 ? bars.map((bar: { date: string; uptime: number; incidents: number }, i: number) => (
                                 <div
                                   key={i}
                                   className={cn(
