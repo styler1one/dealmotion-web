@@ -138,7 +138,7 @@ class AffiliateService:
                 "status", "active"
             ).maybe_single().execute()
             
-            return response.data
+            return response.data if response else None
         except Exception as e:
             logger.error(f"Error getting affiliate by code: {e}")
             return None
@@ -150,7 +150,7 @@ class AffiliateService:
                 "id", affiliate_id
             ).maybe_single().execute()
             
-            return response.data
+            return response.data if response else None
         except Exception as e:
             logger.error(f"Error getting affiliate by ID: {e}")
             return None
@@ -169,7 +169,7 @@ class AffiliateService:
                 "affiliate_code", affiliate_code
             ).maybe_single().execute()
             
-            if not response.data:
+            if not response or not response.data:
                 return False, None
             
             if response.data.get("status") != "active":
@@ -183,7 +183,7 @@ class AffiliateService:
             ).maybe_single().execute()
             
             display_name = None
-            if user_response.data and user_response.data.get("full_name"):
+            if user_response and user_response.data and user_response.data.get("full_name"):
                 # Only show first name for privacy
                 full_name = user_response.data["full_name"]
                 display_name = full_name.split()[0] if full_name else None
@@ -368,12 +368,16 @@ class AffiliateService:
                 return False
             
             # Check for duplicate click_id
-            existing = self.supabase.table("affiliate_clicks").select(
-                "id"
-            ).eq("click_id", click_id).maybe_single().execute()
-            
-            if existing.data:
-                return True  # Already tracked, not an error
+            try:
+                existing = self.supabase.table("affiliate_clicks").select(
+                    "id"
+                ).eq("click_id", click_id).maybe_single().execute()
+                
+                if existing and existing.data:
+                    return True  # Already tracked, not an error
+            except Exception as dup_error:
+                # If check fails, continue with insert (worst case: duplicate key error)
+                logger.debug(f"Duplicate check error (continuing): {dup_error}")
             
             # Insert click record
             click_data = {
@@ -414,7 +418,7 @@ class AffiliateService:
                 "click_id", click_id
             ).maybe_single().execute()
             
-            return response.data
+            return response.data if response else None
         except Exception as e:
             logger.error(f"Error getting click: {e}")
             return None
@@ -461,7 +465,7 @@ class AffiliateService:
                 "id"
             ).eq("referred_user_id", referred_user_id).maybe_single().execute()
             
-            if existing.data:
+            if existing and existing.data:
                 logger.info(f"User {referred_user_id} was already referred")
                 return None
             
@@ -540,7 +544,7 @@ class AffiliateService:
                 "referred_user_id", user_id
             ).maybe_single().execute()
             
-            return response.data
+            return response.data if response else None
         except Exception as e:
             logger.error(f"Error getting referral by user: {e}")
             return None
@@ -554,7 +558,7 @@ class AffiliateService:
                 "referred_organization_id", organization_id
             ).maybe_single().execute()
             
-            return response.data
+            return response.data if response else None
         except Exception as e:
             logger.error(f"Error getting referral by organization: {e}")
             return None
@@ -640,7 +644,7 @@ class AffiliateService:
                     "id"
                 ).eq("stripe_invoice_id", stripe_invoice_id).maybe_single().execute()
                 
-                if existing.data:
+                if existing and existing.data:
                     logger.info(f"Commission already exists for invoice {stripe_invoice_id}")
                     return None
             
@@ -745,7 +749,7 @@ class AffiliateService:
             
             response = query.maybe_single().execute()
             
-            if not response.data:
+            if not response or not response.data:
                 return False  # No commission to reverse
             
             commission = response.data
@@ -954,7 +958,7 @@ class AffiliateService:
                     "email"
                 ).eq("id", affiliate["user_id"]).maybe_single().execute()
                 
-                if not user_response.data:
+                if not user_response or not user_response.data:
                     return None
                 
                 account_id = await self.create_connect_account(
@@ -1242,7 +1246,7 @@ class AffiliateService:
                 "stripe_transfer_id", transfer_id
             ).maybe_single().execute()
             
-            if not payout_response.data:
+            if not payout_response or not payout_response.data:
                 return False
             
             payout = payout_response.data
