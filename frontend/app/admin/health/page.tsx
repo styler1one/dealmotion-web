@@ -119,14 +119,18 @@ export default function AdminHealthPage() {
 
   // Calculate uptime bars for mini chart
   const getUptimeBars = (serviceName: string) => {
-    const serviceTrend = trends?.services.find(s => s.serviceName === serviceName)
-    if (!serviceTrend || serviceTrend.trendData.length === 0) return []
+    // Handle both camelCase and snake_case
+    const serviceTrend = trends?.services.find(s => 
+      (s.serviceName || (s as any).service_name) === serviceName
+    )
+    const trendData = serviceTrend?.trendData || (serviceTrend as any)?.trend_data || []
+    if (!serviceTrend || trendData.length === 0) return []
     
     // Get last 30 days
-    return serviceTrend.trendData.slice(-30).map(d => ({
+    return trendData.slice(-30).map((d: any) => ({
       date: d.date,
-      uptime: d.uptimePercent,
-      incidents: d.incidentCount
+      uptime: d.uptimePercent ?? d.uptime_percent ?? 100,
+      incidents: d.incidentCount ?? d.incident_count ?? 0
     }))
   }
 
@@ -252,55 +256,64 @@ export default function AdminHealthPage() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {health?.services.map((service: ServiceStatus) => (
-                  <div 
-                    key={service.name}
-                    className={cn(
-                      'flex items-center gap-4 p-4 rounded-xl border transition-colors',
-                      service.status === 'healthy' ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-900/10' :
-                      service.status === 'degraded' ? 'border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/10' :
-                      service.status === 'down' ? 'border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-900/10' :
-                      'border-slate-200 dark:border-slate-700'
-                    )}
-                  >
-                    <div className={cn(
-                      'flex items-center justify-center w-12 h-12 rounded-full',
-                      service.status === 'healthy' ? 'bg-emerald-100 dark:bg-emerald-900/30' :
-                      service.status === 'degraded' ? 'bg-amber-100 dark:bg-amber-900/30' :
-                      service.status === 'down' ? 'bg-red-100 dark:bg-red-900/30' :
-                      'bg-slate-100 dark:bg-slate-800'
-                    )}>
-                      {getStatusIcon(service.status)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-slate-900 dark:text-white">
-                          {service.displayName}
-                        </span>
-                        {service.isCritical && (
-                          <Badge variant="outline" className="text-xs">Critical</Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-slate-500 truncate">
-                        {service.errorMessage || service.details || 'No details'}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      {service.responseTimeMs ? (
-                        <div className={cn(
-                          'text-sm font-medium',
-                          service.responseTimeMs < 500 ? 'text-emerald-500' :
-                          service.responseTimeMs < 1000 ? 'text-amber-500' : 'text-red-500'
-                        )}>
-                          {service.responseTimeMs}ms
-                        </div>
-                      ) : (
-                        <div className="text-sm text-slate-400">—</div>
+                {health?.services.map((service: ServiceStatus) => {
+                  // Handle both camelCase and snake_case
+                  const svc = service as any
+                  const displayName = service.displayName || svc.display_name || service.name
+                  const responseTime = service.responseTimeMs ?? svc.response_time_ms
+                  const errorMsg = service.errorMessage || svc.error_message
+                  const isCrit = service.isCritical ?? svc.is_critical
+                  
+                  return (
+                    <div 
+                      key={service.name}
+                      className={cn(
+                        'flex items-center gap-4 p-4 rounded-xl border transition-colors',
+                        service.status === 'healthy' ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-900/10' :
+                        service.status === 'degraded' ? 'border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/10' :
+                        service.status === 'down' ? 'border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-900/10' :
+                        'border-slate-200 dark:border-slate-700'
                       )}
-                      <div className="text-xs text-slate-400 capitalize">{service.status}</div>
+                    >
+                      <div className={cn(
+                        'flex items-center justify-center w-12 h-12 rounded-full',
+                        service.status === 'healthy' ? 'bg-emerald-100 dark:bg-emerald-900/30' :
+                        service.status === 'degraded' ? 'bg-amber-100 dark:bg-amber-900/30' :
+                        service.status === 'down' ? 'bg-red-100 dark:bg-red-900/30' :
+                        'bg-slate-100 dark:bg-slate-800'
+                      )}>
+                        {getStatusIcon(service.status)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-slate-900 dark:text-white">
+                            {displayName}
+                          </span>
+                          {isCrit && (
+                            <Badge variant="outline" className="text-xs">Critical</Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-slate-500 truncate">
+                          {errorMsg || service.details || 'No details'}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        {responseTime ? (
+                          <div className={cn(
+                            'text-sm font-medium',
+                            responseTime < 500 ? 'text-emerald-500' :
+                            responseTime < 1000 ? 'text-amber-500' : 'text-red-500'
+                          )}>
+                            {responseTime}ms
+                          </div>
+                        ) : (
+                          <div className="text-sm text-slate-400">—</div>
+                        )}
+                        <div className="text-xs text-slate-400 capitalize">{service.status}</div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </CardContent>
           </Card>
@@ -329,32 +342,37 @@ export default function AdminHealthPage() {
                   <tbody className="divide-y dark:divide-slate-700">
                     {uptime.map((service) => {
                       const bars = getUptimeBars(service.serviceName)
+                      // Handle both camelCase and snake_case responses
+                      const uptime24h = service.uptimePercent24h ?? (service as any).uptime_percent_24h ?? 100
+                      const uptime7d = service.uptimePercent7d ?? (service as any).uptime_percent_7d ?? 100
+                      const uptime30d = service.uptimePercent30d ?? (service as any).uptime_percent_30d ?? 100
+                      const avgResponse = service.avgResponseTimeMs ?? (service as any).avg_response_time_ms
                       return (
-                        <tr key={service.serviceName} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                        <tr key={service.serviceName || (service as any).service_name} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                           <td className="py-4">
                             <span className="font-medium text-slate-900 dark:text-white">
-                              {service.displayName}
+                              {service.displayName || (service as any).display_name}
                             </span>
                           </td>
                           <td className="py-4 text-center">
-                            <span className={cn('font-semibold', getUptimeColor(service.uptimePercent24h))}>
-                              {service.uptimePercent24h.toFixed(1)}%
+                            <span className={cn('font-semibold', getUptimeColor(uptime24h))}>
+                              {uptime24h.toFixed(1)}%
                             </span>
                           </td>
                           <td className="py-4 text-center">
-                            <span className={cn('font-semibold', getUptimeColor(service.uptimePercent7d))}>
-                              {service.uptimePercent7d.toFixed(1)}%
+                            <span className={cn('font-semibold', getUptimeColor(uptime7d))}>
+                              {uptime7d.toFixed(1)}%
                             </span>
                           </td>
                           <td className="py-4 text-center">
-                            <span className={cn('font-semibold', getUptimeColor(service.uptimePercent30d))}>
-                              {service.uptimePercent30d.toFixed(1)}%
+                            <span className={cn('font-semibold', getUptimeColor(uptime30d))}>
+                              {uptime30d.toFixed(1)}%
                             </span>
                           </td>
                           <td className="py-4 text-center">
-                            {service.avgResponseTimeMs ? (
+                            {avgResponse ? (
                               <span className="text-slate-600 dark:text-slate-400">
-                                {service.avgResponseTimeMs}ms
+                                {avgResponse}ms
                               </span>
                             ) : (
                               <span className="text-slate-400">—</span>
@@ -368,11 +386,11 @@ export default function AdminHealthPage() {
                                   key={i}
                                   className={cn(
                                     'w-1.5 rounded-sm transition-colors',
-                                    bar.uptime >= 99.9 ? 'bg-emerald-400' :
-                                    bar.uptime >= 95 ? 'bg-amber-400' : 'bg-red-400'
+                                    (bar.uptime ?? 100) >= 99.9 ? 'bg-emerald-400' :
+                                    (bar.uptime ?? 100) >= 95 ? 'bg-amber-400' : 'bg-red-400'
                                   )}
-                                  style={{ height: `${Math.max(4, bar.uptime / 100 * 24)}px` }}
-                                  title={`${bar.date}: ${bar.uptime.toFixed(1)}%`}
+                                  style={{ height: `${Math.max(4, (bar.uptime ?? 100) / 100 * 24)}px` }}
+                                  title={`${bar.date}: ${(bar.uptime ?? 100).toFixed(1)}%`}
                                 />
                               )) : (
                                 <span className="text-xs text-slate-400">No data</span>
@@ -396,54 +414,65 @@ export default function AdminHealthPage() {
               <CardHeader>
                 <CardTitle>Job Success Rates (24h)</CardTitle>
                 <CardDescription>
-                  Overall: {jobs?.overallSuccessRate || 0}% • 
-                  Total: {jobs?.totalJobs24h || 0} jobs • 
-                  Failed: {jobs?.totalFailed24h || 0}
+                  Overall: {jobs?.overallSuccessRate ?? (jobs as any)?.overall_success_rate ?? 0}% • 
+                  Total: {jobs?.totalJobs24h ?? (jobs as any)?.total_jobs_24h ?? 0} jobs • 
+                  Failed: {jobs?.totalFailed24h ?? (jobs as any)?.total_failed_24h ?? 0}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {jobs?.jobs.map((job: JobStats) => (
-                    <div key={job.name} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-slate-900 dark:text-white">
-                            {job.displayName}
-                          </span>
-                          {job.pending > 0 && (
-                            <Badge variant="outline" className="text-xs">
-                              {job.pending} pending
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="text-sm text-slate-500">
-                          {job.completed}/{job.total24h}
-                          {job.failed > 0 && (
-                            <span className="text-red-500 ml-2">({job.failed} failed)</span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1 h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                          <div 
-                            className={cn(
-                              'h-full rounded-full transition-all duration-500',
-                              job.successRate >= 95 ? 'bg-emerald-500' :
-                              job.successRate >= 80 ? 'bg-amber-500' : 'bg-red-500'
+                  {jobs?.jobs.map((job: JobStats) => {
+                    // Handle both camelCase and snake_case
+                    const j = job as any
+                    const displayName = job.displayName || j.display_name || job.name
+                    const successRate = job.successRate ?? j.success_rate ?? 0
+                    const total = job.total24h ?? j.total_24h ?? 0
+                    const pending = job.pending ?? j.pending ?? 0
+                    const completed = job.completed ?? j.completed ?? 0
+                    const failed = job.failed ?? j.failed ?? 0
+                    
+                    return (
+                      <div key={job.name} className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-slate-900 dark:text-white">
+                              {displayName}
+                            </span>
+                            {pending > 0 && (
+                              <Badge variant="outline" className="text-xs">
+                                {pending} pending
+                              </Badge>
                             )}
-                            style={{ width: `${job.successRate}%` }}
-                          />
+                          </div>
+                          <div className="text-sm text-slate-500">
+                            {completed}/{total}
+                            {failed > 0 && (
+                              <span className="text-red-500 ml-2">({failed} failed)</span>
+                            )}
+                          </div>
                         </div>
-                        <span className={cn(
-                          'text-sm font-bold min-w-[50px] text-right',
-                          job.successRate >= 95 ? 'text-emerald-500' :
-                          job.successRate >= 80 ? 'text-amber-500' : 'text-red-500'
-                        )}>
-                          {job.successRate}%
-                        </span>
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                            <div 
+                              className={cn(
+                                'h-full rounded-full transition-all duration-500',
+                                successRate >= 95 ? 'bg-emerald-500' :
+                                successRate >= 80 ? 'bg-amber-500' : 'bg-red-500'
+                              )}
+                              style={{ width: `${successRate}%` }}
+                            />
+                          </div>
+                          <span className={cn(
+                            'text-sm font-bold min-w-[50px] text-right',
+                            successRate >= 95 ? 'text-emerald-500' :
+                            successRate >= 80 ? 'text-amber-500' : 'text-red-500'
+                          )}>
+                            {successRate}%
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
 
                   {(!jobs || jobs.jobs.length === 0) && (
                     <div className="text-center py-8 text-slate-500">
@@ -476,7 +505,7 @@ export default function AdminHealthPage() {
                     <div>
                       <p className="text-red-100 text-sm">Failed Jobs (24h)</p>
                       <p className="text-4xl font-bold mt-1">
-                        {jobs?.totalFailed24h || 0}
+                        {jobs?.totalFailed24h ?? (jobs as any)?.total_failed_24h ?? 0}
                       </p>
                     </div>
                     <Icons.xCircle className="h-14 w-14 text-red-300/50" />
@@ -490,7 +519,7 @@ export default function AdminHealthPage() {
                     <div>
                       <p className="text-blue-100 text-sm">Total Jobs (24h)</p>
                       <p className="text-4xl font-bold mt-1">
-                        {jobs?.totalJobs24h || 0}
+                        {jobs?.totalJobs24h ?? (jobs as any)?.total_jobs_24h ?? 0}
                       </p>
                     </div>
                     <Icons.activity className="h-14 w-14 text-blue-300/50" />
@@ -513,37 +542,45 @@ export default function AdminHealthPage() {
             <CardContent>
               {incidents && incidents.incidents.length > 0 ? (
                 <div className="space-y-3">
-                  {incidents.incidents.map((incident: RecentIncident) => (
-                    <div 
-                      key={incident.id}
-                      className={cn(
-                        'flex items-center gap-4 p-4 rounded-lg border',
-                        incident.status === 'degraded' ? 'border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/10' :
-                        'border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-900/10'
-                      )}
-                    >
-                      {getStatusIcon(incident.status)}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-slate-900 dark:text-white">
-                            {incident.displayName}
-                          </span>
-                          <Badge variant="outline" className={cn(
-                            'text-xs capitalize',
-                            incident.status === 'degraded' ? 'border-amber-300 text-amber-600' : 'border-red-300 text-red-600'
-                          )}>
-                            {incident.status}
-                          </Badge>
+                  {incidents.incidents.map((incident: RecentIncident) => {
+                    // Handle both camelCase and snake_case
+                    const inc = incident as any
+                    const displayName = incident.displayName || inc.display_name || incident.serviceName || inc.service_name
+                    const errorMsg = incident.errorMessage || inc.error_message
+                    const occurredAt = incident.occurredAt || inc.occurred_at
+                    
+                    return (
+                      <div 
+                        key={incident.id}
+                        className={cn(
+                          'flex items-center gap-4 p-4 rounded-lg border',
+                          incident.status === 'degraded' ? 'border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/10' :
+                          'border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-900/10'
+                        )}
+                      >
+                        {getStatusIcon(incident.status)}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-slate-900 dark:text-white">
+                              {displayName}
+                            </span>
+                            <Badge variant="outline" className={cn(
+                              'text-xs capitalize',
+                              incident.status === 'degraded' ? 'border-amber-300 text-amber-600' : 'border-red-300 text-red-600'
+                            )}>
+                              {incident.status}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-slate-500 truncate">
+                            {errorMsg || 'No details available'}
+                          </p>
                         </div>
-                        <p className="text-sm text-slate-500 truncate">
-                          {incident.errorMessage || 'No details available'}
-                        </p>
+                        <div className="text-right text-sm text-slate-500">
+                          {occurredAt ? new Date(occurredAt).toLocaleString() : '-'}
+                        </div>
                       </div>
-                      <div className="text-right text-sm text-slate-500">
-                        {new Date(incident.occurredAt).toLocaleString()}
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-12">
