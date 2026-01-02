@@ -279,26 +279,13 @@ async def list_users(
             if org_id:
                 org_ids.add(org_id)
     
-    # Credit limits per plan (hardcoded as source of truth)
-    PLAN_CREDIT_LIMITS = {
-        "free": 25,
-        "pro_monthly": 250,
-        "pro_yearly": 250,
-        "pro_plus_monthly": 600,
-        "pro_plus_yearly": 600,
-        "enterprise": -1,  # Unlimited
-        # Legacy plans
-        "pro_solo": 250,
-        "unlimited_solo": -1,
-        "light_solo": 25,
-    }
-    
     # ========== BATCH QUERY 2: Subscriptions with plan info ==========
     # Map: org_id -> {plan_id, plan_name, status, credits_per_month}
+    # JOIN with subscription_plans to get credits_per_month from database
     org_sub_map: Dict[str, Dict] = {}
     if org_ids:
         subs_result = supabase.table("organization_subscriptions") \
-            .select("organization_id, plan_id, status") \
+            .select("organization_id, plan_id, status, subscription_plans(name, credits_per_month)") \
             .in_("organization_id", list(org_ids)) \
             .execute()
         
@@ -306,14 +293,19 @@ async def list_users(
             org_id = sub.get("organization_id")
             plan_id = sub.get("plan_id", "free")
             
-            # Always use hardcoded credit limits (source of truth)
-            credits_per_month = PLAN_CREDIT_LIMITS.get(plan_id, 25)
+            # Get credits_per_month from joined subscription_plans (database is source of truth)
+            plan_data = sub.get("subscription_plans") or {}
+            credits_per_month = plan_data.get("credits_per_month")
+            plan_name_from_db = plan_data.get("name")
+            
+            # Use database plan name if available, otherwise fallback to mapping
+            display_name = plan_name_from_db or PLAN_NAMES.get(plan_id, plan_id.replace("_", " ").title())
             
             org_sub_map[org_id] = {
                 "plan_id": plan_id,
-                "plan_name": PLAN_NAMES.get(plan_id, plan_id.replace("_", " ").title()),
+                "plan_name": display_name,
                 "status": sub.get("status"),
-                "credits_per_month": credits_per_month,
+                "credits_per_month": credits_per_month,  # Can be None, -1 (unlimited), or positive number
             }
     
     # ========== BATCH QUERY 3: Credit balances ==========
@@ -328,20 +320,25 @@ async def list_users(
         for credit in (credits_result.data or []):
             org_id = credit.get("organization_id")
             credits_used = credit.get("subscription_credits_used", 0) or 0
+            credits_total = credit.get("subscription_credits_total", 0) or 0
             pack_balance = credit.get("pack_credits_remaining", 0) or 0
             is_unlimited = credit.get("is_unlimited", False)
             
-            # ALWAYS use hardcoded plan credits as the limit (ignore DB value)
-            plan_id = org_sub_map.get(org_id, {}).get("plan_id", "free")
-            credits_total = PLAN_CREDIT_LIMITS.get(plan_id, 25)
+            # Get credits_per_month from subscription_plans (via org_sub_map)
+            plan_credits = org_sub_map.get(org_id, {}).get("credits_per_month")
             
-            # Check if plan is unlimited
-            if credits_total == -1:
+            # Determine if unlimited based on plan credits (-1 = unlimited)
+            if plan_credits == -1:
                 is_unlimited = True
+                credits_total = 0  # Display 0 for unlimited plans
+            elif plan_credits is not None and plan_credits > 0:
+                # Use plan credits if credit_balances is not yet synced
+                if credits_total <= 0:
+                    credits_total = plan_credits
             
             org_credit_map[org_id] = {
                 "credits_used": int(credits_used),
-                "credits_total": int(credits_total) if credits_total != -1 else 0,
+                "credits_total": int(credits_total),
                 "pack_balance": int(pack_balance),
                 "is_unlimited": is_unlimited,
             }
@@ -1720,26 +1717,13 @@ async def _enrich_user_data(supabase, user: dict) -> dict:
         "light_solo": "Light Solo",
     }
     
-    # Default credit limits per plan
-    PLAN_CREDITS = {
-        "free": 25,
-        "pro_monthly": 250,
-        "pro_yearly": 250,
-        "pro_plus_monthly": 600,
-        "pro_plus_yearly": 600,
-        "enterprise": -1,  # Unlimited
-        "pro_solo": 250,
-        "unlimited_solo": -1,
-        "light_solo": 25,
-    }
-    
     result = {
         "organization_id": None,
         "organization_name": None,
         "plan": "free",
         "plan_name": "Free",
         "credits_used": 0,
-        "credit_limit": 25,  # Credit limit (25 for free)
+        "credit_limit": 0,  # Will be set from database
         "pack_balance": 0,
         "subscription_status": None,
         "stripe_customer_id": None,
@@ -1765,10 +1749,10 @@ async def _enrich_user_data(supabase, user: dict) -> dict:
             
             org_id = org_data["organization_id"]
             
-            # Get subscription
+            # Get subscription with plan info (database is source of truth for credits_per_month)
             try:
                 sub_result = supabase.table("organization_subscriptions") \
-                    .select("plan_id, status, stripe_customer_id, trial_end") \
+                    .select("plan_id, status, stripe_customer_id, trial_end, subscription_plans(name, credits_per_month)") \
                     .eq("organization_id", org_id) \
                     .limit(1) \
                     .execute()
@@ -1776,15 +1760,19 @@ async def _enrich_user_data(supabase, user: dict) -> dict:
                 if sub_result and sub_result.data and len(sub_result.data) > 0:
                     sub_data = sub_result.data[0]
                     plan_id = sub_data.get("plan_id", "free")
+                    plan_info = sub_data.get("subscription_plans") or {}
+                    
                     result["plan"] = plan_id
-                    result["plan_name"] = PLAN_NAMES.get(plan_id, plan_id.replace("_", " ").title())
+                    # Use database plan name if available, otherwise fallback
+                    result["plan_name"] = plan_info.get("name") or PLAN_NAMES.get(plan_id, plan_id.replace("_", " ").title())
                     result["subscription_status"] = sub_data.get("status")
                     result["stripe_customer_id"] = sub_data.get("stripe_customer_id")
                     result["trial_ends_at"] = sub_data.get("trial_end")
                     
-                    # ALWAYS use hardcoded credit limits (source of truth)
-                    credits_per_month = PLAN_CREDITS.get(plan_id, 25)
-                    result["credit_limit"] = credits_per_month
+                    # Get credit limit from database (subscription_plans.credits_per_month)
+                    credits_per_month = plan_info.get("credits_per_month")
+                    if credits_per_month is not None:
+                        result["credit_limit"] = credits_per_month
                     
                     # Check if subscription has suspended status
                     if sub_data.get("status") == "suspended":
@@ -1793,10 +1781,9 @@ async def _enrich_user_data(supabase, user: dict) -> dict:
                 print(f"Error getting subscription for org {org_id}: {e}")
             
             # Get credit usage from credit_balances table
-            # Note: credit_limit is always from hardcoded plan limits, NOT from DB
             try:
                 credit_result = supabase.table("credit_balances") \
-                    .select("subscription_credits_used, pack_credits_remaining") \
+                    .select("subscription_credits_used, subscription_credits_total, pack_credits_remaining, is_unlimited") \
                     .eq("organization_id", org_id) \
                     .limit(1) \
                     .execute()
@@ -1805,6 +1792,14 @@ async def _enrich_user_data(supabase, user: dict) -> dict:
                     credit_data = credit_result.data[0]
                     result["credits_used"] = int(credit_data.get("subscription_credits_used", 0) or 0)
                     result["pack_balance"] = int(credit_data.get("pack_credits_remaining", 0) or 0)
+                    
+                    # If credit_limit not set from subscription_plans, use credit_balances value
+                    if result["credit_limit"] == 0:
+                        result["credit_limit"] = int(credit_data.get("subscription_credits_total", 0) or 0)
+                    
+                    # Handle unlimited plans
+                    if credit_data.get("is_unlimited"):
+                        result["credit_limit"] = -1
             except Exception as e:
                 print(f"Error getting credit balance for org {org_id}: {e}")
             
@@ -1974,31 +1969,23 @@ async def _get_health_data(supabase, user_id: str) -> dict:
         except Exception:
             pass
         
-        # Get credit usage percentage
-        # Hardcoded plan limits (source of truth)
-        PLAN_CREDIT_LIMITS = {
-            "free": 25, "pro_monthly": 250, "pro_yearly": 250,
-            "pro_plus_monthly": 600, "pro_plus_yearly": 600,
-            "enterprise": -1, "pro_solo": 250, "unlimited_solo": -1, "light_solo": 25,
-        }
-        
+        # Get credit usage percentage from database
         try:
-            # First get the plan_id
+            # Get subscription plan with credits_per_month (database is source of truth)
             sub_result = supabase.table("organization_subscriptions") \
-                .select("plan_id") \
+                .select("plan_id, subscription_plans(credits_per_month)") \
                 .eq("organization_id", org_id) \
                 .limit(1) \
                 .execute()
             
-            plan_id = "free"
+            credit_limit = 0
             if sub_result and sub_result.data and len(sub_result.data) > 0:
-                plan_id = sub_result.data[0].get("plan_id", "free")
-            
-            credit_limit = PLAN_CREDIT_LIMITS.get(plan_id, 25)
+                plan_data = sub_result.data[0].get("subscription_plans") or {}
+                credit_limit = plan_data.get("credits_per_month") or 0
             
             # Get credits used from credit_balances
             credit_result = supabase.table("credit_balances") \
-                .select("subscription_credits_used") \
+                .select("subscription_credits_used, subscription_credits_total") \
                 .eq("organization_id", org_id) \
                 .limit(1) \
                 .execute()
@@ -2006,7 +1993,11 @@ async def _get_health_data(supabase, user_id: str) -> dict:
             credits_used = 0
             if credit_result and credit_result.data and len(credit_result.data) > 0:
                 credits_used = int(credit_result.data[0].get("subscription_credits_used", 0) or 0)
+                # Use credit_balances total if plan query didn't return a value
+                if credit_limit <= 0:
+                    credit_limit = int(credit_result.data[0].get("subscription_credits_total", 0) or 0)
             
+            # -1 means unlimited, so skip percentage calc
             if credit_limit > 0:
                 health_data["credit_usage_percent"] = round((credits_used / credit_limit) * 100, 1)
         except Exception:
