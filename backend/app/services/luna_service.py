@@ -288,7 +288,8 @@ class LunaService:
     async def create_message(self, message: LunaMessageCreate) -> Optional[LunaMessage]:
         """Create a new Luna message with deduplication."""
         try:
-            data = message.model_dump()
+            # Use mode='json' to convert datetime objects to ISO strings
+            data = message.model_dump(mode='json')
             data["created_at"] = datetime.utcnow().isoformat()
             data["updated_at"] = datetime.utcnow().isoformat()
             
