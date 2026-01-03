@@ -3392,6 +3392,77 @@
         "commissions": "commissions"
       }
     }
+  },
+  "luna": {
+    "title": "Luna",
+    "subtitle": "Your AI Sales Assistant",
+    "greeting": {
+      "morning": "Good morning! Here's what needs your attention today.",
+      "afternoon": "Good afternoon! Let's keep things moving.",
+      "evening": "Good evening! A few things to review before you wrap up.",
+      "allDone": "You're all caught up! Great work."
+    },
+    "noMessages": "No actions pending. Luna will notify you when something needs attention.",
+    "allCaughtUp": "You're all caught up!",
+    "pending": "pending",
+    "urgent": "Urgent",
+    "executing": "Processing...",
+    "later": "Later",
+    "ctaLabel": "Do it",
+    "snoozeLaterToday": "+4 hours",
+    "snoozeTomorrow": "Tomorrow 9 AM",
+    "snoozeNextWorkDay": "Next working day",
+    "snoozeAfterMeeting": "After meeting",
+    "viewActions": "View all actions",
+    "viewAllActions": "View all {count} actions",
+    "openLunaHome": "Open Luna Home",
+    "home": {
+      "title": "Luna Home",
+      "todayProgress": "Today's Progress",
+      "upcomingMeetings": "Upcoming Meetings",
+      "noMeetings": "No meetings scheduled for today",
+      "tipOfDay": "Tip of the Day",
+      "actions": "Actions",
+      "actionsEmpty": "No actions right now. Luna will create suggestions when there's something to do."
+    },
+    "stats": {
+      "research": "Research",
+      "preps": "Preparations",
+      "followups": "Follow-ups",
+      "outreach": "Outreach"
+    },
+    "settings": {
+      "title": "Luna Settings",
+      "enabled": "Enable Luna",
+      "enabledDesc": "Luna will proactively suggest actions",
+      "showWidget": "Show Widget",
+      "showWidgetDesc": "Display floating Luna widget",
+      "showTips": "Show Contextual Tips",
+      "showTipsDesc": "Display helpful tips throughout the app",
+      "prepReminder": "Prep Reminder Hours",
+      "prepReminderDesc": "Hours before meeting to remind for prep",
+      "outreachCooldown": "Outreach Cooldown Days",
+      "outreachCooldownDesc": "Days between outreach to same contact",
+      "excludedKeywords": "Excluded Meeting Keywords",
+      "excludedKeywordsDesc": "Meetings with these words won't trigger prep suggestions"
+    },
+    "widget": {
+      "title": "Luna"
+    },
+    "messages": {
+      "startResearch": "Start Research",
+      "reviewResearch": "Review Research",
+      "prepareOutreach": "Prepare Outreach",
+      "firstTouchSent": "First Touch Sent",
+      "suggestMeeting": "Schedule Meeting",
+      "createPrep": "Create Preparation",
+      "prepReady": "Prep Ready",
+      "reviewSummary": "Review Summary",
+      "reviewReport": "Review Report",
+      "sendEmail": "Send Follow-up Email",
+      "createActions": "Create Action Items",
+      "updateCrm": "Update CRM Notes"
+    }
   }
 }
 

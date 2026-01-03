@@ -43,6 +43,16 @@ from .affiliate import (
     sync_connect_status_fn,
     cleanup_clicks_fn,
 )
+from .luna_detection import (
+    luna_detect_periodic_fn,
+    luna_detect_for_user_fn,
+    luna_expire_messages_fn,
+    luna_unsnooze_messages_fn,
+)
+from .luna_execution import (
+    luna_execute_action_fn,
+    luna_handle_outreach_sent_fn,
+)
 
 # All functions to register with Inngest
 all_functions = [
@@ -91,6 +101,13 @@ all_functions = [
     process_payouts_fn,
     sync_connect_status_fn,
     cleanup_clicks_fn,
+    # Luna Unified AI Assistant (SPEC-046)
+    luna_detect_periodic_fn,
+    luna_detect_for_user_fn,
+    luna_expire_messages_fn,
+    luna_unsnooze_messages_fn,
+    luna_execute_action_fn,
+    luna_handle_outreach_sent_fn,
 ]
 
 __all__ = [
@@ -140,5 +157,12 @@ __all__ = [
     "process_payouts_fn",
     "sync_connect_status_fn",
     "cleanup_clicks_fn",
+    # Luna Unified AI Assistant (SPEC-046)
+    "luna_detect_periodic_fn",
+    "luna_detect_for_user_fn",
+    "luna_expire_messages_fn",
+    "luna_unsnooze_messages_fn",
+    "luna_execute_action_fn",
+    "luna_handle_outreach_sent_fn",
 ]
 

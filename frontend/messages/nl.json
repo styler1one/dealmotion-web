@@ -3235,6 +3235,77 @@
         "commissions": "commissies"
       }
     }
+  },
+  "luna": {
+    "title": "Luna",
+    "subtitle": "Je AI Sales Assistent",
+    "greeting": {
+      "morning": "Goedemorgen! Dit vraagt vandaag je aandacht.",
+      "afternoon": "Goedemiddag! Laten we doorgaan.",
+      "evening": "Goedenavond! Nog een paar dingen om te bekijken.",
+      "allDone": "Je bent helemaal bij! Goed gedaan."
+    },
+    "noMessages": "Geen acties in de wachtrij. Luna meldt het als er iets is.",
+    "allCaughtUp": "Je bent helemaal bij!",
+    "pending": "wachtend",
+    "urgent": "Urgent",
+    "executing": "Bezig...",
+    "later": "Later",
+    "ctaLabel": "Doen",
+    "snoozeLaterToday": "+4 uur",
+    "snoozeTomorrow": "Morgen 9:00",
+    "snoozeNextWorkDay": "Volgende werkdag",
+    "snoozeAfterMeeting": "Na meeting",
+    "viewActions": "Bekijk alle acties",
+    "viewAllActions": "Bekijk alle {count} acties",
+    "openLunaHome": "Open Luna Home",
+    "home": {
+      "title": "Luna Home",
+      "todayProgress": "Voortgang Vandaag",
+      "upcomingMeetings": "Komende Meetings",
+      "noMeetings": "Geen meetings gepland voor vandaag",
+      "tipOfDay": "Tip van de Dag",
+      "actions": "Acties",
+      "actionsEmpty": "Geen acties nu. Luna maakt suggesties als er iets te doen is."
+    },
+    "stats": {
+      "research": "Research",
+      "preps": "Voorbereidingen",
+      "followups": "Follow-ups",
+      "outreach": "Outreach"
+    },
+    "settings": {
+      "title": "Luna Instellingen",
+      "enabled": "Luna Inschakelen",
+      "enabledDesc": "Luna suggereert proactief acties",
+      "showWidget": "Widget Tonen",
+      "showWidgetDesc": "Toon zwevende Luna widget",
+      "showTips": "Contextuele Tips Tonen",
+      "showTipsDesc": "Toon handige tips in de app",
+      "prepReminder": "Prep Herinnering Uren",
+      "prepReminderDesc": "Uren voor meeting om te herinneren aan prep",
+      "outreachCooldown": "Outreach Cooldown Dagen",
+      "outreachCooldownDesc": "Dagen tussen outreach naar zelfde contact",
+      "excludedKeywords": "Uitgesloten Meeting Keywords",
+      "excludedKeywordsDesc": "Meetings met deze woorden krijgen geen prep suggesties"
+    },
+    "widget": {
+      "title": "Luna"
+    },
+    "messages": {
+      "startResearch": "Start Research",
+      "reviewResearch": "Bekijk Research",
+      "prepareOutreach": "Bereid Outreach Voor",
+      "firstTouchSent": "Eerste Contact Verstuurd",
+      "suggestMeeting": "Plan Meeting",
+      "createPrep": "Maak Voorbereiding",
+      "prepReady": "Prep Klaar",
+      "reviewSummary": "Bekijk Samenvatting",
+      "reviewReport": "Bekijk Rapport",
+      "sendEmail": "Verstuur Follow-up Email",
+      "createActions": "Maak Actiepunten",
+      "updateCrm": "Update CRM Notities"
+    }
   }
 }
 
