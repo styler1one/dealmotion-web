@@ -277,9 +277,9 @@ export function LunaProvider({ children }: LunaProviderProps) {
   const markMessageShown = useCallback(async (id: string, surface: Surface) => {
     try {
       await api.post(`/api/v1/luna/messages/${id}/shown`, { surface })
-    } catch (err) {
+    } catch {
       // Silent fail - don't disrupt UX for analytics
-      logger.warn('Failed to mark message shown', err, { source: 'LunaProvider' })
+      logger.warn('Failed to mark message shown', { source: 'LunaProvider' })
     }
   }, [])
   
