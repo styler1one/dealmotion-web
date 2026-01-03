@@ -14,7 +14,8 @@ Core service for Luna:
 import logging
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any, Tuple
-import pytz
+from zoneinfo import ZoneInfo
+from datetime import timezone
 
 from app.database import get_supabase_service
 from app.models.luna import (
@@ -558,18 +559,18 @@ class LunaService:
     ) -> Optional[datetime]:
         """Calculate snooze_until datetime based on option."""
         try:
-            tz = pytz.timezone(user_timezone)
+            tz = ZoneInfo(user_timezone)
             now_local = datetime.now(tz)
             
             if option == SnoozeOption.LATER_TODAY:
                 # +4 hours
-                return (now_local + timedelta(hours=4)).astimezone(pytz.UTC).replace(tzinfo=None)
+                return (now_local + timedelta(hours=4)).astimezone(timezone.utc).replace(tzinfo=None)
             
             elif option == SnoozeOption.TOMORROW_MORNING:
                 # Next day 09:00 local
                 tomorrow = now_local + timedelta(days=1)
                 morning = tomorrow.replace(hour=9, minute=0, second=0, microsecond=0)
-                return morning.astimezone(pytz.UTC).replace(tzinfo=None)
+                return morning.astimezone(timezone.utc).replace(tzinfo=None)
             
             elif option == SnoozeOption.NEXT_WORKING_DAY:
                 # Next weekday 09:00 local
@@ -577,14 +578,14 @@ class LunaService:
                 while next_day.weekday() >= 5:  # Saturday=5, Sunday=6
                     next_day += timedelta(days=1)
                 morning = next_day.replace(hour=9, minute=0, second=0, microsecond=0)
-                return morning.astimezone(pytz.UTC).replace(tzinfo=None)
+                return morning.astimezone(timezone.utc).replace(tzinfo=None)
             
             elif option == SnoozeOption.AFTER_MEETING:
                 # Meeting end time (only if meeting_id present)
                 if meeting_id:
                     # TODO: Look up meeting end time from database
                     # For now, default to +2 hours
-                    return (now_local + timedelta(hours=2)).astimezone(pytz.UTC).replace(tzinfo=None)
+                    return (now_local + timedelta(hours=2)).astimezone(timezone.utc).replace(tzinfo=None)
                 return None
             
             elif option == SnoozeOption.CUSTOM:
