@@ -1407,6 +1407,35 @@ async def add_user_credits(
         "status": "active"
     }).execute()
     
+    # Update credit_balances.pack_credits_remaining
+    # First get current pack balance
+    credit_balance = supabase.table("credit_balances") \
+        .select("pack_credits_remaining") \
+        .eq("organization_id", org_id) \
+        .limit(1) \
+        .execute()
+    
+    if credit_balance.data and len(credit_balance.data) > 0:
+        current_pack_balance = int(credit_balance.data[0].get("pack_credits_remaining", 0) or 0)
+        new_pack_balance = current_pack_balance + data.credits
+        
+        supabase.table("credit_balances") \
+            .update({
+                "pack_credits_remaining": new_pack_balance,
+                "updated_at": datetime.utcnow().isoformat()
+            }) \
+            .eq("organization_id", org_id) \
+            .execute()
+    else:
+        # Create credit_balances record if it doesn't exist
+        supabase.table("credit_balances").insert({
+            "organization_id": org_id,
+            "subscription_credits_total": 25,  # Default to Free plan
+            "subscription_credits_used": 0,
+            "pack_credits_remaining": data.credits,
+            "is_unlimited": False
+        }).execute()
+    
     # Log action
     await log_admin_action(
         admin_id=admin.admin_id,
