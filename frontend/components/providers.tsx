@@ -10,6 +10,7 @@ import { InsufficientCreditsProvider } from '@/components/insufficient-credits-m
 import { Toaster } from '@/components/ui/toaster'
 import { PostHogProvider } from '@/lib/posthog'
 import { AffiliateTracker } from '@/components/affiliate-tracker'
+import { LunaProvider, LunaWidget } from '@/components/luna'
 
 interface ProvidersProps {
   children: ReactNode
@@ -27,7 +28,8 @@ interface ProvidersProps {
  * 3. ErrorBoundary - Error catching
  * 4. SettingsProvider - User settings
  * 5. BillingProvider - Subscription/billing
- * 6. ConfirmDialogProvider - Confirmation dialogs
+ * 6. LunaProvider - Luna AI Assistant (SPEC-046)
+ * 7. ConfirmDialogProvider - Confirmation dialogs
  */
 export function Providers({ children }: ProvidersProps) {
   return (
@@ -42,13 +44,16 @@ export function Providers({ children }: ProvidersProps) {
           <ErrorBoundary>
             <SettingsProvider>
               <BillingProvider>
-                <ConfirmDialogProvider>
-                  <InsufficientCreditsProvider>
-                    <AffiliateTracker />
-                    {children}
-                    <Toaster />
-                  </InsufficientCreditsProvider>
-                </ConfirmDialogProvider>
+                <LunaProvider>
+                  <ConfirmDialogProvider>
+                    <InsufficientCreditsProvider>
+                      <AffiliateTracker />
+                      {children}
+                      <LunaWidget />
+                      <Toaster />
+                    </InsufficientCreditsProvider>
+                  </ConfirmDialogProvider>
+                </LunaProvider>
               </BillingProvider>
             </SettingsProvider>
           </ErrorBoundary>
