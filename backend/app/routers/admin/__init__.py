@@ -15,6 +15,7 @@ Routers:
 - billing: Billing overview and transactions
 - audit: Audit log viewing
 - affiliates: Affiliate program management
+- luna: Luna shadow mode monitoring (SPEC-046)
 
 Access Levels:
 - super_admin: Full access, can manage other admins
@@ -35,6 +36,7 @@ from .costs import router as costs_router
 from .billing import router as billing_router
 from .audit import router as audit_router
 from .affiliates import router as affiliates_router
+from .luna import router as luna_router
 
 # Create main admin router
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -49,6 +51,7 @@ router.include_router(costs_router)
 router.include_router(billing_router)
 router.include_router(audit_router)
 router.include_router(affiliates_router)
+router.include_router(luna_router)
 
 __all__ = ["router"]
 
