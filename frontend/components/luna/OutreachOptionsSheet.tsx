@@ -39,7 +39,7 @@ import {
   Loader2,
 } from 'lucide-react'
 import { api } from '@/lib/api'
-import { toast } from 'sonner'
+import { useToast } from '@/components/ui/use-toast'
 
 // =============================================================================
 // TYPES
@@ -115,6 +115,7 @@ export function OutreachOptionsSheet({
   onComplete,
 }: OutreachOptionsSheetProps) {
   const t = useTranslations('luna')
+  const { toast } = useToast()
   
   // State
   const [selectedChannel, setSelectedChannel] = useState<OutreachChannel | null>(null)
@@ -155,17 +156,17 @@ export function OutreachOptionsSheet({
       )
       
       if (error) {
-        toast.error(t('generateFailed'))
+        toast({ title: t('generateFailed'), variant: 'destructive' })
         return
       }
       
       if (data) {
         setSubject(data.subject || '')
         setBody(data.body)
-        toast.success(t('generateSuccess'))
+        toast({ title: t('generateSuccess') })
       }
     } catch {
-      toast.error(t('generateFailed'))
+      toast({ title: t('generateFailed'), variant: 'destructive' })
     } finally {
       setIsGenerating(false)
     }
@@ -191,16 +192,16 @@ export function OutreachOptionsSheet({
       )
       
       if (error) {
-        toast.error(t('saveDraftFailed'))
+        toast({ title: t('saveDraftFailed'), variant: 'destructive' })
         return
       }
       
       if (data) {
         setOutreachId(data.id)
-        toast.success(t('saveDraftSuccess'))
+        toast({ title: t('saveDraftSuccess') })
       }
     } catch {
-      toast.error(t('saveDraftFailed'))
+      toast({ title: t('saveDraftFailed'), variant: 'destructive' })
     } finally {
       setIsSaving(false)
     }
@@ -220,7 +221,7 @@ export function OutreachOptionsSheet({
         )
         
         if (error) {
-          toast.error(t('markSentFailed'))
+          toast({ title: t('markSentFailed'), variant: 'destructive' })
           return
         }
       } else {
@@ -238,16 +239,16 @@ export function OutreachOptionsSheet({
         )
         
         if (error) {
-          toast.error(t('markSentFailed'))
+          toast({ title: t('markSentFailed'), variant: 'destructive' })
           return
         }
       }
       
-      toast.success(t('markSentSuccess'))
+      toast({ title: t('markSentSuccess') })
       onOpenChange(false)
       onComplete?.()
     } catch {
-      toast.error(t('markSentFailed'))
+      toast({ title: t('markSentFailed'), variant: 'destructive' })
     } finally {
       setIsSaving(false)
     }
@@ -258,7 +259,7 @@ export function OutreachOptionsSheet({
     const textToCopy = subject ? `${subject}\n\n${body}` : body
     await navigator.clipboard.writeText(textToCopy)
     setCopied(true)
-    toast.success(t('copied'))
+    toast({ title: t('copied') })
     setTimeout(() => setCopied(false), 2000)
   }
   
