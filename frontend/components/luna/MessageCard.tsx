@@ -101,9 +101,10 @@ function SnoozeMenu({ onSnooze, hasMeeting }: SnoozeMenuProps) {
 interface MessageCardProps {
   message: LunaMessage
   surface?: Surface
+  onInlineAction?: (message: LunaMessage) => void
 }
 
-export function MessageCard({ message, surface = 'home' }: MessageCardProps) {
+export function MessageCard({ message, surface = 'home', onInlineAction }: MessageCardProps) {
   const router = useRouter()
   const t = useTranslations('luna')
   const { acceptMessage, dismissMessage, snoozeMessage, markMessageShown } = useLuna()
@@ -122,15 +123,19 @@ export function MessageCard({ message, surface = 'home' }: MessageCardProps) {
   const handleAccept = async () => {
     setIsActing(true)
     try {
+      // For inline actions, call the callback to open the sheet BEFORE accepting
+      if (message.actionType === 'inline' && onInlineAction) {
+        onInlineAction(message)
+        setIsActing(false)
+        return
+      }
+      
       await acceptMessage(message.id)
       
       // Navigate if action type is navigate
       if (message.actionType === 'navigate' && message.actionRoute) {
         router.push(message.actionRoute)
       }
-      
-      // For inline actions, the parent component should handle opening the sheet
-      // based on actionData.sheet
     } catch {
       setIsActing(false)
     }
@@ -249,9 +254,10 @@ interface MessageListProps {
   messages: LunaMessage[]
   surface?: Surface
   emptyMessage?: string
+  onInlineAction?: (message: LunaMessage) => void
 }
 
-export function MessageList({ messages, surface = 'home', emptyMessage }: MessageListProps) {
+export function MessageList({ messages, surface = 'home', emptyMessage, onInlineAction }: MessageListProps) {
   const t = useTranslations('luna')
   
   if (messages.length === 0) {
@@ -269,8 +275,13 @@ export function MessageList({ messages, surface = 'home', emptyMessage }: Messag
           key={message.id}
           message={message}
           surface={surface}
+          onInlineAction={onInlineAction}
         />
       ))}
     </div>
   )
 }
+
+// Aliases for explicit naming
+export { MessageCard as MessageCardWithInline }
+export { MessageList as MessageListWithInline }

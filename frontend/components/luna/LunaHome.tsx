@@ -10,7 +10,7 @@
  * - Context sidebar (meetings, stats, tip)
  */
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -32,7 +32,8 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import { useLuna } from './LunaProvider'
-import { MessageCard, MessageList } from './MessageCard'
+import { MessageCardWithInline, MessageListWithInline } from './MessageCard'
+import { OutreachOptionsSheet, type OutreachChannel } from './OutreachOptionsSheet'
 import type { LunaMessage, UpcomingMeeting } from '@/types/luna'
 
 // =============================================================================
@@ -372,11 +373,51 @@ function ContextSidebar({ onOpenSettings }: ContextSidebarProps) {
 // MESSAGE INBOX
 // =============================================================================
 
+// Inline action data types
+interface OutreachActionData {
+  sheet: 'outreach_options'
+  prospectId: string
+  contactId: string
+  researchId?: string
+  channels: OutreachChannel[]
+}
+
 function MessageInbox() {
   const t = useTranslations('lunaHome')
   const tLuna = useTranslations('luna')
   const { messages, counts, refreshMessages, isLoading } = useLuna()
   const [activeTab, setActiveTab] = useState<'active' | 'new' | 'in_progress' | 'history'>('active')
+  
+  // State for inline sheets
+  const [outreachSheetOpen, setOutreachSheetOpen] = useState(false)
+  const [outreachActionData, setOutreachActionData] = useState<OutreachActionData | null>(null)
+  
+  // Handle inline action - open appropriate sheet
+  const handleInlineAction = useCallback((message: LunaMessage) => {
+    const actionData = message.actionData as Record<string, unknown> | null
+    if (!actionData) return
+    
+    const sheetType = actionData.sheet as string | undefined
+    
+    if (sheetType === 'outreach_options') {
+      setOutreachActionData({
+        sheet: 'outreach_options',
+        prospectId: actionData.prospectId as string || actionData.prospect_id as string || '',
+        contactId: actionData.contactId as string || actionData.contact_id as string || '',
+        researchId: actionData.researchId as string || actionData.research_id as string || undefined,
+        channels: (actionData.channels as OutreachChannel[]) || ['linkedin_connect', 'linkedin_message', 'email'],
+      })
+      setOutreachSheetOpen(true)
+    }
+    // TODO: Add handlers for other inline sheets (schedule_meeting, summary_review, etc.)
+  }, [])
+  
+  // Handle sheet completion
+  const handleOutreachComplete = useCallback(() => {
+    setOutreachSheetOpen(false)
+    setOutreachActionData(null)
+    refreshMessages()
+  }, [refreshMessages])
   
   // Filter messages by tab
   const filteredMessages = useMemo(() => {
@@ -404,76 +445,87 @@ function MessageInbox() {
   ).length
   
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-indigo-500" />
-            {t('inbox')}
-            {counts.pending > 0 && (
-              <Badge variant="secondary">{counts.pending} {tLuna('pending')}</Badge>
-            )}
-          </CardTitle>
-          <Button variant="ghost" size="icon" onClick={refreshMessages}>
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
-          <TabsList className="w-full grid grid-cols-4 mb-4">
-            <TabsTrigger value="active" className="text-xs">
-              {t('tabs.active')}
-              {activeCount > 0 && (
-                <Badge variant="secondary" className="ml-1 text-xs">{activeCount}</Badge>
+    <>
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-indigo-500" />
+              {t('inbox')}
+              {counts.pending > 0 && (
+                <Badge variant="secondary">{counts.pending} {tLuna('pending')}</Badge>
               )}
-            </TabsTrigger>
-            <TabsTrigger value="new" className="text-xs">
-              {t('tabs.new')}
-              {newCount > 0 && (
-                <Badge variant="destructive" className="ml-1 text-xs">{newCount}</Badge>
+            </CardTitle>
+            <Button variant="ghost" size="icon" onClick={refreshMessages}>
+              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+            <TabsList className="w-full grid grid-cols-4 mb-4">
+              <TabsTrigger value="active" className="text-xs">
+                {t('tabs.active')}
+                {activeCount > 0 && (
+                  <Badge variant="secondary" className="ml-1 text-xs">{activeCount}</Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="new" className="text-xs">
+                {t('tabs.new')}
+                {newCount > 0 && (
+                  <Badge variant="destructive" className="ml-1 text-xs">{newCount}</Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="in_progress" className="text-xs">
+                {t('tabs.inProgress')}
+                {inProgressCount > 0 && (
+                  <Badge variant="secondary" className="ml-1 text-xs">{inProgressCount}</Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="history" className="text-xs">
+                {t('tabs.history')}
+                {historyCount > 0 && (
+                  <Badge variant="outline" className="ml-1 text-xs">{historyCount}</Badge>
+                )}
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value={activeTab} className="mt-0">
+              {isLoading ? (
+                <div className="space-y-3">
+                  <Skeleton className="h-24 w-full" />
+                  <Skeleton className="h-24 w-full" />
+                  <Skeleton className="h-24 w-full" />
+                </div>
+              ) : (
+                <MessageListWithInline
+                  messages={filteredMessages}
+                  surface="home"
+                  onInlineAction={handleInlineAction}
+                  emptyMessage={
+                    activeTab === 'active'
+                      ? t('noActiveActions')
+                      : activeTab === 'new'
+                      ? t('noNewActions')
+                      : activeTab === 'in_progress'
+                      ? t('noInProgressActions')
+                      : t('noHistoryActions')
+                  }
+                />
               )}
-            </TabsTrigger>
-            <TabsTrigger value="in_progress" className="text-xs">
-              {t('tabs.inProgress')}
-              {inProgressCount > 0 && (
-                <Badge variant="secondary" className="ml-1 text-xs">{inProgressCount}</Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="history" className="text-xs">
-              {t('tabs.history')}
-              {historyCount > 0 && (
-                <Badge variant="outline" className="ml-1 text-xs">{historyCount}</Badge>
-              )}
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value={activeTab} className="mt-0">
-            {isLoading ? (
-              <div className="space-y-3">
-                <Skeleton className="h-24 w-full" />
-                <Skeleton className="h-24 w-full" />
-                <Skeleton className="h-24 w-full" />
-              </div>
-            ) : (
-              <MessageList
-                messages={filteredMessages}
-                surface="home"
-                emptyMessage={
-                  activeTab === 'active'
-                    ? t('noActiveActions')
-                    : activeTab === 'new'
-                    ? t('noNewActions')
-                    : activeTab === 'in_progress'
-                    ? t('noInProgressActions')
-                    : t('noHistoryActions')
-                }
-              />
-            )}
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+      
+      {/* Outreach Options Sheet */}
+      <OutreachOptionsSheet
+        open={outreachSheetOpen}
+        onOpenChange={setOutreachSheetOpen}
+        actionData={outreachActionData}
+        onComplete={handleOutreachComplete}
+      />
+    </>
   )
 }
 
