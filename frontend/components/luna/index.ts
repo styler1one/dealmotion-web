@@ -6,3 +6,4 @@
 export { LunaProvider, useLuna, useLunaOptional } from './LunaProvider'
 export { MessageCard, MessageList } from './MessageCard'
 export { LunaWidget } from './LunaWidget'
+export { LunaHome } from './LunaHome'
