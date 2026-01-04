@@ -406,12 +406,24 @@ class FeatureFlag(BaseModel):
     user_percentage: int = 0
 
 
+def to_camel(string: str) -> str:
+    """Convert snake_case to camelCase."""
+    components = string.split('_')
+    return components[0] + ''.join(x.title() for x in components[1:])
+
+
 class FeatureFlagsResponse(BaseModel):
     """Response with all Luna feature flags."""
     luna_enabled: bool
     luna_shadow_mode: bool
     luna_widget_enabled: bool
     luna_p1_features: bool
+    
+    model_config = {
+        "alias_generator": to_camel,
+        "populate_by_name": True,
+        "by_alias": True,  # Use camelCase when serializing
+    }
 
 
 # =============================================================================
