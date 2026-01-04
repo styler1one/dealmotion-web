@@ -5,10 +5,29 @@ SPEC-046-Luna-Unified-AI-Assistant
 Models for the Luna AI Assistant: messages, settings, feedback, and outreach.
 """
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, List, Dict, Any, Literal
 from datetime import datetime
 from enum import Enum
+
+
+# =============================================================================
+# CAMELCASE HELPER
+# =============================================================================
+
+def to_camel(string: str) -> str:
+    """Convert snake_case to camelCase."""
+    components = string.split('_')
+    return components[0] + ''.join(x.title() for x in components[1:])
+
+
+class CamelCaseModel(BaseModel):
+    """Base model that serializes to camelCase."""
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        by_alias=True,  # Use camelCase when serializing
+    )
 
 
 # =============================================================================
@@ -103,7 +122,7 @@ class Surface(str, Enum):
 # MESSAGE MODELS
 # =============================================================================
 
-class LunaMessageBase(BaseModel):
+class LunaMessageBase(CamelCaseModel):
     """Base model for Luna messages."""
     message_type: MessageType
     title: str
@@ -174,7 +193,7 @@ class LunaMessage(LunaMessageBase):
         from_attributes = True
 
 
-class MessageCounts(BaseModel):
+class MessageCounts(CamelCaseModel):
     """Counts of messages by status."""
     pending: int = 0
     executing: int = 0
@@ -186,7 +205,7 @@ class MessageCounts(BaseModel):
     urgent: int = 0  # High priority pending
 
 
-class MessagesResponse(BaseModel):
+class MessagesResponse(CamelCaseModel):
     """Response model for messages list."""
     messages: List[LunaMessage]
     counts: MessageCounts
@@ -197,7 +216,7 @@ class MessagesResponse(BaseModel):
 # ACTION MODELS
 # =============================================================================
 
-class MessageActionRequest(BaseModel):
+class MessageActionRequest(CamelCaseModel):
     """Request model for message actions (accept/dismiss/snooze)."""
     reason: Optional[str] = None
     snooze_until: Optional[datetime] = None
@@ -205,12 +224,12 @@ class MessageActionRequest(BaseModel):
     surface: Optional[Surface] = None
 
 
-class MessageShowRequest(BaseModel):
+class MessageShowRequest(CamelCaseModel):
     """Request model for marking message as shown."""
     surface: Surface
 
 
-class MessageActionResponse(BaseModel):
+class MessageActionResponse(CamelCaseModel):
     """Response model for message actions."""
     success: bool
     message_id: str
@@ -222,7 +241,7 @@ class MessageActionResponse(BaseModel):
 # SETTINGS MODELS
 # =============================================================================
 
-class LunaSettingsBase(BaseModel):
+class LunaSettingsBase(CamelCaseModel):
     """Base model for Luna settings."""
     enabled: bool = True
     show_widget: bool = True
@@ -234,7 +253,7 @@ class LunaSettingsBase(BaseModel):
     )
 
 
-class LunaSettingsUpdate(BaseModel):
+class LunaSettingsUpdate(CamelCaseModel):
     """Model for updating Luna settings."""
     enabled: Optional[bool] = None
     show_widget: Optional[bool] = None
@@ -269,7 +288,7 @@ class LunaMode(str, Enum):
     FOCUS = "focus"
 
 
-class LunaGreeting(BaseModel):
+class LunaGreeting(CamelCaseModel):
     """Luna greeting for the home page."""
     mode: LunaMode
     message: str
@@ -284,7 +303,7 @@ class LunaGreeting(BaseModel):
 # STATS MODELS
 # =============================================================================
 
-class TodayStats(BaseModel):
+class TodayStats(CamelCaseModel):
     """Today's progress stats."""
     research_completed: int = 0
     preps_completed: int = 0
@@ -293,7 +312,7 @@ class TodayStats(BaseModel):
     total_actions: int = 0
 
 
-class LunaStats(BaseModel):
+class LunaStats(CamelCaseModel):
     """Luna statistics."""
     today: TodayStats
     pending_count: int = 0
@@ -313,7 +332,7 @@ class TipCategory(str, Enum):
     GENERAL = "general"
 
 
-class TipOfDay(BaseModel):
+class TipOfDay(CamelCaseModel):
     """Tip of the day - generic only, no CTA per SPEC-046."""
     id: str
     content: str
@@ -326,7 +345,7 @@ class TipOfDay(BaseModel):
 # OUTREACH MODELS
 # =============================================================================
 
-class OutreachMessageBase(BaseModel):
+class OutreachMessageBase(CamelCaseModel):
     """Base model for outreach messages."""
     prospect_id: str
     contact_id: Optional[str] = None
@@ -357,7 +376,7 @@ class OutreachMessage(OutreachMessageBase):
         from_attributes = True
 
 
-class OutreachGenerateRequest(BaseModel):
+class OutreachGenerateRequest(CamelCaseModel):
     """Request model for AI outreach generation."""
     prospect_id: str
     contact_id: str
@@ -366,14 +385,14 @@ class OutreachGenerateRequest(BaseModel):
     tone: str = "professional"  # professional | friendly | direct
 
 
-class OutreachGenerateResponse(BaseModel):
+class OutreachGenerateResponse(CamelCaseModel):
     """Response model for AI outreach generation."""
     subject: Optional[str] = None  # For email only
     body: str
     character_count: int
 
 
-class OutreachMarkSentRequest(BaseModel):
+class OutreachMarkSentRequest(CamelCaseModel):
     """Request to mark outreach as sent."""
     pass  # No additional fields needed
 
@@ -382,7 +401,7 @@ class OutreachMarkSentRequest(BaseModel):
 # UPCOMING MEETING MODEL
 # =============================================================================
 
-class UpcomingMeeting(BaseModel):
+class UpcomingMeeting(CamelCaseModel):
     """Upcoming meeting for sidebar."""
     id: str
     title: str
@@ -398,7 +417,7 @@ class UpcomingMeeting(BaseModel):
 # FEATURE FLAGS
 # =============================================================================
 
-class FeatureFlag(BaseModel):
+class FeatureFlag(CamelCaseModel):
     """Feature flag model."""
     flag_name: str
     flag_value: bool
@@ -406,24 +425,12 @@ class FeatureFlag(BaseModel):
     user_percentage: int = 0
 
 
-def to_camel(string: str) -> str:
-    """Convert snake_case to camelCase."""
-    components = string.split('_')
-    return components[0] + ''.join(x.title() for x in components[1:])
-
-
-class FeatureFlagsResponse(BaseModel):
+class FeatureFlagsResponse(CamelCaseModel):
     """Response with all Luna feature flags."""
     luna_enabled: bool
     luna_shadow_mode: bool
     luna_widget_enabled: bool
     luna_p1_features: bool
-    
-    model_config = {
-        "alias_generator": to_camel,
-        "populate_by_name": True,
-        "by_alias": True,  # Use camelCase when serializing
-    }
 
 
 # =============================================================================
