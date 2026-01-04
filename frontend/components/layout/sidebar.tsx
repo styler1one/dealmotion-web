@@ -8,6 +8,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { Logo, LogoIcon } from '@/components/dealmotion-logo'
 import { api } from '@/lib/api'
+import { useLunaOptional } from '@/components/luna'
 
 interface SidebarProps {
   className?: string
@@ -109,28 +110,37 @@ export function Sidebar({ className }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
   const t = useTranslations('navigation')
   
-  // Autopilot pending count for badge
-  const [pendingCount, setPendingCount] = useState(0)
+  // Luna context for pending count
+  const luna = useLunaOptional()
   
-  const fetchPendingCount = useCallback(async () => {
+  // Autopilot pending count for badge (fallback when Luna is not enabled)
+  const [autopilotPendingCount, setAutopilotPendingCount] = useState(0)
+  
+  const fetchAutopilotPendingCount = useCallback(async () => {
+    // Skip if Luna is enabled - use Luna counts instead
+    if (luna?.isEnabled) return
+    
     try {
       const { data, error } = await api.get<{ proposals: unknown[], counts: { proposed: number } }>(
         '/api/v1/autopilot/proposals?status=proposed&limit=1'
       )
       if (!error && data?.counts) {
-        setPendingCount(data.counts.proposed || 0)
+        setAutopilotPendingCount(data.counts.proposed || 0)
       }
     } catch {
       // Silently fail - badge is non-critical
     }
-  }, [])
+  }, [luna?.isEnabled])
   
-  // Fetch pending count on mount and periodically
+  // Fetch pending count on mount and periodically (only if Luna not enabled)
   useEffect(() => {
-    fetchPendingCount()
-    const interval = setInterval(fetchPendingCount, 60000) // Every 60 seconds
+    fetchAutopilotPendingCount()
+    const interval = setInterval(fetchAutopilotPendingCount, 60000) // Every 60 seconds
     return () => clearInterval(interval)
-  }, [fetchPendingCount])
+  }, [fetchAutopilotPendingCount])
+  
+  // Use Luna pending count if Luna is enabled, otherwise use Autopilot count
+  const pendingCount = luna?.isEnabled ? (luna.counts?.pending || 0) : autopilotPendingCount
 
   const isActive = (href: string) => {
     if (href === '/dashboard') {
