@@ -57,40 +57,6 @@
     "luna": {
       "title": "Luna • AI Sales Coach"
     },
-    "lunaHome": {
-      "inbox": "Acties",
-      "pending": "wachtend",
-      "quickStart": "Snel Starten",
-      "todaysMeetings": "Meetings Vandaag",
-      "noMeetingsToday": "Geen meetings gepland voor vandaag",
-      "today": "Vandaag",
-      "completed": "voltooid",
-      "tipOfDay": "Tip van de Dag",
-      "settings": "Luna Instellingen",
-      "settingsTitle": "Luna Instellingen",
-      "settingsDescription": "Configureer hoe Luna je helpt met je sales workflow.",
-      "tabs": {
-        "active": "Actief",
-        "new": "Nieuw",
-        "inProgress": "In Uitvoering",
-        "history": "Geschiedenis"
-      },
-      "quickActions": {
-        "research": "Research",
-        "prep": "Prep",
-        "record": "Opnemen"
-      },
-      "stats": {
-        "research": "Research",
-        "preps": "Preps",
-        "followups": "Follow-ups",
-        "outreach": "Outreach"
-      },
-      "noActiveActions": "Geen actieve acties. Je bent helemaal bij!",
-      "noNewActions": "Geen nieuwe acties op dit moment.",
-      "noInProgressActions": "Geen acties in uitvoering.",
-      "noHistoryActions": "Nog geen voltooide acties."
-    },
     "flowUsage": {
       "title": "Flow Gebruik",
       "unlimited": "Onbeperkt",
@@ -3340,6 +3306,40 @@
       "createActions": "Maak Actiepunten",
       "updateCrm": "Update CRM Notities"
     }
+  },
+  "lunaHome": {
+    "inbox": "Acties",
+    "pending": "wachtend",
+    "quickStart": "Snel Starten",
+    "todaysMeetings": "Meetings Vandaag",
+    "noMeetingsToday": "Geen meetings gepland voor vandaag",
+    "today": "Vandaag",
+    "completed": "voltooid",
+    "tipOfDay": "Tip van de Dag",
+    "settings": "Luna Instellingen",
+    "settingsTitle": "Luna Instellingen",
+    "settingsDescription": "Configureer hoe Luna je helpt met je sales workflow.",
+    "tabs": {
+      "active": "Actief",
+      "new": "Nieuw",
+      "inProgress": "In Uitvoering",
+      "history": "Geschiedenis"
+    },
+    "quickActions": {
+      "research": "Research",
+      "prep": "Prep",
+      "record": "Opnemen"
+    },
+    "stats": {
+      "research": "Research",
+      "preps": "Preps",
+      "followups": "Follow-ups",
+      "outreach": "Outreach"
+    },
+    "noActiveActions": "Geen actieve acties. Je bent helemaal bij!",
+    "noNewActions": "Geen nieuwe acties op dit moment.",
+    "noInProgressActions": "Geen acties in uitvoering.",
+    "noHistoryActions": "Nog geen voltooide acties."
   }
 }
 

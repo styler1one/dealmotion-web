@@ -57,40 +57,6 @@
     "luna": {
       "title": "Luna • AI Sales Coach"
     },
-    "lunaHome": {
-      "inbox": "Actions",
-      "pending": "pending",
-      "quickStart": "Quick Start",
-      "todaysMeetings": "Today's Meetings",
-      "noMeetingsToday": "No meetings scheduled for today",
-      "today": "Today",
-      "completed": "completed",
-      "tipOfDay": "Tip of the Day",
-      "settings": "Luna Settings",
-      "settingsTitle": "Luna Settings",
-      "settingsDescription": "Configure how Luna helps you with your sales workflow.",
-      "tabs": {
-        "active": "Active",
-        "new": "New",
-        "inProgress": "In Progress",
-        "history": "History"
-      },
-      "quickActions": {
-        "research": "Research",
-        "prep": "Prep",
-        "record": "Record"
-      },
-      "stats": {
-        "research": "Research",
-        "preps": "Preps",
-        "followups": "Follow-ups",
-        "outreach": "Outreach"
-      },
-      "noActiveActions": "No active actions. You're all caught up!",
-      "noNewActions": "No new actions right now.",
-      "noInProgressActions": "No actions in progress.",
-      "noHistoryActions": "No completed actions yet."
-    },
     "flowUsage": {
       "title": "Flow Usage",
       "unlimited": "Unlimited",
@@ -3497,6 +3463,40 @@
       "createActions": "Create Action Items",
       "updateCrm": "Update CRM Notes"
     }
+  },
+  "lunaHome": {
+    "inbox": "Actions",
+    "pending": "pending",
+    "quickStart": "Quick Start",
+    "todaysMeetings": "Today's Meetings",
+    "noMeetingsToday": "No meetings scheduled for today",
+    "today": "Today",
+    "completed": "completed",
+    "tipOfDay": "Tip of the Day",
+    "settings": "Luna Settings",
+    "settingsTitle": "Luna Settings",
+    "settingsDescription": "Configure how Luna helps you with your sales workflow.",
+    "tabs": {
+      "active": "Active",
+      "new": "New",
+      "inProgress": "In Progress",
+      "history": "History"
+    },
+    "quickActions": {
+      "research": "Research",
+      "prep": "Prep",
+      "record": "Record"
+    },
+    "stats": {
+      "research": "Research",
+      "preps": "Preps",
+      "followups": "Follow-ups",
+      "outreach": "Outreach"
+    },
+    "noActiveActions": "No active actions. You're all caught up!",
+    "noNewActions": "No new actions right now.",
+    "noInProgressActions": "No actions in progress.",
+    "noHistoryActions": "No completed actions yet."
   }
 }
 
