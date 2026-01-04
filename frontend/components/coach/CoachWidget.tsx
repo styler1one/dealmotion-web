@@ -6,19 +6,29 @@
  * 
  * Floating widget that provides suggestions and guidance.
  * Phase 4: Added animations, transitions, and accessibility.
+ * 
+ * NOTE: This widget is deprecated in favor of the new Luna Widget (SPEC-046).
+ * When Luna is enabled, this widget is hidden.
  */
 
 import React from 'react'
 import { useCoachOptional } from './CoachProvider'
+import { useLunaOptional } from '@/components/luna'
 import { CoachMinimized } from './CoachMinimized'
 import { CoachCompact } from './CoachCompact'
 import { CoachExpanded } from './CoachExpanded'
 
 export function CoachWidget() {
   const coach = useCoachOptional()
+  const luna = useLunaOptional()
   
   // Don't render if coach context isn't available
   if (!coach) {
+    return null
+  }
+  
+  // Don't render if new Luna is enabled (SPEC-046 replaces this widget)
+  if (luna?.isEnabled && luna?.featureFlags?.lunaWidgetEnabled) {
     return null
   }
   

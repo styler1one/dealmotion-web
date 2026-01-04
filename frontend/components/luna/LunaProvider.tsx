@@ -82,17 +82,12 @@ export function LunaProvider({ children }: LunaProviderProps) {
   // ==========================================================================
   
   const fetchFeatureFlags = useCallback(async () => {
-    console.log('[Luna] Fetching feature flags...')
     try {
       const { data, error } = await api.get<FeatureFlagsResponse>('/api/v1/luna/flags')
-      console.log('[Luna] Feature flags response:', { data, error })
       if (!error && data) {
         setFeatureFlags(data)
-      } else if (error) {
-        console.error('[Luna] Feature flags error:', error)
       }
     } catch (err) {
-      console.error('[Luna] Feature flags exception:', err)
       logger.error('Failed to fetch Luna feature flags', err, { source: 'LunaProvider' })
     }
   }, [])
@@ -323,13 +318,10 @@ export function LunaProvider({ children }: LunaProviderProps) {
   
   useEffect(() => {
     const init = async () => {
-      console.log('[Luna] LunaProvider init starting...')
       setIsLoading(true)
       try {
         // First check feature flags
         await fetchFeatureFlags()
-        
-        console.log('[Luna] Feature flags loaded, fetching other data...')
         
         // Then load everything in parallel
         await Promise.all([
@@ -340,8 +332,6 @@ export function LunaProvider({ children }: LunaProviderProps) {
           fetchTip(),
           fetchUpcomingMeetings(),
         ])
-        
-        console.log('[Luna] All data loaded')
       } finally {
         setIsLoading(false)
       }

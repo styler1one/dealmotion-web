@@ -41,17 +41,8 @@ export function LunaWidget() {
   
   const [widgetState, setWidgetState] = useState<WidgetState>('compact')
   
-  // Debug logging
-  console.log('[LunaWidget] Render check:', {
-    hasLuna: !!luna,
-    isEnabled: luna?.isEnabled,
-    featureFlags: luna?.featureFlags,
-    lunaWidgetEnabled: luna?.featureFlags?.lunaWidgetEnabled
-  })
-  
   // Don't render if Luna is not available or not enabled
   if (!luna || !luna.isEnabled || !luna.featureFlags?.lunaWidgetEnabled) {
-    console.log('[LunaWidget] Not rendering - conditions not met')
     return null
   }
   
