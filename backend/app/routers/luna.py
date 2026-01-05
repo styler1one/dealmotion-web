@@ -445,6 +445,25 @@ async def generate_outreach(
     
     org_id = org_result.data[0]["organization_id"]
     
+    # Check credits BEFORE generating (v4: credit-based system)
+    from app.services.credit_service import get_credit_service
+    credit_service = get_credit_service()
+    has_credits, credit_balance = await credit_service.check_credits(
+        organization_id=org_id,
+        action="outreach_generate"
+    )
+    if not has_credits:
+        raise HTTPException(
+            status_code=402,
+            detail={
+                "error": "insufficient_credits",
+                "message": "Not enough credits for outreach generation",
+                "required": credit_balance.get("required_credits", 1),
+                "available": credit_balance.get("total_credits_available", 0),
+                "action": "outreach_generate"
+            }
+        )
+    
     # Get prospect
     prospect_result = supabase.table("prospects") \
         .select("*, research_briefs(*)") \
@@ -621,6 +640,7 @@ Return ONLY the message text."""
         generated_text = response.content[0].text.strip()
         
         # Parse email format
+        result = {}
         if channel == "email" and "SUBJECT:" in generated_text:
             lines = generated_text.split("\n")
             subject_line = ""
@@ -638,17 +658,39 @@ Return ONLY the message text."""
                 elif in_body:
                     body_lines.append(line)
             
-            return {
+            result = {
                 "subject": subject_line,
                 "body": "\n".join(body_lines).strip(),
                 "channel": channel
             }
+        else:
+            result = {
+                "body": generated_text,
+                "channel": channel
+            }
         
-        return {
-            "body": generated_text,
-            "channel": channel
-        }
+        # Consume credits after successful generation
+        try:
+            await credit_service.consume_credits(
+                organization_id=org_id,
+                action="outreach_generate",
+                user_id=user_id,
+                metadata={
+                    "prospect_id": prospect_id,
+                    "contact_id": contact_id,
+                    "channel": channel
+                }
+            )
+            logger.info(f"Consumed outreach generation credits for {contact_id}")
+        except Exception as credit_err:
+            logger.warning(f"Failed to consume outreach generation credits: {credit_err}")
+            # Don't fail the request if credit logging fails - generation already succeeded
         
+        return result
+        
+    except HTTPException:
+        # Re-raise HTTP exceptions (like 402 for insufficient credits)
+        raise
     except Exception as e:
         logger.error(f"Error generating outreach: {e}")
         raise HTTPException(
