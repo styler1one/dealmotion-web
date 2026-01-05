@@ -79,18 +79,21 @@ export default function LunaAdminPage() {
   const [messages, setMessages] = useState<LunaMessage[]>([])
   const [loading, setLoading] = useState(true)
   const [periodDays, setPeriodDays] = useState(7)
-  const [statusFilter, setStatusFilter] = useState<string>('')
-  const [typeFilter, setTypeFilter] = useState<string>('')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [typeFilter, setTypeFilter] = useState<string>('all')
   const [updatingFlag, setUpdatingFlag] = useState<string | null>(null)
   
   // Fetch all data
   const fetchData = useCallback(async () => {
     setLoading(true)
     try {
+      const statusParam = statusFilter && statusFilter !== 'all' ? `&status=${statusFilter}` : ''
+      const typeParam = typeFilter && typeFilter !== 'all' ? `&message_type=${typeFilter}` : ''
+      
       const [statsRes, comparisonRes, messagesRes] = await Promise.all([
         api.get<LunaShadowStats>(`/api/v1/admin/luna/stats?days=${periodDays}`),
         api.get<LunaComparisonStats>(`/api/v1/admin/luna/comparison?days=${periodDays}`),
-        api.get<{ messages: LunaMessage[] }>(`/api/v1/admin/luna/messages?limit=50${statusFilter ? `&status=${statusFilter}` : ''}${typeFilter ? `&message_type=${typeFilter}` : ''}`),
+        api.get<{ messages: LunaMessage[] }>(`/api/v1/admin/luna/messages?limit=50${statusParam}${typeParam}`),
       ])
       
       if (!statsRes.error && statsRes.data) setStats(statsRes.data)
@@ -426,7 +429,7 @@ export default function LunaAdminPage() {
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All status</SelectItem>
+                <SelectItem value="all">All status</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="completed">Completed</SelectItem>
                 <SelectItem value="dismissed">Dismissed</SelectItem>
@@ -439,7 +442,7 @@ export default function LunaAdminPage() {
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All types</SelectItem>
+                <SelectItem value="all">All types</SelectItem>
                 <SelectItem value="review_research">Review Research</SelectItem>
                 <SelectItem value="prep_ready">Prep Ready</SelectItem>
                 <SelectItem value="review_meeting_summary">Meeting Summary</SelectItem>
