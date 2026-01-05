@@ -947,7 +947,7 @@ export default function ResearchBriefPage() {
                         className="bg-blue-600 hover:bg-blue-700"
                       >
                         <Send className="h-4 w-4 mr-1" />
-                        {tCommon('actions.createOutreach') || 'Create Outreach'}
+                        {t('actions.createOutreach') || 'Create Outreach'}
                       </Button>
                       <Button 
                         variant="outline" 

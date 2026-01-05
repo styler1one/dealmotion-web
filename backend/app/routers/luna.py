@@ -505,6 +505,20 @@ async def generate_outreach(
     elif prospect.get("research_briefs"):
         research = prospect["research_briefs"][0] if prospect["research_briefs"] else None
     
+    # Get sales profile and company profile context (efficiently)
+    profile_context = ""
+    try:
+        from app.services.rag_service import get_context_service
+        ctx_service = get_context_service()
+        # Get compact context (max 800 tokens for outreach - shorter than prep/research)
+        profile_context = ctx_service.get_context_for_prompt(
+            user_id, org_id, max_tokens=800
+        )
+        if profile_context:
+            logger.info("Added sales/company profile context to outreach prompt")
+    except Exception as e:
+        logger.warning(f"Could not load profile context for outreach: {e}")
+    
     # Generate content using LLM
     try:
         import os
@@ -527,12 +541,28 @@ async def generate_outreach(
         company_name = prospect.get("company_name", "the company")
         contact_name = contact.get("name", "the contact")
         contact_role = contact.get("role", "")
-        research_summary = research.get("executive_summary", "") if research else ""
+        
+        # Extract key research insights (compact)
+        research_summary = ""
+        if research:
+            # Use executive summary, but limit to most relevant parts
+            exec_summary = research.get("executive_summary", "")
+            if exec_summary:
+                # For short messages (LinkedIn/WhatsApp), use less context
+                if channel in ["linkedin_connect", "linkedin_message", "whatsapp"]:
+                    research_summary = exec_summary[:300]  # Very compact for short messages
+                else:
+                    research_summary = exec_summary[:800]  # More context for emails
         
         # Build user input section if provided
         user_input_section = ""
         if user_input and user_input.strip():
             user_input_section = f"\n\nAdditional instructions from user:\n{user_input.strip()}\n\nIncorporate these instructions into the message."
+        
+        # Build profile context section (only if available and for longer messages)
+        profile_section = ""
+        if profile_context and channel == "email":  # Only for emails to save tokens
+            profile_section = f"\n\nAbout you and your company:\n{profile_context[:400]}\n\nUse this to personalize the message and show relevant expertise."
         
         # Channel-specific prompts
         channel_prompts = {
@@ -541,7 +571,7 @@ async def generate_outreach(
 Write a short LinkedIn connection request note (max 300 characters) to {contact_name}, {contact_role} at {company_name}.
 Make it personal and professional. Don't be salesy. Reference something specific about the company or their role.
 
-Company research: {research_summary[:500] if research_summary else 'Not available'}{user_input_section}
+Company research: {research_summary if research_summary else 'Not available'}{user_input_section}
 
 Return ONLY the connection note text.""",
             
@@ -550,7 +580,7 @@ Return ONLY the connection note text.""",
 Write a LinkedIn message to {contact_name}, {contact_role} at {company_name}.
 Keep it concise (max 500 characters). Be conversational and value-focused. Include a soft call-to-action.
 
-Company research: {research_summary[:500] if research_summary else 'Not available'}{user_input_section}
+Company research: {research_summary if research_summary else 'Not available'}{user_input_section}
 
 Return ONLY the message text.""",
             
@@ -558,12 +588,12 @@ Return ONLY the message text.""",
 
 Write a cold outreach email to {contact_name}, {contact_role} at {company_name}.
 
-Company research: {research_summary[:1000] if research_summary else 'Not available'}{user_input_section}
+Company research: {research_summary if research_summary else 'Not available'}{profile_section}{user_input_section}
 
 Include:
 - A compelling subject line
-- Personalized opening
-- Value proposition
+- Personalized opening that references specific research insights
+- Value proposition aligned with their needs
 - Clear but soft call-to-action
 
 Return in format:
@@ -575,7 +605,7 @@ BODY: [email body]""",
 Write a short WhatsApp message to {contact_name}, {contact_role} at {company_name}.
 Keep it very brief (max 200 characters). Be friendly but professional.
 
-Company research: {research_summary[:300] if research_summary else 'Not available'}{user_input_section}
+Company research: {research_summary if research_summary else 'Not available'}{user_input_section}
 
 Return ONLY the message text."""
         }

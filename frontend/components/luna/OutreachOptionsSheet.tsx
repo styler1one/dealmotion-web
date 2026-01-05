@@ -189,7 +189,7 @@ export function OutreachOptionsSheet({
   
   // Load existing draft for this contact and channel
   const loadDraft = async () => {
-    if (!actionData?.contactId) return
+    if (!actionData?.contactId || !selectedChannel) return
     
     try {
       const { data, error } = await api.get<Array<{
@@ -201,17 +201,11 @@ export function OutreachOptionsSheet({
       }>>(`/api/v1/luna/outreach?contactId=${actionData.contactId}&status=draft`)
       
       if (!error && data && data.length > 0) {
-        // Load the most recent draft for the selected channel (if channel is already selected)
-        // Otherwise load the most recent draft
-        const draft = selectedChannel 
-          ? data.find(d => d.channel === selectedChannel) || data[0]
-          : data[0]
+        // Only load draft for the currently selected channel
+        const draft = data.find(d => d.channel === selectedChannel)
         
         if (draft) {
           setOutreachId(draft.id)
-          if (!selectedChannel) {
-            setSelectedChannel(draft.channel)
-          }
           setSubject(draft.subject || '')
           setBody(draft.body)
           toast({ 
