@@ -145,6 +145,7 @@ export function OutreachOptionsSheet({
     phone?: string
   }>({})
   const [isSavingContact, setIsSavingContact] = useState(false)
+  const [skippedFields, setSkippedFields] = useState<Set<string>>(new Set()) // Track which fields user skipped
   
   // Load contact data when sheet opens
   useEffect(() => {
@@ -164,6 +165,7 @@ export function OutreachOptionsSheet({
       setBody('')
       setUserInput('')
       setOutreachId(null)
+      setSkippedFields(new Set())
       loadUserLanguage()
     }
   }, [open, actionData])
@@ -252,26 +254,40 @@ export function OutreachOptionsSheet({
     }
   }
   
-  // Check if channel can be used (has required data)
+  // Check if channel can be used (has required data or user skipped it)
   const canUseChannel = (channel: OutreachChannel): boolean => {
     if (!contactData) return false
     const requiredField = getRequiredField(channel)
     if (!requiredField) return true
-    return !!contactData[requiredField]
+    // Can use if data exists OR user has skipped this field
+    return !!contactData[requiredField] || skippedFields.has(requiredField)
   }
   
   // Handle channel selection - check if data is missing
   const handleChannelSelect = (channel: OutreachChannel) => {
     setSelectedChannel(channel)
     const requiredField = getRequiredField(channel)
-    if (requiredField && !contactData?.[requiredField]) {
-      // Initialize missing field
+    if (requiredField && !contactData?.[requiredField] && !skippedFields.has(requiredField)) {
+      // Initialize missing field only if not already skipped
       setMissingFields(prev => ({
         ...prev,
         [requiredField]: ''
       }))
     } else {
       setMissingFields({})
+    }
+  }
+  
+  // Handle "I don't know" - skip this field and allow proceeding
+  const handleSkipField = (channel: OutreachChannel) => {
+    const requiredField = getRequiredField(channel)
+    if (requiredField) {
+      setSkippedFields(prev => new Set(prev).add(requiredField))
+      setMissingFields(prev => {
+        const updated = { ...prev }
+        delete updated[requiredField as keyof typeof updated]
+        return updated
+      })
     }
   }
   
@@ -625,19 +641,29 @@ export function OutreachOptionsSheet({
                     value={missingFields.email || ''}
                     onChange={(e) => setMissingFields(prev => ({ ...prev, email: e.target.value }))}
                   />
-                  <Button
-                    size="sm"
-                    onClick={handleSaveContactInfo}
-                    disabled={isSavingContact || !missingFields.email}
-                    className="w-full"
-                  >
-                    {isSavingContact ? (
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                    ) : (
-                      <Check className="w-4 h-4 mr-2" />
-                    )}
-                    {t('saveContactInfo') || 'Save Email'}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={handleSaveContactInfo}
+                      disabled={isSavingContact || !missingFields.email}
+                      className="flex-1"
+                    >
+                      {isSavingContact ? (
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      ) : (
+                        <Check className="w-4 h-4 mr-2" />
+                      )}
+                      {t('saveContactInfo') || 'Save Email'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleSkipField(selectedChannel)}
+                      className="flex-1"
+                    >
+                      {t('dontKnow') || "I don't know"}
+                    </Button>
+                  </div>
                 </div>
               )}
               {(selectedChannel === 'linkedin_connect' || selectedChannel === 'linkedin_message') && (
@@ -648,19 +674,29 @@ export function OutreachOptionsSheet({
                     value={missingFields.linkedin_url || ''}
                     onChange={(e) => setMissingFields(prev => ({ ...prev, linkedin_url: e.target.value }))}
                   />
-                  <Button
-                    size="sm"
-                    onClick={handleSaveContactInfo}
-                    disabled={isSavingContact || !missingFields.linkedin_url}
-                    className="w-full"
-                  >
-                    {isSavingContact ? (
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                    ) : (
-                      <Check className="w-4 h-4 mr-2" />
-                    )}
-                    {t('saveContactInfo') || 'Save LinkedIn URL'}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={handleSaveContactInfo}
+                      disabled={isSavingContact || !missingFields.linkedin_url}
+                      className="flex-1"
+                    >
+                      {isSavingContact ? (
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      ) : (
+                        <Check className="w-4 h-4 mr-2" />
+                      )}
+                      {t('saveContactInfo') || 'Save LinkedIn URL'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleSkipField(selectedChannel)}
+                      className="flex-1"
+                    >
+                      {t('dontKnow') || "I don't know"}
+                    </Button>
+                  </div>
                 </div>
               )}
               {selectedChannel === 'whatsapp' && (
@@ -671,19 +707,29 @@ export function OutreachOptionsSheet({
                     value={missingFields.phone || ''}
                     onChange={(e) => setMissingFields(prev => ({ ...prev, phone: e.target.value }))}
                   />
-                  <Button
-                    size="sm"
-                    onClick={handleSaveContactInfo}
-                    disabled={isSavingContact || !missingFields.phone}
-                    className="w-full"
-                  >
-                    {isSavingContact ? (
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                    ) : (
-                      <Check className="w-4 h-4 mr-2" />
-                    )}
-                    {t('saveContactInfo') || 'Save Phone Number'}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={handleSaveContactInfo}
+                      disabled={isSavingContact || !missingFields.phone}
+                      className="flex-1"
+                    >
+                      {isSavingContact ? (
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      ) : (
+                        <Check className="w-4 h-4 mr-2" />
+                      )}
+                      {t('saveContactInfo') || 'Save Phone Number'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleSkipField(selectedChannel)}
+                      className="flex-1"
+                    >
+                      {t('dontKnow') || "I don't know"}
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
