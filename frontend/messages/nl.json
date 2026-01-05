@@ -1619,7 +1619,8 @@
       "viewPrep": "Bekijk Prep",
       "viewFollowup": "Bekijk Analyse",
       "prepareNow": "Nu Voorbereiden",
-      "planMeeting": "Plan Meeting"
+      "planMeeting": "Plan Meeting",
+      "createOutreach": "Maak Outreach"
     },
     "documentStatus": {
       "pending": "Wachtend",
@@ -1646,7 +1647,9 @@
     "errors": {
       "loadFailed": "Kon prospect data niet laden",
       "notFound": "Prospect niet gevonden",
-      "noteSaveFailed": "Kon notitie niet opslaan"
+      "noteSaveFailed": "Kon notitie niet opslaan",
+      "noChannelsAvailable": "Geen kanalen beschikbaar",
+      "addContactInfo": "Voeg eerst een email, LinkedIn of telefoonnummer toe aan dit contact."
     },
     "sheets": {
       "startResearch": "Start Bedrijfsonderzoek",
@@ -1668,7 +1671,8 @@
       "followupStarted": "Follow-up verwerking gestart",
       "contactAdded": "Contact succesvol toegevoegd",
       "meetingPlanned": "Meeting gepland!",
-      "meetingPlannedDesc": "Vergeet niet de uitnodiging te versturen."
+      "meetingPlannedDesc": "Vergeet niet de uitnodiging te versturen.",
+      "outreachCreated": "Outreach aangemaakt!"
     },
     "contactDetail": {
       "profileBrief": "Profiel Analyse",

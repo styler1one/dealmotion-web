@@ -46,6 +46,7 @@ import { ResearchForm, PreparationForm, FollowupUploadForm } from '@/components/
 import { ContactSearchModal } from '@/components/contacts'
 import { AINotetakerSheet } from '@/components/ai-notetaker/ai-notetaker-sheet'
 import { MeetingRequestSheet } from '@/components/autopilot/MeetingRequestSheet'
+import { OutreachOptionsSheet, OutreachChannel } from '@/components/luna/OutreachOptionsSheet'
 import { logger } from '@/lib/logger'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -113,6 +114,16 @@ export default function ProspectHubPage() {
   // Contact detail view state
   const [selectedContact, setSelectedContact] = useState<ProspectContact | null>(null)
   const [contactDetailOpen, setContactDetailOpen] = useState(false)
+  
+  // Outreach sheet state (SPEC-046)
+  const [outreachSheetOpen, setOutreachSheetOpen] = useState(false)
+  const [outreachActionData, setOutreachActionData] = useState<{
+    sheet: 'outreach_options'
+    prospectId: string
+    contactId: string
+    researchId?: string
+    channels: OutreachChannel[]
+  } | null>(null)
   
   // Refetch hub data function - used after sheet actions
   const refetchHubData = useCallback(async () => {
@@ -336,6 +347,40 @@ export default function ProspectHubPage() {
       })
       setPrepSheetOpen(true)
     }
+  }
+  
+  // Handler for "Create Outreach" button (SPEC-046)
+  const handleCreateOutreach = (contact: ProspectContact) => {
+    // Determine available channels based on contact data
+    const channels: OutreachChannel[] = []
+    
+    if (contact.linkedin_url) {
+      channels.push('linkedin_connect', 'linkedin_message')
+    }
+    if (contact.email) {
+      channels.push('email')
+    }
+    if (contact.phone) {
+      channels.push('whatsapp')
+    }
+    
+    if (channels.length === 0) {
+      toast({
+        title: t('errors.noChannelsAvailable') || 'Geen kanalen beschikbaar',
+        description: t('errors.addContactInfo') || 'Voeg eerst een email, LinkedIn of telefoonnummer toe aan dit contact.',
+        variant: 'destructive'
+      })
+      return
+    }
+    
+    setOutreachActionData({
+      sheet: 'outreach_options',
+      prospectId: prospectId,
+      contactId: contact.id,
+      researchId: research?.id,
+      channels
+    })
+    setOutreachSheetOpen(true)
   }
   
   // Determine journey progress
@@ -1211,6 +1256,15 @@ export default function ProspectHubPage() {
                     )}
                   </div>
                   
+                  {/* Create Outreach Button (SPEC-046) */}
+                  <Button
+                    onClick={() => handleCreateOutreach(selectedContact)}
+                    className="w-full bg-purple-600 hover:bg-purple-700"
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    {t('actions.createOutreach') || 'Maak Outreach'}
+                  </Button>
+                  
                   {/* Communication Style & Authority */}
                   {(selectedContact.communication_style || selectedContact.decision_authority) && (
                     <div className="flex flex-wrap gap-2">
@@ -1371,6 +1425,19 @@ export default function ProspectHubPage() {
             </div>
           </SheetContent>
         </Sheet>
+        
+        {/* Outreach Options Sheet (SPEC-046) */}
+        <OutreachOptionsSheet
+          open={outreachSheetOpen}
+          onOpenChange={setOutreachSheetOpen}
+          actionData={outreachActionData}
+          onComplete={() => {
+            setOutreachSheetOpen(false)
+            setContactDetailOpen(false)
+            toast({ title: t('toast.outreachCreated') || 'Outreach aangemaakt!' })
+            refetchHubData()
+          }}
+        />
       </div>
     </DashboardLayout>
   )

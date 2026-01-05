@@ -1633,7 +1633,8 @@
       "viewPrep": "View Prep",
       "viewFollowup": "View Analysis",
       "prepareNow": "Prepare Now",
-      "planMeeting": "Plan Meeting"
+      "planMeeting": "Plan Meeting",
+      "createOutreach": "Create Outreach"
     },
     "documentStatus": {
       "pending": "Pending",
@@ -1660,7 +1661,9 @@
     "errors": {
       "loadFailed": "Failed to load prospect data",
       "notFound": "Prospect not found",
-      "noteSaveFailed": "Failed to save note"
+      "noteSaveFailed": "Failed to save note",
+      "noChannelsAvailable": "No channels available",
+      "addContactInfo": "Add an email, LinkedIn, or phone number to this contact first."
     },
     "sheets": {
       "startResearch": "Start Company Research",
@@ -1682,7 +1685,8 @@
       "followupStarted": "Follow-up processing started",
       "contactAdded": "Contact added successfully",
       "meetingPlanned": "Meeting planned!",
-      "meetingPlannedDesc": "Don't forget to send the invitation."
+      "meetingPlannedDesc": "Don't forget to send the invitation.",
+      "outreachCreated": "Outreach created!"
     },
     "contactDetail": {
       "profileBrief": "Profile Analysis",
