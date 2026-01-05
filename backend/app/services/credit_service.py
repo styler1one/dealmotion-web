@@ -73,10 +73,10 @@ CREDIT_COSTS = {
     # Cost: ~$0.02 × 1.30 = $0.026 → 0.25 credits
     "contact_search": Decimal("0.25"),
     
-    # Outreach generation = 1.0 credit
-    # Cost: ~$0.00354 (avg 180 input, 200 output tokens) × 1.30 = $0.0046 → 1 credit
-    # Simplified to 1 credit for consistency with other single-generation actions
-    "outreach_generate": Decimal("1.0"),
+    # Outreach generation = 0.5 credits
+    # Cost: ~$0.00354 (avg 180 input, 200 output tokens) × 1.30 = $0.0046 → 0.5 credits
+    # Much smaller than followup actions (2 credits) due to lower token usage
+    "outreach_generate": Decimal("0.5"),
     
     # Embeddings = 0.01 credits per document chunk (very cheap)
     "embedding_chunk": Decimal("0.01"),
