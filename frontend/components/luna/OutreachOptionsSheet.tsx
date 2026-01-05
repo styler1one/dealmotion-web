@@ -372,12 +372,15 @@ export function OutreachOptionsSheet({
       }
       
       if (data) {
-        setSubject(data.subject || '')
-        setBody(data.body)
+        const generatedSubject = data.subject || ''
+        const generatedBody = data.body
+        
+        setSubject(generatedSubject)
+        setBody(generatedBody)
         toast({ title: t('generateSuccess') })
         
-        // Auto-save draft after generation
-        await handleSaveDraftAuto()
+        // Auto-save draft after generation - pass data directly to avoid state timing issues
+        await handleSaveDraftAuto(generatedSubject, generatedBody)
       }
     } catch {
       toast({ title: t('generateFailed'), variant: 'destructive' })
@@ -387,8 +390,11 @@ export function OutreachOptionsSheet({
   }
   
   // Auto-save draft (silent, no toast)
-  const handleSaveDraftAuto = async () => {
-    if (!selectedChannel || !actionData || !body || !actionData.contactId) return
+  const handleSaveDraftAuto = async (overrideSubject?: string, overrideBody?: string) => {
+    const bodyToSave = overrideBody || body
+    const subjectToSave = overrideSubject !== undefined ? overrideSubject : subject
+    
+    if (!selectedChannel || !actionData || !bodyToSave || !actionData.contactId) return
     
     // Store current contactId to prevent race conditions
     const currentContactId = actionData.contactId
@@ -422,8 +428,8 @@ export function OutreachOptionsSheet({
             const { error } = await api.patch(
               `/api/v1/luna/outreach/${existingDraft.id}`,
               {
-                subject: subject || undefined,
-                body,
+                subject: subjectToSave || undefined,
+                body: bodyToSave,
                 channel: selectedChannel,
               }
             )
@@ -442,8 +448,8 @@ export function OutreachOptionsSheet({
                 contactId: currentContactId,
                 researchId: actionData.researchId,
                 channel: selectedChannel,
-                subject: subject || undefined,
-                body,
+                subject: subjectToSave || undefined,
+                body: bodyToSave,
                 status: 'draft',
               }
             )
