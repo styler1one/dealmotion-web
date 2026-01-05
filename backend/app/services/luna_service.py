@@ -825,33 +825,67 @@ class LunaService:
     # =========================================================================
     
     async def get_stats(self, user_id: str, organization_id: str) -> LunaStats:
-        """Get Luna stats for a user."""
+        """
+        Get Luna stats for a user.
+        
+        IMPORTANT: Stats count ACTUAL items created today, not Luna messages viewed.
+        - research_completed: research_briefs created today
+        - preps_completed: meeting_preps created today  
+        - followups_completed: followups completed today
+        - outreach_sent: outreach_messages sent today
+        """
         try:
             counts = await self._get_message_counts(user_id)
             
-            # Get today's completed actions
+            # Get today's start timestamp
             today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
-            
-            result = self.supabase.table("luna_messages") \
-                .select("message_type") \
-                .eq("user_id", user_id) \
-                .eq("status", "completed") \
-                .gte("acted_at", today_start.isoformat()) \
-                .execute()
+            today_iso = today_start.isoformat()
             
             today = TodayStats()
-            for row in (result.data or []):
-                msg_type = row.get("message_type")
-                today.total_actions += 1
-                
-                if msg_type in ["start_research", "review_research"]:
-                    today.research_completed += 1
-                elif msg_type in ["create_prep", "prep_ready"]:
-                    today.preps_completed += 1
-                elif msg_type in ["review_meeting_summary", "send_followup_email"]:
-                    today.followups_completed += 1
-                elif msg_type in ["prepare_outreach", "first_touch_sent"]:
-                    today.outreach_sent += 1
+            
+            # Count ACTUAL research briefs created today
+            research_result = self.supabase.table("research_briefs") \
+                .select("id", count="exact") \
+                .eq("user_id", user_id) \
+                .eq("status", "completed") \
+                .gte("completed_at", today_iso) \
+                .execute()
+            today.research_completed = research_result.count or 0
+            
+            # Count ACTUAL meeting preps created today
+            preps_result = self.supabase.table("meeting_preps") \
+                .select("id", count="exact") \
+                .eq("user_id", user_id) \
+                .eq("status", "completed") \
+                .gte("completed_at", today_iso) \
+                .execute()
+            today.preps_completed = preps_result.count or 0
+            
+            # Count ACTUAL followups completed today
+            followups_result = self.supabase.table("followups") \
+                .select("id", count="exact") \
+                .eq("user_id", user_id) \
+                .eq("status", "completed") \
+                .gte("completed_at", today_iso) \
+                .execute()
+            today.followups_completed = followups_result.count or 0
+            
+            # Count ACTUAL outreach messages sent today
+            outreach_result = self.supabase.table("outreach_messages") \
+                .select("id", count="exact") \
+                .eq("user_id", user_id) \
+                .eq("status", "sent") \
+                .gte("sent_at", today_iso) \
+                .execute()
+            today.outreach_sent = outreach_result.count or 0
+            
+            # Total is sum of all actual items
+            today.total_actions = (
+                today.research_completed + 
+                today.preps_completed + 
+                today.followups_completed + 
+                today.outreach_sent
+            )
             
             return LunaStats(
                 today=today,
