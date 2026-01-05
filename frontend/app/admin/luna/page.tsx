@@ -30,7 +30,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Icons } from '@/components/icons'
-import { adminApi } from '@/lib/admin-api'
+import { api } from '@/lib/api'
 import { useToast } from '@/components/ui/use-toast'
 import { formatDistanceToNow } from 'date-fns'
 import { nl } from 'date-fns/locale'
@@ -88,14 +88,14 @@ export default function LunaAdminPage() {
     setLoading(true)
     try {
       const [statsRes, comparisonRes, messagesRes] = await Promise.all([
-        adminApi.get<LunaShadowStats>(`/admin/luna/stats?days=${periodDays}`),
-        adminApi.get<LunaComparisonStats>(`/admin/luna/comparison?days=${periodDays}`),
-        adminApi.get<{ messages: LunaMessage[] }>(`/admin/luna/messages?limit=50${statusFilter ? `&status=${statusFilter}` : ''}${typeFilter ? `&message_type=${typeFilter}` : ''}`),
+        api.get<LunaShadowStats>(`/api/v1/admin/luna/stats?days=${periodDays}`),
+        api.get<LunaComparisonStats>(`/api/v1/admin/luna/comparison?days=${periodDays}`),
+        api.get<{ messages: LunaMessage[] }>(`/api/v1/admin/luna/messages?limit=50${statusFilter ? `&status=${statusFilter}` : ''}${typeFilter ? `&message_type=${typeFilter}` : ''}`),
       ])
       
-      if (statsRes.data) setStats(statsRes.data)
-      if (comparisonRes.data) setComparison(comparisonRes.data)
-      if (messagesRes.data) setMessages(messagesRes.data.messages || [])
+      if (!statsRes.error && statsRes.data) setStats(statsRes.data)
+      if (!comparisonRes.error && comparisonRes.data) setComparison(comparisonRes.data)
+      if (!messagesRes.error && messagesRes.data) setMessages(messagesRes.data.messages || [])
     } catch (error) {
       console.error('Failed to fetch Luna data:', error)
       toast({ title: 'Failed to fetch data', variant: 'destructive' })
@@ -112,7 +112,7 @@ export default function LunaAdminPage() {
   const toggleFlag = async (flagName: string, enabled: boolean) => {
     setUpdatingFlag(flagName)
     try {
-      const { error } = await adminApi.post(`/admin/luna/flags/${flagName}?enabled=${enabled}`)
+      const { error } = await api.post(`/api/v1/admin/luna/flags/${flagName}?enabled=${enabled}`)
       if (error) throw error
       
       toast({ title: `${flagName} ${enabled ? 'enabled' : 'disabled'}` })
