@@ -3557,7 +3557,7 @@
     "quickStart": "Quick Start",
     "todaysMeetings": "Today's Meetings",
     "noMeetingsToday": "No meetings scheduled for today",
-    "thisWeek": "This Week",
+    "last7Days": "Last 7 Days",
     "today": "Today",
     "completed": "completed",
     "tipOfDay": "Tip of the Day",

@@ -23,7 +23,6 @@ import {
   Search,
   FileText,
   Mic,
-  Settings,
   Calendar,
   CheckCircle2,
   Clock,
@@ -123,10 +122,10 @@ function QuickActions({ onOpenAINotetaker }: QuickActionsProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="flex gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <Button
             variant="ghost"
-            className="flex-1 flex flex-col items-center gap-1 h-auto py-3 text-blue-500 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/30 dark:hover:bg-blue-900/40"
+            className="flex flex-col items-center gap-1 h-auto py-3 text-blue-500 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/30 dark:hover:bg-blue-900/40"
             asChild
           >
             <a href="/dashboard/research">
@@ -136,7 +135,7 @@ function QuickActions({ onOpenAINotetaker }: QuickActionsProps) {
           </Button>
           <Button
             variant="ghost"
-            className="flex-1 flex flex-col items-center gap-1 h-auto py-3 text-indigo-500 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/30 dark:hover:bg-indigo-900/40"
+            className="flex flex-col items-center gap-1 h-auto py-3 text-indigo-500 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/30 dark:hover:bg-indigo-900/40"
             asChild
           >
             <a href="/dashboard/preparation">
@@ -146,7 +145,7 @@ function QuickActions({ onOpenAINotetaker }: QuickActionsProps) {
           </Button>
           <Button
             variant="ghost"
-            className="flex-1 flex flex-col items-center gap-1 h-auto py-3 text-rose-500 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-900/40"
+            className="flex flex-col items-center gap-1 h-auto py-3 text-rose-500 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-900/40"
             asChild
           >
             <a href="/dashboard/recordings">
@@ -157,7 +156,7 @@ function QuickActions({ onOpenAINotetaker }: QuickActionsProps) {
           <Button
             variant="ghost"
             onClick={onOpenAINotetaker}
-            className="flex-1 flex flex-col items-center gap-1 h-auto py-3 text-amber-500 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/30 dark:hover:bg-amber-900/40"
+            className="flex flex-col items-center gap-1 h-auto py-3 text-amber-500 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/30 dark:hover:bg-amber-900/40"
           >
             <StickyNote className="w-5 h-5" />
             <span className="text-xs">AI Notetaker</span>
@@ -261,7 +260,7 @@ function MeetingItem({ meeting }: { meeting: UpcomingMeeting }) {
 // THIS WEEK'S STATS
 // =============================================================================
 
-function ThisWeekStats() {
+function Last7DaysStats() {
   const t = useTranslations('lunaHome')
   const { stats, isLoading } = useLuna()
   
@@ -270,7 +269,7 @@ function ThisWeekStats() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
-            {t('thisWeek')}
+            {t('last7Days')}
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
@@ -290,7 +289,7 @@ function ThisWeekStats() {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
-          {t('thisWeek')}
+          {t('last7Days')}
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
@@ -408,30 +407,17 @@ function TipOfDay() {
 // =============================================================================
 
 interface ContextSidebarProps {
-  onOpenSettings: () => void
   onOpenAINotetaker: () => void
 }
 
-function ContextSidebar({ onOpenSettings, onOpenAINotetaker }: ContextSidebarProps) {
-  const t = useTranslations('lunaHome')
-  
+function ContextSidebar({ onOpenAINotetaker }: ContextSidebarProps) {
   return (
     <div className="space-y-4">
       <QuickActions onOpenAINotetaker={onOpenAINotetaker} />
       <TodaysMeetings />
-      <ThisWeekStats />
+      <Last7DaysStats />
       <TodaysStats />
       <TipOfDay />
-      
-      {/* Settings Link */}
-      <Button
-        variant="ghost"
-        className="w-full justify-start text-gray-500"
-        onClick={onOpenSettings}
-      >
-        <Settings className="w-4 h-4 mr-2" />
-        {t('settings')}
-      </Button>
     </div>
   )
 }
@@ -596,32 +582,6 @@ function MessageInbox() {
   )
 }
 
-// =============================================================================
-// LUNA SETTINGS
-// =============================================================================
-
-function LunaSettingsSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
-  const t = useTranslations('lunaHome')
-  const { settings, updateSettings } = useLuna()
-  
-  if (!settings) return null
-  
-  return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>{t('settingsTitle')}</SheetTitle>
-        </SheetHeader>
-        <div className="mt-6 space-y-6">
-          {/* TODO: Add settings controls */}
-          <p className="text-sm text-gray-500">
-            {t('settingsDescription')}
-          </p>
-        </div>
-      </SheetContent>
-    </Sheet>
-  )
-}
 
 // =============================================================================
 // MAIN COMPONENT
@@ -629,7 +589,6 @@ function LunaSettingsSheet({ open, onOpenChange }: { open: boolean; onOpenChange
 
 export function LunaHome() {
   const { isLoading, isEnabled } = useLuna()
-  const [showSettings, setShowSettings] = useState(false)
   const [aiNotetakerSheetOpen, setAiNotetakerSheetOpen] = useState(false)
   
   if (isLoading) {
@@ -659,15 +618,11 @@ export function LunaHome() {
           {/* Context Sidebar */}
           <div className="lg:col-span-1">
             <ContextSidebar 
-              onOpenSettings={() => setShowSettings(true)}
               onOpenAINotetaker={() => setAiNotetakerSheetOpen(true)}
             />
           </div>
         </div>
       </div>
-      
-      {/* Settings Sheet */}
-      <LunaSettingsSheet open={showSettings} onOpenChange={setShowSettings} />
       
       {/* AI Notetaker Sheet */}
       <AINotetakerSheet

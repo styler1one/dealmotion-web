@@ -888,47 +888,46 @@ class LunaService:
                 today.outreach_sent
             )
             
-            # Get this week's start timestamp (Monday 00:00:00)
+            # Get last 7 days start timestamp (7 days ago from now, 00:00:00)
             now = datetime.utcnow()
-            days_since_monday = now.weekday()  # 0 = Monday, 6 = Sunday
-            week_start = (now - timedelta(days=days_since_monday)).replace(hour=0, minute=0, second=0, microsecond=0)
-            week_iso = week_start.isoformat()
+            last_7_days_start = (now - timedelta(days=7)).replace(hour=0, minute=0, second=0, microsecond=0)
+            last_7_days_iso = last_7_days_start.isoformat()
             
             week = WeekStats()
             
-            # Count ACTUAL research briefs created this week
+            # Count ACTUAL research briefs created in last 7 days
             research_week_result = self.supabase.table("research_briefs") \
                 .select("id", count="exact") \
                 .eq("user_id", user_id) \
                 .eq("status", "completed") \
-                .gte("completed_at", week_iso) \
+                .gte("completed_at", last_7_days_iso) \
                 .execute()
             week.research_completed = research_week_result.count or 0
             
-            # Count ACTUAL meeting preps created this week
+            # Count ACTUAL meeting preps created in last 7 days
             preps_week_result = self.supabase.table("meeting_preps") \
                 .select("id", count="exact") \
                 .eq("user_id", user_id) \
                 .eq("status", "completed") \
-                .gte("completed_at", week_iso) \
+                .gte("completed_at", last_7_days_iso) \
                 .execute()
             week.preps_completed = preps_week_result.count or 0
             
-            # Count ACTUAL followups completed this week
+            # Count ACTUAL followups completed in last 7 days
             followups_week_result = self.supabase.table("followups") \
                 .select("id", count="exact") \
                 .eq("user_id", user_id) \
                 .eq("status", "completed") \
-                .gte("completed_at", week_iso) \
+                .gte("completed_at", last_7_days_iso) \
                 .execute()
             week.followups_completed = followups_week_result.count or 0
             
-            # Count ACTUAL outreach messages sent this week
+            # Count ACTUAL outreach messages sent in last 7 days
             outreach_week_result = self.supabase.table("outreach_messages") \
                 .select("id", count="exact") \
                 .eq("user_id", user_id) \
                 .eq("status", "sent") \
-                .gte("sent_at", week_iso) \
+                .gte("sent_at", last_7_days_iso) \
                 .execute()
             week.outreach_sent = outreach_week_result.count or 0
             
