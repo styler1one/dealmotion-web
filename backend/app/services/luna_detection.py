@@ -653,14 +653,34 @@ class LunaDetectionEngine:
         self,
         ctx: DetectionContext
     ) -> List[LunaMessageCreate]:
-        """Detect messages for post-meeting loop."""
+        """
+        Detect messages for post-meeting loop.
+        
+        Sequential flow (per SPEC-046 section 7):
+        1. review_meeting_summary → requires followup completed
+        2. review_customer_report → requires #1 completed
+        3. send_followup_email → requires #2 completed  
+        4. create_action_items → requires #3 completed
+        
+        Parallel (after #1):
+        - update_crm_notes → requires #1 completed only
+        """
         messages = []
         
-        # review_meeting_summary: Transcript ready, no summary yet
+        # 1. review_meeting_summary: Transcript ready
         messages.extend(await self._detect_review_summary(ctx))
         
-        # Note: Other post-meeting messages (customer_report, email, action_items)
-        # are triggered sequentially via dependencies, not independently detected
+        # 2. review_customer_report: After summary reviewed
+        messages.extend(await self._detect_review_customer_report(ctx))
+        
+        # 3. send_followup_email: After customer report viewed
+        messages.extend(await self._detect_send_followup_email(ctx))
+        
+        # 4. create_action_items: After email sent
+        messages.extend(await self._detect_create_action_items(ctx))
+        
+        # 5. update_crm_notes: Parallel path after summary
+        messages.extend(await self._detect_update_crm_notes(ctx))
         
         return messages
     
@@ -701,6 +721,247 @@ class LunaDetectionEngine:
                 action_data={"followup_id": followup_id, "meeting_id": meeting_id},
                 priority=MESSAGE_PRIORITIES.get(MessageType.REVIEW_MEETING_SUMMARY, 90),
                 expires_at=datetime.utcnow() + timedelta(days=3),
+                prospect_id=followup.get("prospect_id"),
+                followup_id=followup_id,
+                meeting_id=meeting_id
+            ))
+        
+        return messages[:2]
+    
+    async def _detect_review_customer_report(
+        self,
+        ctx: DetectionContext
+    ) -> List[LunaMessageCreate]:
+        """
+        Detect followups ready for customer report review.
+        Requires review_meeting_summary completed.
+        
+        Uses existing followup action system - navigates to ActionSheet.
+        """
+        messages = []
+        
+        # Find followups with completed summary message
+        result = self.supabase.table("followups") \
+            .select("id, meeting_subject, prospect_id, calendar_meeting_id") \
+            .eq("user_id", ctx.user_id) \
+            .eq("status", "completed") \
+            .not_.is_("executive_summary", None) \
+            .execute()
+        
+        for followup in (result.data or []):
+            followup_id = followup["id"]
+            meeting_id = followup.get("calendar_meeting_id")
+            subject = followup.get("meeting_subject", "Meeting")
+            entity_key = meeting_id or followup_id
+            
+            dedupe_key = f"review_customer_report:{entity_key}"
+            if dedupe_key in ctx.existing_dedupe_keys:
+                continue
+            
+            # Check dependency: review_meeting_summary must be completed for this entity
+            completed_for_entity = ctx.completed_message_types.get(entity_key, set())
+            if MessageType.REVIEW_MEETING_SUMMARY.value not in completed_for_entity:
+                continue
+            
+            messages.append(LunaMessageCreate(
+                user_id=ctx.user_id,
+                organization_id=ctx.organization_id,
+                dedupe_key=dedupe_key,
+                message_type=MessageType.REVIEW_CUSTOMER_REPORT.value,
+                title=f"Klantrapport: {subject}",
+                description="Bekijk het klantrapport voor je prospect",
+                luna_message=f"Het klantrapport voor '{subject}' is klaar. Bijlage voor je follow-up email.",
+                action_type=ActionType.NAVIGATE.value,
+                # Navigate to followup page with action=customer_report
+                action_route=f"/dashboard/followup/{followup_id}?action=customer_report",
+                action_data={
+                    "followup_id": followup_id,
+                    "meeting_id": meeting_id,
+                    "action_type": "customer_report"
+                },
+                priority=MESSAGE_PRIORITIES.get(MessageType.REVIEW_CUSTOMER_REPORT, 85),
+                expires_at=datetime.utcnow() + timedelta(days=3),
+                prospect_id=followup.get("prospect_id"),
+                followup_id=followup_id,
+                meeting_id=meeting_id
+            ))
+        
+        return messages[:2]
+    
+    async def _detect_send_followup_email(
+        self,
+        ctx: DetectionContext
+    ) -> List[LunaMessageCreate]:
+        """
+        Detect followups ready for follow-up email.
+        Requires review_customer_report completed.
+        
+        Uses existing followup ActionSheet with share_email action.
+        """
+        messages = []
+        
+        result = self.supabase.table("followups") \
+            .select("id, meeting_subject, prospect_id, calendar_meeting_id") \
+            .eq("user_id", ctx.user_id) \
+            .eq("status", "completed") \
+            .execute()
+        
+        for followup in (result.data or []):
+            followup_id = followup["id"]
+            meeting_id = followup.get("calendar_meeting_id")
+            subject = followup.get("meeting_subject", "Meeting")
+            entity_key = meeting_id or followup_id
+            
+            dedupe_key = f"send_followup_email:{entity_key}"
+            if dedupe_key in ctx.existing_dedupe_keys:
+                continue
+            
+            # Check dependency: review_customer_report must be completed
+            completed_for_entity = ctx.completed_message_types.get(entity_key, set())
+            if MessageType.REVIEW_CUSTOMER_REPORT.value not in completed_for_entity:
+                continue
+            
+            messages.append(LunaMessageCreate(
+                user_id=ctx.user_id,
+                organization_id=ctx.organization_id,
+                dedupe_key=dedupe_key,
+                message_type=MessageType.SEND_FOLLOWUP_EMAIL.value,
+                title=f"Verstuur follow-up: {subject}",
+                description="Je follow-up email staat klaar om te versturen",
+                luna_message=f"De follow-up email voor '{subject}' staat klaar. Review en verstuur naar je prospect.",
+                action_type=ActionType.NAVIGATE.value,
+                # Navigate to followup page with share_email action
+                action_route=f"/dashboard/followup/{followup_id}?action=share_email",
+                action_data={
+                    "followup_id": followup_id,
+                    "meeting_id": meeting_id,
+                    "action_type": "share_email"
+                },
+                priority=MESSAGE_PRIORITIES.get(MessageType.SEND_FOLLOWUP_EMAIL, 80),
+                expires_at=datetime.utcnow() + timedelta(days=3),
+                prospect_id=followup.get("prospect_id"),
+                followup_id=followup_id,
+                meeting_id=meeting_id
+            ))
+        
+        return messages[:2]
+    
+    async def _detect_create_action_items(
+        self,
+        ctx: DetectionContext
+    ) -> List[LunaMessageCreate]:
+        """
+        Detect followups with action items to assign.
+        Requires send_followup_email completed AND action_items exist.
+        
+        Per SPEC-046: If no action items detected → message is NOT created.
+        """
+        messages = []
+        
+        # Only select followups with action items
+        result = self.supabase.table("followups") \
+            .select("id, meeting_subject, prospect_id, calendar_meeting_id, action_items") \
+            .eq("user_id", ctx.user_id) \
+            .eq("status", "completed") \
+            .execute()
+        
+        for followup in (result.data or []):
+            followup_id = followup["id"]
+            meeting_id = followup.get("calendar_meeting_id")
+            subject = followup.get("meeting_subject", "Meeting")
+            action_items = followup.get("action_items") or []
+            entity_key = meeting_id or followup_id
+            
+            # Skip if no action items (per SPEC-046)
+            if not action_items or len(action_items) == 0:
+                continue
+            
+            dedupe_key = f"create_action_items:{entity_key}"
+            if dedupe_key in ctx.existing_dedupe_keys:
+                continue
+            
+            # Check dependency: send_followup_email must be completed
+            completed_for_entity = ctx.completed_message_types.get(entity_key, set())
+            if MessageType.SEND_FOLLOWUP_EMAIL.value not in completed_for_entity:
+                continue
+            
+            messages.append(LunaMessageCreate(
+                user_id=ctx.user_id,
+                organization_id=ctx.organization_id,
+                dedupe_key=dedupe_key,
+                message_type=MessageType.CREATE_ACTION_ITEMS.value,
+                title=f"Actiepunten: {subject}",
+                description=f"{len(action_items)} actiepunten om toe te wijzen",
+                luna_message=f"Er zijn {len(action_items)} actiepunten uit '{subject}'. Wijs ze toe en plan ze in.",
+                action_type=ActionType.NAVIGATE.value,
+                # Navigate to followup page with action_items action
+                action_route=f"/dashboard/followup/{followup_id}?action=action_items",
+                action_data={
+                    "followup_id": followup_id,
+                    "meeting_id": meeting_id,
+                    "action_type": "action_items",
+                    "count": len(action_items)
+                },
+                priority=MESSAGE_PRIORITIES.get(MessageType.CREATE_ACTION_ITEMS, 75),
+                expires_at=datetime.utcnow() + timedelta(days=5),
+                prospect_id=followup.get("prospect_id"),
+                followup_id=followup_id,
+                meeting_id=meeting_id
+            ))
+        
+        return messages[:2]
+    
+    async def _detect_update_crm_notes(
+        self,
+        ctx: DetectionContext
+    ) -> List[LunaMessageCreate]:
+        """
+        Detect followups ready for CRM notes update.
+        Parallel path - only requires review_meeting_summary completed.
+        
+        Per SPEC-046: This message runs in PARALLEL with main sequential flow.
+        """
+        messages = []
+        
+        result = self.supabase.table("followups") \
+            .select("id, meeting_subject, prospect_id, calendar_meeting_id") \
+            .eq("user_id", ctx.user_id) \
+            .eq("status", "completed") \
+            .execute()
+        
+        for followup in (result.data or []):
+            followup_id = followup["id"]
+            meeting_id = followup.get("calendar_meeting_id")
+            subject = followup.get("meeting_subject", "Meeting")
+            entity_key = meeting_id or followup_id
+            
+            dedupe_key = f"update_crm_notes:{entity_key}"
+            if dedupe_key in ctx.existing_dedupe_keys:
+                continue
+            
+            # Check dependency: review_meeting_summary must be completed (parallel path)
+            completed_for_entity = ctx.completed_message_types.get(entity_key, set())
+            if MessageType.REVIEW_MEETING_SUMMARY.value not in completed_for_entity:
+                continue
+            
+            messages.append(LunaMessageCreate(
+                user_id=ctx.user_id,
+                organization_id=ctx.organization_id,
+                dedupe_key=dedupe_key,
+                message_type=MessageType.UPDATE_CRM_NOTES.value,
+                title=f"CRM notities: {subject}",
+                description="Sync meeting notities naar je CRM",
+                luna_message=f"De notities van '{subject}' zijn klaar voor je CRM. Review en sync.",
+                action_type=ActionType.NAVIGATE.value,
+                # Navigate to followup page with internal_report action
+                action_route=f"/dashboard/followup/{followup_id}?action=internal_report",
+                action_data={
+                    "followup_id": followup_id,
+                    "meeting_id": meeting_id,
+                    "action_type": "internal_report"
+                },
+                priority=MESSAGE_PRIORITIES.get(MessageType.UPDATE_CRM_NOTES, 70),
+                expires_at=datetime.utcnow() + timedelta(days=5),
                 prospect_id=followup.get("prospect_id"),
                 followup_id=followup_id,
                 meeting_id=meeting_id
