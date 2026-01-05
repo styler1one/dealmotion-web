@@ -947,12 +947,7 @@ export default function ResearchBriefPage() {
                         className="bg-blue-600 hover:bg-blue-700"
                       >
                         <Send className="h-4 w-4 mr-1" />
-                        {(() => {
-                          const translation = t('actions.createOutreach')
-                          return translation && translation !== 'actions.createOutreach' && translation !== 'research.actions.createOutreach' 
-                            ? translation 
-                            : 'Create Outreach'
-                        })()}
+                        {t('actions.createOutreach')}
                       </Button>
                       <Button 
                         variant="outline" 

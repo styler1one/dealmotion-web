@@ -422,6 +422,9 @@
         "button": "Start Preparation",
         "withContacts": "Met {count} contactpersoon"
       }
+    },
+    "actions": {
+      "createOutreach": "Maak Outreach"
     }
   },
   "preparation": {
