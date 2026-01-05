@@ -3249,7 +3249,6 @@
       "evening": "Goedenavond! Nog een paar dingen om te bekijken.",
       "allDone": "Je bent helemaal bij! Goed gedaan."
     },
-    "noMessages": "Geen acties in de wachtrij. Luna meldt het als er iets is.",
     "allCaughtUp": "Je bent helemaal bij!",
     "pending": "wachtend",
     "urgent": "Urgent",
@@ -3340,11 +3339,7 @@
     "phonePlaceholder": "+31 6 12345678",
     "saveContactInfo": "Opslaan",
     "saveContactInfoSuccess": "Contactgegevens opgeslagen",
-    "saveContactInfoFailed": "Kon contactgegevens niet opslaan",
-    "saveDraftSuccess": "Concept bewaard",
-    "saveDraftFailed": "Concept bewaren mislukt",
-    "markSentSuccess": "Gemarkeerd als verstuurd",
-    "markSentFailed": "Markeren als verstuurd mislukt"
+    "saveContactInfoFailed": "Kon contactgegevens niet opslaan"
   },
   "lunaHome": {
     "inbox": "Acties",
