@@ -3339,7 +3339,12 @@
     "phonePlaceholder": "+31 6 12345678",
     "saveContactInfo": "Opslaan",
     "saveContactInfoSuccess": "Contactgegevens opgeslagen",
-    "saveContactInfoFailed": "Kon contactgegevens niet opslaan"
+    "saveContactInfoFailed": "Kon contactgegevens niet opslaan",
+    "customInstructions": "Aangepaste Instructies (Optioneel)",
+    "customInstructionsPlaceholder": "Bijv. \"Focus op hun data migratie project\" of \"Vermeld onze Databricks expertise\"...",
+    "customInstructionsHint": "Voeg specifieke instructies toe om het gegenereerde bericht aan te passen",
+    "draftLoaded": "Concept geladen",
+    "draftLoadedDesc": "Vorige concept is geladen"
   },
   "lunaHome": {
     "inbox": "Acties",

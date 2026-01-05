@@ -3009,7 +3009,12 @@
       "phonePlaceholder": "+1 555 1234567",
       "saveContactInfo": "Save",
       "saveContactInfoSuccess": "Contact info saved",
-      "saveContactInfoFailed": "Failed to save contact info"
+      "saveContactInfoFailed": "Failed to save contact info",
+      "customInstructions": "Custom Instructions (Optional)",
+      "customInstructionsPlaceholder": "E.g., \"Focus on their data migration project\" or \"Mention our Databricks expertise\"...",
+      "customInstructionsHint": "Add specific instructions to customize the generated message",
+      "draftLoaded": "Draft loaded",
+      "draftLoadedDesc": "Previous draft has been loaded"
     }
   },
   "prospecting": {

@@ -11,7 +11,7 @@ API endpoints for Luna:
 - Feature flags
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status as http_status, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, status as http_status, BackgroundTasks, Query
 from typing import Optional
 from datetime import datetime
 import logging
@@ -418,6 +418,8 @@ async def generate_outreach(
     contact_id = request.get("contactId")
     research_id = request.get("researchId")
     channel = request.get("channel")
+    user_input = request.get("userInput")  # Optional user input for customization
+    language = request.get("language")  # Optional language override
     
     if not prospect_id or not contact_id or not channel:
         raise HTTPException(
@@ -474,6 +476,21 @@ async def generate_outreach(
     
     contact = contact_result.data[0]
     
+    # Get user's preferred output language from settings (if not provided)
+    if not language:
+        language = "en"  # Default to English
+        try:
+            settings_response = supabase.table("user_settings")\
+                .select("output_language")\
+                .eq("user_id", user_id)\
+                .maybe_single()\
+                .execute()
+            if settings_response.data and settings_response.data.get("output_language"):
+                language = settings_response.data["output_language"]
+                logger.info(f"Using user's output language for outreach: {language}")
+        except Exception as e:
+            logger.warning(f"Could not get user settings, using default language: {e}")
+    
     # Get research if available
     research = None
     if research_id:
@@ -502,31 +519,46 @@ async def generate_outreach(
         
         client = Anthropic(api_key=api_key)
         
+        # Get language instruction
+        from app.i18n.utils import get_language_instruction
+        language_instruction = get_language_instruction(language)
+        
         # Build context
         company_name = prospect.get("company_name", "the company")
         contact_name = contact.get("name", "the contact")
         contact_role = contact.get("role", "")
         research_summary = research.get("executive_summary", "") if research else ""
         
+        # Build user input section if provided
+        user_input_section = ""
+        if user_input and user_input.strip():
+            user_input_section = f"\n\nAdditional instructions from user:\n{user_input.strip()}\n\nIncorporate these instructions into the message."
+        
         # Channel-specific prompts
         channel_prompts = {
-            "linkedin_connect": f"""Write a short LinkedIn connection request note (max 300 characters) to {contact_name}, {contact_role} at {company_name}.
+            "linkedin_connect": f"""{language_instruction}
+
+Write a short LinkedIn connection request note (max 300 characters) to {contact_name}, {contact_role} at {company_name}.
 Make it personal and professional. Don't be salesy. Reference something specific about the company or their role.
 
-Company research: {research_summary[:500] if research_summary else 'Not available'}
+Company research: {research_summary[:500] if research_summary else 'Not available'}{user_input_section}
 
 Return ONLY the connection note text.""",
             
-            "linkedin_message": f"""Write a LinkedIn message to {contact_name}, {contact_role} at {company_name}.
+            "linkedin_message": f"""{language_instruction}
+
+Write a LinkedIn message to {contact_name}, {contact_role} at {company_name}.
 Keep it concise (max 500 characters). Be conversational and value-focused. Include a soft call-to-action.
 
-Company research: {research_summary[:500] if research_summary else 'Not available'}
+Company research: {research_summary[:500] if research_summary else 'Not available'}{user_input_section}
 
 Return ONLY the message text.""",
             
-            "email": f"""Write a cold outreach email to {contact_name}, {contact_role} at {company_name}.
+            "email": f"""{language_instruction}
 
-Company research: {research_summary[:1000] if research_summary else 'Not available'}
+Write a cold outreach email to {contact_name}, {contact_role} at {company_name}.
+
+Company research: {research_summary[:1000] if research_summary else 'Not available'}{user_input_section}
 
 Include:
 - A compelling subject line
@@ -538,10 +570,12 @@ Return in format:
 SUBJECT: [subject line]
 BODY: [email body]""",
             
-            "whatsapp": f"""Write a short WhatsApp message to {contact_name}, {contact_role} at {company_name}.
+            "whatsapp": f"""{language_instruction}
+
+Write a short WhatsApp message to {contact_name}, {contact_role} at {company_name}.
 Keep it very brief (max 200 characters). Be friendly but professional.
 
-Company research: {research_summary[:300] if research_summary else 'Not available'}
+Company research: {research_summary[:300] if research_summary else 'Not available'}{user_input_section}
 
 Return ONLY the message text."""
         }
@@ -591,6 +625,39 @@ Return ONLY the message text."""
             status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to generate outreach content"
         )
+
+
+@router.get("/outreach")
+async def get_outreach(
+    contact_id: Optional[str] = Query(None, description="Filter by contact ID"),
+    status: Optional[str] = Query(None, description="Filter by status (draft, sent, skipped)"),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get outreach messages (drafts, sent, etc.)
+    
+    Args:
+        contact_id: Filter by contact ID
+        status: Filter by status (draft, sent, skipped)
+    """
+    user_id = current_user["sub"]
+    supabase = get_supabase_service()
+    
+    query = supabase.table("outreach_messages").select("*").eq("user_id", user_id)
+    
+    if contact_id:
+        query = query.eq("contact_id", contact_id)
+    if status:
+        query = query.eq("status", status)
+    
+    query = query.order("created_at", desc=True).limit(10)
+    
+    result = query.execute()
+    
+    if not result.data:
+        return []
+    
+    return result.data
 
 
 @router.post("/outreach")
@@ -668,6 +735,46 @@ async def create_outreach(
         )
     
     return {"id": result.data[0]["id"], "status": status}
+
+
+@router.patch("/outreach/{outreach_id}")
+async def update_outreach(
+    outreach_id: str,
+    request: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update an outreach message (e.g., update draft)."""
+    user_id = current_user["sub"]
+    supabase = get_supabase_service()
+    
+    # Get update fields
+    update_data = {}
+    if "subject" in request:
+        update_data["subject"] = request.get("subject")
+    if "body" in request:
+        update_data["body"] = request.get("body")
+    if "channel" in request:
+        update_data["channel"] = request.get("channel")
+    
+    if not update_data:
+        raise HTTPException(
+            status_code=http_status.HTTP_400_BAD_REQUEST,
+            detail="No fields to update"
+        )
+    
+    result = supabase.table("outreach_messages") \
+        .update(update_data) \
+        .eq("id", outreach_id) \
+        .eq("user_id", user_id) \
+        .execute()
+    
+    if not result.data:
+        raise HTTPException(
+            status_code=http_status.HTTP_404_NOT_FOUND,
+            detail="Outreach not found"
+        )
+    
+    return {"id": outreach_id, **update_data}
 
 
 @router.patch("/outreach/{outreach_id}/sent")

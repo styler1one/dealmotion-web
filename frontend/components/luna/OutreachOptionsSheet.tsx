@@ -129,10 +129,12 @@ export function OutreachOptionsSheet({
   const [selectedChannel, setSelectedChannel] = useState<OutreachChannel | null>(null)
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
+  const [userInput, setUserInput] = useState('')  // User input for customizing message
   const [isGenerating, setIsGenerating] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [copied, setCopied] = useState(false)
   const [outreachId, setOutreachId] = useState<string | null>(null)
+  const [userLanguage, setUserLanguage] = useState<string>('en')  // User's output language
   
   // Contact data state
   const [contactData, setContactData] = useState<ContactData | null>(null)
@@ -160,9 +162,69 @@ export function OutreachOptionsSheet({
       setSelectedChannel(null)
       setSubject('')
       setBody('')
+      setUserInput('')
       setOutreachId(null)
+      loadUserLanguage()
     }
-  }, [open])
+  }, [open, actionData])
+  
+  // Load draft when channel is selected
+  useEffect(() => {
+    if (open && selectedChannel && actionData) {
+      loadDraft()
+    }
+  }, [selectedChannel, open, actionData])
+  
+  // Load user's output language
+  const loadUserLanguage = async () => {
+    try {
+      const { data, error } = await api.get<{ output_language?: string }>('/api/v1/settings')
+      if (!error && data?.output_language) {
+        setUserLanguage(data.output_language)
+      }
+    } catch (error) {
+      console.error('Failed to load user language:', error)
+    }
+  }
+  
+  // Load existing draft for this contact and channel
+  const loadDraft = async () => {
+    if (!actionData?.contactId) return
+    
+    try {
+      const { data, error } = await api.get<Array<{
+        id: string
+        channel: OutreachChannel
+        subject?: string
+        body: string
+        status: string
+      }>>(`/api/v1/luna/outreach?contactId=${actionData.contactId}&status=draft`)
+      
+      if (!error && data && data.length > 0) {
+        // Load the most recent draft for the selected channel (if channel is already selected)
+        // Otherwise load the most recent draft
+        const draft = selectedChannel 
+          ? data.find(d => d.channel === selectedChannel) || data[0]
+          : data[0]
+        
+        if (draft) {
+          setOutreachId(draft.id)
+          if (!selectedChannel) {
+            setSelectedChannel(draft.channel)
+          }
+          setSubject(draft.subject || '')
+          setBody(draft.body)
+          toast({ 
+            title: t('draftLoaded') || 'Draft loaded',
+            description: t('draftLoadedDesc') || 'Previous draft has been loaded'
+          })
+        }
+      }
+    } catch (error) {
+      // Silently fail - no draft is fine
+      console.debug('No draft found or error loading draft:', error)
+    }
+  }
   
   // Load contact data
   const loadContactData = async () => {
@@ -269,6 +331,8 @@ export function OutreachOptionsSheet({
           contactId: actionData.contactId,
           researchId: actionData.researchId,
           channel: selectedChannel,
+          language: userLanguage,
+          userInput: userInput.trim() || undefined,
         }
       )
       
@@ -295,27 +359,46 @@ export function OutreachOptionsSheet({
     
     setIsSaving(true)
     try {
-      const { data, error } = await api.post<{ id: string }>(
-        '/api/v1/luna/outreach',
-        {
-          prospectId: actionData.prospectId,
-          contactId: actionData.contactId,
-          researchId: actionData.researchId,
-          channel: selectedChannel,
-          subject: subject || undefined,
-          body,
-          status: 'draft',
+      // If we have an outreach ID, update it; otherwise create new
+      if (outreachId) {
+        const { error } = await api.patch(
+          `/api/v1/luna/outreach/${outreachId}`,
+          {
+            subject: subject || undefined,
+            body,
+            channel: selectedChannel,
+          }
+        )
+        
+        if (error) {
+          toast({ title: t('saveDraftFailed'), variant: 'destructive' })
+          return
         }
-      )
-      
-      if (error) {
-        toast({ title: t('saveDraftFailed'), variant: 'destructive' })
-        return
-      }
-      
-      if (data) {
-        setOutreachId(data.id)
+        
         toast({ title: t('saveDraftSuccess') })
+      } else {
+        const { data, error } = await api.post<{ id: string }>(
+          '/api/v1/luna/outreach',
+          {
+            prospectId: actionData.prospectId,
+            contactId: actionData.contactId,
+            researchId: actionData.researchId,
+            channel: selectedChannel,
+            subject: subject || undefined,
+            body,
+            status: 'draft',
+          }
+        )
+        
+        if (error) {
+          toast({ title: t('saveDraftFailed'), variant: 'destructive' })
+          return
+        }
+        
+        if (data) {
+          setOutreachId(data.id)
+          toast({ title: t('saveDraftSuccess') })
+        }
       }
     } catch {
       toast({ title: t('saveDraftFailed'), variant: 'destructive' })
@@ -536,7 +619,25 @@ export function OutreachOptionsSheet({
             </div>
           )}
           
-          {/* Step 2: Generate Content */}
+          {/* Step 2: User Input (Optional) */}
+          {selectedChannel && canUseChannel(selectedChannel) && (
+            <div>
+              <Label className="text-sm font-medium mb-2 block">
+                {t('customInstructions') || 'Custom Instructions (Optional)'}
+              </Label>
+              <Textarea
+                placeholder={t('customInstructionsPlaceholder') || 'E.g., "Focus on their data migration project" or "Mention our Databricks expertise"...'}
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+                className="min-h-[80px] text-sm"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {t('customInstructionsHint') || 'Add specific instructions to customize the generated message'}
+              </p>
+            </div>
+          )}
+          
+          {/* Step 3: Generate Content */}
           {selectedChannel && canUseChannel(selectedChannel) && (
             <div>
               <div className="flex items-center justify-between mb-3">
