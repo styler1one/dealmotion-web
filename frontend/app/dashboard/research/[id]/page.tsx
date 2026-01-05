@@ -23,6 +23,8 @@ import { api } from '@/lib/api'
 import { exportAsMarkdown, exportAsPdf, exportAsDocx } from '@/lib/export-utils'
 import { ContactSearchModal } from '@/components/contacts'
 import { useConfirmDialog } from '@/components/confirm-dialog'
+import { OutreachOptionsSheet, OutreachChannel } from '@/components/luna/OutreachOptionsSheet'
+import { Send } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
 
 interface ResearchBrief {
@@ -41,6 +43,7 @@ interface Contact {
   role?: string
   email?: string
   linkedin_url?: string
+  phone?: string
   communication_style?: string
   decision_authority?: string
   probable_drivers?: string
@@ -88,6 +91,16 @@ export default function ResearchBriefPage() {
   const [isEditingContact, setIsEditingContact] = useState(false)
   const [editedContactBrief, setEditedContactBrief] = useState('')
   const [isSavingContact, setIsSavingContact] = useState(false)
+  
+  // Outreach sheet state (SPEC-046)
+  const [outreachSheetOpen, setOutreachSheetOpen] = useState(false)
+  const [outreachActionData, setOutreachActionData] = useState<{
+    sheet: 'outreach_options'
+    prospectId: string
+    contactId: string
+    researchId?: string
+    channels: OutreachChannel[]
+  } | null>(null)
   
   // Export states
   const [isExporting, setIsExporting] = useState(false)
@@ -376,6 +389,40 @@ export default function ResearchBriefPage() {
   const handleCancelEditContact = () => {
     setIsEditingContact(false)
     setEditedContactBrief('')
+  }
+
+  // Handler for "Create Outreach" button (SPEC-046)
+  const handleCreateOutreach = (contact: Contact) => {
+    // Determine available channels based on contact data
+    const channels: OutreachChannel[] = []
+    
+    if (contact.linkedin_url) {
+      channels.push('linkedin_connect', 'linkedin_message')
+    }
+    if (contact.email) {
+      channels.push('email')
+    }
+    if (contact.phone) {
+      channels.push('whatsapp')
+    }
+    
+    if (channels.length === 0) {
+      toast({
+        title: t('contacts.noChannelsAvailable') || 'Geen kanalen beschikbaar',
+        description: t('contacts.addContactInfo') || 'Voeg eerst een email, LinkedIn of telefoonnummer toe aan dit contact.',
+        variant: 'destructive'
+      })
+      return
+    }
+    
+    setOutreachActionData({
+      sheet: 'outreach_options',
+      prospectId: contact.prospect_id,
+      contactId: contact.id,
+      researchId: params.id as string,
+      channels
+    })
+    setOutreachSheetOpen(true)
   }
 
   // Export handlers
@@ -906,14 +953,25 @@ export default function ResearchBriefPage() {
                       </Button>
                     </>
                   ) : (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={handleEditContact}
-                    >
-                      <Icons.edit className="h-4 w-4 mr-1" />
-                      {t('brief.edit')}
-                    </Button>
+                    <>
+                      <Button 
+                        variant="default" 
+                        size="sm" 
+                        onClick={() => selectedContact && handleCreateOutreach(selectedContact)}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Send className="h-4 w-4 mr-1" />
+                        {t('actions.createOutreach') || 'Create Outreach'}
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={handleEditContact}
+                      >
+                        <Icons.edit className="h-4 w-4 mr-1" />
+                        {t('brief.edit')}
+                      </Button>
+                    </>
                   )}
                   <Button variant="ghost" size="sm" onClick={() => { setSelectedContact(null); setIsEditingContact(false); setEditedContactBrief(''); }}>
                     <Icons.x className="h-4 w-4" />
@@ -989,6 +1047,26 @@ export default function ResearchBriefPage() {
             companyName={brief.company_name}
             researchId={params.id as string}
             onContactAdded={handleContactAdded}
+          />
+        )}
+
+        {/* Outreach Options Sheet (SPEC-046) */}
+        {outreachActionData && (
+          <OutreachOptionsSheet
+            open={outreachSheetOpen}
+            onOpenChange={setOutreachSheetOpen}
+            prospectId={outreachActionData.prospectId}
+            contactId={outreachActionData.contactId}
+            researchId={outreachActionData.researchId}
+            availableChannels={outreachActionData.channels}
+            onOutreachCreated={() => {
+              setOutreachSheetOpen(false)
+              setOutreachActionData(null)
+              toast({
+                title: t('toast.outreachCreated') || 'Outreach created',
+                description: t('toast.outreachCreatedDesc') || 'Your outreach has been created successfully.',
+              })
+            }}
           />
         )}
 
