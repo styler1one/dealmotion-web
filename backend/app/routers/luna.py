@@ -490,9 +490,17 @@ async def generate_outreach(
     
     # Generate content using LLM
     try:
-        from app.services.claude_service import get_claude_client
+        import os
+        from anthropic import Anthropic
         
-        client = get_claude_client()
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        if not api_key:
+            raise HTTPException(
+                status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="ANTHROPIC_API_KEY not configured"
+            )
+        
+        client = Anthropic(api_key=api_key)
         
         # Build context
         company_name = prospect.get("company_name", "the company")
