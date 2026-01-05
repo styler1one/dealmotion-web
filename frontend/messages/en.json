@@ -421,6 +421,9 @@
         "button": "Start Preparation",
         "withContacts": "With {count} contact(s)"
       }
+    },
+    "actions": {
+      "createOutreach": "Create Outreach"
     }
   },
   "preparation": {
