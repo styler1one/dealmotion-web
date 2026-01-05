@@ -18,16 +18,10 @@ interface SidebarProps {
 const navigationItems = [
   {
     key: 'home',
-    href: '/dashboard/home',
+    href: '/dashboard',
     icon: Icons.sparkles,
     color: 'text-purple-500',
     isAutopilot: true,  // Special flag for autopilot badge
-  },
-  {
-    key: 'dashboard',
-    href: '/dashboard',
-    icon: Icons.home,
-    color: 'text-slate-500',
   },
   {
     key: 'prospects',

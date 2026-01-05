@@ -130,7 +130,7 @@ export function LunaWidget() {
           <div className="px-3 pb-3">
             <Button
               className="w-full"
-              onClick={() => router.push('/dashboard/home')}
+              onClick={() => router.push('/dashboard')}
             >
               {t('viewActions')}
               <ChevronRight className="w-4 h-4 ml-1" />
@@ -201,7 +201,7 @@ export function LunaWidget() {
               <Button
                 variant="outline"
                 className="w-full mt-2"
-                onClick={() => router.push('/dashboard/home')}
+                onClick={() => router.push('/dashboard')}
               >
                 {t('viewAllActions', { count: pendingMessages.length })}
               </Button>
@@ -215,7 +215,7 @@ export function LunaWidget() {
         <Button
           variant="outline"
           className="w-full"
-          onClick={() => router.push('/dashboard/home')}
+          onClick={() => router.push('/dashboard')}
         >
           {t('openLunaHome')}
         </Button>
