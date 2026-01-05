@@ -40,6 +40,7 @@ import {
 } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useToast } from '@/components/ui/use-toast'
+import { Input } from '@/components/ui/input'
 
 // =============================================================================
 // TYPES
@@ -66,6 +67,13 @@ interface GenerateResponse {
   subject?: string
   body: string
   channel: OutreachChannel
+}
+
+interface ContactData {
+  id: string
+  email?: string
+  linkedin_url?: string
+  phone?: string
 }
 
 // =============================================================================
@@ -126,6 +134,26 @@ export function OutreachOptionsSheet({
   const [copied, setCopied] = useState(false)
   const [outreachId, setOutreachId] = useState<string | null>(null)
   
+  // Contact data state
+  const [contactData, setContactData] = useState<ContactData | null>(null)
+  const [loadingContact, setLoadingContact] = useState(false)
+  const [missingFields, setMissingFields] = useState<{
+    email?: string
+    linkedin_url?: string
+    phone?: string
+  }>({})
+  const [isSavingContact, setIsSavingContact] = useState(false)
+  
+  // Load contact data when sheet opens
+  useEffect(() => {
+    if (open && actionData) {
+      loadContactData()
+    } else {
+      setContactData(null)
+      setMissingFields({})
+    }
+  }, [open, actionData])
+  
   // Reset state when sheet opens
   useEffect(() => {
     if (open) {
@@ -135,6 +163,95 @@ export function OutreachOptionsSheet({
       setOutreachId(null)
     }
   }, [open])
+  
+  // Load contact data
+  const loadContactData = async () => {
+    if (!actionData) return
+    
+    setLoadingContact(true)
+    try {
+      const { data, error } = await api.get<ContactData>(`/api/v1/contacts/${actionData.contactId}`)
+      if (!error && data) {
+        setContactData(data)
+      }
+    } catch (error) {
+      console.error('Failed to load contact data:', error)
+    } finally {
+      setLoadingContact(false)
+    }
+  }
+  
+  // Check if required data exists for selected channel
+  const getRequiredField = (channel: OutreachChannel): keyof ContactData | null => {
+    switch (channel) {
+      case 'email':
+        return 'email'
+      case 'linkedin_connect':
+      case 'linkedin_message':
+        return 'linkedin_url'
+      case 'whatsapp':
+        return 'phone'
+      default:
+        return null
+    }
+  }
+  
+  // Check if channel can be used (has required data)
+  const canUseChannel = (channel: OutreachChannel): boolean => {
+    if (!contactData) return false
+    const requiredField = getRequiredField(channel)
+    if (!requiredField) return true
+    return !!contactData[requiredField]
+  }
+  
+  // Handle channel selection - check if data is missing
+  const handleChannelSelect = (channel: OutreachChannel) => {
+    setSelectedChannel(channel)
+    const requiredField = getRequiredField(channel)
+    if (requiredField && !contactData?.[requiredField]) {
+      // Initialize missing field
+      setMissingFields(prev => ({
+        ...prev,
+        [requiredField]: ''
+      }))
+    } else {
+      setMissingFields({})
+    }
+  }
+  
+  // Save missing contact information
+  const handleSaveContactInfo = async () => {
+    if (!actionData || !selectedChannel) return
+    
+    const requiredField = getRequiredField(selectedChannel)
+    if (!requiredField || !missingFields[requiredField]) return
+    
+    setIsSavingContact(true)
+    try {
+      const { error } = await api.patch(`/api/v1/contacts/${actionData.contactId}`, {
+        [requiredField]: missingFields[requiredField]
+      })
+      
+      if (error) {
+        toast({ title: t('saveContactInfoFailed') || 'Failed to save contact info', variant: 'destructive' })
+        return
+      }
+      
+      // Update local contact data
+      setContactData(prev => prev ? {
+        ...prev,
+        [requiredField]: missingFields[requiredField]
+      } : null)
+      
+      setMissingFields({})
+      toast({ title: t('saveContactInfoSuccess') || 'Contact info saved' })
+    } catch (error) {
+      console.error('Failed to save contact info:', error)
+      toast({ title: t('saveContactInfoFailed') || 'Failed to save contact info', variant: 'destructive' })
+    } finally {
+      setIsSavingContact(false)
+    }
+  }
   
   // Available channels from action data
   const availableChannels = actionData?.channels || []
@@ -304,7 +421,7 @@ export function OutreachOptionsSheet({
             <Label className="text-sm font-medium">{t('selectChannel')}</Label>
             <RadioGroup
               value={selectedChannel || ''}
-              onValueChange={(v) => setSelectedChannel(v as OutreachChannel)}
+              onValueChange={(v) => handleChannelSelect(v as OutreachChannel)}
               className="mt-3 grid gap-3"
             >
               {availableChannels.map((channel) => {
@@ -336,8 +453,91 @@ export function OutreachOptionsSheet({
             </RadioGroup>
           </div>
           
+          {/* Step 1.5: Collect Missing Contact Info */}
+          {selectedChannel && !canUseChannel(selectedChannel) && (
+            <div className="p-4 border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800 rounded-lg">
+              <Label className="text-sm font-medium text-amber-900 dark:text-amber-200 mb-3 block">
+                {t('missingContactInfo') || 'Missing Contact Information'}
+              </Label>
+              <p className="text-xs text-amber-700 dark:text-amber-300 mb-3">
+                {selectedChannel === 'email' && t('addEmailInfo') || 
+                 selectedChannel === 'linkedin_connect' || selectedChannel === 'linkedin_message' ? t('addLinkedInInfo') || 'Add LinkedIn URL' :
+                 selectedChannel === 'whatsapp' ? t('addPhoneInfo') || 'Add phone number' : ''}
+              </p>
+              {selectedChannel === 'email' && (
+                <div className="space-y-2">
+                  <Input
+                    type="email"
+                    placeholder={t('emailPlaceholder') || 'email@example.com'}
+                    value={missingFields.email || ''}
+                    onChange={(e) => setMissingFields(prev => ({ ...prev, email: e.target.value }))}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleSaveContactInfo}
+                    disabled={isSavingContact || !missingFields.email}
+                    className="w-full"
+                  >
+                    {isSavingContact ? (
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    ) : (
+                      <Check className="w-4 h-4 mr-2" />
+                    )}
+                    {t('saveContactInfo') || 'Save Email'}
+                  </Button>
+                </div>
+              )}
+              {(selectedChannel === 'linkedin_connect' || selectedChannel === 'linkedin_message') && (
+                <div className="space-y-2">
+                  <Input
+                    type="url"
+                    placeholder={t('linkedInPlaceholder') || 'https://linkedin.com/in/...'}
+                    value={missingFields.linkedin_url || ''}
+                    onChange={(e) => setMissingFields(prev => ({ ...prev, linkedin_url: e.target.value }))}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleSaveContactInfo}
+                    disabled={isSavingContact || !missingFields.linkedin_url}
+                    className="w-full"
+                  >
+                    {isSavingContact ? (
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    ) : (
+                      <Check className="w-4 h-4 mr-2" />
+                    )}
+                    {t('saveContactInfo') || 'Save LinkedIn URL'}
+                  </Button>
+                </div>
+              )}
+              {selectedChannel === 'whatsapp' && (
+                <div className="space-y-2">
+                  <Input
+                    type="tel"
+                    placeholder={t('phonePlaceholder') || '+31 6 12345678'}
+                    value={missingFields.phone || ''}
+                    onChange={(e) => setMissingFields(prev => ({ ...prev, phone: e.target.value }))}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleSaveContactInfo}
+                    disabled={isSavingContact || !missingFields.phone}
+                    className="w-full"
+                  >
+                    {isSavingContact ? (
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    ) : (
+                      <Check className="w-4 h-4 mr-2" />
+                    )}
+                    {t('saveContactInfo') || 'Save Phone Number'}
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+          
           {/* Step 2: Generate Content */}
-          {selectedChannel && (
+          {selectedChannel && canUseChannel(selectedChannel) && (
             <div>
               <div className="flex items-center justify-between mb-3">
                 <Label className="text-sm font-medium">{t('messageContent')}</Label>
@@ -345,7 +545,7 @@ export function OutreachOptionsSheet({
                   variant="outline"
                   size="sm"
                   onClick={handleGenerate}
-                  disabled={isGenerating}
+                  disabled={isGenerating || loadingContact}
                 >
                   {isGenerating ? (
                     <Loader2 className="w-4 h-4 animate-spin mr-2" />

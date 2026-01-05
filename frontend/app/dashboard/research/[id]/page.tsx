@@ -393,27 +393,13 @@ export default function ResearchBriefPage() {
 
   // Handler for "Create Outreach" button (SPEC-046)
   const handleCreateOutreach = (contact: Contact) => {
-    // Determine available channels based on contact data
-    const channels: OutreachChannel[] = []
-    
-    if (contact.linkedin_url) {
-      channels.push('linkedin_connect', 'linkedin_message')
-    }
-    if (contact.email) {
-      channels.push('email')
-    }
-    if (contact.phone) {
-      channels.push('whatsapp')
-    }
-    
-    if (channels.length === 0) {
-      toast({
-        title: t('contacts.noChannelsAvailable') || 'Geen kanalen beschikbaar',
-        description: t('contacts.addContactInfo') || 'Voeg eerst een email, LinkedIn of telefoonnummer toe aan dit contact.',
-        variant: 'destructive'
-      })
-      return
-    }
+    // All channels are always available - users can add missing info if needed
+    const channels: OutreachChannel[] = [
+      'linkedin_connect',
+      'linkedin_message',
+      'email',
+      'whatsapp'
+    ]
     
     setOutreachActionData({
       sheet: 'outreach_options',

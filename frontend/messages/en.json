@@ -3002,7 +3002,17 @@
       "saveDraftSuccess": "Draft saved",
       "saveDraftFailed": "Failed to save draft",
       "markSentSuccess": "Marked as sent",
-      "markSentFailed": "Failed to mark as sent"
+      "markSentFailed": "Failed to mark as sent",
+      "missingContactInfo": "Missing Contact Information",
+      "addEmailInfo": "Add an email address to send an email",
+      "addLinkedInInfo": "Add a LinkedIn URL to send a LinkedIn message",
+      "addPhoneInfo": "Add a phone number to send a WhatsApp message",
+      "emailPlaceholder": "email@example.com",
+      "linkedInPlaceholder": "https://linkedin.com/in/...",
+      "phonePlaceholder": "+1 555 1234567",
+      "saveContactInfo": "Save",
+      "saveContactInfoSuccess": "Contact info saved",
+      "saveContactInfoFailed": "Failed to save contact info"
     }
   },
   "prospecting": {

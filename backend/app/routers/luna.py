@@ -428,11 +428,26 @@ async def generate_outreach(
     # Get context from database
     supabase = get_supabase_service()
     
+    # Get organization_id for the user
+    org_result = supabase.table("organization_members") \
+        .select("organization_id") \
+        .eq("user_id", user_id) \
+        .limit(1) \
+        .execute()
+    
+    if not org_result.data:
+        raise HTTPException(
+            status_code=http_status.HTTP_404_NOT_FOUND,
+            detail="Organization not found"
+        )
+    
+    org_id = org_result.data[0]["organization_id"]
+    
     # Get prospect
     prospect_result = supabase.table("prospects") \
         .select("*, research_briefs(*)") \
         .eq("id", prospect_id) \
-        .eq("user_id", user_id) \
+        .eq("organization_id", org_id) \
         .limit(1) \
         .execute()
     
