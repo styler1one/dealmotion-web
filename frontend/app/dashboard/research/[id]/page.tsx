@@ -1051,24 +1051,19 @@ export default function ResearchBriefPage() {
         )}
 
         {/* Outreach Options Sheet (SPEC-046) */}
-        {outreachActionData && (
-          <OutreachOptionsSheet
-            open={outreachSheetOpen}
-            onOpenChange={setOutreachSheetOpen}
-            prospectId={outreachActionData.prospectId}
-            contactId={outreachActionData.contactId}
-            researchId={outreachActionData.researchId}
-            availableChannels={outreachActionData.channels}
-            onOutreachCreated={() => {
-              setOutreachSheetOpen(false)
-              setOutreachActionData(null)
-              toast({
-                title: t('toast.outreachCreated') || 'Outreach created',
-                description: t('toast.outreachCreatedDesc') || 'Your outreach has been created successfully.',
-              })
-            }}
-          />
-        )}
+        <OutreachOptionsSheet
+          open={outreachSheetOpen}
+          onOpenChange={setOutreachSheetOpen}
+          actionData={outreachActionData}
+          onComplete={() => {
+            setOutreachSheetOpen(false)
+            setOutreachActionData(null)
+            toast({
+              title: t('toast.outreachCreated') || 'Outreach created',
+              description: t('toast.outreachCreatedDesc') || 'Your outreach has been created successfully.',
+            })
+          }}
+        />
 
         <Toaster />
       </>
