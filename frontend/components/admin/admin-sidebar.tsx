@@ -79,6 +79,14 @@ const navigationItems = [
     color: 'text-slate-400',
     roles: ['super_admin', 'admin'] as AdminRole[],
   },
+  {
+    key: 'luna',
+    label: 'Luna AI',
+    href: '/admin/luna',
+    icon: Icons.sparkles,
+    color: 'text-amber-400',
+    roles: ['super_admin', 'admin'] as AdminRole[],
+  },
 ]
 
 export function AdminSidebar({ className, role }: AdminSidebarProps) {
