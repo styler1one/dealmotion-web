@@ -54,9 +54,6 @@
       "incomplete": "Incomplete",
       "documentsCount": "{count} documents"
     },
-    "luna": {
-      "title": "Luna • AI Sales Coach"
-    },
     "flowUsage": {
       "title": "Flow Usage",
       "unlimited": "Unlimited",
@@ -3507,7 +3504,38 @@
       "sendEmail": "Send Follow-up Email",
       "createActions": "Create Action Items",
       "updateCrm": "Update CRM Notes"
-    }
+    },
+    "noMessages": "No messages",
+    "copied": "Copied!",
+    "outreachTitle": "Create Outreach",
+    "outreachDescription": "Choose a channel and create a personalized outreach message",
+    "selectChannel": "Select Channel",
+    "messageContent": "Message Content",
+    "generate": "Generate",
+    "generateSuccess": "Message generated",
+    "generateFailed": "Failed to generate message",
+    "subject": "Subject",
+    "subjectPlaceholder": "Enter email subject...",
+    "message": "Message",
+    "messagePlaceholder": "Write your message here...",
+    "copy": "Copy",
+    "saveDraft": "Save Draft",
+    "markAsSent": "Mark as Sent",
+    "skip": "Skip",
+    "saveDraftSuccess": "Draft saved",
+    "saveDraftFailed": "Failed to save draft",
+    "markSentSuccess": "Marked as sent",
+    "markSentFailed": "Failed to mark as sent",
+    "missingContactInfo": "Missing Contact Information",
+    "addEmailInfo": "Add an email address to send an email",
+    "addLinkedInInfo": "Add a LinkedIn URL to send a LinkedIn message",
+    "addPhoneInfo": "Add a phone number to send a WhatsApp message",
+    "emailPlaceholder": "email@example.com",
+    "linkedInPlaceholder": "https://linkedin.com/in/...",
+    "phonePlaceholder": "+1 555 1234567",
+    "saveContactInfo": "Save",
+    "saveContactInfoSuccess": "Contact info saved",
+    "saveContactInfoFailed": "Failed to save contact info"
   },
   "lunaHome": {
     "inbox": "Actions",
