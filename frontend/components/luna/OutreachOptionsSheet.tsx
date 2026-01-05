@@ -182,7 +182,7 @@ export function OutreachOptionsSheet({
   }
   
   // Check if required data exists for selected channel
-  const getRequiredField = (channel: OutreachChannel): keyof ContactData | null => {
+  const getRequiredField = (channel: OutreachChannel): 'email' | 'linkedin_url' | 'phone' | null => {
     switch (channel) {
       case 'email':
         return 'email'
