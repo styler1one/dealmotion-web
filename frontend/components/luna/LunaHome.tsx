@@ -30,10 +30,12 @@ import {
   Lightbulb,
   RefreshCw,
   ChevronRight,
+  StickyNote,
 } from 'lucide-react'
 import { useLuna } from './LunaProvider'
 import { MessageCardWithInline, MessageListWithInline } from './MessageCard'
 import { OutreachOptionsSheet, type OutreachChannel } from './OutreachOptionsSheet'
+import { AINotetakerSheet } from '@/components/ai-notetaker/ai-notetaker-sheet'
 import type { LunaMessage, UpcomingMeeting } from '@/types/luna'
 
 // =============================================================================
@@ -106,29 +108,12 @@ interface QuickAction {
   color: string
 }
 
-function QuickActions() {
+interface QuickActionsProps {
+  onOpenAINotetaker: () => void
+}
+
+function QuickActions({ onOpenAINotetaker }: QuickActionsProps) {
   const t = useTranslations('lunaHome')
-  
-  const actions: QuickAction[] = [
-    {
-      icon: <Search className="w-5 h-5" />,
-      label: t('quickActions.research'),
-      href: '/dashboard/research',
-      color: 'text-blue-500 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/30 dark:hover:bg-blue-900/40',
-    },
-    {
-      icon: <FileText className="w-5 h-5" />,
-      label: t('quickActions.prep'),
-      href: '/dashboard/preparation',
-      color: 'text-indigo-500 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/30 dark:hover:bg-indigo-900/40',
-    },
-    {
-      icon: <Mic className="w-5 h-5" />,
-      label: t('quickActions.record'),
-      href: '/dashboard/recordings',
-      color: 'text-rose-500 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-900/40',
-    },
-  ]
   
   return (
     <Card>
@@ -139,19 +124,44 @@ function QuickActions() {
       </CardHeader>
       <CardContent className="pt-0">
         <div className="flex gap-2">
-          {actions.map((action, i) => (
-            <Button
-              key={i}
-              variant="ghost"
-              className={`flex-1 flex flex-col items-center gap-1 h-auto py-3 ${action.color}`}
-              asChild
-            >
-              <a href={action.href}>
-                {action.icon}
-                <span className="text-xs">{action.label}</span>
-              </a>
-            </Button>
-          ))}
+          <Button
+            variant="ghost"
+            className="flex-1 flex flex-col items-center gap-1 h-auto py-3 text-blue-500 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/30 dark:hover:bg-blue-900/40"
+            asChild
+          >
+            <a href="/dashboard/research">
+              <Search className="w-5 h-5" />
+              <span className="text-xs">{t('quickActions.research')}</span>
+            </a>
+          </Button>
+          <Button
+            variant="ghost"
+            className="flex-1 flex flex-col items-center gap-1 h-auto py-3 text-indigo-500 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/30 dark:hover:bg-indigo-900/40"
+            asChild
+          >
+            <a href="/dashboard/preparation">
+              <FileText className="w-5 h-5" />
+              <span className="text-xs">{t('quickActions.prep')}</span>
+            </a>
+          </Button>
+          <Button
+            variant="ghost"
+            className="flex-1 flex flex-col items-center gap-1 h-auto py-3 text-rose-500 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-900/40"
+            asChild
+          >
+            <a href="/dashboard/recordings">
+              <Mic className="w-5 h-5" />
+              <span className="text-xs">{t('quickActions.record')}</span>
+            </a>
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={onOpenAINotetaker}
+            className="flex-1 flex flex-col items-center gap-1 h-auto py-3 text-amber-500 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/30 dark:hover:bg-amber-900/40"
+          >
+            <StickyNote className="w-5 h-5" />
+            <span className="text-xs">AI Notetaker</span>
+          </Button>
         </div>
       </CardContent>
     </Card>
@@ -244,6 +254,61 @@ function MeetingItem({ meeting }: { meeting: UpcomingMeeting }) {
         {meeting.hasPrep ? 'Prep ✓' : 'No prep'}
       </Badge>
     </a>
+  )
+}
+
+// =============================================================================
+// THIS WEEK'S STATS
+// =============================================================================
+
+function ThisWeekStats() {
+  const t = useTranslations('lunaHome')
+  const { stats, isLoading } = useLuna()
+  
+  if (isLoading || !stats) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            {t('thisWeek')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <Skeleton className="h-16 w-full" />
+        </CardContent>
+      </Card>
+    )
+  }
+  
+  const statItems = [
+    { label: t('stats.research'), value: stats.week.researchCompleted, icon: '🔍' },
+    { label: t('stats.preps'), value: stats.week.prepsCompleted, icon: '📋' },
+    { label: t('stats.followups'), value: stats.week.followupsCompleted, icon: '✉️' },
+  ]
+  
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
+          {t('thisWeek')}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="space-y-2">
+          {statItems.map((item, i) => (
+            <div key={i} className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">{item.icon}</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">{item.label}</span>
+              </div>
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                {item.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -344,15 +409,17 @@ function TipOfDay() {
 
 interface ContextSidebarProps {
   onOpenSettings: () => void
+  onOpenAINotetaker: () => void
 }
 
-function ContextSidebar({ onOpenSettings }: ContextSidebarProps) {
+function ContextSidebar({ onOpenSettings, onOpenAINotetaker }: ContextSidebarProps) {
   const t = useTranslations('lunaHome')
   
   return (
     <div className="space-y-4">
-      <QuickActions />
+      <QuickActions onOpenAINotetaker={onOpenAINotetaker} />
       <TodaysMeetings />
+      <ThisWeekStats />
       <TodaysStats />
       <TipOfDay />
       
@@ -563,6 +630,7 @@ function LunaSettingsSheet({ open, onOpenChange }: { open: boolean; onOpenChange
 export function LunaHome() {
   const { isLoading, isEnabled } = useLuna()
   const [showSettings, setShowSettings] = useState(false)
+  const [aiNotetakerSheetOpen, setAiNotetakerSheetOpen] = useState(false)
   
   if (isLoading) {
     return <LunaHomeSkeleton />
@@ -590,13 +658,22 @@ export function LunaHome() {
           
           {/* Context Sidebar */}
           <div className="lg:col-span-1">
-            <ContextSidebar onOpenSettings={() => setShowSettings(true)} />
+            <ContextSidebar 
+              onOpenSettings={() => setShowSettings(true)}
+              onOpenAINotetaker={() => setAiNotetakerSheetOpen(true)}
+            />
           </div>
         </div>
       </div>
       
       {/* Settings Sheet */}
       <LunaSettingsSheet open={showSettings} onOpenChange={setShowSettings} />
+      
+      {/* AI Notetaker Sheet */}
+      <AINotetakerSheet
+        open={aiNotetakerSheetOpen}
+        onOpenChange={setAiNotetakerSheetOpen}
+      />
     </>
   )
 }

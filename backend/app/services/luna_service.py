@@ -34,6 +34,7 @@ from app.models.luna import (
     LunaGreeting,
     LunaMode,
     TodayStats,
+    WeekStats,
     LunaStats,
     TipOfDay,
     TipCategory,
@@ -887,8 +888,61 @@ class LunaService:
                 today.outreach_sent
             )
             
+            # Get this week's start timestamp (Monday 00:00:00)
+            now = datetime.utcnow()
+            days_since_monday = now.weekday()  # 0 = Monday, 6 = Sunday
+            week_start = (now - timedelta(days=days_since_monday)).replace(hour=0, minute=0, second=0, microsecond=0)
+            week_iso = week_start.isoformat()
+            
+            week = WeekStats()
+            
+            # Count ACTUAL research briefs created this week
+            research_week_result = self.supabase.table("research_briefs") \
+                .select("id", count="exact") \
+                .eq("user_id", user_id) \
+                .eq("status", "completed") \
+                .gte("completed_at", week_iso) \
+                .execute()
+            week.research_completed = research_week_result.count or 0
+            
+            # Count ACTUAL meeting preps created this week
+            preps_week_result = self.supabase.table("meeting_preps") \
+                .select("id", count="exact") \
+                .eq("user_id", user_id) \
+                .eq("status", "completed") \
+                .gte("completed_at", week_iso) \
+                .execute()
+            week.preps_completed = preps_week_result.count or 0
+            
+            # Count ACTUAL followups completed this week
+            followups_week_result = self.supabase.table("followups") \
+                .select("id", count="exact") \
+                .eq("user_id", user_id) \
+                .eq("status", "completed") \
+                .gte("completed_at", week_iso) \
+                .execute()
+            week.followups_completed = followups_week_result.count or 0
+            
+            # Count ACTUAL outreach messages sent this week
+            outreach_week_result = self.supabase.table("outreach_messages") \
+                .select("id", count="exact") \
+                .eq("user_id", user_id) \
+                .eq("status", "sent") \
+                .gte("sent_at", week_iso) \
+                .execute()
+            week.outreach_sent = outreach_week_result.count or 0
+            
+            # Total is sum of all actual items
+            week.total_actions = (
+                week.research_completed + 
+                week.preps_completed + 
+                week.followups_completed + 
+                week.outreach_sent
+            )
+            
             return LunaStats(
                 today=today,
+                week=week,
                 pending_count=counts.pending,
                 urgent_count=counts.urgent,
                 completed_today=today.total_actions
@@ -896,7 +950,7 @@ class LunaService:
             
         except Exception as e:
             logger.error(f"Error getting stats: {e}")
-            return LunaStats(today=TodayStats())
+            return LunaStats(today=TodayStats(), week=WeekStats())
     
     # =========================================================================
     # TIP OF DAY

@@ -312,9 +312,19 @@ class TodayStats(CamelCaseModel):
     total_actions: int = 0
 
 
+class WeekStats(CamelCaseModel):
+    """This week's progress stats."""
+    research_completed: int = 0
+    preps_completed: int = 0
+    followups_completed: int = 0
+    outreach_sent: int = 0
+    total_actions: int = 0
+
+
 class LunaStats(CamelCaseModel):
     """Luna statistics."""
     today: TodayStats
+    week: WeekStats
     pending_count: int = 0
     urgent_count: int = 0
     completed_today: int = 0

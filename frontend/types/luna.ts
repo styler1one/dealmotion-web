@@ -185,8 +185,17 @@ export interface TodayStats {
   totalActions: number
 }
 
+export interface WeekStats {
+  researchCompleted: number
+  prepsCompleted: number
+  followupsCompleted: number
+  outreachSent: number
+  totalActions: number
+}
+
 export interface LunaStats {
   today: TodayStats
+  week: WeekStats
   pendingCount: number
   urgentCount: number
   completedToday: number
