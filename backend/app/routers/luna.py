@@ -739,10 +739,24 @@ async def create_outreach(
             detail="User has no organization"
         )
     
-    # Create outreach record
+    # Check if draft already exists for this contact + channel + user
+    # If so, update it instead of creating new one
+    existing_draft = None
+    if status == "draft" and contact_id:
+        existing_result = supabase.table("outreach_messages") \
+            .select("id") \
+            .eq("user_id", user_id) \
+            .eq("contact_id", contact_id) \
+            .eq("channel", channel) \
+            .eq("status", "draft") \
+            .limit(1) \
+            .execute()
+        
+        if existing_result.data:
+            existing_draft = existing_result.data[0]
+    
+    # Prepare outreach data
     outreach_data = {
-        "user_id": user_id,
-        "organization_id": org_id,
         "prospect_id": prospect_id,
         "contact_id": contact_id,
         "research_id": research_id,
@@ -756,15 +770,36 @@ async def create_outreach(
         from datetime import datetime
         outreach_data["sent_at"] = datetime.utcnow().isoformat()
     
-    result = supabase.table("outreach_messages").insert(outreach_data).execute()
-    
-    if not result.data:
-        raise HTTPException(
-            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to create outreach"
-        )
-    
-    return {"id": result.data[0]["id"], "status": status}
+    # Update existing draft or create new one
+    if existing_draft:
+        # Update existing draft
+        result = supabase.table("outreach_messages") \
+            .update(outreach_data) \
+            .eq("id", existing_draft["id"]) \
+            .eq("user_id", user_id) \
+            .execute()
+        
+        if not result.data:
+            raise HTTPException(
+                status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to update outreach draft"
+            )
+        
+        return {"id": existing_draft["id"], "status": status}
+    else:
+        # Create new outreach record
+        outreach_data["user_id"] = user_id
+        outreach_data["organization_id"] = org_id
+        
+        result = supabase.table("outreach_messages").insert(outreach_data).execute()
+        
+        if not result.data:
+            raise HTTPException(
+                status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to create outreach"
+            )
+        
+        return {"id": result.data[0]["id"], "status": status}
 
 
 @router.patch("/outreach/{outreach_id}")

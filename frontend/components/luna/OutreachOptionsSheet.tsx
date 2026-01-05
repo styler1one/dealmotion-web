@@ -339,11 +339,87 @@ export function OutreachOptionsSheet({
         setSubject(data.subject || '')
         setBody(data.body)
         toast({ title: t('generateSuccess') })
+        
+        // Auto-save draft after generation
+        await handleSaveDraftAuto()
       }
     } catch {
       toast({ title: t('generateFailed'), variant: 'destructive' })
     } finally {
       setIsGenerating(false)
+    }
+  }
+  
+  // Auto-save draft (silent, no toast)
+  const handleSaveDraftAuto = async () => {
+    if (!selectedChannel || !actionData || !body) return
+    
+    try {
+      // Check if draft exists for this channel
+      const { data: drafts, error: fetchError } = await api.get<Array<{
+        id: string
+        channel: OutreachChannel
+        status: string
+      }>>(`/api/v1/luna/outreach?contactId=${actionData.contactId}&status=draft`)
+      
+      if (!fetchError && drafts && drafts.length > 0) {
+        const existingDraft = drafts.find(d => d.channel === selectedChannel)
+        
+        if (existingDraft) {
+          // Update existing draft
+          const { error } = await api.patch(
+            `/api/v1/luna/outreach/${existingDraft.id}`,
+            {
+              subject: subject || undefined,
+              body,
+              channel: selectedChannel,
+            }
+          )
+          
+          if (!error) {
+            setOutreachId(existingDraft.id)
+          }
+        } else {
+          // Create new draft
+          const { data, error } = await api.post<{ id: string }>(
+            '/api/v1/luna/outreach',
+            {
+              prospectId: actionData.prospectId,
+              contactId: actionData.contactId,
+              researchId: actionData.researchId,
+              channel: selectedChannel,
+              subject: subject || undefined,
+              body,
+              status: 'draft',
+            }
+          )
+          
+          if (!error && data) {
+            setOutreachId(data.id)
+          }
+        }
+      } else {
+        // No drafts exist, create new one
+        const { data, error } = await api.post<{ id: string }>(
+          '/api/v1/luna/outreach',
+          {
+            prospectId: actionData.prospectId,
+            contactId: actionData.contactId,
+            researchId: actionData.researchId,
+            channel: selectedChannel,
+            subject: subject || undefined,
+            body,
+            status: 'draft',
+          }
+        )
+        
+        if (!error && data) {
+          setOutreachId(data.id)
+        }
+      }
+    } catch (error) {
+      // Silently fail - auto-save shouldn't interrupt user flow
+      console.debug('Auto-save draft failed:', error)
     }
   }
   
