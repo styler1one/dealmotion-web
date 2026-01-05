@@ -157,7 +157,7 @@ export function OutreachOptionsSheet({
     }
   }, [open, actionData])
   
-  // Reset state when sheet opens
+  // Reset state when sheet opens or contact changes
   useEffect(() => {
     if (open) {
       setSelectedChannel(null)
@@ -166,16 +166,23 @@ export function OutreachOptionsSheet({
       setUserInput('')
       setOutreachId(null)
       setSkippedFields(new Set())
+      setContactData(null)
+      setMissingFields({})
       loadUserLanguage()
     }
-  }, [open, actionData])
+  }, [open, actionData?.contactId]) // Reset when contactId changes
   
-  // Load draft when channel is selected
+  // Load draft when channel is selected - but only if contactId matches
   useEffect(() => {
-    if (open && selectedChannel && actionData) {
+    if (open && selectedChannel && actionData?.contactId) {
+      // Reset draft state first to prevent showing wrong contact's draft
+      setOutreachId(null)
+      setSubject('')
+      setBody('')
+      // Then load draft for this specific contact
       loadDraft()
     }
-  }, [selectedChannel, open, actionData])
+  }, [selectedChannel, open, actionData?.contactId]) // Only depend on contactId, not entire actionData
   
   // Load user's output language
   const loadUserLanguage = async () => {
@@ -193,27 +200,40 @@ export function OutreachOptionsSheet({
   const loadDraft = async () => {
     if (!actionData?.contactId || !selectedChannel) return
     
+    // Store current contactId to prevent race conditions
+    const currentContactId = actionData.contactId
+    
     try {
       const { data, error } = await api.get<Array<{
         id: string
+        contact_id: string
         channel: OutreachChannel
         subject?: string
         body: string
         status: string
-      }>>(`/api/v1/luna/outreach?contactId=${actionData.contactId}&status=draft`)
+      }>>(`/api/v1/luna/outreach?contactId=${currentContactId}&status=draft`)
       
       if (!error && data && data.length > 0) {
+        // Double-check: only load if contactId still matches (prevent race condition)
+        if (actionData?.contactId !== currentContactId) {
+          console.debug('Contact changed during draft load, ignoring result')
+          return
+        }
+        
         // Only load draft for the currently selected channel
-        const draft = data.find(d => d.channel === selectedChannel)
+        const draft = data.find(d => d.channel === selectedChannel && d.contact_id === currentContactId)
         
         if (draft) {
-          setOutreachId(draft.id)
-          setSubject(draft.subject || '')
-          setBody(draft.body)
-          toast({ 
-            title: t('draftLoaded') || 'Draft loaded',
-            description: t('draftLoadedDesc') || 'Previous draft has been loaded'
-          })
+          // Final check: make sure we're still on the same contact
+          if (actionData?.contactId === currentContactId) {
+            setOutreachId(draft.id)
+            setSubject(draft.subject || '')
+            setBody(draft.body)
+            toast({ 
+              title: t('draftLoaded') || 'Draft loaded',
+              description: t('draftLoadedDesc') || 'Previous draft has been loaded'
+            })
+          }
         }
       }
     } catch (error) {
@@ -368,40 +388,79 @@ export function OutreachOptionsSheet({
   
   // Auto-save draft (silent, no toast)
   const handleSaveDraftAuto = async () => {
-    if (!selectedChannel || !actionData || !body) return
+    if (!selectedChannel || !actionData || !body || !actionData.contactId) return
+    
+    // Store current contactId to prevent race conditions
+    const currentContactId = actionData.contactId
     
     try {
-      // Check if draft exists for this channel
+      // Check if draft exists for this channel and contact
       const { data: drafts, error: fetchError } = await api.get<Array<{
         id: string
+        contact_id: string
         channel: OutreachChannel
         status: string
-      }>>(`/api/v1/luna/outreach?contactId=${actionData.contactId}&status=draft`)
+      }>>(`/api/v1/luna/outreach?contactId=${currentContactId}&status=draft`)
+      
+      // Verify we're still on the same contact
+      if (actionData?.contactId !== currentContactId) {
+        console.debug('Contact changed during auto-save, aborting')
+        return
+      }
       
       if (!fetchError && drafts && drafts.length > 0) {
-        const existingDraft = drafts.find(d => d.channel === selectedChannel)
+        // Double-check: only use drafts for this specific contact
+        const existingDraft = drafts.find(d => 
+          d.channel === selectedChannel && 
+          d.contact_id === currentContactId
+        )
         
         if (existingDraft) {
-          // Update existing draft
-          const { error } = await api.patch(
-            `/api/v1/luna/outreach/${existingDraft.id}`,
-            {
-              subject: subject || undefined,
-              body,
-              channel: selectedChannel,
+          // Final check before updating
+          if (actionData?.contactId === currentContactId) {
+            // Update existing draft
+            const { error } = await api.patch(
+              `/api/v1/luna/outreach/${existingDraft.id}`,
+              {
+                subject: subject || undefined,
+                body,
+                channel: selectedChannel,
+              }
+            )
+            
+            if (!error && actionData?.contactId === currentContactId) {
+              setOutreachId(existingDraft.id)
             }
-          )
-          
-          if (!error) {
-            setOutreachId(existingDraft.id)
           }
         } else {
-          // Create new draft
+          // Create new draft - but only if still on same contact
+          if (actionData?.contactId === currentContactId) {
+            const { data, error } = await api.post<{ id: string }>(
+              '/api/v1/luna/outreach',
+              {
+                prospectId: actionData.prospectId,
+                contactId: currentContactId,
+                researchId: actionData.researchId,
+                channel: selectedChannel,
+                subject: subject || undefined,
+                body,
+                status: 'draft',
+              }
+            )
+            
+            if (!error && data && actionData?.contactId === currentContactId) {
+              setOutreachId(data.id)
+            }
+          }
+        }
+      } else {
+        // No drafts exist, create new one - but only if still on same contact
+        if (actionData?.contactId === currentContactId) {
           const { data, error } = await api.post<{ id: string }>(
             '/api/v1/luna/outreach',
             {
               prospectId: actionData.prospectId,
-              contactId: actionData.contactId,
+              contactId: currentContactId,
               researchId: actionData.researchId,
               channel: selectedChannel,
               subject: subject || undefined,
@@ -410,27 +469,9 @@ export function OutreachOptionsSheet({
             }
           )
           
-          if (!error && data) {
+          if (!error && data && actionData?.contactId === currentContactId) {
             setOutreachId(data.id)
           }
-        }
-      } else {
-        // No drafts exist, create new one
-        const { data, error } = await api.post<{ id: string }>(
-          '/api/v1/luna/outreach',
-          {
-            prospectId: actionData.prospectId,
-            contactId: actionData.contactId,
-            researchId: actionData.researchId,
-            channel: selectedChannel,
-            subject: subject || undefined,
-            body,
-            status: 'draft',
-          }
-        )
-        
-        if (!error && data) {
-          setOutreachId(data.id)
         }
       }
     } catch (error) {
