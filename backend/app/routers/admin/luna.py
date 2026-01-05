@@ -244,7 +244,7 @@ async def get_recent_luna_messages(
             # Try to get user email
             user_email = None
             if msg.get("user_id"):
-                user_result = supabase.table("profiles") \
+                user_result = supabase.table("users") \
                     .select("email") \
                     .eq("id", msg["user_id"]) \
                     .limit(1) \
