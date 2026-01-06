@@ -83,6 +83,7 @@ import {
     Lock,
     Radar,
     SearchX,
+    Send,
 } from 'lucide-react'
 
 // Custom Google Icon (official colors)
@@ -272,4 +273,5 @@ export const Icons = {
     lock: Lock,
     radar: Radar,
     searchX: SearchX,
+    send: Send,
 }

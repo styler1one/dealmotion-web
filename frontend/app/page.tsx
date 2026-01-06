@@ -205,7 +205,18 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Feature 7: Meetings Calendar */}
+            {/* Feature 7: Outreach */}
+            <div className="group p-6 rounded-2xl border dark:border-slate-800 bg-white dark:bg-slate-800 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+              <div className="w-12 h-12 rounded-xl bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Icons.send className="h-6 w-6 text-rose-600 dark:text-rose-400" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2 text-slate-900 dark:text-white">{t('features.outreach.title')}</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm">
+                {t('features.outreach.description')}
+              </p>
+            </div>
+
+            {/* Feature 8: Meetings Calendar */}
             <div className="group p-6 rounded-2xl border dark:border-slate-800 bg-white dark:bg-slate-800 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
               <div className="w-12 h-12 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <Icons.calendar className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />

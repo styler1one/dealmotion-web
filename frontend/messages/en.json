@@ -2131,6 +2131,10 @@
         "title": "Contact Analysis",
         "description": "Get detailed profiles on decision makers with communication preferences and engagement tips."
       },
+      "outreach": {
+        "title": "Smart Outreach",
+        "description": "AI writes your first message to prospects. LinkedIn, email, or WhatsApp—fully personalized based on your research. No generic templates, just messages that land."
+      },
       "meetingsCalendar": {
         "title": "Meetings Calendar",
         "description": "All your meetings in one view. Prep status at a glance. Never walk in unprepared again."
