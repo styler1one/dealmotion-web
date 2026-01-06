@@ -137,18 +137,40 @@
     "profiles": "الملفات الشخصية",
     "notifications": "الإشعارات",
     "notificationsCount": "{count, plural, =0 {لا توجد إشعارات} one {إشعار واحد} two {إشعاران} few {# إشعارات} many {# إشعاراً} other {# إشعار}}",
-    "mobileMenu": "فتح القائمة"
+    "mobileMenu": "فتح القائمة",
+    "home": "الطيار الآلي",
+    "prospecting": "اكتشاف العملاء"
   },
   "auth": {
-    "login": "تسجيل الدخول",
-    "signup": "إنشاء حساب",
-    "email": "البريد الإلكتروني",
-    "password": "كلمة المرور",
-    "forgotPassword": "نسيت كلمة المرور؟",
-    "noAccount": "ليس لديك حساب؟",
-    "hasAccount": "لديك حساب بالفعل؟",
     "continueWithGoogle": "المتابعة مع Google",
-    "continueWithMicrosoft": "المتابعة مع Microsoft"
+    "continueWithMicrosoft": "المتابعة مع Microsoft",
+    "login": {
+      "title": "مرحباً بعودتك",
+      "subtitle": "سجل دخولك للمتابعة",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "forgotPassword": "نسيت كلمة المرور؟",
+      "submit": "تسجيل الدخول",
+      "noAccount": "ليس لديك حساب؟",
+      "signUp": "إنشاء حساب"
+    },
+    "signup": {
+      "title": "إنشاء حساب",
+      "subtitle": "ابدأ تجربتك المجانية",
+      "fullName": "الاسم الكامل",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "confirmPassword": "تأكيد كلمة المرور",
+      "submit": "إنشاء حساب",
+      "hasAccount": "لديك حساب بالفعل؟",
+      "logIn": "تسجيل الدخول"
+    },
+    "errors": {
+      "invalidCredentials": "بيانات الدخول غير صحيحة",
+      "emailInUse": "البريد الإلكتروني مستخدم بالفعل",
+      "weakPassword": "كلمة المرور ضعيفة جداً",
+      "passwordMismatch": "كلمات المرور غير متطابقة"
+    }
   },
   "status": {
     "completed": "مكتمل",
@@ -218,7 +240,10 @@
       "cityPlaceholder": "مثل الرياض",
       "startResearch": "بدء البحث",
       "researching": "جاري التحليل...",
-      "cancel": "إلغاء"
+      "cancel": "إلغاء",
+      "customIntel": "معلومات مخصصة",
+      "customIntelDesc": "أضف معلومات محددة تريد أن يركز عليها البحث",
+      "customIntelPlaceholder": "مثال: ركز على مشاريع التحول الرقمي..."
     },
     "validation": {
       "companyNameTooShort": "اسم الشركة قصير جداً",
@@ -333,7 +358,71 @@
       "analysisCompleteDesc": "تم تحليل {name}",
       "addFailed": "تعذر إضافة جهة الاتصال",
       "saved": "تم حفظ جهة الاتصال",
-      "savedDesc": "تم حفظ تغييراتك"
+      "savedDesc": "تم حفظ تغييراتك",
+      "foundDesc": "{role} on LinkedIn",
+      "foundProfile": "LinkedIn profile found",
+      "notFoundDesc": "Could not find a LinkedIn profile. Enter manually.",
+      "searchFailed": "Search failed",
+      "searchFailedDesc": "An error occurred while searching",
+      "saveFailed": "Save failed",
+      "saveFailedDesc": "Could not save contact changes",
+      "editPlaceholder": "Edit the contact analysis...",
+      "openingLines": "Opening Lines",
+      "confirmDeleteTitle": "Delete Contact?",
+      "confirmDeleteDescription": "This will permanently delete this contact and their analysis. This action cannot be undone.",
+      "search": {
+        "title": "Search Contact",
+        "subtitle": "Search for a contact at {company}",
+        "nameLabel": "Name",
+        "namePlaceholder": "Enter contact name",
+        "roleLabel": "Role (optional)",
+        "rolePlaceholder": "e.g., CFO, Sales Director",
+        "searchButton": "Search LinkedIn Profile",
+        "skipSearch": "Add manually without search",
+        "resultsTitle": "Found Profiles",
+        "resultsSubtitle": "Results for \"{name}\" at {company}",
+        "noResults": "No matching profiles found",
+        "addManually": "Add manually",
+        "confirmTitle": "Confirm Contact",
+        "enrichTitle": "Enrich Profile Data",
+        "enrichTip": "Help the AI understand this person better",
+        "enrichDescription": "LinkedIn blocks automatic access to profiles. Copy-paste relevant info from their LinkedIn profile for a richer analysis.",
+        "openLinkedIn": "Open LinkedIn Profile",
+        "searchLinkedIn": "Search on LinkedIn",
+        "aboutLabel": "About / Summary",
+        "aboutHint": "Copy from their LinkedIn 'About' section",
+        "aboutPlaceholder": "Paste their LinkedIn summary here...",
+        "experienceLabel": "Experience / Background",
+        "experienceHint": "Copy relevant job history, education, or achievements",
+        "experiencePlaceholder": "Paste relevant experience here...",
+        "notesLabel": "Your notes",
+        "notesHint": "Any other info: recent posts, mutual connections, news mentions...",
+        "notesPlaceholder": "E.g. \"Met at event X\", \"Introduced by John\", \"Interested in our product Y\"...",
+        "manualNotesHint": "Share what you already know about this person (background, relationship, conversations, etc.)",
+        "skipEnrich": "Skip for now",
+        "continueButton": "Continue",
+        "selectedProfile": "Selected profile",
+        "extraInfo": "Additional information (optional)",
+        "emailLabel": "Email",
+        "phoneLabel": "Phone",
+        "primaryContact": "This is the primary contact",
+        "addAndAnalyze": "Add & Analyze",
+        "confidence": {
+          "high": "High confidence",
+          "medium": "Medium confidence",
+          "low": "Low confidence"
+        },
+        "matchReason": {
+          "exact": "Name + Company + Role exact match",
+          "partial": "Name match, different details",
+          "nameOnly": "Name match only"
+        },
+        "errorTitle": "Error",
+        "errorAddFailed": "Failed to add contact",
+        "suggestionsTitle": "Found in Research",
+        "orSearchManually": "or search manually",
+        "loadingSuggestions": "Loading suggestions..."
+      }
     },
     "context": {
       "title": "سياق الذكاء الاصطناعي",
@@ -355,6 +444,9 @@
         "button": "بدء التحضير",
         "withContacts": "مع {count} جهة اتصال"
       }
+    },
+    "actions": {
+      "createOutreach": "إنشاء تواصل"
     }
   },
   "preparation": {
@@ -381,7 +473,9 @@
       "customNotesPlaceholder": "اختياري: معلومات إضافية لهذا الاجتماع...",
       "startPrep": "إنشاء التحضير",
       "generating": "جاري الإنشاء...",
-      "cancel": "إلغاء"
+      "cancel": "إلغاء",
+      "previousMeetings": "الاجتماعات السابقة",
+      "previousMeetingsDesc": "أضف ملاحظات من اجتماعات سابقة مع هذا العميل"
     },
     "history": {
       "title": "تحضيراتي",
@@ -512,7 +606,14 @@
       "complete": "مكتمل",
       "uploaded": "تم رفع التسجيل",
       "uploadedDesc": "تحليل الذكاء الاصطناعي جارٍ...",
-      "uploadFailed": "فشل الرفع"
+      "uploadFailed": "فشل الرفع",
+      "requestingAccess": "Requesting microphone access...",
+      "accessDenied": "Microphone access denied. Please allow access in your browser settings.",
+      "error": "Recording Error",
+      "accessRequired": "Microphone Access Required",
+      "accessRequiredDesc": "Please allow microphone access to record meetings.",
+      "startFailed": "Failed to Start Recording",
+      "startFailedDesc": "Could not access microphone."
     },
     "sync": {
       "lastSync": "آخر مزامنة {time}",
@@ -525,7 +626,11 @@
       "link": "ربط بعميل محتمل",
       "unlink": "إلغاء الربط",
       "linkSuccess": "تم ربط الاجتماع بـ {name}",
-      "unlinkSuccess": "تمت إزالة ربط العميل المحتمل"
+      "unlinkSuccess": "تمت إزالة ربط العميل المحتمل",
+      "unlinkConfirm": "Remove link to {name}?",
+      "suggestedMatches": "Suggested matches",
+      "noMatches": "No matching prospects found",
+      "confidence": "{percent}% match"
     },
     "contact": {
       "unlinkSuccess": "تم إلغاء ربط جهة الاتصال من الاجتماع"
@@ -662,6 +767,45 @@
           "label": "التقرير الداخلي",
           "description": "ملخص قصير لنظام CRM أو الفريق"
         }
+      },
+      "regenerating": "Regenerating...",
+      "regeneratingDesc": "You can continue working while this generates in the background.",
+      "delete": "Delete",
+      "confirmDelete": "Are you sure you want to delete this action?",
+      "noContent": "No content yet",
+      "generationFailed": "Generation failed",
+      "alreadyExists": "Action already generated",
+      "alreadyExistsDesc": "This action was already generated. Click to view it.",
+      "generationFailedDesc": "An error occurred. Please try regenerating.",
+      "tryAgain": "Try Again",
+      "summaryReadOnly": "Summary is read-only",
+      "summaryCannotEdit": "The summary cannot be edited here. Edit the main summary above.",
+      "summaryCannotDelete": "The summary cannot be deleted",
+      "summaryCannotRegenerate": "The summary cannot be regenerated here",
+      "contextUsed": "Context used",
+      "wordsGenerated": "words",
+      "generatingContent": "Generating content...",
+      "generatingTime": "This may take 10-30 seconds",
+      "export": "Export",
+      "exportPdf": "Download PDF",
+      "exportDocx": "Download Word",
+      "exportMd": "Download Markdown",
+      "copied": "Copied to clipboard",
+      "changesSaved": "Changes saved",
+      "saveFailed": "Failed to save",
+      "deleteFailed": "Failed to delete",
+      "actionDeleted": "Action deleted",
+      "exportFailed": "Export failed",
+      "pdfDownloaded": "PDF downloaded",
+      "docxDownloaded": "Word document downloaded",
+      "mdDownloaded": "Markdown downloaded",
+      "time": {
+        "justNow": "just now",
+        "minAgo": "{count} min ago",
+        "hourAgo": "{count} hour ago",
+        "hoursAgo": "{count} hours ago",
+        "dayAgo": "{count} day ago",
+        "daysAgo": "{count} days ago"
       }
     },
     "toast": {
@@ -673,7 +817,20 @@
       "selectProspect": "اختر عميل محتمل",
       "selectFile": "اختر ملفاً",
       "deleted": "تم الحذف",
-      "deletedDesc": "تم حذف المتابعة"
+      "deletedDesc": "تم حذف المتابعة",
+      "invalidFileType": "Invalid file type",
+      "invalidFileTypeDescAudio": "Upload an mp3, m4a, wav or webm file",
+      "invalidFileTypeDescTranscript": "Upload a txt, md, docx or srt file",
+      "fileTooLarge": "File too large",
+      "fileTooLargeDescAudio": "Maximum file size is 50MB",
+      "fileTooLargeDescTranscript": "Maximum file size is 10MB",
+      "noFileSelected": "No file selected",
+      "noFileSelectedDesc": "Select a file first",
+      "notFound": "Follow-up not found",
+      "deleteFailed": "Delete failed",
+      "deleteFailedDesc": "Could not delete follow-up",
+      "uploadStarted": "Upload started",
+      "uploadStartedDesc": "Your file is being processed"
     },
     "confirm": {
       "deleteTitle": "حذف المتابعة؟",
@@ -711,6 +868,71 @@
       "savedDesc": "تم حفظ تغييراتك",
       "failed": "فشل الحفظ",
       "failedDesc": "تعذر حفظ الملف الشخصي"
+    },
+    "cancel": "Cancel",
+    "fieldSaved": "Saved!",
+    "addNewTag": "Add new...",
+    "selectOption": "Select...",
+    "editHint": "Hover over any field to edit it directly",
+    "yourName": "Your name",
+    "yourRole": "Your role",
+    "refreshWithAI": "Refresh with AI",
+    "sections": {
+      "personal": "Personal Details",
+      "experience": "Experience & Expertise",
+      "style": "Sales Style",
+      "goals": "Goals & Targets",
+      "targetMarket": "Target Market",
+      "goalsPrefs": "Goals & Preferences"
+    },
+    "fields": {
+      "fullName": "Full Name",
+      "email": "Email",
+      "phone": "Phone",
+      "jobTitle": "Job Title",
+      "yearsExperience": "Years of Experience",
+      "industries": "Industries",
+      "specializations": "Specializations",
+      "sellingStyle": "Selling Style",
+      "communicationPreference": "Communication Preference",
+      "targetMarket": "Target Market",
+      "quotaTarget": "Quota Target",
+      "regions": "Regions",
+      "companySizes": "Company Sizes",
+      "quarterlyGoals": "Quarterly Goals",
+      "meetingTypes": "Meeting Types"
+    },
+    "communicationStyle": {
+      "title": "Communication Style & Email Preferences",
+      "description": "This is how DealMotion writes emails and messages on your behalf",
+      "writingTone": "Writing Tone",
+      "messageLength": "Message Length",
+      "concise": "Short & concise",
+      "detailed": "Detailed",
+      "standard": "Standard",
+      "emojiUsage": "Emoji Usage",
+      "emojiYes": "Yes, in emails",
+      "emojiNo": "No",
+      "emailSignoff": "Email Sign-off",
+      "persuasionStyle": "Persuasion Style",
+      "persuasionLogic": "Logic & data - Convinces with facts, numbers, and rational arguments",
+      "persuasionStory": "Storytelling - Convinces with stories, examples, and emotion",
+      "persuasionReference": "Social proof - Convinces with references, cases, and testimonials",
+      "persuasionAuthority": "Authority - Convinces with expertise and thought leadership",
+      "toneProfessional": "Professional",
+      "toneDirect": "Direct",
+      "toneWarm": "Warm",
+      "toneFormal": "Formal",
+      "toneCasual": "Casual"
+    },
+    "howUsed": {
+      "title": "How is this used?",
+      "prep": "Meeting Prep",
+      "prepDesc": "AI generates briefs tailored to your style and strengths",
+      "followup": "Follow-up Emails",
+      "followupDesc": "Emails are written in your tone of voice",
+      "research": "Research",
+      "researchDesc": "Focus on information relevant to your target market"
     }
   },
   "companyProfile": {
@@ -733,6 +955,60 @@
       "savedDesc": "تم حفظ تغييراتك",
       "failed": "فشل الحفظ",
       "failedDesc": "تعذر حفظ الملف الشخصي"
+    },
+    "cancel": "Cancel",
+    "noProducts": "No products added yet",
+    "noPersonas": "No personas added yet",
+    "noCaseStudies": "No case studies added yet",
+    "fieldSaved": "Saved!",
+    "addNew": "Add new...",
+    "editHint": "Hover over any field to edit it directly",
+    "companyName": "Company name",
+    "industry": "Industry",
+    "refreshWithAI": "Refresh with AI",
+    "addProduct": "Add Product",
+    "addPersona": "Add Persona",
+    "addCaseStudy": "Add Case Study",
+    "addPainPoint": "Add pain point...",
+    "productName": "Product/Service name",
+    "productDescription": "Description",
+    "productValue": "Value proposition",
+    "personaTitle": "Role/Title (e.g., CTO, VP Sales)",
+    "personaSeniority": "Seniority level (e.g., C-level, Director)",
+    "caseCustomer": "Customer name",
+    "caseIndustry": "Industry",
+    "caseResults": "Key results achieved",
+    "sections": {
+      "basic": "Basic Information",
+      "products": "Products & Services",
+      "market": "Market & Competition",
+      "values": "Values & USPs",
+      "valueProps": "Value Propositions",
+      "differentiators": "Differentiators",
+      "icp": "Ideal Customer Profile",
+      "personas": "Buyer Personas",
+      "caseStudies": "Case Studies",
+      "salesInfo": "Sales Information"
+    },
+    "fields": {
+      "industries": "Industries",
+      "companySizes": "Company Sizes",
+      "painPoints": "Pain Points",
+      "salesCycle": "Sales Cycle",
+      "avgDeal": "Average Deal Size",
+      "competitors": "Competitors",
+      "competitiveAdvantage": "Competitive Advantage",
+      "valueProps": "Core Value Propositions",
+      "result": "Result"
+    },
+    "howUsed": {
+      "title": "How is this used?",
+      "prep": "Meeting Prep",
+      "prepDesc": "AI uses your value props and case studies in briefs",
+      "followup": "Follow-up Emails",
+      "followupDesc": "Relevant product info is added automatically",
+      "research": "Research",
+      "researchDesc": "ICP is used to filter relevant prospect info"
     }
   },
   "knowledgeBase": {
@@ -761,7 +1037,14 @@
       "deleted": "تم حذف المستند",
       "deletedDesc": "تمت إزالة المستند من قاعدة المعرفة",
       "failed": "فشل الرفع",
-      "failedDesc": "تعذر رفع المستند"
+      "failedDesc": "تعذر رفع المستند",
+      "deleteFailed": "Delete failed",
+      "deleteFailedDesc": "Could not delete the file"
+    },
+    "stats": {
+      "completed": "Completed",
+      "processing": "Processing",
+      "failed": "Failed"
     }
   },
   "language": {
@@ -795,9 +1078,252 @@
       "subscription": "الاشتراك",
       "integrations": "التكاملات",
       "notifications": "الإشعارات",
-      "coach": "المدرب الذكي"
+      "coach": "المدرب الذكي",
+      "privacy": "Privacy & Data"
     },
-    "comingSoon": "قريباً"
+    "comingSoon": "قريباً",
+    "language": {
+      "title": "Language Settings",
+      "description": "Configure your language preferences for the application",
+      "appLanguage": "App Language",
+      "appLanguageDesc": "The language of the application interface",
+      "outputLanguage": "Default Output Language",
+      "outputLanguageDesc": "The language for AI-generated content (research briefs, preparations)",
+      "outputLanguageHint": "You can override this per action",
+      "emailLanguage": "Default Email Language",
+      "emailLanguageDesc": "The language for generated emails to clients",
+      "emailLanguageHint": "You can override this per follow-up"
+    },
+    "unsavedChanges": "Unsaved changes",
+    "coach": {
+      "title": "AI Coach (Luna)",
+      "description": "Configure your AI sales coach assistant",
+      "enableLabel": "Enable AI Coach",
+      "enableDesc": "Show the floating coach widget on dashboard pages",
+      "resetLabel": "Reset Snoozed Suggestions",
+      "resetHint": "Bring back suggestions you've snoozed",
+      "resetButton": "Reset",
+      "enabled": "Coach Enabled",
+      "enabledDesc": "The AI Coach is now active and will provide suggestions",
+      "disabled": "Coach Disabled",
+      "disabledDesc": "The AI Coach widget is now hidden",
+      "reset": "Suggestions Reset",
+      "resetDesc": "All snoozed suggestions are now visible again"
+    },
+    "style": {
+      "title": "Communication Style",
+      "description": "Customize how AI generates your emails and reports",
+      "saved": "Style Saved",
+      "savedDesc": "Your communication style preferences have been updated",
+      "tone": "Tone",
+      "toneDesc": "The overall tone of your communications",
+      "toneDirect": "Direct - Get straight to the point",
+      "toneWarm": "Warm - Friendly and personable",
+      "toneFormal": "Formal - Professional and structured",
+      "toneCasual": "Casual - Relaxed and conversational",
+      "toneProfessional": "Professional - Balanced warmth and professionalism",
+      "formality": "Formality Level",
+      "formalityDesc": "How formal should your communications be",
+      "formalityFormal": "Formal - Complete sentences, no contractions",
+      "formalityProfessional": "Professional - Clear and businesslike",
+      "formalityCasual": "Casual - Relaxed grammar, friendly",
+      "emoji": "Use Emoji",
+      "emojiDesc": "Include emoji in professional communications",
+      "length": "Writing Length",
+      "lengthDesc": "How detailed should your communications be",
+      "lengthConcise": "Concise - Short and to the point",
+      "lengthDetailed": "Detailed - Thorough explanations",
+      "signoff": "Email Sign-off",
+      "signoffDesc": "How you prefer to end your emails"
+    },
+    "subscription": {
+      "description": "Manage your subscription, view usage and invoices"
+    },
+    "integrations": {
+      "description": "Connect your calendar and recording tools",
+      "title": "Integrations",
+      "subtitle": "Connect your tools to enhance your sales workflow",
+      "calendar": {
+        "title": "Calendar",
+        "description": "Sync your calendar to see upcoming meetings and prepare automatically",
+        "google": "Google Calendar",
+        "microsoft": "Microsoft 365",
+        "connect": "Connect",
+        "disconnect": "Disconnect",
+        "disconnectConfirmTitle": "Disconnect Calendar?",
+        "disconnectConfirmDesc": "This will remove your calendar connection and delete all synced meetings. You can reconnect anytime.",
+        "disconnectSuccess": "Calendar disconnected",
+        "disconnectFailed": "Failed to disconnect calendar",
+        "connected": "Connected",
+        "notConnected": "Not connected",
+        "lastSync": "Last sync: {time}",
+        "syncNow": "Sync Now",
+        "syncing": "Syncing...",
+        "meetingsCount": "{count, plural, =0 {No meetings} one {# meeting} other {# meetings}} synced",
+        "needsReauth": "Reconnection required",
+        "reconnect": "Reconnect",
+        "syncEnabled": "Auto-sync enabled",
+        "syncDisabled": "Auto-sync disabled"
+      },
+      "recordings": {
+        "title": "Meeting Recordings",
+        "description": "Import recordings from your favorite notetaker apps",
+        "fireflies": "Fireflies.ai",
+        "zoom": "Zoom",
+        "teams": "Microsoft Teams",
+        "connect": "Connect",
+        "disconnect": "Disconnect",
+        "connected": "Connected",
+        "notConnected": "Not connected",
+        "autoImport": "Auto-import recordings",
+        "lastImport": "Last import: {time}",
+        "recordingsCount": "{count, plural, =0 {No recordings} one {# recording} other {# recordings}} imported"
+      },
+      "status": {
+        "checking": "Checking status...",
+        "error": "Could not load integration status",
+        "retry": "Retry"
+      }
+    },
+    "notifications": {
+      "description": "Configure your email and push notifications"
+    },
+    "autoRecord": {
+      "title": "Auto-Record Meetings",
+      "description": "Automatically record and transcribe your calendar meetings with AI Notetaker",
+      "saved": "Settings saved",
+      "savedEnabled": "AI Notetaker will automatically join matching meetings",
+      "savedDisabled": "Auto-recording is now disabled",
+      "mode": {
+        "label": "Recording Mode",
+        "filtered": "Smart Filter",
+        "filteredDesc": "Record meetings matching your keyword rules",
+        "all": "All Meetings",
+        "allDesc": "Record every online meeting automatically",
+        "none": "Off",
+        "noneDesc": "Never auto-record (manual only)"
+      },
+      "externalOnly": "External meetings only",
+      "externalOnlyDesc": "Only record meetings with attendees outside your organization",
+      "minDuration": "Minimum duration",
+      "minDurationDesc": "Skip meetings shorter than this",
+      "minutes": "min",
+      "includeKeywords": "Record when title contains",
+      "includeKeywordsDesc": "Meeting will be recorded if title contains any of these words",
+      "excludeKeywords": "Never record when title contains",
+      "excludeKeywordsDesc": "These keywords override include rules - meeting will be skipped",
+      "addKeywordPlaceholder": "Add keyword...",
+      "resetDefaults": "Reset to defaults",
+      "keywordsReset": "Keywords reset",
+      "keywordsResetDesc": "Keywords have been reset to default values",
+      "keywordExists": "Keyword already exists",
+      "preview": "Preview upcoming meetings",
+      "previewResults": "Preview Results",
+      "willRecord": "{count} will be recorded",
+      "willSkip": "{count} will be skipped",
+      "error": {
+        "fetchFailed": "Failed to load settings",
+        "saveFailed": "Failed to save settings",
+        "resetFailed": "Failed to reset keywords",
+        "previewFailed": "Failed to load preview"
+      }
+    },
+    "privacy": {
+      "title": "Privacy & Data",
+      "description": "Manage your personal data and privacy settings",
+      "dataOverview": {
+        "title": "Your Data Overview",
+        "description": "Summary of your stored personal data",
+        "accountCreated": "Account created",
+        "profilesTitle": "Profiles",
+        "salesProfile": "Sales Profile",
+        "companyProfile": "Company Profile",
+        "completed": "Completed",
+        "notCompleted": "Not completed",
+        "connections": "Connected Services"
+      },
+      "downloadData": {
+        "title": "Download Your Data",
+        "description": "Get a copy of all your personal data in machine-readable format (JSON)",
+        "button": "Download My Data",
+        "requesting": "Requesting...",
+        "requested": "Export Requested",
+        "requestedDesc": "Your data export is being prepared. You'll receive a download link shortly.",
+        "ready": "Export Ready",
+        "readyDesc": "Your data export is ready.",
+        "expiresIn": "Expires in {hours} hours",
+        "download": "Download Export",
+        "processing": "Preparing export...",
+        "stuck": "Export stuck",
+        "stuckDesc": "The export seems to be taking longer than expected. You can retry or cancel.",
+        "retry": "Retry",
+        "cancel": "Cancel",
+        "failed": "Export failed",
+        "failedDesc": "We couldn't prepare your export. Please try again.",
+        "expired": "Export expired",
+        "expiredDesc": "This export has expired. Request a new one.",
+        "rateLimited": "Rate Limited",
+        "rateLimitedDesc": "You can request a new export in {hours} hours.",
+        "alreadyReady": "Export Available",
+        "alreadyReadyDesc": "Your recent data export is still available for download.",
+        "rateInfo": "You can request one data export per 24 hours. Exports are available for 24 hours."
+      },
+      "deleteAccount": {
+        "title": "Delete Account",
+        "description": "Permanently delete your account and all associated data",
+        "button": "Delete My Account",
+        "confirmTitle": "Delete Your Account?",
+        "confirmDesc": "This action cannot be undone. After a 48-hour grace period, your account and all associated data will be permanently deleted. Billing records will be anonymized and retained for legal compliance.",
+        "errorActiveSubscription": "You have an active subscription. Please cancel your subscription first before deleting your account.",
+        "errorDeletionInProgress": "A deletion request is already in progress.",
+        "errorGeneric": "Could not process deletion request. Please try again.",
+        "confirmButton": "Yes, Delete My Account",
+        "cancelButton": "Cancel",
+        "cancelling": "Cancelling...",
+        "scheduled": "Deletion Scheduled",
+        "scheduledDesc": "Your account will be deleted on {date}. You can cancel this anytime before then.",
+        "cancelDeletion": "Cancel Deletion",
+        "cancelled": "Deletion Cancelled",
+        "cancelledDesc": "Your account deletion has been cancelled.",
+        "reason": "Reason (optional)",
+        "reasonPlaceholder": "Help us understand why you're leaving...",
+        "gracePeriod": "48-hour grace period",
+        "gracePeriodDesc": "You can cancel the deletion anytime within 48 hours.",
+        "whatHappens": "What happens when you delete your account:",
+        "deleteProfile": "Your profile and settings will be removed",
+        "deleteContent": "All your prospects, research, and content will be deleted",
+        "deleteFiles": "Uploaded files will be permanently removed",
+        "anonBilling": "Billing records will be anonymized for legal compliance",
+        "processing": "Processing deletion...",
+        "failed": "Deletion failed",
+        "failedDesc": "We couldn't schedule your account deletion. Please try again or contact support."
+      },
+      "legal": {
+        "title": "Legal Documents",
+        "privacyPolicy": "Privacy Policy",
+        "privacyPolicyDesc": "How we collect, use, and protect your data",
+        "terms": "Terms & Conditions",
+        "termsDesc": "Rules for using DealMotion"
+      },
+      "dataCategories": {
+        "prospects": "Prospects",
+        "prospectsDesc": "Companies you're researching or selling to",
+        "contacts": "Contacts",
+        "contactsDesc": "People at your prospect companies",
+        "research": "Research Briefs",
+        "researchDesc": "AI-generated company research",
+        "preparations": "Meeting Preparations",
+        "preparationsDesc": "AI-generated meeting briefs",
+        "followups": "Follow-ups",
+        "followupsDesc": "Meeting recordings and summaries",
+        "deals": "Deals",
+        "dealsDesc": "Sales opportunities you're tracking",
+        "notes": "Notes",
+        "notesDesc": "Your notes on prospects",
+        "files": "Knowledge Base Files",
+        "filesDesc": "Documents you've uploaded"
+      }
+    }
   },
   "billing": {
     "currentPlan": "الخطة الحالية",
@@ -823,7 +1349,71 @@
       "startFree": "ابدأ مجاناً",
       "getStarted": "ابدأ الآن",
       "upgrade": "ترقية",
-      "contactUs": "تواصل معنا"
+      "contactUs": "تواصل معنا",
+      "titleV2": "Simple pricing for every sales pro",
+      "titleV4": "Close more deals, prepare less",
+      "subtitleV2": "Start free with 2 flows. Upgrade when you need more.",
+      "subtitleV4": "AI that researches, prepares, and follows up — so you can focus on selling",
+      "flowExplanation": "1 Flow = 1 Research + 1 Prep + 1 Follow-up",
+      "perMonth": "month",
+      "forever": "forever",
+      "billedYearly": "Billed as {amount}/year",
+      "backToHome": "Back",
+      "earlyAdopter": "Early Adopter",
+      "launchOffer": "Early Bird Discount",
+      "launchOfferDescription": "Special launch pricing for early adopters - lock in these rates forever!",
+      "select": "Select",
+      "startTrial": "Start 14-day trial",
+      "choosePro": "Choose Pro",
+      "chooseProPlus": "Choose Pro+",
+      "goUnlimited": "Go Unlimited",
+      "goProPlus": "Get Complete Package",
+      "tryFirstResearch": "Try Your First Research",
+      "contactSales": "Contact Sales",
+      "alreadyFree": "You are already on the free plan.",
+      "donate": "Support us ❤️",
+      "perYear": "per year",
+      "contactForPricing": "Contact us for pricing",
+      "custom": "Custom",
+      "compareFeatures": "Compare all features",
+      "bestPlan": "You have the complete package!",
+      "feature": "Feature",
+      "trustBadges": "🔒 Secure payment via Stripe • 💳 All major cards accepted • ❌ Cancel anytime",
+      "moneyBackTitle": "30-Day Money-Back Guarantee",
+      "moneyBackDescription": "Not satisfied? No problem. Contact us within 30 days and we'll refund your payment in full. No questions asked.",
+      "moneyBackInline": "30-day money-back guarantee • Cancel anytime • No questions asked",
+      "launchEnds": "Launch pricing ends January 31st",
+      "saveAmount": "Save {amount}/year",
+      "noCardRequired": "No credit card required",
+      "testimonial": {
+        "quote": "DealMotion saves me 4+ hours per meeting. Easy! The AI knows exactly what I need.",
+        "author": "Sales Professional",
+        "company": "Beta User"
+      },
+      "value": {
+        "research": {
+          "title": "Prospect Intelligence",
+          "description": "Complete company & contact research in minutes"
+        },
+        "prep": {
+          "title": "Smart Preparation",
+          "description": "Personalized meeting strategy based on your style"
+        },
+        "meeting": {
+          "title": "Meeting Analysis",
+          "description": "AI captures everything so you can focus on selling"
+        },
+        "followup": {
+          "title": "Instant Follow-up",
+          "description": "Professional meeting reports, emails & action items"
+        },
+        "personalized": "All powered by AI that knows your company, your products, and your selling style"
+      },
+      "whatIsFlow": "What is a Flow?",
+      "flowStep1": "Research",
+      "flowStep2": "Preparation",
+      "flowStep3": "Follow-up",
+      "flowDescription": "A complete sales cycle from prospect research to meeting follow-up."
     },
     "plans": {
       "free": {
@@ -837,6 +1427,60 @@
       "teams": {
         "name": "فرق",
         "description": "لفرق المبيعات"
+      },
+      "v2": {
+        "free": {
+          "description": "Start free with 2 flows"
+        },
+        "lightSolo": {
+          "name": "Light Solo",
+          "description": "For the starting sales pro"
+        },
+        "unlimitedSolo": {
+          "name": "Unlimited Solo",
+          "description": "Unlimited for early adopters"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "description": "For teams with CRM needs"
+        }
+      },
+      "v3": {
+        "free": {
+          "description": "Start free with 2 flows"
+        },
+        "proSolo": {
+          "name": "Pro Solo",
+          "description": "For the active sales pro"
+        },
+        "unlimitedSolo": {
+          "name": "Unlimited Solo",
+          "description": "Unlimited for early adopters"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "description": "For teams with CRM needs"
+        }
+      },
+      "v4": {
+        "free": {
+          "name": "Free",
+          "description": "Everything included — try a complete sales cycle"
+        },
+        "pro": {
+          "name": "Pro",
+          "description": "Stop wasting hours on research & prep",
+          "settingsDesc": "Stop wasting hours on research & prep"
+        },
+        "proPlus": {
+          "name": "Pro+",
+          "description": "Never take notes again — AI does it for you",
+          "settingsDesc": "Never take notes again — AI does it for you"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "description": "Your entire team, synced with your CRM"
+        }
       }
     },
     "success": {
@@ -849,6 +1493,161 @@
       "title": "تم إلغاء الدفع",
       "description": "تم إلغاء دفعتك. يمكنك المحاولة مرة أخرى متى شئت.",
       "backToPricing": "العودة للأسعار"
+    },
+    "viewUsage": "View your usage",
+    "cancelWarning": "Your subscription will be cancelled on {date}",
+    "checkoutError": "Could not start checkout. Please try again.",
+    "portalError": "Could not open portal. Please try again.",
+    "donationNotConfigured": "Donation link is not configured yet.",
+    "flowsUsed": "Flows used",
+    "flowsRemaining": "Flows remaining",
+    "flowPacks": {
+      "title": "Need more flows?",
+      "description": "Buy extra flows when you need them",
+      "pack5": {
+        "name": "5 Flow Pack",
+        "price": "€9.95",
+        "pricePerFlow": "€1.99/flow"
+      },
+      "buy": "Buy Flow Pack",
+      "balance": "Flow pack balance",
+      "noBalance": "No flow packs",
+      "history": "Purchase history",
+      "purchased": "Purchased",
+      "remaining": "{count} flows remaining",
+      "depleted": "Depleted",
+      "checkoutSuccess": "Flow pack purchased successfully!",
+      "checkoutError": "Could not purchase flow pack. Please try again."
+    },
+    "features": {
+      "researchBriefs": "research briefs",
+      "meetingPreps": "meeting preps",
+      "followups": "follow-ups",
+      "transcription": "Transcription",
+      "knowledgeBase": "Knowledge base",
+      "users": "Users",
+      "crmIntegration": "CRM integration",
+      "perMonth": "/month",
+      "unlimited": "Unlimited",
+      "hours": "hours",
+      "docs": "docs",
+      "v2": {
+        "flows": "{count} flows per month",
+        "flowsUnlimited": "Unlimited flows",
+        "kb": "Knowledge Base included",
+        "transcription": "Transcription included",
+        "contacts": "Full contact analysis",
+        "pdf": "Clean PDF exports",
+        "user": "{count} user",
+        "usersUnlimited": "Unlimited users",
+        "support": "Email support",
+        "prioritySupport": "Priority support",
+        "dedicatedSupport": "Dedicated support",
+        "crm": "CRM integration",
+        "crmDynamics": "Microsoft Dynamics",
+        "crmSalesforce": "Salesforce",
+        "crmHubspot": "HubSpot",
+        "crmPipedrive": "Pipedrive",
+        "crmZoho": "Zoho CRM",
+        "sso": "SSO/SAML"
+      },
+      "v3": {
+        "flows": "{count} flows per month",
+        "flowsUnlimited": "Unlimited flows",
+        "kb": "Knowledge Base included",
+        "transcription": "Transcription included",
+        "contacts": "Full contact analysis",
+        "pdf": "Clean PDF exports",
+        "user": "{count} user",
+        "usersUnlimited": "Unlimited users",
+        "support": "Email support",
+        "prioritySupport": "Priority support",
+        "dedicatedSupport": "Dedicated support",
+        "crm": "CRM integration",
+        "crmDynamics": "Microsoft Dynamics",
+        "crmSalesforce": "Salesforce",
+        "crmHubspot": "HubSpot",
+        "crmPipedrive": "Pipedrive",
+        "crmZoho": "Zoho CRM",
+        "sso": "SSO/SAML",
+        "flowPacks": "Buy extra flow packs"
+      },
+      "v4": {
+        "testExperience": "Test & experience the platform",
+        "limitedFlows": "2 flows to get started",
+        "unlimitedFlows": "Unlimited flows",
+        "kb": "Knowledge Base",
+        "transcription": "Meeting transcription",
+        "contacts": "Contact analysis",
+        "pdf": "PDF & DOCX exports",
+        "prioritySupport": "Priority support",
+        "aiNotetaker": "AI Notetaker",
+        "aiNotetakerIncluded": "AI Notetaker Included",
+        "aiNotetakerDescription": "AI joins your meetings to record, transcribe & summarize",
+        "aiNotetakerTitle": "AI Notetaker - Only in Pro+",
+        "aiNotetakerLongDescription": "Let our AI join your meetings to automatically record, transcribe, and create intelligent summaries. Never miss an important detail again.",
+        "notetakerFeature1": "Auto-join meetings",
+        "notetakerFeature2": "Smart summaries",
+        "notetakerFeature3": "Action items",
+        "crm": "CRM integration",
+        "everythingProPlus": "Everything in Pro+",
+        "unlimitedUsers": "Unlimited team members",
+        "crmDynamics": "Microsoft Dynamics 365",
+        "crmSalesforce": "Salesforce CRM",
+        "crmHubspot": "HubSpot CRM",
+        "sso": "SSO / SAML",
+        "dedicatedSupport": "Dedicated account manager",
+        "value": {
+          "tryComplete": "Experience the full workflow",
+          "twoFlows": "1 complete sales cycle included",
+          "unlimited": "Unlimited prospects & meetings*",
+          "unlimitedNote": "*Fair use policy",
+          "uploadTranscripts": "Upload your own recordings & transcripts",
+          "prospectIntel": "360° prospect research & insights",
+          "contactAnalysis": "Deep analysis of decision-makers",
+          "meetingPrep": "Personalized meeting preparation",
+          "followupAnalysis": "AI-powered conversation analysis",
+          "meetingReport": "Professional meeting report to share with clients",
+          "dealAnalysis": "Commercial deal analysis with win strategy",
+          "emailsDealNotes": "Follow-up emails & CRM-ready notes",
+          "salesCoach": "Luna - Your AI sales coach",
+          "crmSync": "Sync with your CRM",
+          "teamSharing": "Share insights across your team"
+        }
+      },
+      "free": {
+        "research": "3 research briefs per month",
+        "prep": "3 meeting preps per month",
+        "followup": "1 follow-up transcription",
+        "support": "Community support",
+        "users": "1 user",
+        "kb": "Knowledge base",
+        "contacts": "Full contact analysis",
+        "pdf": "Clean PDF exports"
+      },
+      "solo": {
+        "research": "Unlimited research briefs",
+        "prep": "Unlimited meeting preps",
+        "followup": "Unlimited follow-ups",
+        "transcription": "10 hours transcription/month",
+        "kb": "Knowledge base (50 docs)",
+        "contacts": "Full contact analysis",
+        "pdf": "Clean PDF exports",
+        "support": "Email support (48h)",
+        "users": "1 user"
+      },
+      "teams": {
+        "everything": "Everything in Solo",
+        "users": "Unlimited users",
+        "transcription": "Unlimited transcription",
+        "kb": "Unlimited knowledge base",
+        "crm": "CRM integration",
+        "sharing": "Team sharing & collab",
+        "analytics": "Team analytics",
+        "sso": "SSO/SAML",
+        "support": "Dedicated support",
+        "onboarding": "Onboarding call"
+      }
     }
   },
   "onboarding": {
@@ -867,12 +1666,84 @@
     "complete": {
       "title": "اكتملت المقابلة!",
       "description": "يمكنك الآن بدء أول بحث عن عميل محتمل",
-      "button": "الذهاب للوحة التحكم"
+      "button": "الذهاب للوحة التحكم",
+      "creating": "Creating your personalized profile..."
     },
     "skip": "تخطي",
     "next": "التالي",
     "back": "رجوع",
-    "finish": "إنهاء"
+    "finish": "إنهاء",
+    "starting": "Starting your onboarding interview...",
+    "takeYourTime": "Take your time to provide a thoughtful answer",
+    "updateProfile": "Update Profile",
+    "existingProfile": {
+      "title": "Profile Already Exists",
+      "description": "You already have a sales profile. Would you like to update it with a fresh interview?"
+    },
+    "profile": {
+      "title": "Tell us about yourself",
+      "description": "This information helps the AI generate personalized outputs"
+    },
+    "company": {
+      "title": "Tell us about your company",
+      "description": "This helps the AI understand your products and services",
+      "pageTitle": "Company Profile Onboarding",
+      "pageDesc": "Help the AI understand your company",
+      "questionOf": "Question {current} of {total}",
+      "generating": "Generating Company Profile...",
+      "generatingDesc": "AI is analyzing your answers and creating a structured company profile",
+      "generatingWait": "This may take a moment...",
+      "couldNotLoad": "Could not load interview",
+      "startInterview": "Starting interview...",
+      "yourAnswer": "Your answer",
+      "answerPlaceholder": "Type your answer here...",
+      "previous": "Previous",
+      "requiredQuestion": "Required question - answer as completely as possible",
+      "optionalQuestion": "Optional question - you can skip this"
+    },
+    "errors": {
+      "startFailed": "Failed to start interview. Please try again.",
+      "submitFailed": "Failed to submit answer. Please try again.",
+      "completeFailed": "Failed to complete interview. Please try again."
+    },
+    "toast": {
+      "startError": "Error starting",
+      "startErrorDesc": "Could not start interview. Please try again.",
+      "saveError": "Error",
+      "saveErrorDesc": "Could not save answer",
+      "profileCreated": "Company profile created! 🎉",
+      "profileCreatedDesc": "Your company profile has been saved successfully.",
+      "createError": "Error",
+      "createErrorDesc": "Could not create profile. Please try again."
+    },
+    "chat": {
+      "title": "Magic Profile Setup",
+      "subtitle": "A short conversation to complete your sales profile",
+      "startWithLinkedIn": "Start with LinkedIn",
+      "startWithLinkedInDesc": "We'll automatically gather as much information as possible",
+      "linkedInUrlLabel": "Your LinkedIn profile URL",
+      "linkedInPlaceholder": "https://linkedin.com/in/your-profile",
+      "startMagicSetup": "Start Magic Setup",
+      "linkedInPrivacy": "Your LinkedIn data is only used to create your profile",
+      "analyzeProfile": "Analyze Profile",
+      "preparingChat": "Preparing chat based on your profile...",
+      "pleaseWait": "Please wait...",
+      "analyzingProfile": "Analyzing your LinkedIn profile",
+      "fetchingProfile": "Fetching profile",
+      "analyzingExperience": "Analyzing experience",
+      "extractingSkills": "Extracting skills",
+      "profileChatTitle": "Sales Profile Chat",
+      "companyProfileChatTitle": "Company Profile Chat",
+      "completeness": "Completeness",
+      "profileComplete": "Profile is complete enough!",
+      "saveProfile": "Save Profile",
+      "typeYourAnswer": "Type your answer...",
+      "profileSaved": "Profile saved!",
+      "redirecting": "Redirecting to dashboard...",
+      "couldNotEnrich": "Could not retrieve LinkedIn profile",
+      "couldNotEnrichDesc": "Please check the URL and try again",
+      "chatError": "Something went wrong with the chat"
+    }
   },
   "authForm": {
     "orContinueWith": "أو تابع بالبريد الإلكتروني",
@@ -886,7 +1757,16 @@
     "and": "و",
     "privacyPolicy": "سياسة الخصوصية",
     "checkYourEmail": "تحقق من بريدك الإلكتروني",
-    "backToLogin": "العودة لتسجيل الدخول"
+    "backToLogin": "العودة لتسجيل الدخول",
+    "confirmationEmailSent": "We've sent a confirmation link to {email}. Click the link to verify your account. Didn't receive an email? Check your spam folder.",
+    "userAlreadyExists": "An account with this email already exists. Please log in instead.",
+    "errors": {
+      "oauthError": "Authentication failed. Please try again.",
+      "accessDenied": "Sign in was cancelled.",
+      "serverError": "The authentication provider is temporarily unavailable. Please try again later.",
+      "genericSignIn": "An error occurred during sign in.",
+      "genericSignUp": "An error occurred during sign up."
+    }
   },
   "recordings": {
     "title": "تسجيلات الاجتماعات",
@@ -904,7 +1784,54 @@
     },
     "empty": {
       "title": "لا توجد تسجيلات بعد",
-      "description": "ابدأ برفع تسجيل أو ربط تكامل"
+      "description": "ابدأ برفع تسجيل أو ربط تكامل",
+      "uploadWeb": "Upload Recording",
+      "connectIntegration": "Connect Integration"
+    },
+    "filters": {
+      "allSources": "All Sources",
+      "allStatus": "All Status"
+    },
+    "stats": {
+      "title": "Overview",
+      "total": "Total",
+      "bySources": "By Source"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "uploadRecording": "Upload Recording",
+      "startRecording": "Start Recording",
+      "manageIntegrations": "Manage Integrations"
+    },
+    "transcript": {
+      "title": "Transcript",
+      "participants": "Participants",
+      "notAvailable": "No transcript available for this recording",
+      "loadFailed": "Failed to load transcript",
+      "save": "Save Changes",
+      "saved": "Transcript saved",
+      "saveFailed": "Failed to save transcript",
+      "unsavedChanges": "You have unsaved changes"
+    },
+    "recording": {
+      "description": "Record audio directly in your browser",
+      "instructions": "Click the button below to start recording your meeting. You can pause and resume as needed.",
+      "hint": "Your recording will be uploaded and analyzed automatically when you stop.",
+      "selectProspect": "Select Prospect",
+      "selectProspectPlaceholder": "Choose a company...",
+      "selectPrep": "Link to Preparation",
+      "selectPrepPlaceholder": "Choose a preparation...",
+      "noPreps": "No preparations available",
+      "selectContacts": "Select Contacts",
+      "noContacts": "No contacts available",
+      "selectProspectFirst": "Select a prospect to start recording"
+    },
+    "delete": {
+      "confirmTitle": "Delete Recording",
+      "confirmDescription": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+      "confirm": "Delete",
+      "success": "Recording deleted",
+      "failed": "Failed to delete recording"
     }
   },
   "aiNotetaker": {
@@ -922,7 +1849,44 @@
       "processing": "جاري المعالجة...",
       "complete": "مكتمل",
       "error": "خطأ",
-      "cancelled": "ملغي"
+      "cancelled": "ملغي",
+      "waitingRoom": "In waiting room"
+    },
+    "urlHelp": "Supported: Microsoft Teams, Google Meet, Zoom, Webex",
+    "urlRequired": "Please enter a meeting URL",
+    "titleLabel": "Meeting Title",
+    "titlePlaceholder": "e.g. Sales Call with TechCorp",
+    "whenToJoin": "When to join",
+    "joinNow": "Join Now",
+    "scheduleLater": "Schedule for later",
+    "dateLabel": "Date",
+    "timeLabel": "Time",
+    "prospectLabel": "Link to Prospect (optional)",
+    "contextLabel": "Meeting Context",
+    "prepLabel": "Meeting Preparation",
+    "prepPlaceholder": "Select a preparation...",
+    "noPrep": "No preparation linked",
+    "contactsLabel": "Contacts attending",
+    "dealLabel": "Related Deal",
+    "dealPlaceholder": "Select a deal...",
+    "noDeal": "No deal linked",
+    "successNow": "AI Notetaker will join your meeting shortly",
+    "successLater": "Scheduled for {date} at {time}",
+    "error": "Failed to schedule",
+    "infoBox": "DealMotion AI Notes will join your meeting and automatically record, transcribe, and analyze the conversation. The analysis will appear in your recordings once complete.",
+    "scheduled": {
+      "title": "Scheduled Recordings",
+      "empty": "No scheduled recordings",
+      "cancel": "Cancel",
+      "cancelConfirm": "Cancel this recording?",
+      "cancelDescription": "This will cancel the AI Notetaker for this meeting. This action cannot be undone.",
+      "cancelled": "Recording cancelled"
+    },
+    "proPlus": {
+      "title": "AI Notetaker is Pro+ Only",
+      "description": "Upgrade to Pro+ to let AI automatically join, record, and analyze your meetings. Never miss an important detail again.",
+      "upgrade": "Upgrade to Pro+",
+      "alternative": "Pro users can upload recordings manually"
     }
   },
   "coach": {
@@ -934,18 +1898,147 @@
       "close": "إغلاق",
       "settings": "الإعدادات",
       "allCaughtUp": "كل شيء محدث!",
-      "greatWork": "عمل رائع! عد لاحقاً لاقتراحات جديدة."
+      "greatWork": "عمل رائع! عد لاحقاً لاقتراحات جديدة.",
+      "hideForToday": "Hide for today"
     },
     "actions": {
       "doIt": "نفذ",
       "later": "لاحقاً",
-      "skip": "تخطي"
+      "skip": "تخطي",
+      "snooze1hour": "Snooze 1 hour",
+      "snoozeTonight": "Remind tonight",
+      "snoozeTomorrow": "Remind tomorrow"
     },
     "stats": {
       "research": "البحث",
       "preps": "التحضيرات",
       "followups": "المتابعات",
       "completed": "مكتملة اليوم"
+    },
+    "completion": {
+      "researchComplete": {
+        "title": "Research Complete!",
+        "description": "Great work! Your research on {company} is ready. What would you like to do next?",
+        "addContacts": "Add Contacts",
+        "addContactsDesc": "Add key people to talk to",
+        "createPrep": "Create Preparation",
+        "createPrepDesc": "Start meeting prep now"
+      },
+      "contactsAdded": {
+        "title": "Contacts Added!",
+        "description": "You've added {count} to {company}. Luna can now generate personalized conversation starters.",
+        "createPrep": "Create Preparation",
+        "createPrepDesc": "Get personalized talking points",
+        "addMore": "Add More Contacts",
+        "addMoreDesc": "Find more people to connect with"
+      },
+      "prepReady": {
+        "title": "Prep Ready!",
+        "description": "Your meeting preparation for {company} is complete. Good luck with your meeting!",
+        "viewPrep": "View Preparation",
+        "viewPrepDesc": "Review your preparation",
+        "addFollowup": "Add Follow-up Later",
+        "addFollowupDesc": "Create follow-up later"
+      },
+      "followupComplete": {
+        "title": "Follow-up Created!",
+        "description": "Your meeting follow-up is ready. Generate actions to make the most of your meeting.",
+        "generateReport": "Generate Report",
+        "generateReportDesc": "Create a shareable summary",
+        "viewActions": "View All Actions",
+        "viewActionsDesc": "See all follow-up options"
+      },
+      "actionGenerated": {
+        "title": "Action Generated!",
+        "description": "Your {actionType} is ready.",
+        "export": "Export",
+        "exportDesc": "Download or share the action",
+        "moreActions": "More Actions",
+        "moreActionsDesc": "Create additional actions"
+      },
+      "generic": {
+        "title": "Great Work!",
+        "description": "You completed a task successfully.",
+        "continue": "Continue",
+        "continueDesc": "Keep going"
+      }
+    },
+    "inlineTips": {
+      "researchForm": {
+        "title": "Pro tip: Be specific",
+        "description": "Include the company website or LinkedIn URL for better research results."
+      },
+      "contactsEmpty": {
+        "title": "Add contacts first",
+        "description": "Adding contact persons before creating a preparation improves your meeting outcomes by 40%.",
+        "action": "Add contacts"
+      },
+      "contactsFew": {
+        "title": "Add more contacts",
+        "description": "Having 2-3 contacts gives Luna more context for personalized conversation starters."
+      },
+      "prepForm": {
+        "title": "Best timing",
+        "description": "Create your preparation 1-2 days before the meeting for optimal results."
+      },
+      "prepNoContacts": {
+        "title": "Missing contacts",
+        "description": "Your preparation will be more generic without contact persons. Add contacts first for personalized talking points.",
+        "action": "Add contacts first"
+      },
+      "followupForm": {
+        "title": "Upload your recording",
+        "description": "Upload your meeting recording or transcript to generate comprehensive follow-up actions."
+      },
+      "dealForm": {
+        "title": "Track your deal",
+        "description": "Linking deals to prospects helps Luna provide better pipeline insights."
+      },
+      "exportAvailable": {
+        "title": "Export available",
+        "description": "You can export this brief as PDF, Word, or Markdown using the dropdown menu."
+      }
+    },
+    "sections": {
+      "priority": "Priority",
+      "suggestions": "Suggestions",
+      "progress": "Today's Progress",
+      "tip": "Tip of the Day",
+      "score": "Success Score",
+      "predictions": "Predictions",
+      "recommendations": "Recommendations"
+    },
+    "suggestions": {
+      "addContacts": "Add contacts to {company}",
+      "createPrep": "Create meeting preparation",
+      "uploadFollowup": "Upload meeting recording",
+      "generateReport": "Generate customer report",
+      "reviewCoaching": "Review sales coaching feedback"
+    },
+    "reasons": {
+      "meetingTomorrow": "Meeting tomorrow at {time}",
+      "meetingIn": "Meeting in {hours} hours",
+      "noContacts": "No contacts added yet",
+      "prepReady": "Preparation is ready",
+      "overdue": "{days} days since last activity"
+    },
+    "tips": {
+      "contactsImprove": "Adding contacts before prep improves meeting outcomes by 40%",
+      "customerReports": "Customer reports increase follow-up response rates by 60%",
+      "prepTiming": "Best preps are created 1-2 days before the meeting"
+    },
+    "settings": {
+      "title": "Coach Settings",
+      "enabled": "Enable AI Coach",
+      "inlineTips": "Show inline tips",
+      "completionModals": "Show completion suggestions",
+      "quietHours": "Quiet hours",
+      "frequency": "Notification frequency",
+      "frequencyOptions": {
+        "minimal": "Minimal",
+        "normal": "Normal",
+        "frequent": "Frequent"
+      }
     }
   },
   "admin": {
@@ -968,7 +2061,186 @@
       "delete": "حذف",
       "edit": "تعديل",
       "view": "عرض",
-      "loading": "جاري التحميل..."
+      "loading": "جاري التحميل...",
+      "user": "User",
+      "users": "Users",
+      "actions": "Actions",
+      "status": "Status",
+      "date": "Date",
+      "error": "Error",
+      "success": "Success",
+      "confirm": "Confirm",
+      "previous": "Previous",
+      "next": "Next",
+      "showing": "Showing {from} to {to} of {total}",
+      "perPage": "per page"
+    },
+    "roles": {
+      "super_admin": "Super Admin",
+      "admin": "Admin",
+      "support": "Support",
+      "viewer": "Viewer"
+    },
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "subtitle": "System overview and key metrics",
+      "metrics": {
+        "totalUsers": "Total Users",
+        "activeUsers": "Active Users",
+        "mrr": "Monthly Revenue",
+        "activeAlerts": "Active Alerts"
+      },
+      "trends": {
+        "title": "Usage Trends",
+        "last30Days": "Last 30 days",
+        "users": "Users",
+        "flows": "Flows"
+      },
+      "recentAlerts": {
+        "title": "Recent Alerts",
+        "viewAll": "View all alerts",
+        "noAlerts": "No active alerts"
+      }
+    },
+    "users": {
+      "title": "User Management",
+      "subtitle": "View and manage all users",
+      "searchPlaceholder": "Search by email or name...",
+      "filterByPlan": "Filter by plan",
+      "allPlans": "All plans",
+      "noUsers": "No users found",
+      "columns": {
+        "user": "User",
+        "organization": "Organization",
+        "plan": "Plan",
+        "flows": "Flows",
+        "health": "Health",
+        "lastActive": "Last Active",
+        "actions": "Actions"
+      },
+      "actions": {
+        "viewDetails": "View Details",
+        "resetFlows": "Reset Flows",
+        "addFlows": "Add Flows",
+        "extendTrial": "Extend Trial",
+        "exportData": "Export Data"
+      },
+      "detail": {
+        "title": "User Details",
+        "overview": "Overview",
+        "activity": "Activity",
+        "flowPacks": "Flow Packs",
+        "billing": "Billing",
+        "errors": "Errors",
+        "notes": "Admin Notes",
+        "createdAt": "Created",
+        "lastLogin": "Last Login",
+        "never": "Never"
+      },
+      "health": {
+        "good": "Good",
+        "warning": "Warning",
+        "critical": "Critical"
+      }
+    },
+    "alerts": {
+      "title": "System Alerts",
+      "subtitle": "Monitor and resolve system issues",
+      "filterByType": "Filter by type",
+      "filterByStatus": "Filter by status",
+      "allTypes": "All types",
+      "allStatuses": "All statuses",
+      "noAlerts": "No alerts found",
+      "columns": {
+        "alert": "Alert",
+        "type": "Type",
+        "user": "User",
+        "status": "Status",
+        "createdAt": "Created",
+        "actions": "Actions"
+      },
+      "status": {
+        "active": "Active",
+        "acknowledged": "Acknowledged",
+        "resolved": "Resolved"
+      },
+      "types": {
+        "error": "Error",
+        "warning": "Warning",
+        "info": "Info",
+        "payment_failed": "Payment Failed",
+        "usage_limit": "Usage Limit",
+        "security": "Security"
+      },
+      "actions": {
+        "acknowledge": "Acknowledge",
+        "resolve": "Resolve"
+      }
+    },
+    "health": {
+      "title": "System Health",
+      "subtitle": "Service status and job monitoring",
+      "overview": "Service Overview",
+      "jobs": "Job Health",
+      "services": {
+        "api": "API Server",
+        "database": "Database",
+        "inngest": "Inngest Jobs",
+        "stripe": "Stripe",
+        "supabase": "Supabase"
+      },
+      "status": {
+        "operational": "Operational",
+        "degraded": "Degraded",
+        "outage": "Outage"
+      },
+      "jobStats": {
+        "successRate": "Success Rate",
+        "totalJobs": "Total Jobs (24h)",
+        "failed": "Failed",
+        "avgDuration": "Avg Duration"
+      }
+    },
+    "billing": {
+      "title": "Billing Overview",
+      "subtitle": "Revenue and payment metrics",
+      "metrics": {
+        "mrr": "Monthly Recurring Revenue",
+        "paidUsers": "Paid Users",
+        "churnRate": "Churn Rate",
+        "avgRevenue": "Avg Revenue/User"
+      },
+      "planDistribution": "Plan Distribution",
+      "recentTransactions": "Recent Transactions",
+      "failedPayments": "Failed Payments",
+      "noTransactions": "No transactions found",
+      "noFailedPayments": "No failed payments"
+    },
+    "audit": {
+      "title": "Audit Log",
+      "subtitle": "Admin action history",
+      "searchPlaceholder": "Search actions...",
+      "filterByAction": "Filter by action",
+      "allActions": "All actions",
+      "export": "Export CSV",
+      "noLogs": "No audit logs found",
+      "columns": {
+        "admin": "Admin",
+        "action": "Action",
+        "target": "Target",
+        "details": "Details",
+        "timestamp": "Timestamp",
+        "ip": "IP Address"
+      }
+    },
+    "notes": {
+      "title": "Admin Notes",
+      "addNote": "Add Note",
+      "editNote": "Edit Note",
+      "deleteNote": "Delete Note",
+      "placeholder": "Enter note...",
+      "noNotes": "No notes yet",
+      "confirmDelete": "Are you sure you want to delete this note?"
     }
   },
   "homepage": {
@@ -982,7 +2254,9 @@
       "titleHighlight": "للأمام",
       "description": "ابحث عن الحسابات، جهز الاجتماعات، دع الذكاء الاصطناعي يلتقط كل محادثة، وتابع—كل ذلك مدعوم بذكاء اصطناعي يعرف أسلوبك ومنتجك وعميلك.",
       "startFree": "ابدأ مجاناً",
-      "viewPricing": "عرض الأسعار"
+      "viewPricing": "عرض الأسعار",
+      "startTrial": "Start Free Trial",
+      "watchDemo": "Watch Demo"
     },
     "cta": {
       "title": "ادخل كل اجتماع بثقة. اخرج بخطة واضحة.",
@@ -991,6 +2265,297 @@
     },
     "footer": {
       "rights": "جميع الحقوق محفوظة."
+    },
+    "preview": {
+      "research": "Research",
+      "brief": "Brief",
+      "aiMeetingBrief": "AI Meeting Brief",
+      "generatedIn": "Generated in 30 seconds"
+    },
+    "features": {
+      "title": "Everything you need to keep deals moving",
+      "description": "From research to follow-up, we've got you covered at every stage of your deal cycle.",
+      "research": {
+        "title": "Account Research",
+        "description": "AI-powered research on any company. Get insights on their business, challenges, decision makers, and opportunities."
+      },
+      "preparation": {
+        "title": "Meeting Preparation",
+        "description": "Generate personalized meeting briefs with talking points, SPIN questions, and strategy recommendations."
+      },
+      "followup": {
+        "title": "Meeting Follow-up",
+        "description": "Upload recordings, get AI summaries, action items, and customer-facing reports automatically."
+      },
+      "aiCoach": {
+        "title": "AI Sales Coach",
+        "description": "Your personal sales coach that analyzes your conversations and provides actionable tips to improve."
+      },
+      "knowledgeBase": {
+        "title": "Knowledge Base",
+        "description": "Upload your company docs. The AI uses your context to generate relevant, on-brand content."
+      },
+      "contactAnalysis": {
+        "title": "Contact Analysis",
+        "description": "Get detailed profiles on decision makers with communication preferences and engagement tips."
+      },
+      "outreach": {
+        "title": "Smart Outreach",
+        "description": "AI writes your first message to prospects. LinkedIn, email, or WhatsApp—fully personalized based on your research. No generic templates, just messages that land."
+      },
+      "meetingsCalendar": {
+        "title": "Meetings Calendar",
+        "description": "All your meetings in one view. Prep status at a glance. Never walk in unprepared again."
+      },
+      "inPersonMeetings": {
+        "title": "In-Person Meetings",
+        "description": "From Zoom calls to coffee meetings—record and analyze every conversation, anywhere."
+      },
+      "smartIntegrations": {
+        "title": "Smart Integrations",
+        "description": "Connect Google Calendar, Microsoft 365, and Fireflies.ai. CRM sync coming soon."
+      },
+      "aiNotetaker": {
+        "title": "AI Notetaker",
+        "description": "Invite notes@dealmotion.ai to any call, or enable auto-record. Our bot joins Teams, Meet, Zoom, and Webex—then transcribes and analyzes automatically."
+      }
+    },
+    "socialProof": {
+      "trustedBy": "TRUSTED BY SALES TEAMS AT",
+      "usedBy": "Used by B2B sales professionals worldwide"
+    },
+    "howItWorks": {
+      "title": "How it works",
+      "subtitle": "From calendar sync to follow-up—DealMotion covers your entire deal cycle.",
+      "steps": {
+        "calendar": {
+          "title": "Calendar",
+          "description": "Sync your meetings"
+        },
+        "research": {
+          "title": "Research",
+          "description": "AI gathers insights"
+        },
+        "outreach": {
+          "title": "Outreach",
+          "description": "Send personalized messages"
+        },
+        "prep": {
+          "title": "Prep",
+          "description": "Get your brief"
+        },
+        "meeting": {
+          "title": "Meeting",
+          "description": "AI bot joins or record on mobile"
+        },
+        "analysis": {
+          "title": "Analysis",
+          "description": "7 outputs instantly"
+        },
+        "followup": {
+          "title": "Follow-up",
+          "description": "Send & track"
+        }
+      }
+    },
+    "integrations": {
+      "title": "Works with your tools",
+      "subtitle": "Connect to your existing workflow in seconds.",
+      "comingSoon": "Coming soon"
+    },
+    "aiContext": {
+      "badge": "The secret sauce",
+      "title": "AI that knows you, your company, and your prospect",
+      "subtitle": "DealMotion learns your style, your products, and your prospect—then personalizes every output.",
+      "inputsTitle": "What the AI knows about you",
+      "layers": {
+        "profile": {
+          "title": "Your Sales Profile",
+          "description": "Experience, strengths, communication style"
+        },
+        "company": {
+          "title": "Your Company",
+          "description": "Products, services, value propositions"
+        },
+        "knowledge": {
+          "title": "Your Knowledge Base",
+          "description": "Pitch decks, case studies, product docs"
+        },
+        "prospect": {
+          "title": "Your Prospect",
+          "description": "Research, contacts, history, context"
+        }
+      },
+      "outputTitle": "Personalized Output",
+      "outputDescription": "Every research report, meeting brief, and follow-up is tailored to you.",
+      "benefits": {
+        "personalized": "Tailored to your style",
+        "instant": "Generated in seconds",
+        "onBrand": "On-brand messaging",
+        "improves": "Gets smarter over time"
+      },
+      "quote": "It's like having a sales assistant who knows your entire playbook."
+    },
+    "meetingAnalysis": {
+      "badge": "One Recording, 7 Outputs",
+      "title": "Everything you need from one conversation",
+      "subtitle": "Upload any meeting recording and get 7 ready-to-use outputs instantly.",
+      "recording": "Recording",
+      "anyMeeting": "Video or in-person",
+      "outputs": {
+        "summary": {
+          "title": "Summary",
+          "description": "Key points & decisions"
+        },
+        "customerReport": {
+          "title": "Customer Report",
+          "description": "Ready to send to your client"
+        },
+        "shareEmail": {
+          "title": "Share Email",
+          "description": "Forward to colleagues"
+        },
+        "commercialAnalysis": {
+          "title": "Commercial Analysis",
+          "description": "Deal insights & opportunities"
+        },
+        "salesCoaching": {
+          "title": "Sales Coaching",
+          "description": "Personalized improvement tips"
+        },
+        "actionItems": {
+          "title": "Action Items",
+          "description": "Next steps with owners"
+        },
+        "internalReport": {
+          "title": "CRM Update",
+          "description": "Ready for your system"
+        }
+      },
+      "highlight": "Customer reports and commercial analysis are unique to DealMotion.",
+      "highlightSub": "Most tools only give you a transcript. We give you ready-to-use outputs."
+    },
+    "aiNotetakerSection": {
+      "badge": "Set It & Forget It",
+      "title": "AI that joins your meetings for you",
+      "subtitle": "Never manually start a recording again. Our AI Notetaker joins your video calls automatically, captures everything, and delivers insights before you're back at your desk.",
+      "emailInvite": {
+        "title": "Invite Like a Colleague",
+        "description": "Just add notes@dealmotion.ai to any meeting invite. Our bot joins, records, and analyzes—no setup required."
+      },
+      "autoRecord": {
+        "title": "Auto-Record from Calendar",
+        "description": "Sync your calendar once. Set rules for which meetings to record. DealMotion handles the rest."
+      },
+      "smartFilters": {
+        "title": "Smart Filtering",
+        "description": "Only record what matters. Filter by keywords, external attendees, or meeting duration."
+      },
+      "platforms": {
+        "title": "Works Everywhere",
+        "description": "Microsoft Teams, Google Meet, Zoom, and Webex—all supported out of the box."
+      },
+      "botName": "DealMotion AI Notes",
+      "howItWorksTitle": "How it works",
+      "steps": {
+        "invite": "Invite bot or sync calendar",
+        "join": "Bot joins automatically",
+        "record": "Records & transcribes",
+        "analyze": "7 outputs delivered"
+      }
+    },
+    "mobileApp": {
+      "badge": "Beta Available",
+      "title": "Your pocket recording studio",
+      "subtitle": "Record in-person meetings right from your phone. Coffee chats, on-site visits, trade shows—never miss an insight. App Store launch coming soon!",
+      "steps": {
+        "record": "Record",
+        "upload": "Upload",
+        "analyze": "Analyze",
+        "share": "Share"
+      },
+      "useCasesTitle": "Perfect for",
+      "useCases": {
+        "coffee": "Coffee meetings",
+        "onsite": "On-site visits",
+        "events": "Trade shows",
+        "field": "Field sales"
+      },
+      "tapToRecord": "Tap to start recording"
+    },
+    "painPoints": {
+      "title": "Before & after DealMotion",
+      "subtitle": "See how DealMotion transforms your sales workflow.",
+      "before": "Before",
+      "after": "After",
+      "items": {
+        "research": {
+          "before": "30+ minutes researching each account",
+          "after": "Complete research in 30 seconds"
+        },
+        "outreach": {
+          "before": "Sending generic messages that get ignored",
+          "after": "Personalized outreach based on AI-powered research"
+        },
+        "prep": {
+          "before": "Walking into meetings unprepared",
+          "after": "Personalized brief for every meeting"
+        },
+        "recording": {
+          "before": "Manually starting recordings every call",
+          "after": "AI bot joins and records automatically"
+        },
+        "notes": {
+          "before": "Scrambling to take notes during calls",
+          "after": "AI captures every detail for you"
+        },
+        "insights": {
+          "before": "No insight into deal health or how to improve",
+          "after": "AI-powered deal analysis and personal coaching after every call"
+        },
+        "followup": {
+          "before": "Hours writing follow-up emails",
+          "after": "Ready-to-send reports in minutes"
+        }
+      }
+    },
+    "dayInTheLife": {
+      "title": "A day with DealMotion",
+      "intro": "Monday morning. You open DealMotion.",
+      "steps": {
+        "open": {
+          "time": "8:30 AM",
+          "text": "You see 3 meetings this week."
+        },
+        "unprepared": {
+          "time": "8:31 AM",
+          "text": "One meeting isn't prepared yet."
+        },
+        "brief": {
+          "time": "8:32 AM",
+          "text": "Click. Personalized brief in 30 seconds.",
+          "highlight": "AI knows your style and your prospect"
+        },
+        "confident": {
+          "time": "10:00 AM",
+          "text": "Walk into the meeting confident."
+        },
+        "botJoins": {
+          "time": "10:01 AM",
+          "text": "AI Notetaker joins automatically. You focus on the conversation.",
+          "highlight": "No manual recording needed"
+        },
+        "record": {
+          "time": "11:00 AM",
+          "text": "Meeting ends. 7 outputs ready instantly.",
+          "highlight": "Summary, customer report, coaching, and more"
+        },
+        "sent": {
+          "time": "11:05 AM",
+          "text": "Customer report sent before your next coffee."
+        }
+      },
+      "tagline": "That's DealMotion. Put your deals in motion."
     }
   },
   "prospects": {
@@ -1007,7 +2572,8 @@
       "proposal_sent": "تم إرسال العرض",
       "won": "فزنا",
       "lost": "خسرنا",
-      "inactive": "غير نشط"
+      "inactive": "غير نشط",
+      "on_hold": "On Hold"
     },
     "empty": {
       "title": "لا يوجد عملاء محتملين بعد",
@@ -1015,19 +2581,55 @@
     },
     "toast": {
       "deleted": "تم حذف العميل المحتمل",
-      "deletedDesc": "تمت إزالة العميل المحتمل"
+      "deletedDesc": "تمت إزالة العميل المحتمل",
+      "deleteFailed": "Delete failed",
+      "deleteFailedDesc": "Could not delete the prospect",
+      "researchStarted": "Research started - prospect will be created automatically"
+    },
+    "sort": {
+      "activity": "Activity"
+    },
+    "stats": {
+      "title": "Overview",
+      "total": "Total",
+      "active": "Active"
+    },
+    "filters": {
+      "title": "Filter by Status",
+      "all": "All Prospects"
+    },
+    "actions": {
+      "title": "Quick Actions",
+      "newProspect": "New Prospect",
+      "startResearch": "Start Research"
+    },
+    "confirm": {
+      "deleteTitle": "Delete Prospect",
+      "deleteDescription": "Are you sure you want to delete this prospect? This action cannot be undone.",
+      "deleteButton": "Delete"
+    },
+    "sheet": {
+      "newProspect": "Add New Prospect",
+      "newProspectDesc": "Search for a company to start AI research and create a new prospect."
+    },
+    "errors": {
+      "loadFailed": "Failed to load prospects"
     }
   },
   "deals": {
     "new": {
       "title": "إنشاء صفقة جديدة",
       "for": "لـ",
-      "create": "إنشاء الصفقة"
+      "create": "إنشاء الصفقة",
+      "info": "Deals help you organize multiple meetings and activities for the same opportunity. You can create preparations and follow-ups linked to this deal."
     },
     "form": {
       "name": "اسم الصفقة",
       "namePlaceholder": "مثل ترخيص المؤسسة 2025",
-      "description": "الوصف (اختياري)"
+      "description": "الوصف (اختياري)",
+      "nameHelp": "Give your deal a clear, descriptive name",
+      "descriptionPlaceholder": "Context, notes, or anything useful for this opportunity...",
+      "descriptionHelp": "Add any context that helps you track this opportunity"
     },
     "status": {
       "active": "نشط",
@@ -1035,12 +2637,64 @@
     },
     "success": {
       "created": "تم إنشاء الصفقة بنجاح",
-      "deleted": "تم حذف الصفقة"
+      "deleted": "تم حذف الصفقة",
+      "archived": "Deal archived",
+      "activated": "Deal activated"
     },
     "errors": {
-      "nameRequired": "اسم الصفقة مطلوب"
+      "nameRequired": "اسم الصفقة مطلوب",
+      "createFailed": "Failed to create deal",
+      "updateFailed": "Failed to update deal",
+      "deleteFailed": "Failed to delete deal",
+      "loadFailed": "Failed to load deal",
+      "notFound": "Deal not found"
     },
-    "backToProspect": "العودة للعميل المحتمل"
+    "backToProspect": "العودة للعميل المحتمل",
+    "stats": {
+      "meetings": "Meetings",
+      "preps": "Preparations",
+      "followups": "Follow-ups"
+    },
+    "sections": {
+      "meetings": "Meetings",
+      "meetingsDesc": "All meetings linked to this deal"
+    },
+    "actions": {
+      "archive": "Archive Deal",
+      "activate": "Activate Deal",
+      "delete": "Delete Deal",
+      "addMeeting": "Add Meeting",
+      "scheduleFirst": "Schedule First Meeting"
+    },
+    "links": {
+      "viewPrep": "View Prep",
+      "createPrep": "Create Prep",
+      "viewFollowup": "View Follow-up",
+      "createFollowup": "Create Follow-up"
+    },
+    "empty": {
+      "noMeetings": "No Meetings Yet",
+      "noMeetingsDesc": "Start by scheduling your first meeting for this deal"
+    },
+    "confirm": {
+      "delete": "Are you sure you want to delete this deal? All linked meetings will be unlinked.",
+      "deleteTitle": "Delete Deal?",
+      "deleteDescription": "This action cannot be undone. All meetings linked to this deal will be unlinked."
+    },
+    "meetingStatus": {
+      "scheduled": "Scheduled",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "noShow": "No Show"
+    },
+    "meetingTypes": {
+      "discovery": "Discovery",
+      "demo": "Demo",
+      "negotiation": "Negotiation",
+      "closing": "Closing",
+      "review": "Review",
+      "other": "Other"
+    }
   },
   "prospectHub": {
     "sections": {
@@ -1049,7 +2703,8 @@
       "documents": "المستندات",
       "journey": "رحلة المبيعات",
       "timeline": "النشاط الأخير",
-      "notes": "ملاحظات سريعة"
+      "notes": "ملاحظات سريعة",
+      "upcomingMeetings": "Upcoming Meetings"
     },
     "journey": {
       "research": "البحث",
@@ -1065,7 +2720,16 @@
       "createPrep": "إنشاء تحضير",
       "addFollowup": "معالجة الاجتماع",
       "allDone": "على المسار الصحيح",
-      "viewFollowups": "عرض المتابعات"
+      "viewFollowups": "عرض المتابعات",
+      "startResearchDesc": "Begin by researching this company",
+      "startResearchBtn": "Start Research",
+      "addContactsDesc": "Add the people you'll be meeting with",
+      "addContactsBtn": "Add Contact",
+      "createPrepDesc": "Prepare for your upcoming meeting",
+      "createPrepBtn": "Create Prep",
+      "addFollowupDesc": "Upload your meeting recording for analysis",
+      "addFollowupBtn": "Upload Recording",
+      "allDoneDesc": "Review your latest follow-ups and action items"
     },
     "notes": {
       "placeholder": "إضافة ملاحظة سريعة...",
@@ -1078,7 +2742,13 @@
       "create": "إنشاء",
       "viewAll": "عرض الكل",
       "viewPrep": "عرض التحضير",
-      "viewFollowup": "عرض التحليل"
+      "viewFollowup": "عرض التحليل",
+      "viewFullResearch": "View full research",
+      "manage": "Manage",
+      "createNew": "Create New",
+      "prepareNow": "Prepare Now",
+      "planMeeting": "Plan Meeting",
+      "createOutreach": "Create Outreach"
     },
     "empty": {
       "noContacts": "لم تتم إضافة جهات اتصال بعد",
@@ -1088,6 +2758,813 @@
       "now": "الآن",
       "prepared": "محضر",
       "notPrepared": "غير محضر"
+    },
+    "documents": {
+      "research": "Company Research",
+      "preparation": "Meeting Preparations",
+      "followup": "Meeting Analysis & Follow-ups",
+      "recordings": "Meeting Recordings"
+    },
+    "status": {
+      "inProgress": "In Progress"
+    },
+    "documentStatus": {
+      "pending": "Pending",
+      "generating": "Generating...",
+      "transcribing": "Transcribing...",
+      "summarizing": "Analyzing...",
+      "completed": "Completed",
+      "failed": "Failed"
+    },
+    "more": "more",
+    "confirm": {
+      "deleteNoteTitle": "Delete Note",
+      "deleteNoteDescription": "Are you sure you want to delete this note? This cannot be undone."
+    },
+    "errors": {
+      "loadFailed": "Failed to load prospect data",
+      "notFound": "Prospect not found",
+      "noteSaveFailed": "Failed to save note",
+      "noChannelsAvailable": "No channels available",
+      "addContactInfo": "Add an email, LinkedIn, or phone number to this contact first."
+    },
+    "sheets": {
+      "startResearch": "Start Company Research",
+      "startResearchDesc": "Search and verify this company to start AI research.",
+      "createPrep": "Create Meeting Preparation",
+      "createPrepDesc": "Prepare for your meeting with {company}.",
+      "uploadFollowup": "Upload Meeting Recording",
+      "uploadFollowupDesc": "Upload audio or transcript from your meeting with {company}.",
+      "planMeeting": "Plan Meeting",
+      "planMeetingDesc": "Plan a meeting with"
+    },
+    "hints": {
+      "createPrepFirst": "Create a prep first",
+      "prepNeededForMeeting": "A preparation is needed to plan a meeting."
+    },
+    "toast": {
+      "researchStarted": "Research started successfully",
+      "prepStarted": "Preparation generation started",
+      "followupStarted": "Follow-up processing started",
+      "contactAdded": "Contact added successfully",
+      "meetingPlanned": "Meeting planned!",
+      "meetingPlannedDesc": "Don't forget to send the invitation.",
+      "outreachCreated": "Outreach created!"
+    },
+    "contactDetail": {
+      "profileBrief": "Profile Analysis",
+      "openingSuggestions": "Opening Suggestions",
+      "questionsToAsk": "Questions to Ask",
+      "topicsToAvoid": "Topics to Avoid"
     }
+  },
+  "credits": {
+    "title": "Credits & Usage",
+    "subtitle": "Complete overview of your credit usage",
+    "unlimited": "Unlimited credits",
+    "available": "available",
+    "until": "until",
+    "subscription": "subscription",
+    "packs": "packs",
+    "used": "used",
+    "exhausted": "Credits depleted!",
+    "almostEmpty": "Almost empty! {credits} credits left",
+    "buyCredits": "Buy Credits",
+    "errorLoading": "Failed to load credits",
+    "backToSettings": "Back to settings",
+    "refresh": "Refresh",
+    "thisPeriod": "This period",
+    "expires": "Expires",
+    "consumed": "Consumed",
+    "added": "Added",
+    "transactions": "Transactions",
+    "usageByFunction": "Usage by function",
+    "transactionHistory": "Transaction history",
+    "allTransactionsDetails": "All credit transactions with full details",
+    "allTypes": "All types",
+    "consumption": "Consumption",
+    "subscriptionType": "Subscription",
+    "creditPacks": "Credit Packs",
+    "allFunctions": "All functions",
+    "noTransactionsYet": "No transactions found yet",
+    "tryOtherFilters": "Try different filters",
+    "startUsingDealMotion": "Start using DealMotion features",
+    "balance": "Balance",
+    "pageOf": "Page {page} of {total} ({count} transactions)",
+    "previous": "Previous",
+    "next": "Next",
+    "howCreditsWork": "How do credits work?",
+    "howCreditsWorkDescription": "Credits are used for AI features like research, meeting prep, transcriptions and follow-ups. Your subscription includes a monthly amount of credits that reset each month. Purchased credit packs remain valid until used.",
+    "justNow": "Just now",
+    "minutesAgo": "{minutes} min ago",
+    "hoursAgo": "{hours} hours ago",
+    "daysAgo": "{days} days ago",
+    "creditsAvailable": "{credits} credits available",
+    "extra": "extra",
+    "resetInDays": "Resets in {days} day",
+    "resetInDaysPlural": "Resets in {days} days",
+    "clickToBuyMore": "Click to buy more credits →",
+    "buyPacks": "Buy Credit Packs",
+    "buyPacksDescription": "Buy extra credits to continue with your sales intelligence. Credits never expire.",
+    "noPacksAvailable": "No credit packs available",
+    "upgradeRequired": "Upgrade to Pro or Pro+",
+    "upgradeRequiredDescription": "Credit packs are only available for Pro and Pro+ subscribers. Upgrade your plan to purchase extra credits.",
+    "viewPlans": "View plans",
+    "popular": "Popular",
+    "bestDeal": "Best Deal",
+    "salesCycles": "~{count} sales cycles",
+    "perCredit": "per credit",
+    "neverExpire": "Never expire",
+    "availableImmediately": "Available immediately",
+    "buy": "Buy",
+    "pleaseWait": "Please wait...",
+    "checkoutError": "Could not start checkout. Please try again.",
+    "error": "Error"
+  },
+  "autopilot": {
+    "title": "Autopilot",
+    "inbox": {
+      "title": "Autopilot Inbox",
+      "tabs": {
+        "active": "Active",
+        "proposed": "New",
+        "executing": "In Progress",
+        "completed": "History"
+      },
+      "empty": "No proposals right now. I'm scanning for opportunities.",
+      "pending": "pending",
+      "waiting": "waiting"
+    },
+    "proposal": {
+      "why": "Why?",
+      "accept": "Accept",
+      "decline": "Decline",
+      "snooze": "Snooze",
+      "retry": "Retry",
+      "viewDetails": "View details",
+      "executing": "Executing...",
+      "failed": "Failed",
+      "completed": "Completed"
+    },
+    "snooze": {
+      "oneHour": "1 hour",
+      "thisEvening": "This evening",
+      "tomorrow": "Tomorrow",
+      "afterMeeting": "After meeting",
+      "nextWeek": "Next week",
+      "inThreeDays": "In 3 days"
+    },
+    "actions": {
+      "addContacts": "Add contacts",
+      "createPrep": "Create prep",
+      "planMeeting": "Plan meeting",
+      "uploadRecording": "Upload recording",
+      "generateActions": "Generate actions",
+      "completeActions": "Complete actions",
+      "startResearch": "Start research"
+    },
+    "meetingRequest": {
+      "contacts": "Contacts",
+      "noContacts": "No contacts found. Add a contact first.",
+      "moreContacts": "more contacts",
+      "emailTemplate": "Meeting invitation",
+      "to": "To",
+      "regenerate": "Regenerate",
+      "regenerating": "Generating AI email...",
+      "copyEmail": "Copy",
+      "openEmail": "Email",
+      "call": "Call",
+      "copyTemplate": "Copy text",
+      "openInEmail": "Open in email",
+      "planInCalendar": "Add to your calendar",
+      "prepHighlights": "Prep highlights",
+      "viewFullPrep": "View full prep",
+      "meetingPlannedButton": "Meeting planned - Mark as complete",
+      "meetingPlanned": "Meeting planned!",
+      "proposalCompleted": "The proposal has been completed.",
+      "emailCopied": "Email copied",
+      "templateCopied": "Email template copied",
+      "pasteInEmail": "Paste in your email client",
+      "cancel": "Cancel"
+    },
+    "luna": {
+      "greeting": "Hey! I'm Luna, your AI sales assistant.",
+      "scanning": "I'm scanning your calendar and prospects for opportunities.",
+      "noProposals": "No active proposals right now.",
+      "checkBack": "Check back soon - I'm always looking for ways to help.",
+      "pending": "pending",
+      "urgent": "Urgent",
+      "executing": "Executing",
+      "later": "Later",
+      "ctaLabel": "Do it",
+      "viewActions": "View all actions",
+      "snoozeLaterToday": "Later today",
+      "snoozeTomorrow": "Tomorrow morning",
+      "snoozeNextWorkDay": "Next working day",
+      "snoozeAfterMeeting": "After this meeting",
+      "noMessages": "No messages",
+      "copied": "Copied!",
+      "outreachTitle": "Create Outreach",
+      "outreachDescription": "Choose a channel and create a personalized outreach message",
+      "selectChannel": "Select Channel",
+      "messageContent": "Message Content",
+      "generate": "Generate",
+      "generateSuccess": "Message generated",
+      "generateFailed": "Failed to generate message",
+      "subject": "Subject",
+      "subjectPlaceholder": "Enter email subject...",
+      "message": "Message",
+      "messagePlaceholder": "Write your message here...",
+      "copy": "Copy",
+      "saveDraft": "Save Draft",
+      "markAsSent": "Mark as Sent",
+      "skip": "Skip",
+      "saveDraftSuccess": "Draft saved",
+      "saveDraftFailed": "Failed to save draft",
+      "markSentSuccess": "Marked as sent",
+      "markSentFailed": "Failed to mark as sent",
+      "missingContactInfo": "Missing Contact Information",
+      "addEmailInfo": "Add an email address to send an email",
+      "addLinkedInInfo": "Add a LinkedIn URL to send a LinkedIn message",
+      "addPhoneInfo": "Add a phone number to send a WhatsApp message",
+      "emailPlaceholder": "email@example.com",
+      "linkedInPlaceholder": "https://linkedin.com/in/...",
+      "phonePlaceholder": "+1 555 1234567",
+      "saveContactInfo": "Save",
+      "saveContactInfoSuccess": "Contact info saved",
+      "saveContactInfoFailed": "Failed to save contact info",
+      "customInstructions": "Custom Instructions (Optional)",
+      "customInstructionsPlaceholder": "E.g., \"Focus on their data migration project\" or \"Mention our Databricks expertise\"...",
+      "customInstructionsHint": "Add specific instructions to customize the generated message",
+      "draftLoaded": "Draft loaded",
+      "draftLoadedDesc": "Previous draft has been loaded"
+    }
+  },
+  "prospecting": {
+    "title": "Prospect Discovery",
+    "subtitle": "Find new prospects that match your profile and offering using AI-powered contextual search",
+    "loading": "Loading prospecting...",
+    "setup": {
+      "title": "Complete your profile for better results",
+      "createProfile": "Create Sales Profile",
+      "addCompany": "Add Company Profile"
+    },
+    "form": {
+      "title": "Search Criteria",
+      "description": "Describe who you're looking for. Our AI will find matching prospects.",
+      "region": "Region or Country",
+      "regionPlaceholder": "e.g., Netherlands, DACH, Benelux",
+      "sector": "Sector or Domain",
+      "sectorPlaceholder": "e.g., logistics, manufacturing, professional services",
+      "companySize": "Company Size",
+      "companySizePlaceholder": "e.g., mid-sized, enterprise, SMB",
+      "proposition": "What do we sell?",
+      "propositionPlaceholder": "Describe your offering in one sentence...",
+      "targetRole": "For whom is this relevant?",
+      "targetRolePlaceholder": "e.g., CFO, CTO, Supply Chain Director",
+      "painPoint": "Where is pain or urgency?",
+      "painPointPlaceholder": "What challenges are they facing?",
+      "referenceCustomers": "Reference Customers",
+      "referenceCustomersPlaceholder": "e.g., Bol.com, Coolblue, Picnic",
+      "referenceCustomersHelp": "Enter companies that are 100% fit. We'll find similar companies based on shared signals and situations.",
+      "optional": "Optional",
+      "maxResults": "Max results",
+      "searchButton": "Find Prospects",
+      "searching": "Searching..."
+    },
+    "history": {
+      "title": "Recent Searches",
+      "results": "results",
+      "delete": "Delete",
+      "deleteConfirmTitle": "Delete Search?",
+      "deleteConfirmDescription": "This will permanently delete this search and its results. This action cannot be undone.",
+      "deleteCancel": "Cancel",
+      "deleteConfirm": "Delete",
+      "deleteSuccess": "Search deleted",
+      "deleteSuccessDesc": "The search has been removed.",
+      "deleteFailed": "Failed to delete search"
+    },
+    "searching": {
+      "title": "Discovering Prospects",
+      "description": "Analyzing your criteria and searching for matching companies...",
+      "step1": "Generating semantic search queries..."
+    },
+    "results": {
+      "found": "Found {count} potential prospects",
+      "time": "Completed in {seconds}s",
+      "showQueries": "Show search queries used",
+      "fitScore": "Fit",
+      "imported": "Imported",
+      "import": "Import",
+      "research": "Research",
+      "reject": "Not relevant",
+      "view": "View",
+      "viewSource": "View source",
+      "scoreBreakdown": "Show score breakdown",
+      "propFit": "Proposition",
+      "sellerFit": "Seller",
+      "intent": "Intent",
+      "recency": "Recency",
+      "noResults": "No prospects found",
+      "noResultsDesc": "Try broadening your search criteria or adjusting the region/sector.",
+      "referenceContext": "Based on your reference customers:"
+    },
+    "empty": {
+      "title": "Contextual Prospect Discovery",
+      "description": "Use AI to find companies that match your seller profile and offering. This is not a database search - it's intelligent discovery based on public signals.",
+      "howItWorks": "How it works:",
+      "step1": "Enter your search criteria (region, sector, offering)",
+      "step2": "AI generates semantic queries and searches for signals",
+      "step3": "Review scored prospects and import the best fits"
+    },
+    "errors": {
+      "missingFields": "Missing required fields",
+      "missingFieldsDesc": "Please enter at least a sector or proposition to search."
+    },
+    "toast": {
+      "searchComplete": "Search completed",
+      "searchCompleteDesc": "Found {count} potential prospects",
+      "searchFailed": "Search failed",
+      "searchFailedDesc": "Failed to search for prospects. Please try again.",
+      "imported": "Prospect imported",
+      "importedDesc": "The prospect has been added to your list.",
+      "importFailed": "Import failed",
+      "rejected": "Prospect rejected",
+      "rejectedDesc": "The prospect has been removed from results.",
+      "rejectFailed": "Reject failed"
+    }
+  },
+  "legal": {
+    "privacy": {
+      "title": "Privacy Policy",
+      "lastUpdated": "Last updated",
+      "lastUpdatedDate": "December 23, 2025",
+      "intro": {
+        "title": "Introduction",
+        "text": "DealMotion B.V. (\"we\", \"us\", or \"our\") respects your privacy and is committed to protecting your personal data. This privacy policy explains how we collect, use, and safeguard your information when you use our AI-powered sales enablement platform."
+      },
+      "controller": {
+        "title": "Data Controller",
+        "company": "DealMotion B.V.",
+        "address": "Amsterdam, The Netherlands",
+        "country": "The Netherlands",
+        "email": "Email"
+      },
+      "dataCollected": {
+        "title": "Personal Data We Collect",
+        "intro": "We collect the following categories of personal data:",
+        "account": {
+          "title": "Account Information",
+          "item1": "Full name and business email address",
+          "item2": "Password (encrypted)",
+          "item3": "Profile information (role, experience, company details)"
+        },
+        "content": {
+          "title": "Content You Create",
+          "item1": "Prospect and contact information you enter",
+          "item2": "Research notes, meeting preparations, and follow-up content",
+          "item3": "Uploaded documents to your knowledge base",
+          "item4": "Meeting recordings and transcripts (when using AI Notetaker)"
+        },
+        "technical": {
+          "title": "Technical Data",
+          "item1": "IP address and browser type",
+          "item2": "Device information and session data",
+          "item3": "Usage analytics (features used, timing)"
+        }
+      },
+      "purposes": {
+        "title": "How We Use Your Data",
+        "item1": "Provide and improve our AI-powered sales enablement services",
+        "item2": "Generate personalized research, preparation, and follow-up content",
+        "item3": "Process payments and manage your subscription",
+        "item4": "Send transactional emails (account updates, service notifications)",
+        "item5": "Ensure security and prevent fraud"
+      },
+      "legalBasis": {
+        "title": "Legal Basis for Processing",
+        "contract": "Contract performance",
+        "contractDesc": "Processing necessary to provide the service you subscribed to",
+        "consent": "Consent",
+        "consentDesc": "For optional features like calendar integration",
+        "legitimate": "Legitimate interest",
+        "legitimateDesc": "For analytics and service improvement",
+        "legal": "Legal obligation",
+        "legalDesc": "For tax and accounting records"
+      },
+      "retention": {
+        "title": "Data Retention",
+        "intro": "We retain your data according to the following principles:",
+        "account": "Account data: Retained while your account is active, deleted within 30 days of account deletion",
+        "content": "Content data: Deleted immediately upon account deletion",
+        "billing": "Billing records: Anonymized and retained for 7 years for tax compliance",
+        "logs": "Technical logs: Automatically deleted after 90 days"
+      },
+      "rights": {
+        "title": "Your Rights Under GDPR",
+        "intro": "As an EU resident, you have the following rights:",
+        "access": "Right of Access",
+        "accessDesc": "Request a copy of your personal data",
+        "rectification": "Right to Rectification",
+        "rectificationDesc": "Correct inaccurate personal data",
+        "erasure": "Right to Erasure",
+        "erasureDesc": "Request deletion of your personal data",
+        "portability": "Right to Data Portability",
+        "portabilityDesc": "Receive your data in a machine-readable format",
+        "objection": "Right to Object",
+        "objectionDesc": "Object to processing based on legitimate interest",
+        "withdraw": "Right to Withdraw Consent",
+        "withdrawDesc": "Withdraw consent where processing is based on consent",
+        "howTo": "You can exercise most of these rights directly from your account settings (Settings → Privacy & Data). For other requests, contact us at privacy@dealmotion.ai."
+      },
+      "transfers": {
+        "title": "International Data Transfers",
+        "intro": "Some of our service providers are located outside the EU. We only use providers that:",
+        "safeguards": "Have certified under the EU-US Data Privacy Framework (DPF), have signed Standard Contractual Clauses (SCCs), or are located in countries with an EU adequacy decision."
+      },
+      "subprocessors": {
+        "title": "Subprocessors",
+        "intro": "We use the following third-party service providers:",
+        "name": "Service",
+        "purpose": "Purpose",
+        "location": "Location",
+        "supabase": "Database and authentication",
+        "vercel": "Frontend hosting",
+        "railway": "Backend hosting",
+        "stripe": "Payment processing",
+        "anthropic": "AI content generation (research, prep, follow-up)",
+        "google": "AI research assistance",
+        "pinecone": "Knowledge base vector storage",
+        "deepgram": "Audio transcription",
+        "inngest": "Background job processing",
+        "sentry": "Error monitoring",
+        "dpfNote": "DPF = EU-US Data Privacy Framework certified"
+      },
+      "security": {
+        "title": "Security Measures",
+        "intro": "We implement appropriate technical and organizational measures:",
+        "encryption": "Encryption of data in transit (TLS) and at rest (AES-256)",
+        "access": "Role-based access control with principle of least privilege",
+        "monitoring": "Security monitoring and logging (without PII)",
+        "testing": "Regular security reviews and updates"
+      },
+      "cookies": {
+        "title": "Cookies",
+        "intro": "We use only essential cookies:",
+        "essential": "Essential cookies",
+        "essentialDesc": "Required for authentication and session management",
+        "preferences": "Preference cookies",
+        "preferencesDesc": "Store your language preference",
+        "noTracking": "We do not use tracking cookies or third-party advertising cookies."
+      },
+      "complaints": {
+        "title": "Complaints",
+        "intro": "If you believe we have not handled your personal data properly, you can lodge a complaint with your local data protection authority:",
+        "authority": "Dutch Data Protection Authority",
+        "authorityName": "Autoriteit Persoonsgegevens",
+        "authorityWebsite": "autoriteitpersoonsgegevens.nl"
+      },
+      "changes": {
+        "title": "Changes to This Policy",
+        "text": "We may update this privacy policy from time to time. We will notify you of significant changes via email or in-app notification. Continued use of the service after changes constitutes acceptance of the updated policy."
+      },
+      "contact": {
+        "title": "Contact Us",
+        "text": "For privacy-related questions or to exercise your rights, contact us at:"
+      },
+      "seeAlso": {
+        "terms": "Terms & Conditions"
+      }
+    },
+    "terms": {
+      "title": "Terms & Conditions",
+      "lastUpdated": "Last updated",
+      "lastUpdatedDate": "December 23, 2025",
+      "intro": {
+        "title": "Introduction",
+        "text": "These Terms & Conditions (\"Terms\") govern your use of DealMotion, an AI-powered B2B sales enablement platform operated by DealMotion B.V. By using our service, you agree to these Terms."
+      },
+      "definitions": {
+        "title": "Definitions",
+        "service": "Service",
+        "serviceDesc": "The DealMotion platform, including web application, APIs, and related services",
+        "user": "User",
+        "userDesc": "Any individual or entity that registers for and uses the Service",
+        "content": "User Content",
+        "contentDesc": "All data, text, files, and other materials you upload or create in the Service",
+        "subscription": "Subscription",
+        "subscriptionDesc": "Your paid or free plan for accessing the Service"
+      },
+      "service": {
+        "title": "Service Description",
+        "intro": "DealMotion is an AI-powered sales enablement platform that provides:",
+        "feature1": "AI-generated prospect research and intelligence",
+        "feature2": "Meeting preparation briefs",
+        "feature3": "Post-meeting follow-up with action items and email drafts",
+        "feature4": "Meeting recording and transcription (AI Notetaker)",
+        "feature5": "Knowledge base for document storage and RAG-enhanced context"
+      },
+      "account": {
+        "title": "Account Registration",
+        "item1": "You must provide accurate and complete registration information",
+        "item2": "You are responsible for maintaining the security of your account credentials",
+        "item3": "You must notify us immediately of any unauthorized access",
+        "item4": "One person or entity per account - sharing accounts is not permitted"
+      },
+      "responsibilities": {
+        "title": "User Responsibilities",
+        "intro": "You agree to:",
+        "item1": "Use the Service only for lawful business purposes",
+        "item2": "Ensure you have the right to input any data about third parties (prospects, contacts)",
+        "item3": "Not misrepresent AI-generated content as human-written when legally required",
+        "item4": "Maintain appropriate data protection measures for personal data you process"
+      },
+      "acceptableUse": {
+        "title": "Acceptable Use",
+        "intro": "You may not use the Service to:",
+        "prohibited1": "Violate any applicable laws or regulations",
+        "prohibited2": "Infringe on the intellectual property rights of others",
+        "prohibited3": "Harass, spam, or send unsolicited communications",
+        "prohibited4": "Attempt to reverse engineer, scrape, or access the Service in unauthorized ways",
+        "prohibited5": "Use the AI features to generate harmful, discriminatory, or illegal content"
+      },
+      "payment": {
+        "title": "Subscription & Payment",
+        "item1": "Paid plans are billed monthly or annually in advance",
+        "item2": "Prices are in Euros (€) and exclude applicable taxes",
+        "item3": "You can cancel your subscription at any time; access continues until the end of the paid period",
+        "item4": "No refunds for partial subscription periods, except as required by law",
+        "item5": "We may change prices with 30 days' notice; changes apply at your next renewal"
+      },
+      "data": {
+        "title": "Your Data",
+        "intro": "Regarding data you store in the Service:",
+        "item1": "You retain ownership of all User Content you create or upload",
+        "item2": "You grant us a license to process your data to provide the Service",
+        "item3": "We will not use your data to train AI models (other than your personal context within your account)"
+      },
+      "ip": {
+        "title": "Intellectual Property",
+        "item1": "DealMotion owns all rights to the Service, including software, design, and documentation",
+        "item2": "AI-generated content (research, briefs, emails) may be used freely by you for your business purposes",
+        "item3": "You may not copy, modify, or redistribute the Service or its components"
+      },
+      "ai": {
+        "title": "AI-Generated Content",
+        "intro": "The Service uses artificial intelligence to generate content. You acknowledge that:",
+        "item1": "AI-generated content may contain inaccuracies and should be reviewed before use",
+        "item2": "You are responsible for verifying facts and claims in AI-generated content",
+        "item3": "AI suggestions are assistance tools, not professional advice (legal, financial, etc.)"
+      },
+      "liability": {
+        "title": "Limitation of Liability",
+        "intro": "To the maximum extent permitted by law:",
+        "item1": "The Service is provided \"as is\" without warranties of any kind",
+        "item2": "We are not liable for indirect, incidental, or consequential damages",
+        "item3": "Our total liability is limited to the amount you paid in the 12 months prior to the claim"
+      },
+      "termination": {
+        "title": "Termination",
+        "item1": "You may delete your account at any time via Settings → Privacy & Data",
+        "item2": "We may terminate your account for violation of these Terms with prior notice",
+        "item3": "Upon termination, your data will be deleted according to our Privacy Policy",
+        "item4": "Sections on IP, Liability, and Governing Law survive termination"
+      },
+      "law": {
+        "title": "Governing Law",
+        "text": "These Terms are governed by the laws of The Netherlands.",
+        "disputes": "Any disputes will be submitted to the competent court in Amsterdam, The Netherlands."
+      },
+      "changes": {
+        "title": "Changes to Terms",
+        "text": "We may update these Terms with 30 days' notice for material changes. Continued use after the effective date constitutes acceptance."
+      },
+      "contact": {
+        "title": "Contact",
+        "text": "For questions about these Terms, contact us at:"
+      },
+      "seeAlso": {
+        "privacy": "Privacy Policy"
+      }
+    }
+  },
+  "affiliate": {
+    "referredBy": "Referred by {name}",
+    "referredByPartner": "You were referred by a DealMotion partner",
+    "errorLoading": "Failed to load affiliate data",
+    "errorApplying": "Failed to apply. Please try again.",
+    "errorConnect": "Failed to set up payments. Please try again.",
+    "joinProgram": {
+      "title": "Join the DealMotion Affiliate Program",
+      "subtitle": "Earn recurring commissions by referring sales professionals to DealMotion",
+      "benefit1Title": "15% Commission",
+      "benefit1Desc": "Earn 15% on every subscription payment from your referrals",
+      "benefit2Title": "Automatic Payouts",
+      "benefit2Desc": "Monthly payouts via Stripe directly to your bank account",
+      "benefit3Title": "30-Day Attribution",
+      "benefit3Desc": "Get credited for signups within 30 days of the click",
+      "benefit4Title": "Lifetime Revenue",
+      "benefit4Desc": "Keep earning as long as your referrals stay subscribed",
+      "applyButton": "Become an Affiliate"
+    },
+    "dashboard": {
+      "title": "Affiliate Dashboard",
+      "subtitle": "Track your referrals and earnings",
+      "referralLink": "Your Referral Link",
+      "referralLinkDesc": "Share this link to earn commissions on new signups",
+      "commissionRates": {
+        "title": "Your Commission Rates",
+        "subscription": "Subscriptions",
+        "subscriptionDesc": "Pro & Pro+ monthly/yearly",
+        "credits": "Credit Packs",
+        "creditsDesc": "All credit pack purchases"
+      },
+      "stats": {
+        "clicks": "Total Clicks",
+        "signups": "Signups",
+        "conversions": "Conversions",
+        "totalEarned": "Total Earned"
+      },
+      "balance": {
+        "title": "Balance",
+        "available": "Available for payout",
+        "pending": "Pending (14-day hold)",
+        "paid": "Total paid out"
+      },
+      "payout": {
+        "title": "Payout Settings",
+        "desc": "Set up Stripe Connect to receive your payouts",
+        "enabled": "Payouts enabled",
+        "setupRequired": "Connect your bank account to receive payouts",
+        "setupButton": "Set Up Payouts",
+        "viewDashboard": "View Stripe Dashboard"
+      },
+      "tabs": {
+        "referrals": "Referrals",
+        "commissions": "Commissions",
+        "payouts": "Payouts"
+      },
+      "referrals": {
+        "title": "Recent Referrals",
+        "empty": "No referrals yet. Share your link to get started!",
+        "converted": "Converted",
+        "pending": "Pending"
+      },
+      "commissions": {
+        "title": "Recent Commissions",
+        "empty": "No commissions yet. Commissions appear when referrals make payments.",
+        "subscription": "Subscription",
+        "creditPack": "Credit Pack"
+      },
+      "payouts": {
+        "title": "Payout History",
+        "empty": "No payouts yet. Payouts are processed monthly.",
+        "commissions": "commissions"
+      }
+    }
+  },
+  "luna": {
+    "title": "Luna",
+    "subtitle": "Your AI Sales Assistant",
+    "greeting": {
+      "morning": "Good morning! Here's what needs your attention today.",
+      "afternoon": "Good afternoon! Let's keep things moving.",
+      "evening": "Good evening! A few things to review before you wrap up.",
+      "allDone": "You're all caught up! Great work."
+    },
+    "noMessages": "No messages",
+    "allCaughtUp": "You're all caught up!",
+    "pending": "pending",
+    "urgent": "Urgent",
+    "executing": "Processing...",
+    "later": "Later",
+    "ctaLabel": "Do it",
+    "snoozeLaterToday": "+4 hours",
+    "snoozeTomorrow": "Tomorrow 9 AM",
+    "snoozeNextWorkDay": "Next working day",
+    "snoozeAfterMeeting": "After meeting",
+    "viewActions": "View all actions",
+    "viewAllActions": "View all {count} actions",
+    "openLunaHome": "Open Luna Home",
+    "home": {
+      "title": "Luna Home",
+      "todayProgress": "Today's Progress",
+      "upcomingMeetings": "Upcoming Meetings",
+      "noMeetings": "No meetings scheduled for today",
+      "tipOfDay": "Tip of the Day",
+      "actions": "Actions",
+      "actionsEmpty": "No actions right now. Luna will create suggestions when there's something to do."
+    },
+    "stats": {
+      "research": "Research",
+      "preps": "Preparations",
+      "followups": "Follow-ups",
+      "outreach": "Outreach"
+    },
+    "settings": {
+      "title": "Luna Settings",
+      "enabled": "Enable Luna",
+      "enabledDesc": "Luna will proactively suggest actions",
+      "showWidget": "Show Widget",
+      "showWidgetDesc": "Display floating Luna widget",
+      "showTips": "Show Contextual Tips",
+      "showTipsDesc": "Display helpful tips throughout the app",
+      "prepReminder": "Prep Reminder Hours",
+      "prepReminderDesc": "Hours before meeting to remind for prep",
+      "outreachCooldown": "Outreach Cooldown Days",
+      "outreachCooldownDesc": "Days between outreach to same contact",
+      "excludedKeywords": "Excluded Meeting Keywords",
+      "excludedKeywordsDesc": "Meetings with these words won't trigger prep suggestions"
+    },
+    "widget": {
+      "title": "Luna"
+    },
+    "messages": {
+      "startResearch": "Start Research",
+      "reviewResearch": "Review Research",
+      "prepareOutreach": "Prepare Outreach",
+      "firstTouchSent": "First Touch Sent",
+      "suggestMeeting": "Schedule Meeting",
+      "createPrep": "Create Preparation",
+      "prepReady": "Prep Ready",
+      "reviewSummary": "Review Summary",
+      "reviewReport": "Review Report",
+      "sendEmail": "Send Follow-up Email",
+      "createActions": "Create Action Items",
+      "updateCrm": "Update CRM Notes"
+    },
+    "copied": "Copied!",
+    "outreachTitle": "Create Outreach",
+    "outreachDescription": "Choose a channel and create a personalized outreach message",
+    "selectChannel": "Select Channel",
+    "messageContent": "Message Content",
+    "generate": "Generate",
+    "generateSuccess": "Message generated",
+    "generateFailed": "Failed to generate message",
+    "subject": "Subject",
+    "subjectPlaceholder": "Enter email subject...",
+    "message": "Message",
+    "messagePlaceholder": "Write your message here...",
+    "copy": "Copy",
+    "saveDraft": "Save Draft",
+    "markAsSent": "Mark as Sent",
+    "skip": "Skip",
+    "saveDraftSuccess": "Draft saved",
+    "saveDraftFailed": "Failed to save draft",
+    "markSentSuccess": "Marked as sent",
+    "markSentFailed": "Failed to mark as sent",
+    "missingContactInfo": "Missing Contact Information",
+    "addEmailInfo": "Add an email address to send an email",
+    "addLinkedInInfo": "Add a LinkedIn URL to send a LinkedIn message",
+    "addPhoneInfo": "Add a phone number to send a WhatsApp message",
+    "emailPlaceholder": "email@example.com",
+    "linkedInPlaceholder": "https://linkedin.com/in/...",
+    "phonePlaceholder": "+1 555 1234567",
+    "saveContactInfo": "Save",
+    "saveContactInfoSuccess": "Contact info saved",
+    "saveContactInfoFailed": "Failed to save contact info",
+    "customInstructions": "Custom Instructions (Optional)",
+    "customInstructionsPlaceholder": "E.g., \"Focus on their data migration project\" or \"Mention our Databricks expertise\"...",
+    "customInstructionsHint": "Add specific instructions to customize the generated message",
+    "draftLoaded": "Draft loaded",
+    "draftLoadedDesc": "Previous draft has been loaded",
+    "dontKnow": "I don't know"
+  },
+  "lunaHome": {
+    "inbox": "Actions",
+    "pending": "pending",
+    "quickStart": "Quick Start",
+    "todaysMeetings": "Today's Meetings",
+    "noMeetingsToday": "No meetings scheduled for today",
+    "connectYourAgenda": "Connect your calendar to see your meetings here",
+    "connectAgenda": "Connect Calendar",
+    "last7Days": "Last 7 Days",
+    "today": "Today",
+    "completed": "completed",
+    "tipOfDay": "Tip of the Day",
+    "settings": "Luna Settings",
+    "settingsTitle": "Luna Settings",
+    "settingsDescription": "Configure how Luna helps you with your sales workflow.",
+    "tabs": {
+      "active": "Active",
+      "new": "New",
+      "inProgress": "In Progress",
+      "history": "History"
+    },
+    "quickActions": {
+      "research": "Research",
+      "prep": "Prep",
+      "record": "Record"
+    },
+    "stats": {
+      "research": "Research",
+      "preps": "Preps",
+      "followups": "Follow-ups",
+      "outreach": "Outreach"
+    },
+    "noActiveActions": "No active actions. You're all caught up!",
+    "noNewActions": "No new actions right now.",
+    "noInProgressActions": "No actions in progress.",
+    "noHistoryActions": "No completed actions yet."
   }
 }

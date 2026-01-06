@@ -121,12 +121,14 @@
     }
   },
   "navigation": {
+    "home": "Autopilot",
     "dashboard": "Dashboard",
     "prospects": "Prospects",
     "research": "Research",
     "preparation": "Voorbereiding",
     "meetings": "Meetings",
     "followup": "Meeting Analyse",
+    "prospecting": "Prospect Ontdekking",
     "recordings": "Opnames",
     "profile": "Profiel",
     "companyProfile": "Bedrijfsprofiel",
@@ -1107,6 +1109,11 @@
     "next": "Volgende",
     "back": "Terug",
     "finish": "Afronden",
+    "errors": {
+      "startFailed": "Interview starten mislukt. Probeer het opnieuw.",
+      "submitFailed": "Antwoord versturen mislukt. Probeer het opnieuw.",
+      "completeFailed": "Interview afronden mislukt. Probeer het opnieuw."
+    },
     "toast": {
       "startError": "Fout bij starten",
       "startErrorDesc": "Kon interview niet starten. Probeer het opnieuw.",
@@ -2906,6 +2913,47 @@
     }
   },
   "autopilot": {
+    "title": "Autopilot",
+    "inbox": {
+      "title": "Autopilot Inbox",
+      "tabs": {
+        "active": "Actief",
+        "proposed": "Nieuw",
+        "executing": "In Uitvoering",
+        "completed": "Geschiedenis"
+      },
+      "empty": "Geen voorstellen op dit moment. Ik scan naar kansen.",
+      "pending": "wachtend",
+      "waiting": "wachtend"
+    },
+    "proposal": {
+      "why": "Waarom?",
+      "accept": "Accepteren",
+      "decline": "Afwijzen",
+      "snooze": "Snooze",
+      "retry": "Opnieuw",
+      "viewDetails": "Bekijk details",
+      "executing": "Bezig...",
+      "failed": "Mislukt",
+      "completed": "Voltooid"
+    },
+    "snooze": {
+      "oneHour": "1 uur",
+      "thisEvening": "Vanavond",
+      "tomorrow": "Morgen",
+      "afterMeeting": "Na meeting",
+      "nextWeek": "Volgende week",
+      "inThreeDays": "Over 3 dagen"
+    },
+    "actions": {
+      "addContacts": "Contacten toevoegen",
+      "createPrep": "Voorbereiding maken",
+      "planMeeting": "Meeting plannen",
+      "uploadRecording": "Opname uploaden",
+      "generateActions": "Acties genereren",
+      "completeActions": "Acties afronden",
+      "startResearch": "Research starten"
+    },
     "meetingRequest": {
       "contacts": "Contactpersonen",
       "noContacts": "Geen contactpersonen gevonden. Voeg eerst een contact toe.",
@@ -2927,7 +2975,154 @@
       "emailCopied": "Email gekopieerd",
       "templateCopied": "Email template gekopieerd",
       "pasteInEmail": "Plak in je email client",
-      "cancel": "Annuleren"
+      "cancel": "Annuleren",
+      "regenerating": "AI email genereren..."
+    },
+    "luna": {
+      "greeting": "Hey! Ik ben Luna, je AI sales assistent.",
+      "scanning": "Ik scan je agenda en prospects voor kansen.",
+      "noProposals": "Geen actieve voorstellen op dit moment.",
+      "checkBack": "Kom snel terug - ik zoek altijd naar manieren om te helpen.",
+      "pending": "wachtend",
+      "urgent": "Urgent",
+      "executing": "Bezig",
+      "later": "Later",
+      "ctaLabel": "Doen",
+      "viewActions": "Bekijk alle acties",
+      "snoozeLaterToday": "Later vandaag",
+      "snoozeTomorrow": "Morgenochtend",
+      "snoozeNextWorkDay": "Volgende werkdag",
+      "snoozeAfterMeeting": "Na deze meeting",
+      "noMessages": "Geen berichten",
+      "copied": "Gekopieerd!",
+      "outreachTitle": "Maak Outreach",
+      "outreachDescription": "Kies een kanaal en maak een gepersonaliseerd outreach bericht",
+      "selectChannel": "Kies Kanaal",
+      "messageContent": "Berichtinhoud",
+      "generate": "Genereer",
+      "generateSuccess": "Bericht gegenereerd",
+      "generateFailed": "Bericht genereren mislukt",
+      "subject": "Onderwerp",
+      "subjectPlaceholder": "Voer email onderwerp in...",
+      "message": "Bericht",
+      "messagePlaceholder": "Schrijf je bericht hier...",
+      "copy": "Kopieer",
+      "saveDraft": "Bewaar Concept",
+      "markAsSent": "Markeer als Verstuurd",
+      "skip": "Overslaan",
+      "saveDraftSuccess": "Concept opgeslagen",
+      "saveDraftFailed": "Kon concept niet opslaan",
+      "markSentSuccess": "Als verstuurd gemarkeerd",
+      "markSentFailed": "Kon niet als verstuurd markeren",
+      "missingContactInfo": "Ontbrekende Contactgegevens",
+      "addEmailInfo": "Voeg een emailadres toe om een email te kunnen versturen",
+      "addLinkedInInfo": "Voeg een LinkedIn URL toe om een LinkedIn bericht te kunnen versturen",
+      "addPhoneInfo": "Voeg een telefoonnummer toe om een WhatsApp bericht te kunnen versturen",
+      "emailPlaceholder": "email@voorbeeld.nl",
+      "linkedInPlaceholder": "https://linkedin.com/in/...",
+      "phonePlaceholder": "+31 6 12345678",
+      "saveContactInfo": "Opslaan",
+      "saveContactInfoSuccess": "Contactgegevens opgeslagen",
+      "saveContactInfoFailed": "Kon contactgegevens niet opslaan",
+      "customInstructions": "Aangepaste Instructies (Optioneel)",
+      "customInstructionsPlaceholder": "Bijv. \"Focus op hun data migratie project\" of \"Vermeld onze Databricks expertise\"...",
+      "customInstructionsHint": "Voeg specifieke instructies toe om het gegenereerde bericht aan te passen",
+      "draftLoaded": "Concept geladen",
+      "draftLoadedDesc": "Vorige concept is geladen"
+    }
+  },
+  "prospecting": {
+    "title": "Prospect Ontdekking",
+    "subtitle": "Vind nieuwe prospects die passen bij je profiel en aanbod met AI-gestuurde contextuele zoekfunctie",
+    "loading": "Prospecting laden...",
+    "setup": {
+      "title": "Maak je profiel compleet voor betere resultaten",
+      "createProfile": "Maak Sales Profiel",
+      "addCompany": "Voeg Bedrijfsprofiel Toe"
+    },
+    "form": {
+      "title": "Zoekcriteria",
+      "description": "Beschrijf wie je zoekt. Onze AI vindt matchende prospects.",
+      "region": "Regio of Land",
+      "regionPlaceholder": "bijv. Nederland, DACH, Benelux",
+      "sector": "Sector of Domein",
+      "sectorPlaceholder": "bijv. logistiek, maakindustrie, zakelijke dienstverlening",
+      "companySize": "Bedrijfsgrootte",
+      "companySizePlaceholder": "bijv. middelgroot, enterprise, MKB",
+      "proposition": "Wat verkopen we?",
+      "propositionPlaceholder": "Beschrijf je aanbod in één zin...",
+      "targetRole": "Voor wie is dit relevant?",
+      "targetRolePlaceholder": "bijv. CFO, CTO, Supply Chain Director",
+      "painPoint": "Waar zit de pijn of urgentie?",
+      "painPointPlaceholder": "Welke uitdagingen hebben ze?",
+      "referenceCustomers": "Referentieklanten",
+      "referenceCustomersPlaceholder": "bijv. Bol.com, Coolblue, Picnic",
+      "referenceCustomersHelp": "Voer bedrijven in die 100% passen. We vinden vergelijkbare bedrijven op basis van gedeelde signalen en situaties.",
+      "optional": "Optioneel",
+      "maxResults": "Max resultaten",
+      "searchButton": "Vind Prospects",
+      "searching": "Zoeken..."
+    },
+    "history": {
+      "title": "Recente Zoekopdrachten",
+      "results": "resultaten",
+      "delete": "Verwijderen",
+      "deleteConfirmTitle": "Zoekopdracht Verwijderen?",
+      "deleteConfirmDescription": "Dit verwijdert deze zoekopdracht en resultaten permanent. Deze actie kan niet ongedaan worden gemaakt.",
+      "deleteCancel": "Annuleren",
+      "deleteConfirm": "Verwijderen",
+      "deleteSuccess": "Zoekopdracht verwijderd",
+      "deleteSuccessDesc": "De zoekopdracht is verwijderd.",
+      "deleteFailed": "Verwijderen mislukt"
+    },
+    "searching": {
+      "title": "Prospects Ontdekken",
+      "description": "Je criteria analyseren en zoeken naar matchende bedrijven...",
+      "step1": "Semantische zoekopdrachten genereren..."
+    },
+    "results": {
+      "found": "{count} potentiële prospects gevonden",
+      "time": "Voltooid in {seconds}s",
+      "showQueries": "Toon gebruikte zoekopdrachten",
+      "fitScore": "Fit",
+      "imported": "Geïmporteerd",
+      "import": "Importeren",
+      "research": "Research",
+      "reject": "Niet relevant",
+      "view": "Bekijk",
+      "viewSource": "Bekijk bron",
+      "scoreBreakdown": "Toon score breakdown",
+      "propFit": "Propositie",
+      "sellerFit": "Verkoper",
+      "intent": "Intent",
+      "recency": "Recentheid",
+      "noResults": "Geen prospects gevonden",
+      "noResultsDesc": "Probeer je zoekcriteria te verbreden of de regio/sector aan te passen.",
+      "referenceContext": "Gebaseerd op je referentieklanten:"
+    },
+    "empty": {
+      "title": "Contextuele Prospect Ontdekking",
+      "description": "Gebruik AI om bedrijven te vinden die passen bij je verkoopprofiel en aanbod. Dit is geen database-zoekopdracht - het is intelligente ontdekking op basis van publieke signalen.",
+      "howItWorks": "Hoe het werkt:",
+      "step1": "Voer je zoekcriteria in (regio, sector, aanbod)",
+      "step2": "AI genereert semantische queries en zoekt naar signalen",
+      "step3": "Bekijk gescoorde prospects en importeer de beste matches"
+    },
+    "errors": {
+      "missingFields": "Verplichte velden ontbreken",
+      "missingFieldsDesc": "Voer minimaal een sector of propositie in om te zoeken."
+    },
+    "toast": {
+      "searchComplete": "Zoekopdracht voltooid",
+      "searchCompleteDesc": "{count} potentiële prospects gevonden",
+      "searchFailed": "Zoeken mislukt",
+      "searchFailedDesc": "Kon niet zoeken naar prospects. Probeer het opnieuw.",
+      "imported": "Prospect geïmporteerd",
+      "importedDesc": "De prospect is toegevoegd aan je lijst.",
+      "importFailed": "Importeren mislukt",
+      "rejected": "Prospect afgewezen",
+      "rejectedDesc": "De prospect is verwijderd uit de resultaten.",
+      "rejectFailed": "Afwijzen mislukt"
     }
   },
   "legal": {

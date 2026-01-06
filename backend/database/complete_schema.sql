@@ -811,10 +811,10 @@ CREATE TABLE IF NOT EXISTS subscription_plans (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Insert v4 plans (Pricing v4 - December 2025 - High-End Model)
--- Free: Test & Experience
--- Pro: Everything EXCEPT AI Notetaker (€79.95 regular, €49.95 launch)
--- Pro+: Everything INCLUDING AI Notetaker (€99.95 regular, €69.95 launch)
+-- Insert v4 plans (Pricing v4 - January 2026 - Early Bird Pricing)
+-- Free: Test & Experience (trial)
+-- Pro: €99 regular → €75 early bird, AI Notetaker INCLUDED
+-- Pro+: €149 regular → €125 early bird, AI Notetaker INCLUDED
 -- Enterprise: Teams with CRM integrations
 INSERT INTO subscription_plans (id, name, description, price_cents, original_price_cents, billing_interval, features, display_order, is_active) VALUES
 ('free', 'Free', 'Test & experience DealMotion', 0, NULL, NULL, '{
@@ -827,27 +827,27 @@ INSERT INTO subscription_plans (id, name, description, price_cents, original_pri
   "team_sharing": false,
   "priority_support": false
 }'::jsonb, 1, true),
-('pro_monthly', 'Pro', 'Everything for the modern sales professional', 4995, 7995, 'month', '{
+('pro_monthly', 'Pro', 'Stop wasting hours on research & prep', 7500, 9900, 'month', '{
   "flow_limit": -1,
   "user_limit": 1,
-  "ai_notetaker": false,
+  "ai_notetaker": true,
   "knowledge_base": true,
   "transcription": true,
   "crm_integration": false,
   "team_sharing": false,
   "priority_support": true
 }'::jsonb, 2, true),
-('pro_yearly', 'Pro', 'Everything for the modern sales professional', 50900, 81500, 'year', '{
+('pro_yearly', 'Pro', 'Stop wasting hours on research & prep', 76500, 100800, 'year', '{
   "flow_limit": -1,
   "user_limit": 1,
-  "ai_notetaker": false,
+  "ai_notetaker": true,
   "knowledge_base": true,
   "transcription": true,
   "crm_integration": false,
   "team_sharing": false,
   "priority_support": true
 }'::jsonb, 3, true),
-('pro_plus_monthly', 'Pro+', 'Complete package with AI Notetaker', 6995, 9995, 'month', '{
+('pro_plus_monthly', 'Pro+', 'Never take notes again — AI does it for you', 12500, 14900, 'month', '{
   "flow_limit": -1,
   "user_limit": 1,
   "ai_notetaker": true,
@@ -857,7 +857,7 @@ INSERT INTO subscription_plans (id, name, description, price_cents, original_pri
   "team_sharing": false,
   "priority_support": true
 }'::jsonb, 4, true),
-('pro_plus_yearly', 'Pro+', 'Complete package with AI Notetaker', 71300, 101900, 'year', '{
+('pro_plus_yearly', 'Pro+', 'Never take notes again — AI does it for you', 127500, 152400, 'year', '{
   "flow_limit": -1,
   "user_limit": 1,
   "ai_notetaker": true,

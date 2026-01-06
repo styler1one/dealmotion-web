@@ -191,12 +191,16 @@ class DeleteUserRequest(BaseModel):
 
 
 # Available plans for admin to change
+# Pricing V4 (Jan 2026): Early Bird pricing
+# Pro: €99 regular → €75 early bird (2400 cents discount)
+# Pro+: €149 regular → €125 early bird (2400 cents discount)
+# Yearly: 15% discount
 AVAILABLE_PLANS = [
     {"id": "free", "name": "Free", "price_cents": 0},
-    {"id": "pro_monthly", "name": "Pro (Monthly)", "price_cents": 4995},
-    {"id": "pro_yearly", "name": "Pro (Yearly)", "price_cents": 50900},
-    {"id": "pro_plus_monthly", "name": "Pro+ (Monthly)", "price_cents": 6995},
-    {"id": "pro_plus_yearly", "name": "Pro+ (Yearly)", "price_cents": 71300},
+    {"id": "pro_monthly", "name": "Pro (Monthly)", "price_cents": 7500},          # €75 early bird (was €99)
+    {"id": "pro_yearly", "name": "Pro (Yearly)", "price_cents": 76500},           # €765/year (€63.75/mo with 15% off)
+    {"id": "pro_plus_monthly", "name": "Pro+ (Monthly)", "price_cents": 12500},   # €125 early bird (was €149)
+    {"id": "pro_plus_yearly", "name": "Pro+ (Yearly)", "price_cents": 127500},    # €1275/year (€106.25/mo with 15% off)
 ]
 
 
