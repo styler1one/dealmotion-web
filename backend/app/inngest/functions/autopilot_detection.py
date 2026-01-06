@@ -903,9 +903,10 @@ async def detect_incomplete_actions_fn(ctx, step):
         
         # Get followup actions that are incomplete
         # Group by followup_id to avoid multiple proposals for same followup
+        # Note: status values are 'pending', 'generating', 'completed', 'failed' (not 'in_progress')
         result = supabase.table("followup_actions") \
             .select("followup_id, organization_id, user_id, created_at") \
-            .in_("status", ["pending", "in_progress"]) \
+            .in_("status", ["pending", "generating"]) \
             .lt("created_at", three_days_ago.isoformat()) \
             .execute()
         

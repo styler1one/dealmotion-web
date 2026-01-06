@@ -206,17 +206,17 @@ async def sync_connect_status_fn(ctx, step):
     
     # Find affiliates with Connect accounts (sync function)
     def find_connected():
-        return supabase.table("affiliates").select(
+        response = supabase.table("affiliates").select(
             "id, affiliate_code, stripe_connect_account_id"
         ).not_.is_(
             "stripe_connect_account_id", "null"
         ).neq(
             "stripe_connect_status", "disabled"
         ).execute()
+        # Return only the data, not the full response object (for Inngest serialization)
+        return response.data or []
     
-    response = await step.run("find-connected-affiliates", find_connected)
-    
-    affiliates = response.data or []
+    affiliates = await step.run("find-connected-affiliates", find_connected)
     
     if not affiliates:
         logger.info("No Connect accounts to sync")
@@ -270,15 +270,15 @@ async def cleanup_clicks_fn(ctx, step):
     
     # Delete expired, non-converted clicks (sync function)
     def delete_expired():
-        return supabase.table("affiliate_clicks").delete().eq(
+        response = supabase.table("affiliate_clicks").delete().eq(
             "converted_to_signup", False
         ).lt(
             "expires_at", now.isoformat()
         ).execute()
+        # Return only the count, not the full response object (for Inngest serialization)
+        return len(response.data or [])
     
-    deleted = await step.run("delete-expired-clicks", delete_expired)
-    
-    deleted_count = len(deleted.data or [])
+    deleted_count = await step.run("delete-expired-clicks", delete_expired)
     
     logger.info(f"Click cleanup complete: {deleted_count} expired clicks deleted")
     
