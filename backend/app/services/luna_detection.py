@@ -81,6 +81,9 @@ class LunaDetectionEngine:
         
         messages: List[LunaMessageCreate] = []
         
+        # Setup checks (highest priority - should be done first)
+        messages.extend(await self._detect_setup_requirements(ctx))
+        
         # Prospecting Loop (P0)
         messages.extend(await self._detect_prospecting_loop(ctx))
         
@@ -161,6 +164,62 @@ class LunaDetectionEngine:
             pending_message_types=pending_types,
             completed_message_types=completed_by_entity
         )
+    
+    # =========================================================================
+    # SETUP REQUIREMENTS
+    # =========================================================================
+    
+    async def _detect_setup_requirements(
+        self,
+        ctx: DetectionContext
+    ) -> List[LunaMessageCreate]:
+        """Detect setup requirements (company profile, etc.)."""
+        messages = []
+        
+        # Check for company profile
+        messages.extend(await self._detect_missing_company_profile(ctx))
+        
+        return messages
+    
+    async def _detect_missing_company_profile(
+        self,
+        ctx: DetectionContext
+    ) -> List[LunaMessageCreate]:
+        """Detect if company profile is missing."""
+        dedupe_key = f"setup_company_profile_{ctx.organization_id}"
+        
+        # Skip if already pending
+        if dedupe_key in ctx.existing_dedupe_keys:
+            return []
+        
+        # Check if company profile exists
+        profile_result = self.supabase.table("company_profiles") \
+            .select("id") \
+            .eq("organization_id", ctx.organization_id) \
+            .limit(1) \
+            .execute()
+        
+        if profile_result.data:
+            # Company profile exists, no message needed
+            return []
+        
+        # Company profile missing - create message
+        return [LunaMessageCreate(
+            user_id=ctx.user_id,
+            organization_id=ctx.organization_id,
+            message_type=MessageType.PREPARE_OUTREACH,  # Reuse existing type, or we could add a new one
+            dedupe_key=dedupe_key,
+            title="Stel je Company Profile in",
+            description="Je company profile is nog niet ingesteld. Dit helpt Luna om betere, gepersonaliseerde berichten te genereren.",
+            luna_message="Je company profile is nog niet ingesteld. Dit helpt Luna om betere, gepersonaliseerde berichten te genereren. Wil je dit nu instellen?",
+            action_type=ActionType.NAVIGATE,
+            action_route="/settings?tab=company-profile",
+            action_data={},
+            priority=90,  # High priority for setup
+            priority_inputs={"setup_required": True},
+            expires_at=None,
+            retryable=False
+        )]
     
     # =========================================================================
     # PROSPECTING LOOP

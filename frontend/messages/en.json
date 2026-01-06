@@ -3557,6 +3557,8 @@
     "quickStart": "Quick Start",
     "todaysMeetings": "Today's Meetings",
     "noMeetingsToday": "No meetings scheduled for today",
+    "connectYourAgenda": "Connect your calendar to see your meetings here",
+    "connectAgenda": "Connect Calendar",
     "last7Days": "Last 7 Days",
     "today": "Today",
     "completed": "completed",

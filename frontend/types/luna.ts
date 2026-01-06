@@ -289,6 +289,7 @@ export interface LunaContextValue {
   tip: TipOfDay | null
   upcomingMeetings: UpcomingMeeting[]
   featureFlags: FeatureFlagsResponse | null
+  hasCalendarConnection: boolean | null
   
   // Actions
   refreshMessages: () => Promise<void>

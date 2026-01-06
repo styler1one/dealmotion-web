@@ -394,6 +394,40 @@ async def get_upcoming_meetings(
     return await service.get_upcoming_meetings(user_id, org_id, limit)
 
 
+@router.get("/calendar/connection-status")
+async def get_calendar_connection_status(
+    current_user: dict = Depends(get_current_user)
+):
+    """Check if user has a calendar connection."""
+    user_id = current_user["sub"]
+    supabase = get_supabase_service()
+    
+    # Get organization_id
+    org_result = supabase.table("organization_members") \
+        .select("organization_id") \
+        .eq("user_id", user_id) \
+        .limit(1) \
+        .execute()
+    
+    org_id = org_result.data[0]["organization_id"] if org_result.data else None
+    
+    if not org_id:
+        return {"has_connection": False}
+    
+    # Check for active calendar connections
+    connection_result = supabase.table("calendar_connections") \
+        .select("id") \
+        .eq("user_id", user_id) \
+        .eq("sync_enabled", True) \
+        .is_("needs_reauth", "null") \
+        .limit(1) \
+        .execute()
+    
+    has_connection = bool(connection_result.data)
+    
+    return {"has_connection": has_connection}
+
+
 # =============================================================================
 # OUTREACH
 # =============================================================================

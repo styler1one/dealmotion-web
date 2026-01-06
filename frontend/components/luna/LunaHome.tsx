@@ -12,6 +12,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -173,7 +174,8 @@ function QuickActions({ onOpenAINotetaker }: QuickActionsProps) {
 
 function TodaysMeetings() {
   const t = useTranslations('lunaHome')
-  const { upcomingMeetings, isLoading } = useLuna()
+  const { upcomingMeetings, isLoading, hasCalendarConnection } = useLuna()
+  const router = useRouter()
   
   if (isLoading) {
     return (
@@ -187,6 +189,36 @@ function TodaysMeetings() {
         <CardContent className="pt-0 space-y-2">
           <Skeleton className="h-12 w-full" />
           <Skeleton className="h-12 w-full" />
+        </CardContent>
+      </Card>
+    )
+  }
+  
+  // Show "connect your agenda" if no calendar connection
+  if (hasCalendarConnection === false) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-2">
+            <Calendar className="w-4 h-4" />
+            {t('todaysMeetings')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="text-center py-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+              {t('connectYourAgenda')}
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push('/settings?tab=integrations')}
+              className="text-xs"
+            >
+              {t('connectAgenda')}
+              <ChevronRight className="w-3 h-3 ml-1" />
+            </Button>
+          </div>
         </CardContent>
       </Card>
     )

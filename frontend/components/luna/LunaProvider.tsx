@@ -73,6 +73,7 @@ export function LunaProvider({ children }: LunaProviderProps) {
   const [tip, setTip] = useState<TipOfDay | null>(null)
   const [upcomingMeetings, setUpcomingMeetings] = useState<UpcomingMeeting[]>([])
   const [featureFlags, setFeatureFlags] = useState<FeatureFlagsResponse | null>(null)
+  const [hasCalendarConnection, setHasCalendarConnection] = useState<boolean | null>(null)
   
   // Derived state
   const isEnabled = featureFlags?.lunaEnabled ?? false
@@ -176,6 +177,18 @@ export function LunaProvider({ children }: LunaProviderProps) {
       }
     } catch (err) {
       logger.error('Failed to fetch upcoming meetings', err, { source: 'LunaProvider' })
+    }
+  }, [])
+  
+  const fetchCalendarConnectionStatus = useCallback(async () => {
+    try {
+      const { data, error } = await api.get<{ has_connection: boolean }>('/api/v1/luna/calendar/connection-status')
+      if (!error && data) {
+        setHasCalendarConnection(data.has_connection)
+      }
+    } catch (err) {
+      logger.error('Failed to fetch calendar connection status', err, { source: 'LunaProvider' })
+      setHasCalendarConnection(false) // Default to false on error
     }
   }, [])
   
@@ -331,6 +344,7 @@ export function LunaProvider({ children }: LunaProviderProps) {
           fetchGreeting(),
           fetchTip(),
           fetchUpcomingMeetings(),
+          fetchCalendarConnectionStatus(),
         ])
       } finally {
         setIsLoading(false)
@@ -346,6 +360,7 @@ export function LunaProvider({ children }: LunaProviderProps) {
     fetchGreeting,
     fetchTip,
     fetchUpcomingMeetings,
+    fetchCalendarConnectionStatus,
   ])
   
   // ==========================================================================
@@ -378,6 +393,7 @@ export function LunaProvider({ children }: LunaProviderProps) {
     tip,
     upcomingMeetings,
     featureFlags,
+    hasCalendarConnection,
     refreshMessages,
     refreshStats,
     refreshGreeting,
