@@ -2168,6 +2168,10 @@
           "title": "Research",
           "description": "AI gathers insights"
         },
+        "outreach": {
+          "title": "Outreach",
+          "description": "Send personalized messages"
+        },
         "prep": {
           "title": "Prep",
           "description": "Get your brief"
@@ -2321,6 +2325,10 @@
           "before": "30+ minutes researching each account",
           "after": "Complete research in 30 seconds"
         },
+        "outreach": {
+          "before": "Sending generic messages that get ignored",
+          "after": "Personalized outreach based on AI-powered research"
+        },
         "prep": {
           "before": "Walking into meetings unprepared",
           "after": "Personalized brief for every meeting"
@@ -2332,6 +2340,10 @@
         "notes": {
           "before": "Scrambling to take notes during calls",
           "after": "AI captures every detail for you"
+        },
+        "insights": {
+          "before": "No insight into deal health or how to improve",
+          "after": "AI-powered deal analysis and personal coaching after every call"
         },
         "followup": {
           "before": "Hours writing follow-up emails",

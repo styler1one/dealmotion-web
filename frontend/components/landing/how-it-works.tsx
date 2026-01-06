@@ -6,6 +6,7 @@ import { Icons } from '@/components/icons'
 const steps = [
   { icon: 'calendar', color: 'indigo', key: 'calendar' },
   { icon: 'search', color: 'blue', key: 'research' },
+  { icon: 'send', color: 'rose', key: 'outreach' },
   { icon: 'fileText', color: 'green', key: 'prep' },
   { icon: 'mic', color: 'amber', key: 'meeting' },
   { icon: 'barChart', color: 'purple', key: 'analysis' },
@@ -19,6 +20,7 @@ export function HowItWorks() {
     const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
       calendar: Icons.calendar,
       search: Icons.search,
+      send: Icons.send,
       fileText: Icons.fileText,
       mic: Icons.mic,
       barChart: Icons.barChart,
@@ -31,6 +33,7 @@ export function HowItWorks() {
     const colorMap: Record<string, { bg: string; text: string; border: string }> = {
       indigo: { bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-600 dark:text-indigo-400', border: 'border-indigo-200 dark:border-indigo-800' },
       blue: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400', border: 'border-blue-200 dark:border-blue-800' },
+      rose: { bg: 'bg-rose-100 dark:bg-rose-900/30', text: 'text-rose-600 dark:text-rose-400', border: 'border-rose-200 dark:border-rose-800' },
       green: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-600 dark:text-green-400', border: 'border-green-200 dark:border-green-800' },
       amber: { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-200 dark:border-amber-800' },
       purple: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-600 dark:text-purple-400', border: 'border-purple-200 dark:border-purple-800' },
@@ -56,7 +59,7 @@ export function HowItWorks() {
           <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-200 via-purple-200 to-orange-200 dark:from-indigo-800 dark:via-purple-800 dark:to-orange-800 -translate-y-1/2" />
 
           {/* Steps Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 lg:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-6 lg:gap-3">
             {steps.map((step, index) => {
               const Icon = getIcon(step.icon)
               const colors = getColorClasses(step.color)

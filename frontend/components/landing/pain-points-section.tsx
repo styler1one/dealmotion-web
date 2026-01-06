@@ -5,9 +5,11 @@ import { Icons } from '@/components/icons'
 
 const painPoints = [
   { key: 'research', beforeIcon: 'clock', afterIcon: 'zap' },
+  { key: 'outreach', beforeIcon: 'mail', afterIcon: 'send' },
   { key: 'prep', beforeIcon: 'alertTriangle', afterIcon: 'check' },
   { key: 'recording', beforeIcon: 'mic', afterIcon: 'bot' },
   { key: 'notes', beforeIcon: 'x', afterIcon: 'sparkles' },
+  { key: 'insights', beforeIcon: 'helpCircle', afterIcon: 'lightbulb' },
   { key: 'followup', beforeIcon: 'clock', afterIcon: 'mail' },
 ] as const
 
@@ -25,6 +27,9 @@ export function PainPointsSection() {
       mail: Icons.mail,
       mic: Icons.mic,
       bot: Icons.sparkles, // AI bot icon
+      send: Icons.send,
+      helpCircle: Icons.helpCircle,
+      lightbulb: Icons.lightbulb,
     }
     return iconMap[iconName] || Icons.circle
   }

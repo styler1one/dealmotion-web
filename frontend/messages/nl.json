@@ -2157,6 +2157,10 @@
           "title": "Research",
           "description": "AI verzamelt inzichten"
         },
+        "outreach": {
+          "title": "Outreach",
+          "description": "Verstuur persoonlijke berichten"
+        },
         "prep": {
           "title": "Prep",
           "description": "Ontvang je brief"
@@ -2310,6 +2314,10 @@
           "before": "30+ minuten research per account",
           "after": "Complete research in 30 seconden"
         },
+        "outreach": {
+          "before": "Generieke berichten versturen die worden genegeerd",
+          "after": "Gepersonaliseerde outreach op basis van AI-gedreven research"
+        },
         "prep": {
           "before": "Onvoorbereid meetings inlopen",
           "after": "Gepersonaliseerde brief voor elke meeting"
@@ -2321,6 +2329,10 @@
         "notes": {
           "before": "Haastig notities maken tijdens calls",
           "after": "AI legt elk detail voor je vast"
+        },
+        "insights": {
+          "before": "Geen inzicht in dealstatus en hoe je beter kunt verkopen",
+          "after": "AI-gestuurde deal analyse én persoonlijke coaching na elk gesprek"
         },
         "followup": {
           "before": "Uren follow-up emails schrijven",
