@@ -415,15 +415,18 @@ async def get_calendar_connection_status(
         return {"has_connection": False}
     
     # Check for active calendar connections
+    # A connection is valid if sync_enabled=true and needs_reauth is not true
     connection_result = supabase.table("calendar_connections") \
-        .select("id") \
+        .select("id, sync_enabled, needs_reauth") \
         .eq("user_id", user_id) \
-        .eq("sync_enabled", True) \
-        .is_("needs_reauth", "null") \
-        .limit(1) \
         .execute()
     
-    has_connection = bool(connection_result.data)
+    # Check if any connection is active (sync enabled and doesn't need reauth)
+    has_connection = False
+    for conn in (connection_result.data or []):
+        if conn.get("sync_enabled", False) and not conn.get("needs_reauth", False):
+            has_connection = True
+            break
     
     return {"has_connection": has_connection}
 
