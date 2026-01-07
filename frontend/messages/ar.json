@@ -241,9 +241,9 @@
       "startResearch": "بدء البحث",
       "researching": "جاري التحليل...",
       "cancel": "إلغاء",
-      "customIntel": "معلومات مخصصة",
-      "customIntelDesc": "أضف معلومات محددة تريد أن يركز عليها البحث",
-      "customIntelPlaceholder": "مثال: ركز على مشاريع التحول الرقمي..."
+      "customIntel": "معلوماتك (اختياري)",
+      "customIntelDesc": "هل تعرف شيئاً عن هذه الشركة؟ سيتم إضافته إلى البحث الكامل عبر الإنترنت.",
+      "customIntelPlaceholder": "مثال: \"سمعت من أحمد أنهم يمرون بإعادة هيكلة...\" أو \"المدير التنفيذي زميل سابق لمديرنا\""
     },
     "validation": {
       "companyNameTooShort": "اسم الشركة قصير جداً",
@@ -359,69 +359,69 @@
       "addFailed": "تعذر إضافة جهة الاتصال",
       "saved": "تم حفظ جهة الاتصال",
       "savedDesc": "تم حفظ تغييراتك",
-      "foundDesc": "{role} on LinkedIn",
-      "foundProfile": "LinkedIn profile found",
-      "notFoundDesc": "Could not find a LinkedIn profile. Enter manually.",
-      "searchFailed": "Search failed",
-      "searchFailedDesc": "An error occurred while searching",
-      "saveFailed": "Save failed",
-      "saveFailedDesc": "Could not save contact changes",
-      "editPlaceholder": "Edit the contact analysis...",
-      "openingLines": "Opening Lines",
-      "confirmDeleteTitle": "Delete Contact?",
-      "confirmDeleteDescription": "This will permanently delete this contact and their analysis. This action cannot be undone.",
+      "foundDesc": "{role} على LinkedIn",
+      "foundProfile": "تم العثور على ملف LinkedIn",
+      "notFoundDesc": "تعذر العثور على ملف LinkedIn. أدخل يدوياً.",
+      "searchFailed": "فشل البحث",
+      "searchFailedDesc": "حدث خطأ أثناء البحث",
+      "saveFailed": "فشل الحفظ",
+      "saveFailedDesc": "تعذر حفظ تغييرات جهة الاتصال",
+      "editPlaceholder": "تعديل تحليل جهة الاتصال...",
+      "openingLines": "عبارات افتتاحية",
+      "confirmDeleteTitle": "حذف جهة الاتصال؟",
+      "confirmDeleteDescription": "سيؤدي هذا إلى حذف جهة الاتصال وتحليلها نهائياً. لا يمكن التراجع عن هذا الإجراء.",
       "search": {
-        "title": "Search Contact",
-        "subtitle": "Search for a contact at {company}",
-        "nameLabel": "Name",
-        "namePlaceholder": "Enter contact name",
-        "roleLabel": "Role (optional)",
-        "rolePlaceholder": "e.g., CFO, Sales Director",
-        "searchButton": "Search LinkedIn Profile",
-        "skipSearch": "Add manually without search",
-        "resultsTitle": "Found Profiles",
-        "resultsSubtitle": "Results for \"{name}\" at {company}",
-        "noResults": "No matching profiles found",
-        "addManually": "Add manually",
-        "confirmTitle": "Confirm Contact",
-        "enrichTitle": "Enrich Profile Data",
-        "enrichTip": "Help the AI understand this person better",
-        "enrichDescription": "LinkedIn blocks automatic access to profiles. Copy-paste relevant info from their LinkedIn profile for a richer analysis.",
-        "openLinkedIn": "Open LinkedIn Profile",
-        "searchLinkedIn": "Search on LinkedIn",
-        "aboutLabel": "About / Summary",
-        "aboutHint": "Copy from their LinkedIn 'About' section",
-        "aboutPlaceholder": "Paste their LinkedIn summary here...",
-        "experienceLabel": "Experience / Background",
-        "experienceHint": "Copy relevant job history, education, or achievements",
-        "experiencePlaceholder": "Paste relevant experience here...",
-        "notesLabel": "Your notes",
-        "notesHint": "Any other info: recent posts, mutual connections, news mentions...",
-        "notesPlaceholder": "E.g. \"Met at event X\", \"Introduced by John\", \"Interested in our product Y\"...",
-        "manualNotesHint": "Share what you already know about this person (background, relationship, conversations, etc.)",
-        "skipEnrich": "Skip for now",
-        "continueButton": "Continue",
-        "selectedProfile": "Selected profile",
-        "extraInfo": "Additional information (optional)",
-        "emailLabel": "Email",
-        "phoneLabel": "Phone",
-        "primaryContact": "This is the primary contact",
-        "addAndAnalyze": "Add & Analyze",
+        "title": "البحث عن جهة اتصال",
+        "subtitle": "البحث عن جهة اتصال في {company}",
+        "nameLabel": "الاسم",
+        "namePlaceholder": "أدخل اسم جهة الاتصال",
+        "roleLabel": "الدور (اختياري)",
+        "rolePlaceholder": "مثل المدير المالي، مدير المبيعات",
+        "searchButton": "البحث عن ملف LinkedIn",
+        "skipSearch": "إضافة يدوياً بدون بحث",
+        "resultsTitle": "الملفات الموجودة",
+        "resultsSubtitle": "نتائج \"{name}\" في {company}",
+        "noResults": "لم يتم العثور على ملفات مطابقة",
+        "addManually": "إضافة يدوياً",
+        "confirmTitle": "تأكيد جهة الاتصال",
+        "enrichTitle": "إثراء بيانات الملف",
+        "enrichTip": "ساعد الذكاء الاصطناعي على فهم هذا الشخص بشكل أفضل",
+        "enrichDescription": "LinkedIn يحظر الوصول التلقائي للملفات. انسخ والصق المعلومات ذات الصلة من ملفهم على LinkedIn لتحليل أغنى.",
+        "openLinkedIn": "فتح ملف LinkedIn",
+        "searchLinkedIn": "البحث على LinkedIn",
+        "aboutLabel": "نبذة / ملخص",
+        "aboutHint": "انسخ من قسم 'نبذة' على LinkedIn",
+        "aboutPlaceholder": "الصق ملخص LinkedIn هنا...",
+        "experienceLabel": "الخبرة / الخلفية",
+        "experienceHint": "انسخ التاريخ الوظيفي أو التعليم أو الإنجازات ذات الصلة",
+        "experiencePlaceholder": "الصق الخبرة ذات الصلة هنا...",
+        "notesLabel": "ملاحظاتك",
+        "notesHint": "أي معلومات أخرى: منشورات حديثة، علاقات مشتركة، إشارات إخبارية...",
+        "notesPlaceholder": "مثل \"التقيت به في حدث X\"، \"قدمني أحمد\"، \"مهتم بمنتجنا Y\"...",
+        "manualNotesHint": "أضف ملاحظات أو سياق حول هذا الشخص",
+        "skipEnrich": "تخطي الآن",
+        "continueButton": "متابعة",
+        "selectedProfile": "الملف المحدد",
+        "extraInfo": "معلومات إضافية (اختياري)",
+        "emailLabel": "البريد الإلكتروني",
+        "phoneLabel": "الهاتف",
+        "primaryContact": "هذه جهة الاتصال الرئيسية",
+        "addAndAnalyze": "إضافة وتحليل",
         "confidence": {
-          "high": "High confidence",
-          "medium": "Medium confidence",
-          "low": "Low confidence"
+          "high": "ثقة عالية",
+          "medium": "ثقة متوسطة",
+          "low": "ثقة منخفضة"
         },
         "matchReason": {
-          "exact": "Name + Company + Role exact match",
-          "partial": "Name match, different details",
-          "nameOnly": "Name match only"
+          "exact": "تطابق تام للاسم + الشركة + الدور",
+          "partial": "تطابق الاسم، تفاصيل مختلفة",
+          "nameOnly": "تطابق الاسم فقط"
         },
-        "errorTitle": "Error",
-        "errorAddFailed": "Failed to add contact",
-        "suggestionsTitle": "Found in Research",
-        "orSearchManually": "or search manually",
-        "loadingSuggestions": "Loading suggestions..."
+        "errorTitle": "خطأ",
+        "errorAddFailed": "فشل إضافة جهة الاتصال",
+        "suggestionsTitle": "موجود في البحث",
+        "orSearchManually": "أو ابحث يدوياً",
+        "loadingSuggestions": "جاري تحميل الاقتراحات..."
       }
     },
     "context": {
@@ -607,13 +607,13 @@
       "uploaded": "تم رفع التسجيل",
       "uploadedDesc": "تحليل الذكاء الاصطناعي جارٍ...",
       "uploadFailed": "فشل الرفع",
-      "requestingAccess": "Requesting microphone access...",
-      "accessDenied": "Microphone access denied. Please allow access in your browser settings.",
-      "error": "Recording Error",
-      "accessRequired": "Microphone Access Required",
-      "accessRequiredDesc": "Please allow microphone access to record meetings.",
-      "startFailed": "Failed to Start Recording",
-      "startFailedDesc": "Could not access microphone."
+      "requestingAccess": "جاري طلب الوصول للميكروفون...",
+      "accessDenied": "تم رفض الوصول للميكروفون. يرجى السماح بالوصول في إعدادات المتصفح.",
+      "error": "خطأ في التسجيل",
+      "accessRequired": "مطلوب الوصول للميكروفون",
+      "accessRequiredDesc": "يرجى السماح بالوصول للميكروفون لتسجيل الاجتماعات.",
+      "startFailed": "فشل بدء التسجيل",
+      "startFailedDesc": "تعذر الوصول للميكروفون."
     },
     "sync": {
       "lastSync": "آخر مزامنة {time}",
@@ -627,10 +627,10 @@
       "unlink": "إلغاء الربط",
       "linkSuccess": "تم ربط الاجتماع بـ {name}",
       "unlinkSuccess": "تمت إزالة ربط العميل المحتمل",
-      "unlinkConfirm": "Remove link to {name}?",
-      "suggestedMatches": "Suggested matches",
-      "noMatches": "No matching prospects found",
-      "confidence": "{percent}% match"
+      "unlinkConfirm": "إزالة الربط بـ {name}؟",
+      "suggestedMatches": "التطابقات المقترحة",
+      "noMatches": "لم يتم العثور على عملاء محتملين مطابقين",
+      "confidence": "{percent}% تطابق"
     },
     "contact": {
       "unlinkSuccess": "تم إلغاء ربط جهة الاتصال من الاجتماع"
@@ -768,44 +768,44 @@
           "description": "ملخص قصير لنظام CRM أو الفريق"
         }
       },
-      "regenerating": "Regenerating...",
-      "regeneratingDesc": "You can continue working while this generates in the background.",
-      "delete": "Delete",
-      "confirmDelete": "Are you sure you want to delete this action?",
-      "noContent": "No content yet",
-      "generationFailed": "Generation failed",
-      "alreadyExists": "Action already generated",
-      "alreadyExistsDesc": "This action was already generated. Click to view it.",
-      "generationFailedDesc": "An error occurred. Please try regenerating.",
-      "tryAgain": "Try Again",
-      "summaryReadOnly": "Summary is read-only",
-      "summaryCannotEdit": "The summary cannot be edited here. Edit the main summary above.",
-      "summaryCannotDelete": "The summary cannot be deleted",
-      "summaryCannotRegenerate": "The summary cannot be regenerated here",
-      "contextUsed": "Context used",
-      "wordsGenerated": "words",
-      "generatingContent": "Generating content...",
-      "generatingTime": "This may take 10-30 seconds",
-      "export": "Export",
-      "exportPdf": "Download PDF",
-      "exportDocx": "Download Word",
-      "exportMd": "Download Markdown",
-      "copied": "Copied to clipboard",
-      "changesSaved": "Changes saved",
-      "saveFailed": "Failed to save",
-      "deleteFailed": "Failed to delete",
-      "actionDeleted": "Action deleted",
-      "exportFailed": "Export failed",
-      "pdfDownloaded": "PDF downloaded",
-      "docxDownloaded": "Word document downloaded",
-      "mdDownloaded": "Markdown downloaded",
+      "regenerating": "جاري إعادة التوليد...",
+      "regeneratingDesc": "جاري توليد محتوى جديد...",
+      "delete": "حذف",
+      "confirmDelete": "هل أنت متأكد أنك تريد حذف هذا؟",
+      "noContent": "لا يوجد محتوى",
+      "generationFailed": "فشل التوليد",
+      "alreadyExists": "موجود بالفعل",
+      "alreadyExistsDesc": "تم توليد هذا المحتوى بالفعل",
+      "generationFailedDesc": "تعذر توليد المحتوى. يرجى المحاولة مرة أخرى.",
+      "tryAgain": "حاول مرة أخرى",
+      "summaryReadOnly": "الملخص للقراءة فقط",
+      "summaryCannotEdit": "لا يمكن تعديل الملخص هنا. عدل الملخص الرئيسي أعلاه.",
+      "summaryCannotDelete": "لا يمكن حذف الملخص",
+      "summaryCannotRegenerate": "لا يمكن إعادة توليد الملخص هنا",
+      "contextUsed": "السياق المستخدم",
+      "wordsGenerated": "كلمة",
+      "generatingContent": "جاري توليد المحتوى...",
+      "generatingTime": "قد يستغرق 10-30 ثانية",
+      "export": "تصدير",
+      "exportPdf": "تحميل PDF",
+      "exportDocx": "تحميل Word",
+      "exportMd": "تحميل Markdown",
+      "copied": "تم النسخ!",
+      "changesSaved": "تم حفظ التغييرات",
+      "saveFailed": "فشل الحفظ",
+      "deleteFailed": "فشل الحذف",
+      "actionDeleted": "تم حذف الإجراء",
+      "exportFailed": "فشل التصدير",
+      "pdfDownloaded": "تم تحميل PDF",
+      "docxDownloaded": "تم تحميل مستند Word",
+      "mdDownloaded": "تم تحميل Markdown",
       "time": {
-        "justNow": "just now",
-        "minAgo": "{count} min ago",
-        "hourAgo": "{count} hour ago",
-        "hoursAgo": "{count} hours ago",
-        "dayAgo": "{count} day ago",
-        "daysAgo": "{count} days ago"
+        "justNow": "الآن",
+        "minAgo": "منذ {count} دقيقة",
+        "hourAgo": "منذ ساعة",
+        "hoursAgo": "منذ {count} ساعات",
+        "dayAgo": "منذ يوم",
+        "daysAgo": "منذ {count} أيام"
       }
     },
     "toast": {
@@ -818,19 +818,19 @@
       "selectFile": "اختر ملفاً",
       "deleted": "تم الحذف",
       "deletedDesc": "تم حذف المتابعة",
-      "invalidFileType": "Invalid file type",
-      "invalidFileTypeDescAudio": "Upload an mp3, m4a, wav or webm file",
-      "invalidFileTypeDescTranscript": "Upload a txt, md, docx or srt file",
-      "fileTooLarge": "File too large",
-      "fileTooLargeDescAudio": "Maximum file size is 50MB",
-      "fileTooLargeDescTranscript": "Maximum file size is 10MB",
-      "noFileSelected": "No file selected",
-      "noFileSelectedDesc": "Select a file first",
-      "notFound": "Follow-up not found",
-      "deleteFailed": "Delete failed",
-      "deleteFailedDesc": "Could not delete follow-up",
-      "uploadStarted": "Upload started",
-      "uploadStartedDesc": "Your file is being processed"
+      "invalidFileType": "نوع ملف غير صالح",
+      "invalidFileTypeDescAudio": "ارفع ملف mp3 أو m4a أو wav أو webm",
+      "invalidFileTypeDescTranscript": "ارفع ملف txt أو md أو docx أو srt",
+      "fileTooLarge": "الملف كبير جداً",
+      "fileTooLargeDescAudio": "الحد الأقصى لحجم الملف 50MB",
+      "fileTooLargeDescTranscript": "الحد الأقصى لحجم الملف 10MB",
+      "noFileSelected": "لم يتم اختيار ملف",
+      "noFileSelectedDesc": "اختر ملفاً أولاً",
+      "notFound": "المتابعة غير موجودة",
+      "deleteFailed": "فشل الحذف",
+      "deleteFailedDesc": "تعذر حذف المتابعة",
+      "uploadStarted": "بدأ الرفع",
+      "uploadStartedDesc": "جاري معالجة ملفك"
     },
     "confirm": {
       "deleteTitle": "حذف المتابعة؟",
@@ -869,70 +869,70 @@
       "failed": "فشل الحفظ",
       "failedDesc": "تعذر حفظ الملف الشخصي"
     },
-    "cancel": "Cancel",
-    "fieldSaved": "Saved!",
-    "addNewTag": "Add new...",
-    "selectOption": "Select...",
-    "editHint": "Hover over any field to edit it directly",
-    "yourName": "Your name",
-    "yourRole": "Your role",
-    "refreshWithAI": "Refresh with AI",
+    "cancel": "إلغاء",
+    "fieldSaved": "تم الحفظ!",
+    "addNewTag": "إضافة جديد...",
+    "selectOption": "اختر...",
+    "editHint": "مرر على أي حقل لتعديله مباشرة",
+    "yourName": "اسمك",
+    "yourRole": "دورك",
+    "refreshWithAI": "تحديث بالذكاء الاصطناعي",
     "sections": {
-      "personal": "Personal Details",
-      "experience": "Experience & Expertise",
-      "style": "Sales Style",
-      "goals": "Goals & Targets",
-      "targetMarket": "Target Market",
-      "goalsPrefs": "Goals & Preferences"
+      "personal": "التفاصيل الشخصية",
+      "experience": "الخبرة والتخصص",
+      "style": "أسلوب المبيعات",
+      "goals": "الأهداف",
+      "targetMarket": "السوق المستهدف",
+      "goalsPrefs": "الأهداف والتفضيلات"
     },
     "fields": {
-      "fullName": "Full Name",
-      "email": "Email",
-      "phone": "Phone",
-      "jobTitle": "Job Title",
-      "yearsExperience": "Years of Experience",
-      "industries": "Industries",
-      "specializations": "Specializations",
-      "sellingStyle": "Selling Style",
-      "communicationPreference": "Communication Preference",
-      "targetMarket": "Target Market",
-      "quotaTarget": "Quota Target",
-      "regions": "Regions",
-      "companySizes": "Company Sizes",
-      "quarterlyGoals": "Quarterly Goals",
-      "meetingTypes": "Meeting Types"
+      "fullName": "الاسم الكامل",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "jobTitle": "المسمى الوظيفي",
+      "yearsExperience": "سنوات الخبرة",
+      "industries": "الصناعات",
+      "specializations": "التخصصات",
+      "sellingStyle": "أسلوب البيع",
+      "communicationPreference": "تفضيل التواصل",
+      "targetMarket": "السوق المستهدف",
+      "quotaTarget": "هدف الحصة",
+      "regions": "المناطق",
+      "companySizes": "أحجام الشركات",
+      "quarterlyGoals": "الأهداف الربعية",
+      "meetingTypes": "أنواع الاجتماعات"
     },
     "communicationStyle": {
-      "title": "Communication Style & Email Preferences",
-      "description": "This is how DealMotion writes emails and messages on your behalf",
-      "writingTone": "Writing Tone",
-      "messageLength": "Message Length",
-      "concise": "Short & concise",
-      "detailed": "Detailed",
-      "standard": "Standard",
-      "emojiUsage": "Emoji Usage",
-      "emojiYes": "Yes, in emails",
-      "emojiNo": "No",
-      "emailSignoff": "Email Sign-off",
-      "persuasionStyle": "Persuasion Style",
-      "persuasionLogic": "Logic & data - Convinces with facts, numbers, and rational arguments",
-      "persuasionStory": "Storytelling - Convinces with stories, examples, and emotion",
-      "persuasionReference": "Social proof - Convinces with references, cases, and testimonials",
-      "persuasionAuthority": "Authority - Convinces with expertise and thought leadership",
-      "toneProfessional": "Professional",
-      "toneDirect": "Direct",
-      "toneWarm": "Warm",
-      "toneFormal": "Formal",
-      "toneCasual": "Casual"
+      "title": "أسلوب التواصل وتفضيلات البريد",
+      "description": "هكذا يكتب DealMotion الرسائل نيابةً عنك",
+      "writingTone": "نبرة الكتابة",
+      "messageLength": "طول الرسالة",
+      "concise": "قصير وموجز",
+      "detailed": "مفصل",
+      "standard": "قياسي",
+      "emojiUsage": "استخدام الرموز",
+      "emojiYes": "نعم، في الرسائل",
+      "emojiNo": "لا",
+      "emailSignoff": "توقيع البريد",
+      "persuasionStyle": "أسلوب الإقناع",
+      "persuasionLogic": "المنطق والبيانات - يقنع بالحقائق والأرقام والحجج المنطقية",
+      "persuasionStory": "السرد - يقنع بالقصص والأمثلة والعاطفة",
+      "persuasionReference": "الإثبات الاجتماعي - يقنع بالمراجع والحالات والشهادات",
+      "persuasionAuthority": "السلطة - يقنع بالخبرة والقيادة الفكرية",
+      "toneProfessional": "مهني",
+      "toneDirect": "مباشر",
+      "toneWarm": "ودي",
+      "toneFormal": "رسمي",
+      "toneCasual": "غير رسمي"
     },
     "howUsed": {
-      "title": "How is this used?",
-      "prep": "Meeting Prep",
-      "prepDesc": "AI generates briefs tailored to your style and strengths",
-      "followup": "Follow-up Emails",
-      "followupDesc": "Emails are written in your tone of voice",
-      "research": "Research",
-      "researchDesc": "Focus on information relevant to your target market"
+      "title": "كيف يُستخدم هذا؟",
+      "prep": "تحضير الاجتماع",
+      "prepDesc": "الذكاء الاصطناعي يولد ملخصات مخصصة لأسلوبك ونقاط قوتك",
+      "followup": "رسائل المتابعة",
+      "followupDesc": "الرسائل تُكتب بنبرتك",
+      "research": "البحث",
+      "researchDesc": "التركيز على المعلومات المتعلقة بسوقك المستهدف"
     }
   },
   "companyProfile": {
@@ -956,59 +956,59 @@
       "failed": "فشل الحفظ",
       "failedDesc": "تعذر حفظ الملف الشخصي"
     },
-    "cancel": "Cancel",
-    "noProducts": "No products added yet",
-    "noPersonas": "No personas added yet",
-    "noCaseStudies": "No case studies added yet",
-    "fieldSaved": "Saved!",
-    "addNew": "Add new...",
-    "editHint": "Hover over any field to edit it directly",
-    "companyName": "Company name",
-    "industry": "Industry",
-    "refreshWithAI": "Refresh with AI",
-    "addProduct": "Add Product",
-    "addPersona": "Add Persona",
-    "addCaseStudy": "Add Case Study",
-    "addPainPoint": "Add pain point...",
-    "productName": "Product/Service name",
-    "productDescription": "Description",
-    "productValue": "Value proposition",
-    "personaTitle": "Role/Title (e.g., CTO, VP Sales)",
-    "personaSeniority": "Seniority level (e.g., C-level, Director)",
-    "caseCustomer": "Customer name",
-    "caseIndustry": "Industry",
-    "caseResults": "Key results achieved",
+    "cancel": "إلغاء",
+    "noProducts": "لم تتم إضافة منتجات بعد",
+    "noPersonas": "لم تتم إضافة شخصيات بعد",
+    "noCaseStudies": "لم تتم إضافة دراسات حالة بعد",
+    "fieldSaved": "تم الحفظ!",
+    "addNew": "إضافة جديد...",
+    "editHint": "مرر على أي حقل لتعديله مباشرة",
+    "companyName": "اسم الشركة",
+    "industry": "الصناعة",
+    "refreshWithAI": "تحديث بالذكاء الاصطناعي",
+    "addProduct": "إضافة منتج",
+    "addPersona": "إضافة شخصية",
+    "addCaseStudy": "إضافة دراسة حالة",
+    "addPainPoint": "إضافة نقطة ألم...",
+    "productName": "اسم المنتج/الخدمة",
+    "productDescription": "الوصف",
+    "productValue": "عرض القيمة",
+    "personaTitle": "الدور/المسمى (مثلاً، CTO، VP Sales)",
+    "personaSeniority": "مستوى الأقدمية (مثلاً، C-level، Director)",
+    "caseCustomer": "اسم العميل",
+    "caseIndustry": "الصناعة",
+    "caseResults": "النتائج الرئيسية المحققة",
     "sections": {
-      "basic": "Basic Information",
-      "products": "Products & Services",
-      "market": "Market & Competition",
-      "values": "Values & USPs",
-      "valueProps": "Value Propositions",
-      "differentiators": "Differentiators",
-      "icp": "Ideal Customer Profile",
-      "personas": "Buyer Personas",
-      "caseStudies": "Case Studies",
-      "salesInfo": "Sales Information"
+      "basic": "المعلومات الأساسية",
+      "products": "المنتجات والخدمات",
+      "market": "السوق والمنافسة",
+      "values": "القيم والمميزات",
+      "valueProps": "عروض القيمة",
+      "differentiators": "المميزات",
+      "icp": "ملف العميل المثالي",
+      "personas": "شخصيات المشتري",
+      "caseStudies": "دراسات الحالة",
+      "salesInfo": "معلومات المبيعات"
     },
     "fields": {
-      "industries": "Industries",
-      "companySizes": "Company Sizes",
-      "painPoints": "Pain Points",
-      "salesCycle": "Sales Cycle",
-      "avgDeal": "Average Deal Size",
-      "competitors": "Competitors",
-      "competitiveAdvantage": "Competitive Advantage",
-      "valueProps": "Core Value Propositions",
-      "result": "Result"
+      "industries": "الصناعات",
+      "companySizes": "أحجام الشركات",
+      "painPoints": "نقاط الألم",
+      "salesCycle": "دورة المبيعات",
+      "avgDeal": "متوسط حجم الصفقة",
+      "competitors": "المنافسون",
+      "competitiveAdvantage": "الميزة التنافسية",
+      "valueProps": "عروض القيمة الأساسية",
+      "result": "النتيجة"
     },
     "howUsed": {
-      "title": "How is this used?",
-      "prep": "Meeting Prep",
-      "prepDesc": "AI uses your value props and case studies in briefs",
-      "followup": "Follow-up Emails",
-      "followupDesc": "Relevant product info is added automatically",
-      "research": "Research",
-      "researchDesc": "ICP is used to filter relevant prospect info"
+      "title": "كيف يُستخدم هذا؟",
+      "prep": "تحضير الاجتماع",
+      "prepDesc": "الذكاء الاصطناعي يستخدم عروض قيمتك ودراسات الحالة في الملخصات",
+      "followup": "رسائل المتابعة",
+      "followupDesc": "معلومات المنتج المناسبة تُضاف تلقائياً",
+      "research": "البحث",
+      "researchDesc": "ICP يُستخدم لتصفية معلومات العميل المحتمل المناسبة"
     }
   },
   "knowledgeBase": {
@@ -1038,13 +1038,13 @@
       "deletedDesc": "تمت إزالة المستند من قاعدة المعرفة",
       "failed": "فشل الرفع",
       "failedDesc": "تعذر رفع المستند",
-      "deleteFailed": "Delete failed",
-      "deleteFailedDesc": "Could not delete the file"
+      "deleteFailed": "فشل الحذف",
+      "deleteFailedDesc": "تعذر حذف الملف"
     },
     "stats": {
-      "completed": "Completed",
-      "processing": "Processing",
-      "failed": "Failed"
+      "completed": "مكتمل",
+      "processing": "قيد المعالجة",
+      "failed": "فشل"
     }
   },
   "language": {
@@ -1079,249 +1079,249 @@
       "integrations": "التكاملات",
       "notifications": "الإشعارات",
       "coach": "المدرب الذكي",
-      "privacy": "Privacy & Data"
+      "privacy": "الخصوصية والبيانات"
     },
     "comingSoon": "قريباً",
     "language": {
-      "title": "Language Settings",
-      "description": "Configure your language preferences for the application",
-      "appLanguage": "App Language",
-      "appLanguageDesc": "The language of the application interface",
-      "outputLanguage": "Default Output Language",
-      "outputLanguageDesc": "The language for AI-generated content (research briefs, preparations)",
-      "outputLanguageHint": "You can override this per action",
-      "emailLanguage": "Default Email Language",
-      "emailLanguageDesc": "The language for generated emails to clients",
-      "emailLanguageHint": "You can override this per follow-up"
+      "title": "إعدادات اللغة",
+      "description": "قم بتكوين تفضيلات اللغة للتطبيق",
+      "appLanguage": "لغة التطبيق",
+      "appLanguageDesc": "لغة واجهة التطبيق",
+      "outputLanguage": "لغة الإخراج الافتراضية",
+      "outputLanguageDesc": "لغة المحتوى الذي ينشئه الذكاء الاصطناعي (ملخصات البحث، التحضيرات)",
+      "outputLanguageHint": "يمكنك تجاوز هذا لكل إجراء",
+      "emailLanguage": "لغة البريد الافتراضية",
+      "emailLanguageDesc": "لغة رسائل البريد المولدة للعملاء",
+      "emailLanguageHint": "يمكنك تجاوز هذا لكل متابعة"
     },
-    "unsavedChanges": "Unsaved changes",
+    "unsavedChanges": "تغييرات غير محفوظة",
     "coach": {
-      "title": "AI Coach (Luna)",
-      "description": "Configure your AI sales coach assistant",
-      "enableLabel": "Enable AI Coach",
-      "enableDesc": "Show the floating coach widget on dashboard pages",
-      "resetLabel": "Reset Snoozed Suggestions",
-      "resetHint": "Bring back suggestions you've snoozed",
-      "resetButton": "Reset",
-      "enabled": "Coach Enabled",
-      "enabledDesc": "The AI Coach is now active and will provide suggestions",
-      "disabled": "Coach Disabled",
-      "disabledDesc": "The AI Coach widget is now hidden",
-      "reset": "Suggestions Reset",
-      "resetDesc": "All snoozed suggestions are now visible again"
+      "title": "المدرب الذكي (Luna)",
+      "description": "قم بتكوين مساعد مدرب المبيعات الذكي",
+      "enableLabel": "تفعيل المدرب الذكي",
+      "enableDesc": "عرض عنصر المدرب العائم على صفحات لوحة التحكم",
+      "resetLabel": "إعادة تعيين الاقتراحات المؤجلة",
+      "resetHint": "إعادة الاقتراحات التي أجلتها",
+      "resetButton": "إعادة تعيين",
+      "enabled": "المدرب مفعل",
+      "enabledDesc": "المدرب الذكي نشط الآن وسيقدم اقتراحات",
+      "disabled": "المدرب معطل",
+      "disabledDesc": "عنصر المدرب الذكي مخفي الآن",
+      "reset": "تم إعادة تعيين الاقتراحات",
+      "resetDesc": "جميع الاقتراحات المؤجلة مرئية الآن مرة أخرى"
     },
     "style": {
-      "title": "Communication Style",
-      "description": "Customize how AI generates your emails and reports",
-      "saved": "Style Saved",
-      "savedDesc": "Your communication style preferences have been updated",
-      "tone": "Tone",
-      "toneDesc": "The overall tone of your communications",
-      "toneDirect": "Direct - Get straight to the point",
-      "toneWarm": "Warm - Friendly and personable",
-      "toneFormal": "Formal - Professional and structured",
-      "toneCasual": "Casual - Relaxed and conversational",
-      "toneProfessional": "Professional - Balanced warmth and professionalism",
-      "formality": "Formality Level",
-      "formalityDesc": "How formal should your communications be",
-      "formalityFormal": "Formal - Complete sentences, no contractions",
-      "formalityProfessional": "Professional - Clear and businesslike",
-      "formalityCasual": "Casual - Relaxed grammar, friendly",
-      "emoji": "Use Emoji",
-      "emojiDesc": "Include emoji in professional communications",
-      "length": "Writing Length",
-      "lengthDesc": "How detailed should your communications be",
-      "lengthConcise": "Concise - Short and to the point",
-      "lengthDetailed": "Detailed - Thorough explanations",
-      "signoff": "Email Sign-off",
-      "signoffDesc": "How you prefer to end your emails"
+      "title": "أسلوب التواصل",
+      "description": "خصص كيفية إنشاء الذكاء الاصطناعي لرسائلك وتقاريرك",
+      "saved": "تم حفظ الأسلوب",
+      "savedDesc": "تم تحديث تفضيلات أسلوب التواصل الخاصة بك",
+      "tone": "النبرة",
+      "toneDesc": "النبرة العامة لتواصلاتك",
+      "toneDirect": "مباشر - الدخول في صلب الموضوع",
+      "toneWarm": "دافئ - ودي وشخصي",
+      "toneFormal": "رسمي - مهني ومنظم",
+      "toneCasual": "غير رسمي - مريح وحواري",
+      "toneProfessional": "مهني - توازن بين الدفء والاحترافية",
+      "formality": "مستوى الرسمية",
+      "formalityDesc": "مدى رسمية تواصلاتك",
+      "formalityFormal": "رسمي - جمل كاملة، بدون اختصارات",
+      "formalityProfessional": "مهني - واضح وعملي",
+      "formalityCasual": "غير رسمي - قواعد مرنة، ودي",
+      "emoji": "استخدام الرموز التعبيرية",
+      "emojiDesc": "تضمين الرموز التعبيرية في التواصلات المهنية",
+      "length": "طول الكتابة",
+      "lengthDesc": "مدى تفصيل تواصلاتك",
+      "lengthConcise": "موجز - قصير ومباشر",
+      "lengthDetailed": "مفصل - شروحات شاملة",
+      "signoff": "توقيع البريد",
+      "signoffDesc": "كيف تفضل إنهاء رسائلك"
     },
     "subscription": {
-      "description": "Manage your subscription, view usage and invoices"
+      "description": "إدارة اشتراكك، عرض الاستخدام والفواتير"
     },
     "integrations": {
-      "description": "Connect your calendar and recording tools",
-      "title": "Integrations",
-      "subtitle": "Connect your tools to enhance your sales workflow",
+      "description": "ربط تقويمك وأدوات التسجيل",
+      "title": "التكاملات",
+      "subtitle": "ربط أدواتك لتحسين سير عمل المبيعات",
       "calendar": {
-        "title": "Calendar",
-        "description": "Sync your calendar to see upcoming meetings and prepare automatically",
+        "title": "التقويم",
+        "description": "مزامنة تقويمك لرؤية الاجتماعات القادمة والتحضير تلقائياً",
         "google": "Google Calendar",
         "microsoft": "Microsoft 365",
-        "connect": "Connect",
-        "disconnect": "Disconnect",
-        "disconnectConfirmTitle": "Disconnect Calendar?",
-        "disconnectConfirmDesc": "This will remove your calendar connection and delete all synced meetings. You can reconnect anytime.",
-        "disconnectSuccess": "Calendar disconnected",
-        "disconnectFailed": "Failed to disconnect calendar",
-        "connected": "Connected",
-        "notConnected": "Not connected",
-        "lastSync": "Last sync: {time}",
-        "syncNow": "Sync Now",
-        "syncing": "Syncing...",
-        "meetingsCount": "{count, plural, =0 {No meetings} one {# meeting} other {# meetings}} synced",
-        "needsReauth": "Reconnection required",
-        "reconnect": "Reconnect",
-        "syncEnabled": "Auto-sync enabled",
-        "syncDisabled": "Auto-sync disabled"
+        "connect": "ربط",
+        "disconnect": "فصل",
+        "disconnectConfirmTitle": "فصل التقويم؟",
+        "disconnectConfirmDesc": "سيؤدي هذا إلى إزالة اتصال التقويم وحذف جميع الاجتماعات المزامنة. يمكنك إعادة الربط في أي وقت.",
+        "disconnectSuccess": "تم فصل التقويم",
+        "disconnectFailed": "فشل فصل التقويم",
+        "connected": "متصل",
+        "notConnected": "غير متصل",
+        "lastSync": "آخر مزامنة: {time}",
+        "syncNow": "مزامنة الآن",
+        "syncing": "جاري المزامنة...",
+        "meetingsCount": "{count, plural, =0 {لا توجد اجتماعات} one {اجتماع واحد} other {# اجتماعات}} مزامنة",
+        "needsReauth": "مطلوب إعادة الاتصال",
+        "reconnect": "إعادة الربط",
+        "syncEnabled": "المزامنة التلقائية مفعلة",
+        "syncDisabled": "المزامنة التلقائية معطلة"
       },
       "recordings": {
-        "title": "Meeting Recordings",
-        "description": "Import recordings from your favorite notetaker apps",
+        "title": "تسجيلات الاجتماعات",
+        "description": "استيراد التسجيلات من تطبيقات تدوين الملاحظات المفضلة لديك",
         "fireflies": "Fireflies.ai",
         "zoom": "Zoom",
         "teams": "Microsoft Teams",
-        "connect": "Connect",
-        "disconnect": "Disconnect",
-        "connected": "Connected",
-        "notConnected": "Not connected",
-        "autoImport": "Auto-import recordings",
-        "lastImport": "Last import: {time}",
-        "recordingsCount": "{count, plural, =0 {No recordings} one {# recording} other {# recordings}} imported"
+        "connect": "ربط",
+        "disconnect": "فصل",
+        "connected": "متصل",
+        "notConnected": "غير متصل",
+        "autoImport": "استيراد تلقائي للتسجيلات",
+        "lastImport": "آخر استيراد: {time}",
+        "recordingsCount": "{count, plural, =0 {لا توجد تسجيلات} one {تسجيل واحد} other {# تسجيلات}} مستوردة"
       },
       "status": {
-        "checking": "Checking status...",
-        "error": "Could not load integration status",
-        "retry": "Retry"
+        "checking": "جاري التحقق من الحالة...",
+        "error": "تعذر تحميل حالة التكامل",
+        "retry": "إعادة المحاولة"
       }
     },
     "notifications": {
-      "description": "Configure your email and push notifications"
+      "description": "تكوين إشعارات البريد الإلكتروني والدفع"
     },
     "autoRecord": {
-      "title": "Auto-Record Meetings",
-      "description": "Automatically record and transcribe your calendar meetings with AI Notetaker",
-      "saved": "Settings saved",
-      "savedEnabled": "AI Notetaker will automatically join matching meetings",
-      "savedDisabled": "Auto-recording is now disabled",
+      "title": "تسجيل الاجتماعات تلقائياً",
+      "description": "تسجيل ونسخ اجتماعات التقويم تلقائياً باستخدام AI Notetaker",
+      "saved": "تم حفظ الإعدادات",
+      "savedEnabled": "AI Notetaker سينضم تلقائياً إلى الاجتماعات المطابقة",
+      "savedDisabled": "التسجيل التلقائي معطل الآن",
       "mode": {
-        "label": "Recording Mode",
-        "filtered": "Smart Filter",
-        "filteredDesc": "Record meetings matching your keyword rules",
-        "all": "All Meetings",
-        "allDesc": "Record every online meeting automatically",
-        "none": "Off",
-        "noneDesc": "Never auto-record (manual only)"
+        "label": "وضع التسجيل",
+        "filtered": "فلتر ذكي",
+        "filteredDesc": "تسجيل الاجتماعات المطابقة لقواعد الكلمات المفتاحية",
+        "all": "جميع الاجتماعات",
+        "allDesc": "تسجيل كل اجتماع عبر الإنترنت تلقائياً",
+        "none": "معطل",
+        "noneDesc": "عدم التسجيل التلقائي (يدوي فقط)"
       },
-      "externalOnly": "External meetings only",
-      "externalOnlyDesc": "Only record meetings with attendees outside your organization",
-      "minDuration": "Minimum duration",
-      "minDurationDesc": "Skip meetings shorter than this",
-      "minutes": "min",
-      "includeKeywords": "Record when title contains",
-      "includeKeywordsDesc": "Meeting will be recorded if title contains any of these words",
-      "excludeKeywords": "Never record when title contains",
-      "excludeKeywordsDesc": "These keywords override include rules - meeting will be skipped",
-      "addKeywordPlaceholder": "Add keyword...",
-      "resetDefaults": "Reset to defaults",
-      "keywordsReset": "Keywords reset",
-      "keywordsResetDesc": "Keywords have been reset to default values",
-      "keywordExists": "Keyword already exists",
-      "preview": "Preview upcoming meetings",
-      "previewResults": "Preview Results",
-      "willRecord": "{count} will be recorded",
-      "willSkip": "{count} will be skipped",
+      "externalOnly": "الاجتماعات الخارجية فقط",
+      "externalOnlyDesc": "تسجيل الاجتماعات مع حضور من خارج منظمتك فقط",
+      "minDuration": "الحد الأدنى للمدة",
+      "minDurationDesc": "تخطي الاجتماعات الأقصر من هذا",
+      "minutes": "دقيقة",
+      "includeKeywords": "التسجيل عندما يحتوي العنوان على",
+      "includeKeywordsDesc": "سيتم تسجيل الاجتماع إذا احتوى العنوان على أي من هذه الكلمات",
+      "excludeKeywords": "عدم التسجيل عندما يحتوي العنوان على",
+      "excludeKeywordsDesc": "هذه الكلمات تتجاوز قواعد التضمين - سيتم تخطي الاجتماع",
+      "addKeywordPlaceholder": "إضافة كلمة مفتاحية...",
+      "resetDefaults": "إعادة التعيين إلى الافتراضي",
+      "keywordsReset": "تم إعادة تعيين الكلمات",
+      "keywordsResetDesc": "تم إعادة تعيين الكلمات إلى القيم الافتراضية",
+      "keywordExists": "الكلمة المفتاحية موجودة بالفعل",
+      "preview": "معاينة الاجتماعات القادمة",
+      "previewResults": "نتائج المعاينة",
+      "willRecord": "{count} سيتم تسجيلها",
+      "willSkip": "{count} سيتم تخطيها",
       "error": {
-        "fetchFailed": "Failed to load settings",
-        "saveFailed": "Failed to save settings",
-        "resetFailed": "Failed to reset keywords",
-        "previewFailed": "Failed to load preview"
+        "fetchFailed": "فشل تحميل الإعدادات",
+        "saveFailed": "فشل حفظ الإعدادات",
+        "resetFailed": "فشل إعادة تعيين الكلمات",
+        "previewFailed": "فشل تحميل المعاينة"
       }
     },
     "privacy": {
-      "title": "Privacy & Data",
-      "description": "Manage your personal data and privacy settings",
+      "title": "الخصوصية والبيانات",
+      "description": "إدارة بياناتك الشخصية وإعدادات الخصوصية",
       "dataOverview": {
-        "title": "Your Data Overview",
-        "description": "Summary of your stored personal data",
-        "accountCreated": "Account created",
-        "profilesTitle": "Profiles",
-        "salesProfile": "Sales Profile",
-        "companyProfile": "Company Profile",
-        "completed": "Completed",
-        "notCompleted": "Not completed",
-        "connections": "Connected Services"
+        "title": "نظرة عامة على بياناتك",
+        "description": "ملخص بياناتك الشخصية المخزنة",
+        "accountCreated": "تم إنشاء الحساب",
+        "profilesTitle": "الملفات",
+        "salesProfile": "ملف المبيعات",
+        "companyProfile": "ملف الشركة",
+        "completed": "مكتمل",
+        "notCompleted": "غير مكتمل",
+        "connections": "الخدمات المتصلة"
       },
       "downloadData": {
-        "title": "Download Your Data",
-        "description": "Get a copy of all your personal data in machine-readable format (JSON)",
-        "button": "Download My Data",
-        "requesting": "Requesting...",
-        "requested": "Export Requested",
-        "requestedDesc": "Your data export is being prepared. You'll receive a download link shortly.",
-        "ready": "Export Ready",
-        "readyDesc": "Your data export is ready.",
-        "expiresIn": "Expires in {hours} hours",
-        "download": "Download Export",
-        "processing": "Preparing export...",
-        "stuck": "Export stuck",
-        "stuckDesc": "The export seems to be taking longer than expected. You can retry or cancel.",
-        "retry": "Retry",
-        "cancel": "Cancel",
-        "failed": "Export failed",
-        "failedDesc": "We couldn't prepare your export. Please try again.",
-        "expired": "Export expired",
-        "expiredDesc": "This export has expired. Request a new one.",
-        "rateLimited": "Rate Limited",
-        "rateLimitedDesc": "You can request a new export in {hours} hours.",
-        "alreadyReady": "Export Available",
-        "alreadyReadyDesc": "Your recent data export is still available for download.",
-        "rateInfo": "You can request one data export per 24 hours. Exports are available for 24 hours."
+        "title": "تنزيل بياناتك",
+        "description": "احصل على نسخة من جميع بياناتك الشخصية بتنسيق قابل للقراءة آلياً (JSON)",
+        "button": "تنزيل بياناتي",
+        "requesting": "جاري الطلب...",
+        "requested": "تم طلب التصدير",
+        "requestedDesc": "جاري إعداد تصدير بياناتك. ستتلقى رابط التنزيل قريباً.",
+        "ready": "التصدير جاهز",
+        "readyDesc": "تصدير بياناتك جاهز.",
+        "expiresIn": "تنتهي الصلاحية خلال {hours} ساعات",
+        "download": "تنزيل التصدير",
+        "processing": "جاري إعداد التصدير...",
+        "stuck": "التصدير متوقف",
+        "stuckDesc": "يبدو أن التصدير يستغرق وقتاً أطول من المتوقع. يمكنك إعادة المحاولة أو الإلغاء.",
+        "retry": "إعادة المحاولة",
+        "cancel": "إلغاء",
+        "failed": "فشل التصدير",
+        "failedDesc": "تعذر إعداد التصدير. يرجى المحاولة مرة أخرى.",
+        "expired": "انتهت صلاحية التصدير",
+        "expiredDesc": "انتهت صلاحية هذا التصدير. اطلب تصديراً جديداً.",
+        "rateLimited": "تم تجاوز الحد",
+        "rateLimitedDesc": "يمكنك طلب تصدير جديد خلال {hours} ساعات.",
+        "alreadyReady": "التصدير متاح",
+        "alreadyReadyDesc": "تصدير بياناتك الأخير لا يزال متاحاً للتنزيل.",
+        "rateInfo": "يمكنك طلب تصدير بيانات واحد كل 24 ساعة. التصديرات متاحة لمدة 24 ساعة."
       },
       "deleteAccount": {
-        "title": "Delete Account",
-        "description": "Permanently delete your account and all associated data",
-        "button": "Delete My Account",
-        "confirmTitle": "Delete Your Account?",
-        "confirmDesc": "This action cannot be undone. After a 48-hour grace period, your account and all associated data will be permanently deleted. Billing records will be anonymized and retained for legal compliance.",
-        "errorActiveSubscription": "You have an active subscription. Please cancel your subscription first before deleting your account.",
-        "errorDeletionInProgress": "A deletion request is already in progress.",
-        "errorGeneric": "Could not process deletion request. Please try again.",
-        "confirmButton": "Yes, Delete My Account",
-        "cancelButton": "Cancel",
-        "cancelling": "Cancelling...",
-        "scheduled": "Deletion Scheduled",
-        "scheduledDesc": "Your account will be deleted on {date}. You can cancel this anytime before then.",
-        "cancelDeletion": "Cancel Deletion",
-        "cancelled": "Deletion Cancelled",
-        "cancelledDesc": "Your account deletion has been cancelled.",
-        "reason": "Reason (optional)",
-        "reasonPlaceholder": "Help us understand why you're leaving...",
-        "gracePeriod": "48-hour grace period",
-        "gracePeriodDesc": "You can cancel the deletion anytime within 48 hours.",
-        "whatHappens": "What happens when you delete your account:",
-        "deleteProfile": "Your profile and settings will be removed",
-        "deleteContent": "All your prospects, research, and content will be deleted",
-        "deleteFiles": "Uploaded files will be permanently removed",
-        "anonBilling": "Billing records will be anonymized for legal compliance",
-        "processing": "Processing deletion...",
-        "failed": "Deletion failed",
-        "failedDesc": "We couldn't schedule your account deletion. Please try again or contact support."
+        "title": "حذف الحساب",
+        "description": "حذف حسابك وجميع البيانات المرتبطة نهائياً",
+        "button": "حذف حسابي",
+        "confirmTitle": "حذف حسابك؟",
+        "confirmDesc": "لا يمكن التراجع عن هذا الإجراء. بعد فترة سماح 48 ساعة، سيتم حذف حسابك وجميع البيانات المرتبطة نهائياً. سيتم إخفاء هوية سجلات الفواتير والاحتفاظ بها للامتثال القانوني.",
+        "errorActiveSubscription": "لديك اشتراك نشط. يرجى إلغاء اشتراكك أولاً قبل حذف حسابك.",
+        "errorDeletionInProgress": "طلب الحذف قيد التنفيذ بالفعل.",
+        "errorGeneric": "تعذر معالجة طلب الحذف. يرجى المحاولة مرة أخرى.",
+        "confirmButton": "نعم، احذف حسابي",
+        "cancelButton": "إلغاء",
+        "cancelling": "جاري الإلغاء...",
+        "scheduled": "تم جدولة الحذف",
+        "scheduledDesc": "سيتم حذف حسابك في {date}. يمكنك إلغاء هذا في أي وقت قبل ذلك.",
+        "cancelDeletion": "إلغاء الحذف",
+        "cancelled": "تم إلغاء الحذف",
+        "cancelledDesc": "تم إلغاء حذف حسابك.",
+        "reason": "السبب (اختياري)",
+        "reasonPlaceholder": "ساعدنا على فهم سبب مغادرتك...",
+        "gracePeriod": "فترة سماح 48 ساعة",
+        "gracePeriodDesc": "يمكنك إلغاء الحذف في أي وقت خلال 48 ساعة.",
+        "whatHappens": "ماذا يحدث عند حذف حسابك:",
+        "deleteProfile": "سيتم إزالة ملفك وإعداداتك",
+        "deleteContent": "سيتم حذف جميع عملائك المحتملين وأبحاثك ومحتواك",
+        "deleteFiles": "سيتم إزالة الملفات المرفوعة نهائياً",
+        "anonBilling": "سيتم إخفاء هوية سجلات الفواتير للامتثال القانوني",
+        "processing": "جاري معالجة الحذف...",
+        "failed": "فشل الحذف",
+        "failedDesc": "تعذر جدولة حذف حسابك. يرجى المحاولة مرة أخرى أو الاتصال بالدعم."
       },
       "legal": {
-        "title": "Legal Documents",
-        "privacyPolicy": "Privacy Policy",
-        "privacyPolicyDesc": "How we collect, use, and protect your data",
-        "terms": "Terms & Conditions",
-        "termsDesc": "Rules for using DealMotion"
+        "title": "المستندات القانونية",
+        "privacyPolicy": "سياسة الخصوصية",
+        "privacyPolicyDesc": "كيف نجمع ونستخدم ونحمي بياناتك",
+        "terms": "الشروط والأحكام",
+        "termsDesc": "قواعد استخدام DealMotion"
       },
       "dataCategories": {
-        "prospects": "Prospects",
-        "prospectsDesc": "Companies you're researching or selling to",
-        "contacts": "Contacts",
-        "contactsDesc": "People at your prospect companies",
-        "research": "Research Briefs",
-        "researchDesc": "AI-generated company research",
-        "preparations": "Meeting Preparations",
-        "preparationsDesc": "AI-generated meeting briefs",
-        "followups": "Follow-ups",
-        "followupsDesc": "Meeting recordings and summaries",
-        "deals": "Deals",
-        "dealsDesc": "Sales opportunities you're tracking",
-        "notes": "Notes",
-        "notesDesc": "Your notes on prospects",
-        "files": "Knowledge Base Files",
-        "filesDesc": "Documents you've uploaded"
+        "prospects": "العملاء المحتملون",
+        "prospectsDesc": "الشركات التي تبحث عنها أو تبيع لها",
+        "contacts": "جهات الاتصال",
+        "contactsDesc": "الأشخاص في شركات عملائك المحتملين",
+        "research": "ملخصات البحث",
+        "researchDesc": "أبحاث الشركات المولدة بالذكاء الاصطناعي",
+        "preparations": "تحضيرات الاجتماعات",
+        "preparationsDesc": "ملخصات الاجتماعات المولدة بالذكاء الاصطناعي",
+        "followups": "المتابعات",
+        "followupsDesc": "تسجيلات وملخصات الاجتماعات",
+        "deals": "الصفقات",
+        "dealsDesc": "فرص المبيعات التي تتابعها",
+        "notes": "الملاحظات",
+        "notesDesc": "ملاحظاتك على العملاء المحتملين",
+        "files": "ملفات قاعدة المعرفة",
+        "filesDesc": "المستندات التي رفعتها"
       }
     }
   },
@@ -1350,70 +1350,70 @@
       "getStarted": "ابدأ الآن",
       "upgrade": "ترقية",
       "contactUs": "تواصل معنا",
-      "titleV2": "Simple pricing for every sales pro",
-      "titleV4": "Close more deals, prepare less",
-      "subtitleV2": "Start free with 2 flows. Upgrade when you need more.",
-      "subtitleV4": "AI that researches, prepares, and follows up — so you can focus on selling",
-      "flowExplanation": "1 Flow = 1 Research + 1 Prep + 1 Follow-up",
-      "perMonth": "month",
-      "forever": "forever",
-      "billedYearly": "Billed as {amount}/year",
-      "backToHome": "Back",
-      "earlyAdopter": "Early Adopter",
-      "launchOffer": "Early Bird Discount",
-      "launchOfferDescription": "Special launch pricing for early adopters - lock in these rates forever!",
-      "select": "Select",
-      "startTrial": "Start 14-day trial",
-      "choosePro": "Choose Pro",
-      "chooseProPlus": "Choose Pro+",
-      "goUnlimited": "Go Unlimited",
-      "goProPlus": "Get Complete Package",
-      "tryFirstResearch": "Try Your First Research",
-      "contactSales": "Contact Sales",
-      "alreadyFree": "You are already on the free plan.",
-      "donate": "Support us ❤️",
-      "perYear": "per year",
-      "contactForPricing": "Contact us for pricing",
-      "custom": "Custom",
-      "compareFeatures": "Compare all features",
-      "bestPlan": "You have the complete package!",
-      "feature": "Feature",
-      "trustBadges": "🔒 Secure payment via Stripe • 💳 All major cards accepted • ❌ Cancel anytime",
-      "moneyBackTitle": "30-Day Money-Back Guarantee",
-      "moneyBackDescription": "Not satisfied? No problem. Contact us within 30 days and we'll refund your payment in full. No questions asked.",
-      "moneyBackInline": "30-day money-back guarantee • Cancel anytime • No questions asked",
-      "launchEnds": "Launch pricing ends January 31st",
-      "saveAmount": "Save {amount}/year",
-      "noCardRequired": "No credit card required",
+      "titleV2": "تسعير بسيط لكل محترف مبيعات",
+      "titleV4": "أغلق صفقات أكثر، حضّر أقل",
+      "subtitleV2": "ابدأ مجاناً مع 2 تدفقات. قم بالترقية عند الحاجة.",
+      "subtitleV4": "ذكاء اصطناعي يبحث ويحضّر ويتابع — لتركز على البيع",
+      "flowExplanation": "1 تدفق = 1 بحث + 1 تحضير + 1 متابعة",
+      "perMonth": "شهر",
+      "forever": "إلى الأبد",
+      "billedYearly": "يتم الفوترة بـ {amount}/سنة",
+      "backToHome": "رجوع",
+      "earlyAdopter": "متبني مبكر",
+      "launchOffer": "خصم الإطلاق المبكر",
+      "launchOfferDescription": "تسعير إطلاق خاص للمتبنين المبكرين - احتفظ بهذه الأسعار إلى الأبد!",
+      "select": "اختيار",
+      "startTrial": "ابدأ تجربة 14 يوم",
+      "choosePro": "اختر Pro",
+      "chooseProPlus": "اختر Pro+",
+      "goUnlimited": "انطلق بلا حدود",
+      "goProPlus": "احصل على الحزمة الكاملة",
+      "tryFirstResearch": "جرب أول بحث لك",
+      "contactSales": "تواصل مع المبيعات",
+      "alreadyFree": "أنت بالفعل على الخطة المجانية.",
+      "donate": "ادعمنا ❤️",
+      "perYear": "سنوياً",
+      "contactForPricing": "تواصل معنا للتسعير",
+      "custom": "مخصص",
+      "compareFeatures": "مقارنة جميع الميزات",
+      "bestPlan": "لديك الحزمة الكاملة!",
+      "feature": "الميزة",
+      "trustBadges": "🔒 دفع آمن عبر Stripe • 💳 جميع البطاقات الرئيسية مقبولة • ❌ إلغاء في أي وقت",
+      "moneyBackTitle": "ضمان استرداد الأموال لمدة 30 يوم",
+      "moneyBackDescription": "غير راضٍ؟ لا مشكلة. تواصل معنا خلال 30 يوماً وسنرد لك المبلغ كاملاً. بدون أسئلة.",
+      "moneyBackInline": "ضمان استرداد الأموال 30 يوم • إلغاء في أي وقت • بدون أسئلة",
+      "launchEnds": "ينتهي تسعير الإطلاق في 31 يناير",
+      "saveAmount": "وفر {amount}/سنة",
+      "noCardRequired": "لا حاجة لبطاقة ائتمان",
       "testimonial": {
-        "quote": "DealMotion saves me 4+ hours per meeting. Easy! The AI knows exactly what I need.",
-        "author": "Sales Professional",
-        "company": "Beta User"
+        "quote": "DealMotion يوفر لي 4+ ساعات لكل اجتماع. سهل! الذكاء الاصطناعي يعرف بالضبط ما أحتاجه.",
+        "author": "محترف مبيعات",
+        "company": "مستخدم بيتا"
       },
       "value": {
         "research": {
-          "title": "Prospect Intelligence",
-          "description": "Complete company & contact research in minutes"
+          "title": "ذكاء العملاء المحتملين",
+          "description": "بحث كامل عن الشركة وجهات الاتصال في دقائق"
         },
         "prep": {
-          "title": "Smart Preparation",
-          "description": "Personalized meeting strategy based on your style"
+          "title": "تحضير ذكي",
+          "description": "استراتيجية اجتماع مخصصة بناءً على أسلوبك"
         },
         "meeting": {
-          "title": "Meeting Analysis",
-          "description": "AI captures everything so you can focus on selling"
+          "title": "تحليل الاجتماعات",
+          "description": "الذكاء الاصطناعي يلتقط كل شيء لتركز على البيع"
         },
         "followup": {
-          "title": "Instant Follow-up",
-          "description": "Professional meeting reports, emails & action items"
+          "title": "متابعة فورية",
+          "description": "تقارير اجتماعات مهنية ورسائل وبنود إجراءات"
         },
-        "personalized": "All powered by AI that knows your company, your products, and your selling style"
+        "personalized": "كل ذلك مدعوم بذكاء اصطناعي يعرف شركتك ومنتجاتك وأسلوب بيعك"
       },
-      "whatIsFlow": "What is a Flow?",
-      "flowStep1": "Research",
-      "flowStep2": "Preparation",
-      "flowStep3": "Follow-up",
-      "flowDescription": "A complete sales cycle from prospect research to meeting follow-up."
+      "whatIsFlow": "ما هو التدفق؟",
+      "flowStep1": "البحث",
+      "flowStep2": "التحضير",
+      "flowStep3": "المتابعة",
+      "flowDescription": "دورة مبيعات كاملة من بحث العميل المحتمل إلى متابعة الاجتماع."
     },
     "plans": {
       "free": {
@@ -1430,56 +1430,56 @@
       },
       "v2": {
         "free": {
-          "description": "Start free with 2 flows"
+          "description": "ابدأ مجاناً مع 2 تدفقات"
         },
         "lightSolo": {
           "name": "Light Solo",
-          "description": "For the starting sales pro"
+          "description": "لمحترف المبيعات المبتدئ"
         },
         "unlimitedSolo": {
           "name": "Unlimited Solo",
-          "description": "Unlimited for early adopters"
+          "description": "غير محدود للمتبنين المبكرين"
         },
         "enterprise": {
           "name": "Enterprise",
-          "description": "For teams with CRM needs"
+          "description": "للفرق ذات احتياجات CRM"
         }
       },
       "v3": {
         "free": {
-          "description": "Start free with 2 flows"
+          "description": "ابدأ مجاناً مع 2 تدفقات"
         },
         "proSolo": {
           "name": "Pro Solo",
-          "description": "For the active sales pro"
+          "description": "لمحترف المبيعات النشط"
         },
         "unlimitedSolo": {
           "name": "Unlimited Solo",
-          "description": "Unlimited for early adopters"
+          "description": "غير محدود للمتبنين المبكرين"
         },
         "enterprise": {
           "name": "Enterprise",
-          "description": "For teams with CRM needs"
+          "description": "للفرق ذات احتياجات CRM"
         }
       },
       "v4": {
         "free": {
-          "name": "Free",
-          "description": "Everything included — try a complete sales cycle"
+          "name": "مجاني",
+          "description": "كل شيء متضمن — جرب دورة مبيعات كاملة"
         },
         "pro": {
           "name": "Pro",
-          "description": "Stop wasting hours on research & prep",
-          "settingsDesc": "Stop wasting hours on research & prep"
+          "description": "توقف عن إضاعة ساعات في البحث والتحضير",
+          "settingsDesc": "توقف عن إضاعة ساعات في البحث والتحضير"
         },
         "proPlus": {
           "name": "Pro+",
-          "description": "Never take notes again — AI does it for you",
-          "settingsDesc": "Never take notes again — AI does it for you"
+          "description": "لا تدون ملاحظات مرة أخرى — الذكاء الاصطناعي يفعلها لك",
+          "settingsDesc": "لا تدون ملاحظات مرة أخرى — الذكاء الاصطناعي يفعلها لك"
         },
         "enterprise": {
           "name": "Enterprise",
-          "description": "Your entire team, synced with your CRM"
+          "description": "فريقك بالكامل، متزامن مع CRM الخاص بك"
         }
       }
     },
@@ -1494,56 +1494,56 @@
       "description": "تم إلغاء دفعتك. يمكنك المحاولة مرة أخرى متى شئت.",
       "backToPricing": "العودة للأسعار"
     },
-    "viewUsage": "View your usage",
-    "cancelWarning": "Your subscription will be cancelled on {date}",
-    "checkoutError": "Could not start checkout. Please try again.",
-    "portalError": "Could not open portal. Please try again.",
-    "donationNotConfigured": "Donation link is not configured yet.",
-    "flowsUsed": "Flows used",
-    "flowsRemaining": "Flows remaining",
+    "viewUsage": "عرض استخدامك",
+    "cancelWarning": "سيتم إلغاء اشتراكك في {date}",
+    "checkoutError": "تعذر بدء الدفع. يرجى المحاولة مرة أخرى.",
+    "portalError": "تعذر فتح البوابة. يرجى المحاولة مرة أخرى.",
+    "donationNotConfigured": "رابط التبرع غير مكون بعد.",
+    "flowsUsed": "التدفقات المستخدمة",
+    "flowsRemaining": "التدفقات المتبقية",
     "flowPacks": {
-      "title": "Need more flows?",
-      "description": "Buy extra flows when you need them",
+      "title": "هل تحتاج مزيداً من التدفقات؟",
+      "description": "اشترِ تدفقات إضافية عند الحاجة",
       "pack5": {
-        "name": "5 Flow Pack",
+        "name": "حزمة 5 تدفقات",
         "price": "€9.95",
-        "pricePerFlow": "€1.99/flow"
+        "pricePerFlow": "€1.99/تدفق"
       },
-      "buy": "Buy Flow Pack",
-      "balance": "Flow pack balance",
-      "noBalance": "No flow packs",
-      "history": "Purchase history",
-      "purchased": "Purchased",
-      "remaining": "{count} flows remaining",
-      "depleted": "Depleted",
-      "checkoutSuccess": "Flow pack purchased successfully!",
-      "checkoutError": "Could not purchase flow pack. Please try again."
+      "buy": "شراء حزمة تدفقات",
+      "balance": "رصيد حزمة التدفقات",
+      "noBalance": "لا توجد حزم تدفقات",
+      "history": "سجل المشتريات",
+      "purchased": "تم الشراء",
+      "remaining": "{count} تدفقات متبقية",
+      "depleted": "مستنفد",
+      "checkoutSuccess": "تم شراء حزمة التدفقات بنجاح!",
+      "checkoutError": "تعذر شراء حزمة التدفقات. يرجى المحاولة مرة أخرى."
     },
     "features": {
-      "researchBriefs": "research briefs",
-      "meetingPreps": "meeting preps",
-      "followups": "follow-ups",
-      "transcription": "Transcription",
-      "knowledgeBase": "Knowledge base",
-      "users": "Users",
-      "crmIntegration": "CRM integration",
-      "perMonth": "/month",
-      "unlimited": "Unlimited",
-      "hours": "hours",
-      "docs": "docs",
+      "researchBriefs": "ملخصات البحث",
+      "meetingPreps": "تحضيرات الاجتماعات",
+      "followups": "المتابعات",
+      "transcription": "النسخ",
+      "knowledgeBase": "قاعدة المعرفة",
+      "users": "المستخدمون",
+      "crmIntegration": "تكامل CRM",
+      "perMonth": "/شهر",
+      "unlimited": "غير محدود",
+      "hours": "ساعات",
+      "docs": "مستندات",
       "v2": {
-        "flows": "{count} flows per month",
-        "flowsUnlimited": "Unlimited flows",
-        "kb": "Knowledge Base included",
-        "transcription": "Transcription included",
-        "contacts": "Full contact analysis",
-        "pdf": "Clean PDF exports",
-        "user": "{count} user",
-        "usersUnlimited": "Unlimited users",
-        "support": "Email support",
-        "prioritySupport": "Priority support",
-        "dedicatedSupport": "Dedicated support",
-        "crm": "CRM integration",
+        "flows": "{count} تدفقات شهرياً",
+        "flowsUnlimited": "تدفقات غير محدودة",
+        "kb": "قاعدة المعرفة متضمنة",
+        "transcription": "النسخ متضمن",
+        "contacts": "تحليل جهات اتصال كامل",
+        "pdf": "تصدير PDF نظيف",
+        "user": "{count} مستخدم",
+        "usersUnlimited": "مستخدمون غير محدودين",
+        "support": "دعم عبر البريد",
+        "prioritySupport": "دعم أولوية",
+        "dedicatedSupport": "دعم مخصص",
+        "crm": "تكامل CRM",
         "crmDynamics": "Microsoft Dynamics",
         "crmSalesforce": "Salesforce",
         "crmHubspot": "HubSpot",
@@ -1552,101 +1552,101 @@
         "sso": "SSO/SAML"
       },
       "v3": {
-        "flows": "{count} flows per month",
-        "flowsUnlimited": "Unlimited flows",
-        "kb": "Knowledge Base included",
-        "transcription": "Transcription included",
-        "contacts": "Full contact analysis",
-        "pdf": "Clean PDF exports",
-        "user": "{count} user",
-        "usersUnlimited": "Unlimited users",
-        "support": "Email support",
-        "prioritySupport": "Priority support",
-        "dedicatedSupport": "Dedicated support",
-        "crm": "CRM integration",
+        "flows": "{count} تدفقات شهرياً",
+        "flowsUnlimited": "تدفقات غير محدودة",
+        "kb": "قاعدة المعرفة متضمنة",
+        "transcription": "النسخ متضمن",
+        "contacts": "تحليل جهات اتصال كامل",
+        "pdf": "تصدير PDF نظيف",
+        "user": "{count} مستخدم",
+        "usersUnlimited": "مستخدمون غير محدودين",
+        "support": "دعم عبر البريد",
+        "prioritySupport": "دعم أولوية",
+        "dedicatedSupport": "دعم مخصص",
+        "crm": "تكامل CRM",
         "crmDynamics": "Microsoft Dynamics",
         "crmSalesforce": "Salesforce",
         "crmHubspot": "HubSpot",
         "crmPipedrive": "Pipedrive",
         "crmZoho": "Zoho CRM",
         "sso": "SSO/SAML",
-        "flowPacks": "Buy extra flow packs"
+        "flowPacks": "شراء حزم تدفقات إضافية"
       },
       "v4": {
-        "testExperience": "Test & experience the platform",
-        "limitedFlows": "2 flows to get started",
-        "unlimitedFlows": "Unlimited flows",
-        "kb": "Knowledge Base",
-        "transcription": "Meeting transcription",
-        "contacts": "Contact analysis",
-        "pdf": "PDF & DOCX exports",
-        "prioritySupport": "Priority support",
+        "testExperience": "اختبر وجرب المنصة",
+        "limitedFlows": "2 تدفقات للبدء",
+        "unlimitedFlows": "تدفقات غير محدودة",
+        "kb": "قاعدة المعرفة",
+        "transcription": "نسخ الاجتماعات",
+        "contacts": "تحليل جهات الاتصال",
+        "pdf": "تصدير PDF و DOCX",
+        "prioritySupport": "دعم أولوية",
         "aiNotetaker": "AI Notetaker",
-        "aiNotetakerIncluded": "AI Notetaker Included",
-        "aiNotetakerDescription": "AI joins your meetings to record, transcribe & summarize",
-        "aiNotetakerTitle": "AI Notetaker - Only in Pro+",
-        "aiNotetakerLongDescription": "Let our AI join your meetings to automatically record, transcribe, and create intelligent summaries. Never miss an important detail again.",
-        "notetakerFeature1": "Auto-join meetings",
-        "notetakerFeature2": "Smart summaries",
-        "notetakerFeature3": "Action items",
-        "crm": "CRM integration",
-        "everythingProPlus": "Everything in Pro+",
-        "unlimitedUsers": "Unlimited team members",
+        "aiNotetakerIncluded": "AI Notetaker متضمن",
+        "aiNotetakerDescription": "الذكاء الاصطناعي ينضم لاجتماعاتك للتسجيل والنسخ والتلخيص",
+        "aiNotetakerTitle": "AI Notetaker - فقط في Pro+",
+        "aiNotetakerLongDescription": "دع ذكاءنا الاصطناعي ينضم لاجتماعاتك للتسجيل والنسخ وإنشاء ملخصات ذكية تلقائياً. لا تفوت تفصيلاً مهماً مرة أخرى.",
+        "notetakerFeature1": "الانضمام التلقائي للاجتماعات",
+        "notetakerFeature2": "ملخصات ذكية",
+        "notetakerFeature3": "بنود الإجراءات",
+        "crm": "تكامل CRM",
+        "everythingProPlus": "كل شيء في Pro+",
+        "unlimitedUsers": "أعضاء فريق غير محدودين",
         "crmDynamics": "Microsoft Dynamics 365",
         "crmSalesforce": "Salesforce CRM",
         "crmHubspot": "HubSpot CRM",
         "sso": "SSO / SAML",
-        "dedicatedSupport": "Dedicated account manager",
+        "dedicatedSupport": "مدير حساب مخصص",
         "value": {
-          "tryComplete": "Experience the full workflow",
-          "twoFlows": "1 complete sales cycle included",
-          "unlimited": "Unlimited prospects & meetings*",
-          "unlimitedNote": "*Fair use policy",
-          "uploadTranscripts": "Upload your own recordings & transcripts",
-          "prospectIntel": "360° prospect research & insights",
-          "contactAnalysis": "Deep analysis of decision-makers",
-          "meetingPrep": "Personalized meeting preparation",
-          "followupAnalysis": "AI-powered conversation analysis",
-          "meetingReport": "Professional meeting report to share with clients",
-          "dealAnalysis": "Commercial deal analysis with win strategy",
-          "emailsDealNotes": "Follow-up emails & CRM-ready notes",
-          "salesCoach": "Luna - Your AI sales coach",
-          "crmSync": "Sync with your CRM",
-          "teamSharing": "Share insights across your team"
+          "tryComplete": "جرب سير العمل الكامل",
+          "twoFlows": "دورة مبيعات كاملة واحدة متضمنة",
+          "unlimited": "عملاء محتملون واجتماعات غير محدودة*",
+          "unlimitedNote": "*سياسة الاستخدام العادل",
+          "uploadTranscripts": "ارفع تسجيلاتك ونصوصك الخاصة",
+          "prospectIntel": "بحث ورؤى 360° عن العملاء المحتملين",
+          "contactAnalysis": "تحليل عميق لصناع القرار",
+          "meetingPrep": "تحضير اجتماع مخصص",
+          "followupAnalysis": "تحليل محادثات بالذكاء الاصطناعي",
+          "meetingReport": "تقرير اجتماع مهني لمشاركته مع العملاء",
+          "dealAnalysis": "تحليل صفقة تجارية مع استراتيجية الفوز",
+          "emailsDealNotes": "رسائل متابعة وملاحظات جاهزة لـ CRM",
+          "salesCoach": "Luna - مدرب المبيعات الذكي الخاص بك",
+          "crmSync": "مزامنة مع CRM الخاص بك",
+          "teamSharing": "مشاركة الرؤى عبر فريقك"
         }
       },
       "free": {
-        "research": "3 research briefs per month",
-        "prep": "3 meeting preps per month",
-        "followup": "1 follow-up transcription",
-        "support": "Community support",
-        "users": "1 user",
-        "kb": "Knowledge base",
-        "contacts": "Full contact analysis",
-        "pdf": "Clean PDF exports"
+        "research": "3 ملخصات بحث شهرياً",
+        "prep": "3 تحضيرات اجتماعات شهرياً",
+        "followup": "نسخ متابعة واحد",
+        "support": "دعم المجتمع",
+        "users": "مستخدم واحد",
+        "kb": "قاعدة المعرفة",
+        "contacts": "تحليل جهات اتصال كامل",
+        "pdf": "تصدير PDF نظيف"
       },
       "solo": {
-        "research": "Unlimited research briefs",
-        "prep": "Unlimited meeting preps",
-        "followup": "Unlimited follow-ups",
-        "transcription": "10 hours transcription/month",
-        "kb": "Knowledge base (50 docs)",
-        "contacts": "Full contact analysis",
-        "pdf": "Clean PDF exports",
-        "support": "Email support (48h)",
-        "users": "1 user"
+        "research": "ملخصات بحث غير محدودة",
+        "prep": "تحضيرات اجتماعات غير محدودة",
+        "followup": "متابعات غير محدودة",
+        "transcription": "10 ساعات نسخ/شهر",
+        "kb": "قاعدة المعرفة (50 مستند)",
+        "contacts": "تحليل جهات اتصال كامل",
+        "pdf": "تصدير PDF نظيف",
+        "support": "دعم عبر البريد (48 ساعة)",
+        "users": "مستخدم واحد"
       },
       "teams": {
-        "everything": "Everything in Solo",
-        "users": "Unlimited users",
-        "transcription": "Unlimited transcription",
-        "kb": "Unlimited knowledge base",
-        "crm": "CRM integration",
-        "sharing": "Team sharing & collab",
-        "analytics": "Team analytics",
+        "everything": "كل شيء في Solo",
+        "users": "مستخدمون غير محدودين",
+        "transcription": "نسخ غير محدود",
+        "kb": "قاعدة معرفة غير محدودة",
+        "crm": "تكامل CRM",
+        "sharing": "مشاركة وتعاون الفريق",
+        "analytics": "تحليلات الفريق",
         "sso": "SSO/SAML",
-        "support": "Dedicated support",
-        "onboarding": "Onboarding call"
+        "support": "دعم مخصص",
+        "onboarding": "مكالمة تأهيل"
       }
     }
   },
@@ -1667,82 +1667,82 @@
       "title": "اكتملت المقابلة!",
       "description": "يمكنك الآن بدء أول بحث عن عميل محتمل",
       "button": "الذهاب للوحة التحكم",
-      "creating": "Creating your personalized profile..."
+      "creating": "جاري إنشاء ملفك الشخصي..."
     },
     "skip": "تخطي",
     "next": "التالي",
     "back": "رجوع",
     "finish": "إنهاء",
-    "starting": "Starting your onboarding interview...",
-    "takeYourTime": "Take your time to provide a thoughtful answer",
-    "updateProfile": "Update Profile",
+    "starting": "جاري بدء مقابلة التأهيل...",
+    "takeYourTime": "خذ وقتك لتقديم إجابة مدروسة",
+    "updateProfile": "تحديث الملف",
     "existingProfile": {
-      "title": "Profile Already Exists",
-      "description": "You already have a sales profile. Would you like to update it with a fresh interview?"
+      "title": "الملف موجود بالفعل",
+      "description": "لديك ملف مبيعات بالفعل. هل تريد تحديثه بمقابلة جديدة؟"
     },
     "profile": {
-      "title": "Tell us about yourself",
-      "description": "This information helps the AI generate personalized outputs"
+      "title": "أخبرنا عن نفسك",
+      "description": "هذه المعلومات تساعد الذكاء الاصطناعي على توليد مخرجات مخصصة"
     },
     "company": {
-      "title": "Tell us about your company",
-      "description": "This helps the AI understand your products and services",
-      "pageTitle": "Company Profile Onboarding",
-      "pageDesc": "Help the AI understand your company",
-      "questionOf": "Question {current} of {total}",
-      "generating": "Generating Company Profile...",
-      "generatingDesc": "AI is analyzing your answers and creating a structured company profile",
-      "generatingWait": "This may take a moment...",
-      "couldNotLoad": "Could not load interview",
-      "startInterview": "Starting interview...",
-      "yourAnswer": "Your answer",
-      "answerPlaceholder": "Type your answer here...",
-      "previous": "Previous",
-      "requiredQuestion": "Required question - answer as completely as possible",
-      "optionalQuestion": "Optional question - you can skip this"
+      "title": "أخبرنا عن شركتك",
+      "description": "هذا يساعد الذكاء الاصطناعي على فهم منتجاتك وخدماتك",
+      "pageTitle": "تأهيل ملف الشركة",
+      "pageDesc": "ساعد الذكاء الاصطناعي على فهم شركتك",
+      "questionOf": "السؤال {current} من {total}",
+      "generating": "جاري توليد ملف الشركة...",
+      "generatingDesc": "الذكاء الاصطناعي يحلل إجاباتك وينشئ ملف شركة منظم",
+      "generatingWait": "قد يستغرق هذا لحظة...",
+      "couldNotLoad": "تعذر تحميل المقابلة",
+      "startInterview": "جاري بدء المقابلة...",
+      "yourAnswer": "إجابتك",
+      "answerPlaceholder": "اكتب إجابتك هنا...",
+      "previous": "السابق",
+      "requiredQuestion": "سؤال مطلوب - أجب بأكبر قدر ممكن من التفصيل",
+      "optionalQuestion": "سؤال اختياري - يمكنك تخطيه"
     },
     "errors": {
-      "startFailed": "Failed to start interview. Please try again.",
-      "submitFailed": "Failed to submit answer. Please try again.",
-      "completeFailed": "Failed to complete interview. Please try again."
+      "startFailed": "فشل بدء المقابلة. حاول مرة أخرى.",
+      "submitFailed": "فشل إرسال الإجابة. حاول مرة أخرى.",
+      "completeFailed": "فشل إكمال المقابلة. حاول مرة أخرى."
     },
     "toast": {
-      "startError": "Error starting",
-      "startErrorDesc": "Could not start interview. Please try again.",
-      "saveError": "Error",
-      "saveErrorDesc": "Could not save answer",
-      "profileCreated": "Company profile created! 🎉",
-      "profileCreatedDesc": "Your company profile has been saved successfully.",
-      "createError": "Error",
-      "createErrorDesc": "Could not create profile. Please try again."
+      "startError": "خطأ في البدء",
+      "startErrorDesc": "تعذر بدء المقابلة. حاول مرة أخرى.",
+      "saveError": "خطأ",
+      "saveErrorDesc": "تعذر حفظ الإجابة",
+      "profileCreated": "تم إنشاء ملف الشركة! 🎉",
+      "profileCreatedDesc": "تم حفظ ملف شركتك بنجاح.",
+      "createError": "خطأ",
+      "createErrorDesc": "تعذر إنشاء الملف. حاول مرة أخرى."
     },
     "chat": {
-      "title": "Magic Profile Setup",
-      "subtitle": "A short conversation to complete your sales profile",
-      "startWithLinkedIn": "Start with LinkedIn",
-      "startWithLinkedInDesc": "We'll automatically gather as much information as possible",
-      "linkedInUrlLabel": "Your LinkedIn profile URL",
+      "title": "إعداد الملف السحري",
+      "subtitle": "محادثة قصيرة لإكمال ملف مبيعاتك",
+      "startWithLinkedIn": "ابدأ بـ LinkedIn",
+      "startWithLinkedInDesc": "سنجمع أكبر قدر ممكن من المعلومات تلقائياً",
+      "linkedInUrlLabel": "رابط ملفك على LinkedIn",
       "linkedInPlaceholder": "https://linkedin.com/in/your-profile",
-      "startMagicSetup": "Start Magic Setup",
-      "linkedInPrivacy": "Your LinkedIn data is only used to create your profile",
-      "analyzeProfile": "Analyze Profile",
-      "preparingChat": "Preparing chat based on your profile...",
-      "pleaseWait": "Please wait...",
-      "analyzingProfile": "Analyzing your LinkedIn profile",
-      "fetchingProfile": "Fetching profile",
-      "analyzingExperience": "Analyzing experience",
-      "extractingSkills": "Extracting skills",
-      "profileChatTitle": "Sales Profile Chat",
-      "companyProfileChatTitle": "Company Profile Chat",
-      "completeness": "Completeness",
-      "profileComplete": "Profile is complete enough!",
-      "saveProfile": "Save Profile",
-      "typeYourAnswer": "Type your answer...",
-      "profileSaved": "Profile saved!",
-      "redirecting": "Redirecting to dashboard...",
-      "couldNotEnrich": "Could not retrieve LinkedIn profile",
-      "couldNotEnrichDesc": "Please check the URL and try again",
-      "chatError": "Something went wrong with the chat"
+      "startMagicSetup": "بدء الإعداد السحري",
+      "linkedInPrivacy": "بيانات LinkedIn تُستخدم فقط لإنشاء ملفك",
+      "analyzeProfile": "تحليل الملف",
+      "preparingChat": "جاري تحضير المحادثة بناءً على ملفك...",
+      "pleaseWait": "يرجى الانتظار...",
+      "analyzingProfile": "جاري تحليل ملفك على LinkedIn",
+      "fetchingProfile": "جاري جلب الملف",
+      "analyzingExperience": "جاري تحليل الخبرة",
+      "extractingSkills": "جاري استخراج المهارات",
+      "profileChatTitle": "محادثة ملف المبيعات",
+      "companyProfileChatTitle": "محادثة ملف الشركة",
+      "completeness": "الاكتمال",
+      "profileComplete": "الملف مكتمل بشكل كافٍ!",
+      "saveProfile": "حفظ الملف",
+      "typeYourAnswer": "اكتب إجابتك...",
+      "profileSaved": "تم حفظ الملف!",
+      "redirecting": "جاري التوجيه للوحة التحكم...",
+      "couldNotEnrich": "تعذر جلب ملف LinkedIn",
+      "couldNotEnrichDesc": "تحقق من الرابط وحاول مرة أخرى",
+      "chatError": "حدث خطأ في المحادثة"
     }
   },
   "authForm": {
@@ -1758,14 +1758,14 @@
     "privacyPolicy": "سياسة الخصوصية",
     "checkYourEmail": "تحقق من بريدك الإلكتروني",
     "backToLogin": "العودة لتسجيل الدخول",
-    "confirmationEmailSent": "We've sent a confirmation link to {email}. Click the link to verify your account. Didn't receive an email? Check your spam folder.",
-    "userAlreadyExists": "An account with this email already exists. Please log in instead.",
+    "confirmationEmailSent": "أرسلنا رابط تأكيد إلى {email}. انقر على الرابط في بريدك للتحقق من حسابك.",
+    "userAlreadyExists": "يوجد حساب بهذا البريد بالفعل. يرجى تسجيل الدخول بدلاً.",
     "errors": {
-      "oauthError": "Authentication failed. Please try again.",
-      "accessDenied": "Sign in was cancelled.",
-      "serverError": "The authentication provider is temporarily unavailable. Please try again later.",
-      "genericSignIn": "An error occurred during sign in.",
-      "genericSignUp": "An error occurred during sign up."
+      "oauthError": "فشلت المصادقة. يرجى المحاولة مرة أخرى.",
+      "accessDenied": "تم إلغاء تسجيل الدخول.",
+      "serverError": "مزود المصادقة غير متاح مؤقتاً. يرجى المحاولة لاحقاً.",
+      "genericSignIn": "حدث خطأ أثناء تسجيل الدخول.",
+      "genericSignUp": "حدث خطأ أثناء التسجيل."
     }
   },
   "recordings": {
@@ -1785,53 +1785,53 @@
     "empty": {
       "title": "لا توجد تسجيلات بعد",
       "description": "ابدأ برفع تسجيل أو ربط تكامل",
-      "uploadWeb": "Upload Recording",
-      "connectIntegration": "Connect Integration"
+      "uploadWeb": "رفع تسجيل",
+      "connectIntegration": "ربط تكامل"
     },
     "filters": {
-      "allSources": "All Sources",
-      "allStatus": "All Status"
+      "allSources": "جميع المصادر",
+      "allStatus": "جميع الحالات"
     },
     "stats": {
-      "title": "Overview",
-      "total": "Total",
-      "bySources": "By Source"
+      "title": "نظرة عامة",
+      "total": "الإجمالي",
+      "bySources": "حسب المصدر"
     },
     "quickActions": {
-      "title": "Quick Actions",
-      "uploadRecording": "Upload Recording",
-      "startRecording": "Start Recording",
-      "manageIntegrations": "Manage Integrations"
+      "title": "إجراءات سريعة",
+      "uploadRecording": "رفع تسجيل",
+      "startRecording": "بدء التسجيل",
+      "manageIntegrations": "إدارة التكاملات"
     },
     "transcript": {
-      "title": "Transcript",
-      "participants": "Participants",
-      "notAvailable": "No transcript available for this recording",
-      "loadFailed": "Failed to load transcript",
-      "save": "Save Changes",
-      "saved": "Transcript saved",
-      "saveFailed": "Failed to save transcript",
-      "unsavedChanges": "You have unsaved changes"
+      "title": "النص",
+      "participants": "المشاركون",
+      "notAvailable": "لا يوجد نص متاح لهذا التسجيل",
+      "loadFailed": "فشل تحميل النص",
+      "save": "حفظ التغييرات",
+      "saved": "تم حفظ النص",
+      "saveFailed": "فشل حفظ النص",
+      "unsavedChanges": "لديك تغييرات غير محفوظة"
     },
     "recording": {
-      "description": "Record audio directly in your browser",
-      "instructions": "Click the button below to start recording your meeting. You can pause and resume as needed.",
-      "hint": "Your recording will be uploaded and analyzed automatically when you stop.",
-      "selectProspect": "Select Prospect",
-      "selectProspectPlaceholder": "Choose a company...",
-      "selectPrep": "Link to Preparation",
-      "selectPrepPlaceholder": "Choose a preparation...",
-      "noPreps": "No preparations available",
-      "selectContacts": "Select Contacts",
-      "noContacts": "No contacts available",
-      "selectProspectFirst": "Select a prospect to start recording"
+      "description": "سجل الصوت مباشرة في متصفحك",
+      "instructions": "انقر على الزر أدناه لبدء تسجيل اجتماعك. يمكنك الإيقاف والاستئناف حسب الحاجة.",
+      "hint": "سيتم رفع تسجيلك وتحليله تلقائياً عند التوقف.",
+      "selectProspect": "اختر العميل المحتمل",
+      "selectProspectPlaceholder": "اختر شركة...",
+      "selectPrep": "ربط بالتحضير",
+      "selectPrepPlaceholder": "اختر تحضيراً...",
+      "noPreps": "لا توجد تحضيرات متاحة",
+      "selectContacts": "اختر جهات الاتصال",
+      "noContacts": "لا توجد جهات اتصال متاحة",
+      "selectProspectFirst": "اختر عميلاً محتملاً لبدء التسجيل"
     },
     "delete": {
-      "confirmTitle": "Delete Recording",
-      "confirmDescription": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
-      "confirm": "Delete",
-      "success": "Recording deleted",
-      "failed": "Failed to delete recording"
+      "confirmTitle": "حذف التسجيل",
+      "confirmDescription": "هل أنت متأكد من حذف \"{title}\"؟ لا يمكن التراجع عن هذا الإجراء.",
+      "confirm": "حذف",
+      "success": "تم حذف التسجيل",
+      "failed": "فشل حذف التسجيل"
     }
   },
   "aiNotetaker": {
@@ -1850,43 +1850,43 @@
       "complete": "مكتمل",
       "error": "خطأ",
       "cancelled": "ملغي",
-      "waitingRoom": "In waiting room"
+      "waitingRoom": "في غرفة الانتظار"
     },
-    "urlHelp": "Supported: Microsoft Teams, Google Meet, Zoom, Webex",
-    "urlRequired": "Please enter a meeting URL",
-    "titleLabel": "Meeting Title",
-    "titlePlaceholder": "e.g. Sales Call with TechCorp",
-    "whenToJoin": "When to join",
-    "joinNow": "Join Now",
-    "scheduleLater": "Schedule for later",
-    "dateLabel": "Date",
-    "timeLabel": "Time",
-    "prospectLabel": "Link to Prospect (optional)",
-    "contextLabel": "Meeting Context",
-    "prepLabel": "Meeting Preparation",
-    "prepPlaceholder": "Select a preparation...",
-    "noPrep": "No preparation linked",
-    "contactsLabel": "Contacts attending",
-    "dealLabel": "Related Deal",
-    "dealPlaceholder": "Select a deal...",
-    "noDeal": "No deal linked",
-    "successNow": "AI Notetaker will join your meeting shortly",
-    "successLater": "Scheduled for {date} at {time}",
-    "error": "Failed to schedule",
-    "infoBox": "DealMotion AI Notes will join your meeting and automatically record, transcribe, and analyze the conversation. The analysis will appear in your recordings once complete.",
+    "urlHelp": "مدعوم: Microsoft Teams، Google Meet، Zoom، Webex",
+    "urlRequired": "يرجى إدخال رابط الاجتماع",
+    "titleLabel": "عنوان الاجتماع",
+    "titlePlaceholder": "مثلاً مكالمة مبيعات مع TechCorp",
+    "whenToJoin": "متى ينضم",
+    "joinNow": "انضم الآن",
+    "scheduleLater": "جدولة لاحقاً",
+    "dateLabel": "التاريخ",
+    "timeLabel": "الوقت",
+    "prospectLabel": "ربط بعميل محتمل (اختياري)",
+    "contextLabel": "سياق الاجتماع",
+    "prepLabel": "تحضير الاجتماع",
+    "prepPlaceholder": "اختر تحضيراً...",
+    "noPrep": "لا يوجد تحضير مرتبط",
+    "contactsLabel": "جهات الاتصال الحاضرة",
+    "dealLabel": "الصفقة المرتبطة",
+    "dealPlaceholder": "اختر صفقة...",
+    "noDeal": "لا توجد صفقة مرتبطة",
+    "successNow": "سينضم مدوّن الملاحظات الذكي لاجتماعك قريباً",
+    "successLater": "مجدول لـ {date} الساعة {time}",
+    "error": "فشلت الجدولة",
+    "infoBox": "سينضم DealMotion AI Notes لاجتماعك ويسجل وينسخ ويحلل المحادثة تلقائياً. سيظهر التحليل في تسجيلاتك عند الاكتمال.",
     "scheduled": {
-      "title": "Scheduled Recordings",
-      "empty": "No scheduled recordings",
-      "cancel": "Cancel",
-      "cancelConfirm": "Cancel this recording?",
-      "cancelDescription": "This will cancel the AI Notetaker for this meeting. This action cannot be undone.",
-      "cancelled": "Recording cancelled"
+      "title": "التسجيلات المجدولة",
+      "empty": "لا توجد تسجيلات مجدولة",
+      "cancel": "إلغاء",
+      "cancelConfirm": "إلغاء هذا التسجيل؟",
+      "cancelDescription": "سيؤدي هذا إلى إلغاء مدوّن الملاحظات الذكي لهذا الاجتماع. لا يمكن التراجع.",
+      "cancelled": "تم إلغاء التسجيل"
     },
     "proPlus": {
-      "title": "AI Notetaker is Pro+ Only",
-      "description": "Upgrade to Pro+ to let AI automatically join, record, and analyze your meetings. Never miss an important detail again.",
-      "upgrade": "Upgrade to Pro+",
-      "alternative": "Pro users can upload recordings manually"
+      "title": "مدوّن الملاحظات الذكي لـ Pro+ فقط",
+      "description": "رقِّ إلى Pro+ لينضم الذكاء الاصطناعي تلقائياً ويسجل ويحلل اجتماعاتك. لا تفوّت تفصيلاً مهماً مرة أخرى.",
+      "upgrade": "ترقية إلى Pro+",
+      "alternative": "مستخدمو Pro يمكنهم رفع التسجيلات يدوياً"
     }
   },
   "coach": {
@@ -1899,15 +1899,15 @@
       "settings": "الإعدادات",
       "allCaughtUp": "كل شيء محدث!",
       "greatWork": "عمل رائع! عد لاحقاً لاقتراحات جديدة.",
-      "hideForToday": "Hide for today"
+      "hideForToday": "إخفاء لليوم"
     },
     "actions": {
       "doIt": "نفذ",
       "later": "لاحقاً",
       "skip": "تخطي",
-      "snooze1hour": "Snooze 1 hour",
-      "snoozeTonight": "Remind tonight",
-      "snoozeTomorrow": "Remind tomorrow"
+      "snooze1hour": "تأجيل ساعة",
+      "snoozeTonight": "تذكير الليلة",
+      "snoozeTomorrow": "تذكير غداً"
     },
     "stats": {
       "research": "البحث",
@@ -1917,127 +1917,127 @@
     },
     "completion": {
       "researchComplete": {
-        "title": "Research Complete!",
-        "description": "Great work! Your research on {company} is ready. What would you like to do next?",
-        "addContacts": "Add Contacts",
-        "addContactsDesc": "Add key people to talk to",
-        "createPrep": "Create Preparation",
-        "createPrepDesc": "Start meeting prep now"
+        "title": "اكتمل البحث!",
+        "description": "عمل رائع! بحثك عن {company} جاهز. ماذا تريد أن تفعل بعد ذلك؟",
+        "addContacts": "إضافة جهات اتصال",
+        "addContactsDesc": "أضف أشخاص رئيسيين للتحدث معهم",
+        "createPrep": "إنشاء تحضير",
+        "createPrepDesc": "ابدأ تحضير الاجتماع الآن"
       },
       "contactsAdded": {
-        "title": "Contacts Added!",
-        "description": "You've added {count} to {company}. Luna can now generate personalized conversation starters.",
-        "createPrep": "Create Preparation",
-        "createPrepDesc": "Get personalized talking points",
-        "addMore": "Add More Contacts",
-        "addMoreDesc": "Find more people to connect with"
+        "title": "تمت إضافة جهات الاتصال!",
+        "description": "أضفت {count} إلى {company}. يمكن لـ Luna الآن توليد بدايات محادثة مخصصة.",
+        "createPrep": "إنشاء تحضير",
+        "createPrepDesc": "احصل على نقاط حوار مخصصة",
+        "addMore": "إضافة المزيد",
+        "addMoreDesc": "ابحث عن أشخاص آخرين للتواصل معهم"
       },
       "prepReady": {
-        "title": "Prep Ready!",
-        "description": "Your meeting preparation for {company} is complete. Good luck with your meeting!",
-        "viewPrep": "View Preparation",
-        "viewPrepDesc": "Review your preparation",
-        "addFollowup": "Add Follow-up Later",
-        "addFollowupDesc": "Create follow-up later"
+        "title": "التحضير جاهز!",
+        "description": "تحضيرك للاجتماع مع {company} مكتمل. حظاً موفقاً!",
+        "viewPrep": "عرض التحضير",
+        "viewPrepDesc": "راجع تحضيرك",
+        "addFollowup": "إضافة متابعة لاحقاً",
+        "addFollowupDesc": "إنشاء متابعة لاحقاً"
       },
       "followupComplete": {
-        "title": "Follow-up Created!",
-        "description": "Your meeting follow-up is ready. Generate actions to make the most of your meeting.",
-        "generateReport": "Generate Report",
-        "generateReportDesc": "Create a shareable summary",
-        "viewActions": "View All Actions",
-        "viewActionsDesc": "See all follow-up options"
+        "title": "تم إنشاء المتابعة!",
+        "description": "متابعة اجتماعك جاهزة. ولّد إجراءات للاستفادة القصوى من اجتماعك.",
+        "generateReport": "توليد تقرير",
+        "generateReportDesc": "إنشاء ملخص قابل للمشاركة",
+        "viewActions": "عرض جميع الإجراءات",
+        "viewActionsDesc": "عرض جميع خيارات المتابعة"
       },
       "actionGenerated": {
-        "title": "Action Generated!",
-        "description": "Your {actionType} is ready.",
-        "export": "Export",
-        "exportDesc": "Download or share the action",
-        "moreActions": "More Actions",
-        "moreActionsDesc": "Create additional actions"
+        "title": "تم توليد الإجراء!",
+        "description": "{actionType} جاهز.",
+        "export": "تصدير",
+        "exportDesc": "تنزيل أو مشاركة الإجراء",
+        "moreActions": "إجراءات أخرى",
+        "moreActionsDesc": "إنشاء إجراءات إضافية"
       },
       "generic": {
-        "title": "Great Work!",
-        "description": "You completed a task successfully.",
-        "continue": "Continue",
-        "continueDesc": "Keep going"
+        "title": "عمل رائع!",
+        "description": "أكملت مهمة بنجاح.",
+        "continue": "متابعة",
+        "continueDesc": "استمر"
       }
     },
     "inlineTips": {
       "researchForm": {
-        "title": "Pro tip: Be specific",
-        "description": "Include the company website or LinkedIn URL for better research results."
+        "title": "نصيحة: كن محدداً",
+        "description": "أضف موقع الشركة أو رابط LinkedIn لنتائج بحث أفضل."
       },
       "contactsEmpty": {
-        "title": "Add contacts first",
-        "description": "Adding contact persons before creating a preparation improves your meeting outcomes by 40%.",
-        "action": "Add contacts"
+        "title": "أضف جهات اتصال أولاً",
+        "description": "إضافة جهات اتصال قبل إنشاء التحضير تحسن نتائج اجتماعاتك بنسبة 40%.",
+        "action": "إضافة جهات اتصال"
       },
       "contactsFew": {
-        "title": "Add more contacts",
-        "description": "Having 2-3 contacts gives Luna more context for personalized conversation starters."
+        "title": "أضف المزيد",
+        "description": "وجود 2-3 جهات اتصال يعطي Luna سياقاً أكثر لبدايات محادثة مخصصة."
       },
       "prepForm": {
-        "title": "Best timing",
-        "description": "Create your preparation 1-2 days before the meeting for optimal results."
+        "title": "أفضل توقيت",
+        "description": "أنشئ تحضيرك قبل 1-2 يوم من الاجتماع لنتائج مثالية."
       },
       "prepNoContacts": {
-        "title": "Missing contacts",
-        "description": "Your preparation will be more generic without contact persons. Add contacts first for personalized talking points.",
-        "action": "Add contacts first"
+        "title": "جهات اتصال مفقودة",
+        "description": "تحضيرك سيكون عاماً أكثر بدون جهات اتصال. أضف جهات اتصال أولاً لنقاط حوار مخصصة.",
+        "action": "أضف جهات اتصال أولاً"
       },
       "followupForm": {
-        "title": "Upload your recording",
-        "description": "Upload your meeting recording or transcript to generate comprehensive follow-up actions."
+        "title": "ارفع تسجيلك",
+        "description": "ارفع تسجيل اجتماعك أو النص لتوليد إجراءات متابعة شاملة."
       },
       "dealForm": {
-        "title": "Track your deal",
-        "description": "Linking deals to prospects helps Luna provide better pipeline insights."
+        "title": "تتبع صفقتك",
+        "description": "ربط الصفقات بالعملاء يساعد Luna على تقديم رؤى أفضل للمسار."
       },
       "exportAvailable": {
-        "title": "Export available",
-        "description": "You can export this brief as PDF, Word, or Markdown using the dropdown menu."
+        "title": "التصدير متاح",
+        "description": "يمكنك تصدير هذا الملخص ك PDF أو Word أو Markdown من القائمة."
       }
     },
     "sections": {
-      "priority": "Priority",
-      "suggestions": "Suggestions",
-      "progress": "Today's Progress",
-      "tip": "Tip of the Day",
-      "score": "Success Score",
-      "predictions": "Predictions",
-      "recommendations": "Recommendations"
+      "priority": "الأولوية",
+      "suggestions": "الاقتراحات",
+      "progress": "تقدم اليوم",
+      "tip": "نصيحة اليوم",
+      "score": "درجة النجاح",
+      "predictions": "التوقعات",
+      "recommendations": "التوصيات"
     },
     "suggestions": {
-      "addContacts": "Add contacts to {company}",
-      "createPrep": "Create meeting preparation",
-      "uploadFollowup": "Upload meeting recording",
-      "generateReport": "Generate customer report",
-      "reviewCoaching": "Review sales coaching feedback"
+      "addContacts": "أضف جهات اتصال لـ {company}",
+      "createPrep": "أنشئ تحضير اجتماع",
+      "uploadFollowup": "ارفع تسجيل الاجتماع",
+      "generateReport": "ولّد تقرير العميل",
+      "reviewCoaching": "راجع ملاحظات تدريب المبيعات"
     },
     "reasons": {
-      "meetingTomorrow": "Meeting tomorrow at {time}",
-      "meetingIn": "Meeting in {hours} hours",
-      "noContacts": "No contacts added yet",
-      "prepReady": "Preparation is ready",
-      "overdue": "{days} days since last activity"
+      "meetingTomorrow": "اجتماع غداً الساعة {time}",
+      "meetingIn": "اجتماع خلال {hours} ساعات",
+      "noContacts": "لم تتم إضافة جهات اتصال بعد",
+      "prepReady": "التحضير جاهز",
+      "overdue": "{days} أيام منذ آخر نشاط"
     },
     "tips": {
-      "contactsImprove": "Adding contacts before prep improves meeting outcomes by 40%",
-      "customerReports": "Customer reports increase follow-up response rates by 60%",
-      "prepTiming": "Best preps are created 1-2 days before the meeting"
+      "contactsImprove": "إضافة جهات اتصال قبل التحضير تحسن نتائج الاجتماعات بنسبة 40%",
+      "customerReports": "تقارير العملاء تزيد معدلات الاستجابة للمتابعة بنسبة 60%",
+      "prepTiming": "أفضل التحضيرات تُنشأ قبل 1-2 يوم من الاجتماع"
     },
     "settings": {
-      "title": "Coach Settings",
-      "enabled": "Enable AI Coach",
-      "inlineTips": "Show inline tips",
-      "completionModals": "Show completion suggestions",
-      "quietHours": "Quiet hours",
-      "frequency": "Notification frequency",
+      "title": "إعدادات المدرب",
+      "enabled": "تفعيل المدرب الذكي",
+      "inlineTips": "عرض النصائح المضمنة",
+      "completionModals": "عرض اقتراحات الإكمال",
+      "quietHours": "ساعات الهدوء",
+      "frequency": "تكرار الإشعارات",
       "frequencyOptions": {
-        "minimal": "Minimal",
-        "normal": "Normal",
-        "frequent": "Frequent"
+        "minimal": "الحد الأدنى",
+        "normal": "عادي",
+        "frequent": "متكرر"
       }
     }
   },
@@ -2062,185 +2062,185 @@
       "edit": "تعديل",
       "view": "عرض",
       "loading": "جاري التحميل...",
-      "user": "User",
-      "users": "Users",
-      "actions": "Actions",
-      "status": "Status",
-      "date": "Date",
-      "error": "Error",
-      "success": "Success",
-      "confirm": "Confirm",
-      "previous": "Previous",
-      "next": "Next",
-      "showing": "Showing {from} to {to} of {total}",
-      "perPage": "per page"
+      "user": "مستخدم",
+      "users": "مستخدمون",
+      "actions": "إجراءات",
+      "status": "الحالة",
+      "date": "التاريخ",
+      "error": "خطأ",
+      "success": "نجاح",
+      "confirm": "تأكيد",
+      "previous": "السابق",
+      "next": "التالي",
+      "showing": "عرض {from} إلى {to} من {total}",
+      "perPage": "لكل صفحة"
     },
     "roles": {
-      "super_admin": "Super Admin",
-      "admin": "Admin",
-      "support": "Support",
-      "viewer": "Viewer"
+      "super_admin": "مدير أعلى",
+      "admin": "مدير",
+      "support": "دعم",
+      "viewer": "مشاهد"
     },
     "dashboard": {
-      "title": "Admin Dashboard",
-      "subtitle": "System overview and key metrics",
+      "title": "لوحة تحكم الإدارة",
+      "subtitle": "نظرة عامة على النظام والمقاييس الرئيسية",
       "metrics": {
-        "totalUsers": "Total Users",
-        "activeUsers": "Active Users",
-        "mrr": "Monthly Revenue",
-        "activeAlerts": "Active Alerts"
+        "totalUsers": "إجمالي المستخدمين",
+        "activeUsers": "المستخدمون النشطون",
+        "mrr": "الإيراد الشهري",
+        "activeAlerts": "التنبيهات النشطة"
       },
       "trends": {
-        "title": "Usage Trends",
-        "last30Days": "Last 30 days",
-        "users": "Users",
-        "flows": "Flows"
+        "title": "اتجاهات الاستخدام",
+        "last30Days": "آخر 30 يوم",
+        "users": "المستخدمون",
+        "flows": "التدفقات"
       },
       "recentAlerts": {
-        "title": "Recent Alerts",
-        "viewAll": "View all alerts",
-        "noAlerts": "No active alerts"
+        "title": "التنبيهات الأخيرة",
+        "viewAll": "عرض جميع التنبيهات",
+        "noAlerts": "لا توجد تنبيهات نشطة"
       }
     },
     "users": {
-      "title": "User Management",
-      "subtitle": "View and manage all users",
-      "searchPlaceholder": "Search by email or name...",
-      "filterByPlan": "Filter by plan",
-      "allPlans": "All plans",
-      "noUsers": "No users found",
+      "title": "إدارة المستخدمين",
+      "subtitle": "عرض وإدارة جميع المستخدمين",
+      "searchPlaceholder": "البحث بالبريد الإلكتروني أو الاسم...",
+      "filterByPlan": "تصفية حسب الخطة",
+      "allPlans": "جميع الخطط",
+      "noUsers": "لم يتم العثور على مستخدمين",
       "columns": {
-        "user": "User",
-        "organization": "Organization",
-        "plan": "Plan",
-        "flows": "Flows",
-        "health": "Health",
-        "lastActive": "Last Active",
-        "actions": "Actions"
+        "user": "المستخدم",
+        "organization": "المنظمة",
+        "plan": "الخطة",
+        "flows": "التدفقات",
+        "health": "الصحة",
+        "lastActive": "آخر نشاط",
+        "actions": "الإجراءات"
       },
       "actions": {
-        "viewDetails": "View Details",
-        "resetFlows": "Reset Flows",
-        "addFlows": "Add Flows",
-        "extendTrial": "Extend Trial",
-        "exportData": "Export Data"
+        "viewDetails": "عرض التفاصيل",
+        "resetFlows": "إعادة تعيين التدفقات",
+        "addFlows": "إضافة تدفقات",
+        "extendTrial": "تمديد التجربة",
+        "exportData": "تصدير البيانات"
       },
       "detail": {
-        "title": "User Details",
-        "overview": "Overview",
-        "activity": "Activity",
-        "flowPacks": "Flow Packs",
-        "billing": "Billing",
-        "errors": "Errors",
-        "notes": "Admin Notes",
-        "createdAt": "Created",
-        "lastLogin": "Last Login",
-        "never": "Never"
+        "title": "تفاصيل المستخدم",
+        "overview": "نظرة عامة",
+        "activity": "النشاط",
+        "flowPacks": "حزم التدفقات",
+        "billing": "الفواتير",
+        "errors": "الأخطاء",
+        "notes": "ملاحظات المدير",
+        "createdAt": "تاريخ الإنشاء",
+        "lastLogin": "آخر تسجيل دخول",
+        "never": "أبداً"
       },
       "health": {
-        "good": "Good",
-        "warning": "Warning",
-        "critical": "Critical"
+        "good": "جيد",
+        "warning": "تحذير",
+        "critical": "حرج"
       }
     },
     "alerts": {
-      "title": "System Alerts",
-      "subtitle": "Monitor and resolve system issues",
-      "filterByType": "Filter by type",
-      "filterByStatus": "Filter by status",
-      "allTypes": "All types",
-      "allStatuses": "All statuses",
-      "noAlerts": "No alerts found",
+      "title": "تنبيهات النظام",
+      "subtitle": "مراقبة وحل مشاكل النظام",
+      "filterByType": "تصفية حسب النوع",
+      "filterByStatus": "تصفية حسب الحالة",
+      "allTypes": "جميع الأنواع",
+      "allStatuses": "جميع الحالات",
+      "noAlerts": "لم يتم العثور على تنبيهات",
       "columns": {
-        "alert": "Alert",
-        "type": "Type",
-        "user": "User",
-        "status": "Status",
-        "createdAt": "Created",
-        "actions": "Actions"
+        "alert": "التنبيه",
+        "type": "النوع",
+        "user": "المستخدم",
+        "status": "الحالة",
+        "createdAt": "تاريخ الإنشاء",
+        "actions": "الإجراءات"
       },
       "status": {
-        "active": "Active",
-        "acknowledged": "Acknowledged",
-        "resolved": "Resolved"
+        "active": "نشط",
+        "acknowledged": "معترف به",
+        "resolved": "محلول"
       },
       "types": {
-        "error": "Error",
-        "warning": "Warning",
-        "info": "Info",
-        "payment_failed": "Payment Failed",
-        "usage_limit": "Usage Limit",
-        "security": "Security"
+        "error": "خطأ",
+        "warning": "تحذير",
+        "info": "معلومات",
+        "payment_failed": "فشل الدفع",
+        "usage_limit": "حد الاستخدام",
+        "security": "الأمان"
       },
       "actions": {
-        "acknowledge": "Acknowledge",
-        "resolve": "Resolve"
+        "acknowledge": "اعتراف",
+        "resolve": "حل"
       }
     },
     "health": {
-      "title": "System Health",
-      "subtitle": "Service status and job monitoring",
-      "overview": "Service Overview",
-      "jobs": "Job Health",
+      "title": "صحة النظام",
+      "subtitle": "حالة الخدمات ومراقبة المهام",
+      "overview": "نظرة عامة على الخدمات",
+      "jobs": "صحة المهام",
       "services": {
-        "api": "API Server",
-        "database": "Database",
+        "api": "خادم API",
+        "database": "قاعدة البيانات",
         "inngest": "Inngest Jobs",
         "stripe": "Stripe",
         "supabase": "Supabase"
       },
       "status": {
-        "operational": "Operational",
-        "degraded": "Degraded",
-        "outage": "Outage"
+        "operational": "تعمل",
+        "degraded": "متدهورة",
+        "outage": "متوقفة"
       },
       "jobStats": {
-        "successRate": "Success Rate",
-        "totalJobs": "Total Jobs (24h)",
-        "failed": "Failed",
-        "avgDuration": "Avg Duration"
+        "successRate": "معدل النجاح",
+        "totalJobs": "إجمالي المهام (24 ساعة)",
+        "failed": "فاشلة",
+        "avgDuration": "متوسط المدة"
       }
     },
     "billing": {
-      "title": "Billing Overview",
-      "subtitle": "Revenue and payment metrics",
+      "title": "نظرة عامة على الفواتير",
+      "subtitle": "مقاييس الإيرادات والمدفوعات",
       "metrics": {
-        "mrr": "Monthly Recurring Revenue",
-        "paidUsers": "Paid Users",
-        "churnRate": "Churn Rate",
-        "avgRevenue": "Avg Revenue/User"
+        "mrr": "الإيراد الشهري المتكرر",
+        "paidUsers": "المستخدمون المدفوعون",
+        "churnRate": "معدل التسرب",
+        "avgRevenue": "متوسط الإيراد/مستخدم"
       },
-      "planDistribution": "Plan Distribution",
-      "recentTransactions": "Recent Transactions",
-      "failedPayments": "Failed Payments",
-      "noTransactions": "No transactions found",
-      "noFailedPayments": "No failed payments"
+      "planDistribution": "توزيع الخطط",
+      "recentTransactions": "المعاملات الأخيرة",
+      "failedPayments": "المدفوعات الفاشلة",
+      "noTransactions": "لم يتم العثور على معاملات",
+      "noFailedPayments": "لا توجد مدفوعات فاشلة"
     },
     "audit": {
-      "title": "Audit Log",
-      "subtitle": "Admin action history",
-      "searchPlaceholder": "Search actions...",
-      "filterByAction": "Filter by action",
-      "allActions": "All actions",
-      "export": "Export CSV",
-      "noLogs": "No audit logs found",
+      "title": "سجل التدقيق",
+      "subtitle": "تاريخ إجراءات المدير",
+      "searchPlaceholder": "البحث في الإجراءات...",
+      "filterByAction": "تصفية حسب الإجراء",
+      "allActions": "جميع الإجراءات",
+      "export": "تصدير CSV",
+      "noLogs": "لم يتم العثور على سجلات تدقيق",
       "columns": {
-        "admin": "Admin",
-        "action": "Action",
-        "target": "Target",
-        "details": "Details",
-        "timestamp": "Timestamp",
-        "ip": "IP Address"
+        "admin": "المدير",
+        "action": "الإجراء",
+        "target": "الهدف",
+        "details": "التفاصيل",
+        "timestamp": "الطابع الزمني",
+        "ip": "عنوان IP"
       }
     },
     "notes": {
-      "title": "Admin Notes",
-      "addNote": "Add Note",
-      "editNote": "Edit Note",
-      "deleteNote": "Delete Note",
-      "placeholder": "Enter note...",
-      "noNotes": "No notes yet",
-      "confirmDelete": "Are you sure you want to delete this note?"
+      "title": "ملاحظات المدير",
+      "addNote": "إضافة ملاحظة",
+      "editNote": "تعديل الملاحظة",
+      "deleteNote": "حذف الملاحظة",
+      "placeholder": "أدخل الملاحظة...",
+      "noNotes": "لا توجد ملاحظات بعد",
+      "confirmDelete": "هل أنت متأكد من حذف هذه الملاحظة؟"
     }
   },
   "homepage": {
@@ -2255,8 +2255,8 @@
       "description": "ابحث عن الحسابات، جهز الاجتماعات، دع الذكاء الاصطناعي يلتقط كل محادثة، وتابع—كل ذلك مدعوم بذكاء اصطناعي يعرف أسلوبك ومنتجك وعميلك.",
       "startFree": "ابدأ مجاناً",
       "viewPricing": "عرض الأسعار",
-      "startTrial": "Start Free Trial",
-      "watchDemo": "Watch Demo"
+      "startTrial": "ابدأ تجربة مجانية",
+      "watchDemo": "شاهد العرض"
     },
     "cta": {
       "title": "ادخل كل اجتماع بثقة. اخرج بخطة واضحة.",
@@ -2267,295 +2267,295 @@
       "rights": "جميع الحقوق محفوظة."
     },
     "preview": {
-      "research": "Research",
-      "brief": "Brief",
-      "aiMeetingBrief": "AI Meeting Brief",
-      "generatedIn": "Generated in 30 seconds"
+      "research": "البحث",
+      "brief": "الملخص",
+      "aiMeetingBrief": "ملخص اجتماع بالذكاء الاصطناعي",
+      "generatedIn": "تم إنشاؤه في 30 ثانية"
     },
     "features": {
-      "title": "Everything you need to keep deals moving",
-      "description": "From research to follow-up, we've got you covered at every stage of your deal cycle.",
+      "title": "كل ما تحتاجه لإبقاء الصفقات متحركة",
+      "description": "من البحث إلى المتابعة، نغطيك في كل مرحلة من دورة صفقتك.",
       "research": {
-        "title": "Account Research",
-        "description": "AI-powered research on any company. Get insights on their business, challenges, decision makers, and opportunities."
+        "title": "بحث الحسابات",
+        "description": "بحث مدعوم بالذكاء الاصطناعي عن أي شركة. احصل على رؤى حول أعمالهم وتحدياتهم وصناع القرار والفرص."
       },
       "preparation": {
-        "title": "Meeting Preparation",
-        "description": "Generate personalized meeting briefs with talking points, SPIN questions, and strategy recommendations."
+        "title": "تحضير الاجتماعات",
+        "description": "أنشئ ملخصات اجتماعات مخصصة مع نقاط الحديث وأسئلة SPIN وتوصيات الاستراتيجية."
       },
       "followup": {
-        "title": "Meeting Follow-up",
-        "description": "Upload recordings, get AI summaries, action items, and customer-facing reports automatically."
+        "title": "متابعة الاجتماعات",
+        "description": "ارفع التسجيلات، احصل على ملخصات ذكية وبنود إجراءات وتقارير للعملاء تلقائياً."
       },
       "aiCoach": {
-        "title": "AI Sales Coach",
-        "description": "Your personal sales coach that analyzes your conversations and provides actionable tips to improve."
+        "title": "مدرب المبيعات الذكي",
+        "description": "مدرب مبيعاتك الشخصي الذي يحلل محادثاتك ويقدم نصائح عملية للتحسين."
       },
       "knowledgeBase": {
-        "title": "Knowledge Base",
-        "description": "Upload your company docs. The AI uses your context to generate relevant, on-brand content."
+        "title": "قاعدة المعرفة",
+        "description": "ارفع مستندات شركتك. يستخدم الذكاء الاصطناعي سياقك لإنشاء محتوى ملائم ومتوافق مع علامتك التجارية."
       },
       "contactAnalysis": {
-        "title": "Contact Analysis",
-        "description": "Get detailed profiles on decision makers with communication preferences and engagement tips."
+        "title": "تحليل جهات الاتصال",
+        "description": "احصل على ملفات تعريفية مفصلة لصناع القرار مع تفضيلات التواصل ونصائح التفاعل."
       },
       "outreach": {
-        "title": "Smart Outreach",
-        "description": "AI writes your first message to prospects. LinkedIn, email, or WhatsApp—fully personalized based on your research. No generic templates, just messages that land."
+        "title": "التواصل الذكي",
+        "description": "الذكاء الاصطناعي يكتب رسالتك الأولى للعملاء المحتملين. LinkedIn أو البريد الإلكتروني أو WhatsApp—مخصصة بالكامل بناءً على بحثك. لا قوالب عامة، فقط رسائل تصل."
       },
       "meetingsCalendar": {
-        "title": "Meetings Calendar",
-        "description": "All your meetings in one view. Prep status at a glance. Never walk in unprepared again."
+        "title": "تقويم الاجتماعات",
+        "description": "جميع اجتماعاتك في عرض واحد. حالة التحضير بلمحة. لا تدخل غير مستعد مرة أخرى."
       },
       "inPersonMeetings": {
-        "title": "In-Person Meetings",
-        "description": "From Zoom calls to coffee meetings—record and analyze every conversation, anywhere."
+        "title": "الاجتماعات الشخصية",
+        "description": "من مكالمات Zoom إلى اجتماعات القهوة—سجل وحلل كل محادثة، في أي مكان."
       },
       "smartIntegrations": {
-        "title": "Smart Integrations",
-        "description": "Connect Google Calendar, Microsoft 365, and Fireflies.ai. CRM sync coming soon."
+        "title": "التكاملات الذكية",
+        "description": "اربط Google Calendar و Microsoft 365 و Fireflies.ai. مزامنة CRM قريباً."
       },
       "aiNotetaker": {
         "title": "AI Notetaker",
-        "description": "Invite notes@dealmotion.ai to any call, or enable auto-record. Our bot joins Teams, Meet, Zoom, and Webex—then transcribes and analyzes automatically."
+        "description": "ادعُ notes@dealmotion.ai لأي مكالمة، أو فعّل التسجيل التلقائي. بوتنا ينضم إلى Teams و Meet و Zoom و Webex—ثم ينسخ ويحلل تلقائياً."
       }
     },
     "socialProof": {
-      "trustedBy": "TRUSTED BY SALES TEAMS AT",
-      "usedBy": "Used by B2B sales professionals worldwide"
+      "trustedBy": "موثوق به من فرق المبيعات في",
+      "usedBy": "يستخدمه محترفو مبيعات B2B حول العالم"
     },
     "howItWorks": {
-      "title": "How it works",
-      "subtitle": "From calendar sync to follow-up—DealMotion covers your entire deal cycle.",
+      "title": "كيف يعمل",
+      "subtitle": "من مزامنة التقويم إلى المتابعة—DealMotion يغطي دورة صفقتك بالكامل.",
       "steps": {
         "calendar": {
-          "title": "Calendar",
-          "description": "Sync your meetings"
+          "title": "التقويم",
+          "description": "زامن اجتماعاتك"
         },
         "research": {
-          "title": "Research",
-          "description": "AI gathers insights"
+          "title": "البحث",
+          "description": "الذكاء الاصطناعي يجمع الرؤى"
         },
         "outreach": {
-          "title": "Outreach",
-          "description": "Send personalized messages"
+          "title": "التواصل",
+          "description": "أرسل رسائل مخصصة"
         },
         "prep": {
-          "title": "Prep",
-          "description": "Get your brief"
+          "title": "التحضير",
+          "description": "احصل على ملخصك"
         },
         "meeting": {
-          "title": "Meeting",
-          "description": "AI bot joins or record on mobile"
+          "title": "الاجتماع",
+          "description": "بوت الذكاء الاصطناعي ينضم أو سجل على الموبايل"
         },
         "analysis": {
-          "title": "Analysis",
-          "description": "7 outputs instantly"
+          "title": "التحليل",
+          "description": "7 مخرجات فوراً"
         },
         "followup": {
-          "title": "Follow-up",
-          "description": "Send & track"
+          "title": "المتابعة",
+          "description": "أرسل وتتبع"
         }
       }
     },
     "integrations": {
-      "title": "Works with your tools",
-      "subtitle": "Connect to your existing workflow in seconds.",
-      "comingSoon": "Coming soon"
+      "title": "يعمل مع أدواتك",
+      "subtitle": "اربط بسير عملك الحالي في ثوانٍ.",
+      "comingSoon": "قريباً"
     },
     "aiContext": {
-      "badge": "The secret sauce",
-      "title": "AI that knows you, your company, and your prospect",
-      "subtitle": "DealMotion learns your style, your products, and your prospect—then personalizes every output.",
-      "inputsTitle": "What the AI knows about you",
+      "badge": "السر الخفي",
+      "title": "ذكاء اصطناعي يعرفك وشركتك وعميلك المحتمل",
+      "subtitle": "DealMotion يتعلم أسلوبك ومنتجاتك وعميلك المحتمل—ثم يخصص كل مخرج.",
+      "inputsTitle": "ما يعرفه الذكاء الاصطناعي عنك",
       "layers": {
         "profile": {
-          "title": "Your Sales Profile",
-          "description": "Experience, strengths, communication style"
+          "title": "ملفك الشخصي للمبيعات",
+          "description": "الخبرة، نقاط القوة، أسلوب التواصل"
         },
         "company": {
-          "title": "Your Company",
-          "description": "Products, services, value propositions"
+          "title": "شركتك",
+          "description": "المنتجات، الخدمات، عروض القيمة"
         },
         "knowledge": {
-          "title": "Your Knowledge Base",
-          "description": "Pitch decks, case studies, product docs"
+          "title": "قاعدة معرفتك",
+          "description": "عروض تقديمية، دراسات حالة، مستندات المنتج"
         },
         "prospect": {
-          "title": "Your Prospect",
-          "description": "Research, contacts, history, context"
+          "title": "عميلك المحتمل",
+          "description": "البحث، جهات الاتصال، التاريخ، السياق"
         }
       },
-      "outputTitle": "Personalized Output",
-      "outputDescription": "Every research report, meeting brief, and follow-up is tailored to you.",
+      "outputTitle": "مخرجات مخصصة",
+      "outputDescription": "كل تقرير بحث وملخص اجتماع ومتابعة مصمم خصيصاً لك.",
       "benefits": {
-        "personalized": "Tailored to your style",
-        "instant": "Generated in seconds",
-        "onBrand": "On-brand messaging",
-        "improves": "Gets smarter over time"
+        "personalized": "مصمم لأسلوبك",
+        "instant": "يُنشأ في ثوانٍ",
+        "onBrand": "رسائل متوافقة مع علامتك التجارية",
+        "improves": "يصبح أذكى مع الوقت"
       },
-      "quote": "It's like having a sales assistant who knows your entire playbook."
+      "quote": "كأن لديك مساعد مبيعات يعرف كل استراتيجياتك."
     },
     "meetingAnalysis": {
-      "badge": "One Recording, 7 Outputs",
-      "title": "Everything you need from one conversation",
-      "subtitle": "Upload any meeting recording and get 7 ready-to-use outputs instantly.",
-      "recording": "Recording",
-      "anyMeeting": "Video or in-person",
+      "badge": "تسجيل واحد، 7 مخرجات",
+      "title": "كل ما تحتاجه من محادثة واحدة",
+      "subtitle": "ارفع أي تسجيل اجتماع واحصل على 7 مخرجات جاهزة للاستخدام فوراً.",
+      "recording": "التسجيل",
+      "anyMeeting": "فيديو أو شخصي",
       "outputs": {
         "summary": {
-          "title": "Summary",
-          "description": "Key points & decisions"
+          "title": "الملخص",
+          "description": "النقاط الرئيسية والقرارات"
         },
         "customerReport": {
-          "title": "Customer Report",
-          "description": "Ready to send to your client"
+          "title": "تقرير العميل",
+          "description": "جاهز للإرسال لعميلك"
         },
         "shareEmail": {
-          "title": "Share Email",
-          "description": "Forward to colleagues"
+          "title": "بريد المشاركة",
+          "description": "إعادة توجيه للزملاء"
         },
         "commercialAnalysis": {
-          "title": "Commercial Analysis",
-          "description": "Deal insights & opportunities"
+          "title": "التحليل التجاري",
+          "description": "رؤى الصفقة والفرص"
         },
         "salesCoaching": {
-          "title": "Sales Coaching",
-          "description": "Personalized improvement tips"
+          "title": "تدريب المبيعات",
+          "description": "نصائح تحسين مخصصة"
         },
         "actionItems": {
-          "title": "Action Items",
-          "description": "Next steps with owners"
+          "title": "بنود الإجراءات",
+          "description": "الخطوات التالية مع المسؤولين"
         },
         "internalReport": {
-          "title": "CRM Update",
-          "description": "Ready for your system"
+          "title": "تحديث CRM",
+          "description": "جاهز لنظامك"
         }
       },
-      "highlight": "Customer reports and commercial analysis are unique to DealMotion.",
-      "highlightSub": "Most tools only give you a transcript. We give you ready-to-use outputs."
+      "highlight": "تقارير العملاء والتحليل التجاري حصرية لـ DealMotion.",
+      "highlightSub": "معظم الأدوات تعطيك فقط نسخة. نحن نعطيك مخرجات جاهزة للاستخدام."
     },
     "aiNotetakerSection": {
-      "badge": "Set It & Forget It",
-      "title": "AI that joins your meetings for you",
-      "subtitle": "Never manually start a recording again. Our AI Notetaker joins your video calls automatically, captures everything, and delivers insights before you're back at your desk.",
+      "badge": "أعده وانسه",
+      "title": "ذكاء اصطناعي ينضم لاجتماعاتك نيابة عنك",
+      "subtitle": "لا تبدأ تسجيلاً يدوياً مرة أخرى. AI Notetaker ينضم لمكالمات الفيديو تلقائياً، يلتقط كل شيء، ويقدم الرؤى قبل عودتك لمكتبك.",
       "emailInvite": {
-        "title": "Invite Like a Colleague",
-        "description": "Just add notes@dealmotion.ai to any meeting invite. Our bot joins, records, and analyzes—no setup required."
+        "title": "ادعُ كزميل",
+        "description": "فقط أضف notes@dealmotion.ai لأي دعوة اجتماع. بوتنا ينضم ويسجل ويحلل—بدون إعداد مطلوب."
       },
       "autoRecord": {
-        "title": "Auto-Record from Calendar",
-        "description": "Sync your calendar once. Set rules for which meetings to record. DealMotion handles the rest."
+        "title": "تسجيل تلقائي من التقويم",
+        "description": "زامن تقويمك مرة واحدة. حدد قواعد للاجتماعات المراد تسجيلها. DealMotion يتولى الباقي."
       },
       "smartFilters": {
-        "title": "Smart Filtering",
-        "description": "Only record what matters. Filter by keywords, external attendees, or meeting duration."
+        "title": "التصفية الذكية",
+        "description": "سجل فقط ما يهم. صفّي حسب الكلمات المفتاحية أو الحضور الخارجيين أو مدة الاجتماع."
       },
       "platforms": {
-        "title": "Works Everywhere",
-        "description": "Microsoft Teams, Google Meet, Zoom, and Webex—all supported out of the box."
+        "title": "يعمل في كل مكان",
+        "description": "Microsoft Teams و Google Meet و Zoom و Webex—كلها مدعومة مباشرة."
       },
       "botName": "DealMotion AI Notes",
-      "howItWorksTitle": "How it works",
+      "howItWorksTitle": "كيف يعمل",
       "steps": {
-        "invite": "Invite bot or sync calendar",
-        "join": "Bot joins automatically",
-        "record": "Records & transcribes",
-        "analyze": "7 outputs delivered"
+        "invite": "ادعُ البوت أو زامن التقويم",
+        "join": "البوت ينضم تلقائياً",
+        "record": "يسجل وينسخ",
+        "analyze": "7 مخرجات تُسلم"
       }
     },
     "mobileApp": {
-      "badge": "Beta Available",
-      "title": "Your pocket recording studio",
-      "subtitle": "Record in-person meetings right from your phone. Coffee chats, on-site visits, trade shows—never miss an insight. App Store launch coming soon!",
+      "badge": "بيتا متاحة",
+      "title": "استوديو التسجيل في جيبك",
+      "subtitle": "سجل الاجتماعات الشخصية مباشرة من هاتفك. لقاءات القهوة، زيارات الموقع، المعارض—لا تفوت أي رؤية. إطلاق App Store قريباً!",
       "steps": {
-        "record": "Record",
-        "upload": "Upload",
-        "analyze": "Analyze",
-        "share": "Share"
+        "record": "سجل",
+        "upload": "ارفع",
+        "analyze": "حلل",
+        "share": "شارك"
       },
-      "useCasesTitle": "Perfect for",
+      "useCasesTitle": "مثالي لـ",
       "useCases": {
-        "coffee": "Coffee meetings",
-        "onsite": "On-site visits",
-        "events": "Trade shows",
-        "field": "Field sales"
+        "coffee": "لقاءات القهوة",
+        "onsite": "زيارات الموقع",
+        "events": "المعارض التجارية",
+        "field": "مبيعات الميدان"
       },
-      "tapToRecord": "Tap to start recording"
+      "tapToRecord": "انقر لبدء التسجيل"
     },
     "painPoints": {
-      "title": "Before & after DealMotion",
-      "subtitle": "See how DealMotion transforms your sales workflow.",
-      "before": "Before",
-      "after": "After",
+      "title": "قبل وبعد DealMotion",
+      "subtitle": "شاهد كيف يحول DealMotion سير عمل مبيعاتك.",
+      "before": "قبل",
+      "after": "بعد",
       "items": {
         "research": {
-          "before": "30+ minutes researching each account",
-          "after": "Complete research in 30 seconds"
+          "before": "30+ دقيقة للبحث عن كل حساب",
+          "after": "بحث كامل في 30 ثانية"
         },
         "outreach": {
-          "before": "Sending generic messages that get ignored",
-          "after": "Personalized outreach based on AI-powered research"
+          "before": "إرسال رسائل عامة يتم تجاهلها",
+          "after": "تواصل مخصص بناءً على بحث بالذكاء الاصطناعي"
         },
         "prep": {
-          "before": "Walking into meetings unprepared",
-          "after": "Personalized brief for every meeting"
+          "before": "الدخول للاجتماعات غير مستعد",
+          "after": "ملخص مخصص لكل اجتماع"
         },
         "recording": {
-          "before": "Manually starting recordings every call",
-          "after": "AI bot joins and records automatically"
+          "before": "بدء التسجيلات يدوياً في كل مكالمة",
+          "after": "بوت الذكاء الاصطناعي ينضم ويسجل تلقائياً"
         },
         "notes": {
-          "before": "Scrambling to take notes during calls",
-          "after": "AI captures every detail for you"
+          "before": "التخبط لتدوين الملاحظات أثناء المكالمات",
+          "after": "الذكاء الاصطناعي يلتقط كل تفصيل لك"
         },
         "insights": {
-          "before": "No insight into deal health or how to improve",
-          "after": "AI-powered deal analysis and personal coaching after every call"
+          "before": "لا رؤية عن صحة الصفقة أو كيفية التحسين",
+          "after": "تحليل صفقة بالذكاء الاصطناعي وتدريب شخصي بعد كل مكالمة"
         },
         "followup": {
-          "before": "Hours writing follow-up emails",
-          "after": "Ready-to-send reports in minutes"
+          "before": "ساعات في كتابة رسائل المتابعة",
+          "after": "تقارير جاهزة للإرسال في دقائق"
         }
       }
     },
     "dayInTheLife": {
-      "title": "A day with DealMotion",
-      "intro": "Monday morning. You open DealMotion.",
+      "title": "يوم مع DealMotion",
+      "intro": "صباح الاثنين. تفتح DealMotion.",
       "steps": {
         "open": {
-          "time": "8:30 AM",
-          "text": "You see 3 meetings this week."
+          "time": "8:30 صباحاً",
+          "text": "ترى 3 اجتماعات هذا الأسبوع."
         },
         "unprepared": {
-          "time": "8:31 AM",
-          "text": "One meeting isn't prepared yet."
+          "time": "8:31 صباحاً",
+          "text": "اجتماع واحد لم يتم تحضيره بعد."
         },
         "brief": {
-          "time": "8:32 AM",
-          "text": "Click. Personalized brief in 30 seconds.",
-          "highlight": "AI knows your style and your prospect"
+          "time": "8:32 صباحاً",
+          "text": "انقر. ملخص مخصص في 30 ثانية.",
+          "highlight": "الذكاء الاصطناعي يعرف أسلوبك وعميلك المحتمل"
         },
         "confident": {
-          "time": "10:00 AM",
-          "text": "Walk into the meeting confident."
+          "time": "10:00 صباحاً",
+          "text": "ادخل الاجتماع بثقة."
         },
         "botJoins": {
-          "time": "10:01 AM",
-          "text": "AI Notetaker joins automatically. You focus on the conversation.",
-          "highlight": "No manual recording needed"
+          "time": "10:01 صباحاً",
+          "text": "AI Notetaker ينضم تلقائياً. أنت تركز على المحادثة.",
+          "highlight": "لا حاجة لتسجيل يدوي"
         },
         "record": {
-          "time": "11:00 AM",
-          "text": "Meeting ends. 7 outputs ready instantly.",
-          "highlight": "Summary, customer report, coaching, and more"
+          "time": "11:00 صباحاً",
+          "text": "انتهى الاجتماع. 7 مخرجات جاهزة فوراً.",
+          "highlight": "الملخص، تقرير العميل، التدريب، والمزيد"
         },
         "sent": {
-          "time": "11:05 AM",
-          "text": "Customer report sent before your next coffee."
+          "time": "11:05 صباحاً",
+          "text": "تقرير العميل أُرسل قبل قهوتك التالية."
         }
       },
-      "tagline": "That's DealMotion. Put your deals in motion."
+      "tagline": "هذا هو DealMotion. حرّك صفقاتك."
     }
   },
   "prospects": {
@@ -2573,7 +2573,7 @@
       "won": "فزنا",
       "lost": "خسرنا",
       "inactive": "غير نشط",
-      "on_hold": "On Hold"
+      "on_hold": "معلق"
     },
     "empty": {
       "title": "لا يوجد عملاء محتملين بعد",
@@ -2582,38 +2582,38 @@
     "toast": {
       "deleted": "تم حذف العميل المحتمل",
       "deletedDesc": "تمت إزالة العميل المحتمل",
-      "deleteFailed": "Delete failed",
-      "deleteFailedDesc": "Could not delete the prospect",
-      "researchStarted": "Research started - prospect will be created automatically"
+      "deleteFailed": "فشل الحذف",
+      "deleteFailedDesc": "تعذر حذف العميل المحتمل",
+      "researchStarted": "بدأ البحث - سيتم إنشاء العميل المحتمل تلقائياً"
     },
     "sort": {
-      "activity": "Activity"
+      "activity": "النشاط"
     },
     "stats": {
-      "title": "Overview",
-      "total": "Total",
-      "active": "Active"
+      "title": "نظرة عامة",
+      "total": "الإجمالي",
+      "active": "نشط"
     },
     "filters": {
-      "title": "Filter by Status",
-      "all": "All Prospects"
+      "title": "تصفية حسب الحالة",
+      "all": "جميع العملاء المحتملين"
     },
     "actions": {
-      "title": "Quick Actions",
-      "newProspect": "New Prospect",
-      "startResearch": "Start Research"
+      "title": "إجراءات سريعة",
+      "newProspect": "عميل محتمل جديد",
+      "startResearch": "بدء البحث"
     },
     "confirm": {
-      "deleteTitle": "Delete Prospect",
-      "deleteDescription": "Are you sure you want to delete this prospect? This action cannot be undone.",
-      "deleteButton": "Delete"
+      "deleteTitle": "حذف العميل المحتمل",
+      "deleteDescription": "هل أنت متأكد من حذف هذا العميل المحتمل؟ لا يمكن التراجع عن هذا الإجراء.",
+      "deleteButton": "حذف"
     },
     "sheet": {
-      "newProspect": "Add New Prospect",
-      "newProspectDesc": "Search for a company to start AI research and create a new prospect."
+      "newProspect": "إضافة عميل محتمل جديد",
+      "newProspectDesc": "ابحث عن شركة لبدء بحث الذكاء الاصطناعي وإنشاء عميل محتمل جديد."
     },
     "errors": {
-      "loadFailed": "Failed to load prospects"
+      "loadFailed": "فشل تحميل العملاء المحتملين"
     }
   },
   "deals": {
@@ -2621,15 +2621,15 @@
       "title": "إنشاء صفقة جديدة",
       "for": "لـ",
       "create": "إنشاء الصفقة",
-      "info": "Deals help you organize multiple meetings and activities for the same opportunity. You can create preparations and follow-ups linked to this deal."
+      "info": "الصفقات تساعدك على تنظيم اجتماعات وأنشطة متعددة لنفس الفرصة. يمكنك إنشاء تحضيرات ومتابعات مرتبطة بهذه الصفقة."
     },
     "form": {
       "name": "اسم الصفقة",
       "namePlaceholder": "مثل ترخيص المؤسسة 2025",
       "description": "الوصف (اختياري)",
-      "nameHelp": "Give your deal a clear, descriptive name",
-      "descriptionPlaceholder": "Context, notes, or anything useful for this opportunity...",
-      "descriptionHelp": "Add any context that helps you track this opportunity"
+      "nameHelp": "أعطِ صفقتك اسماً واضحاً ووصفياً",
+      "descriptionPlaceholder": "السياق، الملاحظات، أو أي شيء مفيد لهذه الفرصة...",
+      "descriptionHelp": "أضف أي سياق يساعدك على تتبع هذه الفرصة"
     },
     "status": {
       "active": "نشط",
@@ -2638,62 +2638,62 @@
     "success": {
       "created": "تم إنشاء الصفقة بنجاح",
       "deleted": "تم حذف الصفقة",
-      "archived": "Deal archived",
-      "activated": "Deal activated"
+      "archived": "تم أرشفة الصفقة",
+      "activated": "تم تفعيل الصفقة"
     },
     "errors": {
       "nameRequired": "اسم الصفقة مطلوب",
-      "createFailed": "Failed to create deal",
-      "updateFailed": "Failed to update deal",
-      "deleteFailed": "Failed to delete deal",
-      "loadFailed": "Failed to load deal",
-      "notFound": "Deal not found"
+      "createFailed": "فشل إنشاء الصفقة",
+      "updateFailed": "فشل تحديث الصفقة",
+      "deleteFailed": "فشل حذف الصفقة",
+      "loadFailed": "فشل تحميل الصفقة",
+      "notFound": "الصفقة غير موجودة"
     },
     "backToProspect": "العودة للعميل المحتمل",
     "stats": {
-      "meetings": "Meetings",
-      "preps": "Preparations",
-      "followups": "Follow-ups"
+      "meetings": "الاجتماعات",
+      "preps": "التحضيرات",
+      "followups": "المتابعات"
     },
     "sections": {
-      "meetings": "Meetings",
-      "meetingsDesc": "All meetings linked to this deal"
+      "meetings": "الاجتماعات",
+      "meetingsDesc": "جميع الاجتماعات المرتبطة بهذه الصفقة"
     },
     "actions": {
-      "archive": "Archive Deal",
-      "activate": "Activate Deal",
-      "delete": "Delete Deal",
-      "addMeeting": "Add Meeting",
-      "scheduleFirst": "Schedule First Meeting"
+      "archive": "أرشفة الصفقة",
+      "activate": "تفعيل الصفقة",
+      "delete": "حذف الصفقة",
+      "addMeeting": "إضافة اجتماع",
+      "scheduleFirst": "جدولة أول اجتماع"
     },
     "links": {
-      "viewPrep": "View Prep",
-      "createPrep": "Create Prep",
-      "viewFollowup": "View Follow-up",
-      "createFollowup": "Create Follow-up"
+      "viewPrep": "عرض التحضير",
+      "createPrep": "إنشاء تحضير",
+      "viewFollowup": "عرض المتابعة",
+      "createFollowup": "إنشاء متابعة"
     },
     "empty": {
-      "noMeetings": "No Meetings Yet",
-      "noMeetingsDesc": "Start by scheduling your first meeting for this deal"
+      "noMeetings": "لا توجد اجتماعات بعد",
+      "noMeetingsDesc": "ابدأ بجدولة أول اجتماع لهذه الصفقة"
     },
     "confirm": {
-      "delete": "Are you sure you want to delete this deal? All linked meetings will be unlinked.",
-      "deleteTitle": "Delete Deal?",
-      "deleteDescription": "This action cannot be undone. All meetings linked to this deal will be unlinked."
+      "delete": "هل أنت متأكد من حذف هذه الصفقة؟ سيتم إلغاء ربط جميع الاجتماعات المرتبطة.",
+      "deleteTitle": "حذف الصفقة؟",
+      "deleteDescription": "لا يمكن التراجع عن هذا الإجراء. سيتم إلغاء ربط جميع الاجتماعات المرتبطة بهذه الصفقة."
     },
     "meetingStatus": {
-      "scheduled": "Scheduled",
-      "completed": "Completed",
-      "cancelled": "Cancelled",
-      "noShow": "No Show"
+      "scheduled": "مجدول",
+      "completed": "مكتمل",
+      "cancelled": "ملغى",
+      "noShow": "لم يحضر"
     },
     "meetingTypes": {
-      "discovery": "Discovery",
-      "demo": "Demo",
-      "negotiation": "Negotiation",
-      "closing": "Closing",
-      "review": "Review",
-      "other": "Other"
+      "discovery": "استكشاف",
+      "demo": "عرض توضيحي",
+      "negotiation": "تفاوض",
+      "closing": "إغلاق",
+      "review": "مراجعة",
+      "other": "أخرى"
     }
   },
   "prospectHub": {
@@ -2704,7 +2704,7 @@
       "journey": "رحلة المبيعات",
       "timeline": "النشاط الأخير",
       "notes": "ملاحظات سريعة",
-      "upcomingMeetings": "Upcoming Meetings"
+      "upcomingMeetings": "الاجتماعات القادمة"
     },
     "journey": {
       "research": "البحث",
@@ -2721,15 +2721,15 @@
       "addFollowup": "معالجة الاجتماع",
       "allDone": "على المسار الصحيح",
       "viewFollowups": "عرض المتابعات",
-      "startResearchDesc": "Begin by researching this company",
-      "startResearchBtn": "Start Research",
-      "addContactsDesc": "Add the people you'll be meeting with",
-      "addContactsBtn": "Add Contact",
-      "createPrepDesc": "Prepare for your upcoming meeting",
-      "createPrepBtn": "Create Prep",
-      "addFollowupDesc": "Upload your meeting recording for analysis",
-      "addFollowupBtn": "Upload Recording",
-      "allDoneDesc": "Review your latest follow-ups and action items"
+      "startResearchDesc": "ابدأ بالبحث عن هذه الشركة",
+      "startResearchBtn": "بدء البحث",
+      "addContactsDesc": "أضف الأشخاص الذين ستلتقي بهم",
+      "addContactsBtn": "إضافة جهة اتصال",
+      "createPrepDesc": "حضّر لاجتماعك القادم",
+      "createPrepBtn": "إنشاء تحضير",
+      "addFollowupDesc": "ارفع تسجيل اجتماعك للتحليل",
+      "addFollowupBtn": "رفع التسجيل",
+      "allDoneDesc": "راجع أحدث متابعاتك وعناصر الإجراء"
     },
     "notes": {
       "placeholder": "إضافة ملاحظة سريعة...",
@@ -2743,12 +2743,12 @@
       "viewAll": "عرض الكل",
       "viewPrep": "عرض التحضير",
       "viewFollowup": "عرض التحليل",
-      "viewFullResearch": "View full research",
-      "manage": "Manage",
-      "createNew": "Create New",
-      "prepareNow": "Prepare Now",
-      "planMeeting": "Plan Meeting",
-      "createOutreach": "Create Outreach"
+      "viewFullResearch": "عرض البحث الكامل",
+      "manage": "إدارة",
+      "createNew": "إنشاء جديد",
+      "prepareNow": "حضّر الآن",
+      "planMeeting": "خطط للاجتماع",
+      "createOutreach": "إنشاء تواصل"
     },
     "empty": {
       "noContacts": "لم تتم إضافة جهات اتصال بعد",
@@ -2760,811 +2760,811 @@
       "notPrepared": "غير محضر"
     },
     "documents": {
-      "research": "Company Research",
-      "preparation": "Meeting Preparations",
-      "followup": "Meeting Analysis & Follow-ups",
-      "recordings": "Meeting Recordings"
+      "research": "بحث الشركة",
+      "preparation": "تحضيرات الاجتماع",
+      "followup": "تحليل الاجتماع والمتابعات",
+      "recordings": "تسجيلات الاجتماع"
     },
     "status": {
-      "inProgress": "In Progress"
+      "inProgress": "قيد التنفيذ"
     },
     "documentStatus": {
-      "pending": "Pending",
-      "generating": "Generating...",
-      "transcribing": "Transcribing...",
-      "summarizing": "Analyzing...",
-      "completed": "Completed",
-      "failed": "Failed"
+      "pending": "معلق",
+      "generating": "جاري التوليد...",
+      "transcribing": "جاري النسخ...",
+      "summarizing": "جاري التحليل...",
+      "completed": "مكتمل",
+      "failed": "فشل"
     },
-    "more": "more",
+    "more": "المزيد",
     "confirm": {
-      "deleteNoteTitle": "Delete Note",
-      "deleteNoteDescription": "Are you sure you want to delete this note? This cannot be undone."
+      "deleteNoteTitle": "حذف الملاحظة",
+      "deleteNoteDescription": "هل أنت متأكد من حذف هذه الملاحظة؟ لا يمكن التراجع."
     },
     "errors": {
-      "loadFailed": "Failed to load prospect data",
-      "notFound": "Prospect not found",
-      "noteSaveFailed": "Failed to save note",
-      "noChannelsAvailable": "No channels available",
-      "addContactInfo": "Add an email, LinkedIn, or phone number to this contact first."
+      "loadFailed": "فشل تحميل بيانات العميل",
+      "notFound": "العميل غير موجود",
+      "noteSaveFailed": "فشل حفظ الملاحظة",
+      "noChannelsAvailable": "لا توجد قنوات متاحة",
+      "addContactInfo": "أضف بريد إلكتروني أو LinkedIn أو رقم هاتف لهذه جهة الاتصال أولاً."
     },
     "sheets": {
-      "startResearch": "Start Company Research",
-      "startResearchDesc": "Search and verify this company to start AI research.",
-      "createPrep": "Create Meeting Preparation",
-      "createPrepDesc": "Prepare for your meeting with {company}.",
-      "uploadFollowup": "Upload Meeting Recording",
-      "uploadFollowupDesc": "Upload audio or transcript from your meeting with {company}.",
-      "planMeeting": "Plan Meeting",
-      "planMeetingDesc": "Plan a meeting with"
+      "startResearch": "بدء بحث الشركة",
+      "startResearchDesc": "ابحث وتحقق من هذه الشركة لبدء بحث الذكاء الاصطناعي.",
+      "createPrep": "إنشاء تحضير اجتماع",
+      "createPrepDesc": "حضّر لاجتماعك مع {company}.",
+      "uploadFollowup": "رفع تسجيل الاجتماع",
+      "uploadFollowupDesc": "ارفع الصوت أو النص من اجتماعك مع {company}.",
+      "planMeeting": "تخطيط اجتماع",
+      "planMeetingDesc": "خطط لاجتماع مع"
     },
     "hints": {
-      "createPrepFirst": "Create a prep first",
-      "prepNeededForMeeting": "A preparation is needed to plan a meeting."
+      "createPrepFirst": "أنشئ تحضيراً أولاً",
+      "prepNeededForMeeting": "التحضير مطلوب لتخطيط اجتماع."
     },
     "toast": {
-      "researchStarted": "Research started successfully",
-      "prepStarted": "Preparation generation started",
-      "followupStarted": "Follow-up processing started",
-      "contactAdded": "Contact added successfully",
-      "meetingPlanned": "Meeting planned!",
-      "meetingPlannedDesc": "Don't forget to send the invitation.",
-      "outreachCreated": "Outreach created!"
+      "researchStarted": "بدأ البحث بنجاح",
+      "prepStarted": "بدأ توليد التحضير",
+      "followupStarted": "بدأت معالجة المتابعة",
+      "contactAdded": "تمت إضافة جهة الاتصال بنجاح",
+      "meetingPlanned": "تم تخطيط الاجتماع!",
+      "meetingPlannedDesc": "لا تنسَ إرسال الدعوة.",
+      "outreachCreated": "تم إنشاء التواصل!"
     },
     "contactDetail": {
-      "profileBrief": "Profile Analysis",
-      "openingSuggestions": "Opening Suggestions",
-      "questionsToAsk": "Questions to Ask",
-      "topicsToAvoid": "Topics to Avoid"
+      "profileBrief": "تحليل الملف",
+      "openingSuggestions": "اقتراحات الافتتاح",
+      "questionsToAsk": "أسئلة للطرح",
+      "topicsToAvoid": "مواضيع للتجنب"
     }
   },
   "credits": {
-    "title": "Credits & Usage",
-    "subtitle": "Complete overview of your credit usage",
-    "unlimited": "Unlimited credits",
-    "available": "available",
-    "until": "until",
-    "subscription": "subscription",
-    "packs": "packs",
-    "used": "used",
-    "exhausted": "Credits depleted!",
-    "almostEmpty": "Almost empty! {credits} credits left",
-    "buyCredits": "Buy Credits",
-    "errorLoading": "Failed to load credits",
-    "backToSettings": "Back to settings",
-    "refresh": "Refresh",
-    "thisPeriod": "This period",
-    "expires": "Expires",
-    "consumed": "Consumed",
-    "added": "Added",
-    "transactions": "Transactions",
-    "usageByFunction": "Usage by function",
-    "transactionHistory": "Transaction history",
-    "allTransactionsDetails": "All credit transactions with full details",
-    "allTypes": "All types",
-    "consumption": "Consumption",
-    "subscriptionType": "Subscription",
-    "creditPacks": "Credit Packs",
-    "allFunctions": "All functions",
-    "noTransactionsYet": "No transactions found yet",
-    "tryOtherFilters": "Try different filters",
-    "startUsingDealMotion": "Start using DealMotion features",
-    "balance": "Balance",
-    "pageOf": "Page {page} of {total} ({count} transactions)",
-    "previous": "Previous",
-    "next": "Next",
-    "howCreditsWork": "How do credits work?",
-    "howCreditsWorkDescription": "Credits are used for AI features like research, meeting prep, transcriptions and follow-ups. Your subscription includes a monthly amount of credits that reset each month. Purchased credit packs remain valid until used.",
-    "justNow": "Just now",
-    "minutesAgo": "{minutes} min ago",
-    "hoursAgo": "{hours} hours ago",
-    "daysAgo": "{days} days ago",
-    "creditsAvailable": "{credits} credits available",
-    "extra": "extra",
-    "resetInDays": "Resets in {days} day",
-    "resetInDaysPlural": "Resets in {days} days",
-    "clickToBuyMore": "Click to buy more credits →",
-    "buyPacks": "Buy Credit Packs",
-    "buyPacksDescription": "Buy extra credits to continue with your sales intelligence. Credits never expire.",
-    "noPacksAvailable": "No credit packs available",
-    "upgradeRequired": "Upgrade to Pro or Pro+",
-    "upgradeRequiredDescription": "Credit packs are only available for Pro and Pro+ subscribers. Upgrade your plan to purchase extra credits.",
-    "viewPlans": "View plans",
-    "popular": "Popular",
-    "bestDeal": "Best Deal",
-    "salesCycles": "~{count} sales cycles",
-    "perCredit": "per credit",
-    "neverExpire": "Never expire",
-    "availableImmediately": "Available immediately",
-    "buy": "Buy",
-    "pleaseWait": "Please wait...",
-    "checkoutError": "Could not start checkout. Please try again.",
-    "error": "Error"
+    "title": "الرصيد والاستخدام",
+    "subtitle": "نظرة عامة كاملة على استخدام رصيدك",
+    "unlimited": "رصيد غير محدود",
+    "available": "متاح",
+    "until": "حتى",
+    "subscription": "الاشتراك",
+    "packs": "الحزم",
+    "used": "مستخدم",
+    "exhausted": "نفد الرصيد!",
+    "almostEmpty": "شبه فارغ! {credits} رصيد متبقي",
+    "buyCredits": "شراء رصيد",
+    "errorLoading": "فشل تحميل الرصيد",
+    "backToSettings": "العودة للإعدادات",
+    "refresh": "تحديث",
+    "thisPeriod": "هذه الفترة",
+    "expires": "ينتهي",
+    "consumed": "مستهلك",
+    "added": "مضاف",
+    "transactions": "المعاملات",
+    "usageByFunction": "الاستخدام حسب الوظيفة",
+    "transactionHistory": "سجل المعاملات",
+    "allTransactionsDetails": "جميع معاملات الرصيد بالتفاصيل الكاملة",
+    "allTypes": "جميع الأنواع",
+    "consumption": "الاستهلاك",
+    "subscriptionType": "الاشتراك",
+    "creditPacks": "حزم الرصيد",
+    "allFunctions": "جميع الوظائف",
+    "noTransactionsYet": "لم يتم العثور على معاملات بعد",
+    "tryOtherFilters": "جرب فلاتر مختلفة",
+    "startUsingDealMotion": "ابدأ باستخدام ميزات DealMotion",
+    "balance": "الرصيد",
+    "pageOf": "صفحة {page} من {total} ({count} معاملة)",
+    "previous": "السابق",
+    "next": "التالي",
+    "howCreditsWork": "كيف يعمل الرصيد؟",
+    "howCreditsWorkDescription": "يُستخدم الرصيد لميزات الذكاء الاصطناعي مثل البحث وتحضير الاجتماعات والنسخ والمتابعات. اشتراكك يتضمن رصيداً شهرياً يتجدد كل شهر. حزم الرصيد المشتراة تبقى صالحة حتى استخدامها.",
+    "justNow": "الآن",
+    "minutesAgo": "منذ {minutes} دقيقة",
+    "hoursAgo": "منذ {hours} ساعات",
+    "daysAgo": "منذ {days} أيام",
+    "creditsAvailable": "{credits} رصيد متاح",
+    "extra": "إضافي",
+    "resetInDays": "يتجدد خلال {days} يوم",
+    "resetInDaysPlural": "يتجدد خلال {days} أيام",
+    "clickToBuyMore": "انقر لشراء رصيد إضافي →",
+    "buyPacks": "شراء حزم الرصيد",
+    "buyPacksDescription": "اشترِ رصيداً إضافياً للاستمرار في ذكاء المبيعات. الرصيد لا ينتهي.",
+    "noPacksAvailable": "لا توجد حزم رصيد متاحة",
+    "upgradeRequired": "ترقية إلى Pro أو Pro+",
+    "upgradeRequiredDescription": "حزم الرصيد متاحة فقط لمشتركي Pro و Pro+. رقِّ خطتك لشراء رصيد إضافي.",
+    "viewPlans": "عرض الخطط",
+    "popular": "شائع",
+    "bestDeal": "أفضل عرض",
+    "salesCycles": "~{count} دورة مبيعات",
+    "perCredit": "لكل رصيد",
+    "neverExpire": "لا ينتهي",
+    "availableImmediately": "متاح فوراً",
+    "buy": "شراء",
+    "pleaseWait": "يرجى الانتظار...",
+    "checkoutError": "تعذر بدء الدفع. حاول مرة أخرى.",
+    "error": "خطأ"
   },
   "autopilot": {
-    "title": "Autopilot",
+    "title": "القيادة التلقائية",
     "inbox": {
-      "title": "Autopilot Inbox",
+      "title": "صندوق القيادة التلقائية",
       "tabs": {
-        "active": "Active",
-        "proposed": "New",
-        "executing": "In Progress",
-        "completed": "History"
+        "active": "نشط",
+        "proposed": "جديد",
+        "executing": "قيد التنفيذ",
+        "completed": "السجل"
       },
-      "empty": "No proposals right now. I'm scanning for opportunities.",
-      "pending": "pending",
-      "waiting": "waiting"
+      "empty": "لا توجد مقترحات حالياً. أنا أبحث عن الفرص.",
+      "pending": "معلق",
+      "waiting": "بانتظار"
     },
     "proposal": {
-      "why": "Why?",
-      "accept": "Accept",
-      "decline": "Decline",
-      "snooze": "Snooze",
-      "retry": "Retry",
-      "viewDetails": "View details",
-      "executing": "Executing...",
-      "failed": "Failed",
-      "completed": "Completed"
+      "why": "لماذا؟",
+      "accept": "قبول",
+      "decline": "رفض",
+      "snooze": "تأجيل",
+      "retry": "إعادة المحاولة",
+      "viewDetails": "عرض التفاصيل",
+      "executing": "جاري التنفيذ...",
+      "failed": "فشل",
+      "completed": "مكتمل"
     },
     "snooze": {
-      "oneHour": "1 hour",
-      "thisEvening": "This evening",
-      "tomorrow": "Tomorrow",
-      "afterMeeting": "After meeting",
-      "nextWeek": "Next week",
-      "inThreeDays": "In 3 days"
+      "oneHour": "ساعة واحدة",
+      "thisEvening": "هذا المساء",
+      "tomorrow": "غداً",
+      "afterMeeting": "بعد الاجتماع",
+      "nextWeek": "الأسبوع القادم",
+      "inThreeDays": "بعد 3 أيام"
     },
     "actions": {
-      "addContacts": "Add contacts",
-      "createPrep": "Create prep",
-      "planMeeting": "Plan meeting",
-      "uploadRecording": "Upload recording",
-      "generateActions": "Generate actions",
-      "completeActions": "Complete actions",
-      "startResearch": "Start research"
+      "addContacts": "إضافة جهات اتصال",
+      "createPrep": "إنشاء تحضير",
+      "planMeeting": "تخطيط اجتماع",
+      "uploadRecording": "رفع تسجيل",
+      "generateActions": "توليد إجراءات",
+      "completeActions": "إكمال الإجراءات",
+      "startResearch": "بدء البحث"
     },
     "meetingRequest": {
-      "contacts": "Contacts",
-      "noContacts": "No contacts found. Add a contact first.",
-      "moreContacts": "more contacts",
-      "emailTemplate": "Meeting invitation",
-      "to": "To",
-      "regenerate": "Regenerate",
-      "regenerating": "Generating AI email...",
-      "copyEmail": "Copy",
-      "openEmail": "Email",
-      "call": "Call",
-      "copyTemplate": "Copy text",
-      "openInEmail": "Open in email",
-      "planInCalendar": "Add to your calendar",
-      "prepHighlights": "Prep highlights",
-      "viewFullPrep": "View full prep",
-      "meetingPlannedButton": "Meeting planned - Mark as complete",
-      "meetingPlanned": "Meeting planned!",
-      "proposalCompleted": "The proposal has been completed.",
-      "emailCopied": "Email copied",
-      "templateCopied": "Email template copied",
-      "pasteInEmail": "Paste in your email client",
-      "cancel": "Cancel"
+      "contacts": "جهات الاتصال",
+      "noContacts": "لم يتم العثور على جهات اتصال. أضف جهة اتصال أولاً.",
+      "moreContacts": "جهات اتصال أخرى",
+      "emailTemplate": "دعوة اجتماع",
+      "to": "إلى",
+      "regenerate": "إعادة التوليد",
+      "regenerating": "جاري توليد بريد الذكاء الاصطناعي...",
+      "copyEmail": "نسخ",
+      "openEmail": "بريد",
+      "call": "اتصال",
+      "copyTemplate": "نسخ النص",
+      "openInEmail": "فتح في البريد",
+      "planInCalendar": "إضافة لتقويمك",
+      "prepHighlights": "أبرز التحضير",
+      "viewFullPrep": "عرض التحضير الكامل",
+      "meetingPlannedButton": "تم تخطيط الاجتماع - وضع علامة مكتمل",
+      "meetingPlanned": "تم تخطيط الاجتماع!",
+      "proposalCompleted": "تم إكمال المقترح.",
+      "emailCopied": "تم نسخ البريد",
+      "templateCopied": "تم نسخ قالب البريد",
+      "pasteInEmail": "الصق في برنامج البريد",
+      "cancel": "إلغاء"
     },
     "luna": {
-      "greeting": "Hey! I'm Luna, your AI sales assistant.",
-      "scanning": "I'm scanning your calendar and prospects for opportunities.",
-      "noProposals": "No active proposals right now.",
-      "checkBack": "Check back soon - I'm always looking for ways to help.",
-      "pending": "pending",
-      "urgent": "Urgent",
-      "executing": "Executing",
-      "later": "Later",
-      "ctaLabel": "Do it",
-      "viewActions": "View all actions",
-      "snoozeLaterToday": "Later today",
-      "snoozeTomorrow": "Tomorrow morning",
-      "snoozeNextWorkDay": "Next working day",
-      "snoozeAfterMeeting": "After this meeting",
-      "noMessages": "No messages",
-      "copied": "Copied!",
-      "outreachTitle": "Create Outreach",
-      "outreachDescription": "Choose a channel and create a personalized outreach message",
-      "selectChannel": "Select Channel",
-      "messageContent": "Message Content",
-      "generate": "Generate",
-      "generateSuccess": "Message generated",
-      "generateFailed": "Failed to generate message",
-      "subject": "Subject",
-      "subjectPlaceholder": "Enter email subject...",
-      "message": "Message",
-      "messagePlaceholder": "Write your message here...",
-      "copy": "Copy",
-      "saveDraft": "Save Draft",
-      "markAsSent": "Mark as Sent",
-      "skip": "Skip",
-      "saveDraftSuccess": "Draft saved",
-      "saveDraftFailed": "Failed to save draft",
-      "markSentSuccess": "Marked as sent",
-      "markSentFailed": "Failed to mark as sent",
-      "missingContactInfo": "Missing Contact Information",
-      "addEmailInfo": "Add an email address to send an email",
-      "addLinkedInInfo": "Add a LinkedIn URL to send a LinkedIn message",
-      "addPhoneInfo": "Add a phone number to send a WhatsApp message",
+      "greeting": "مرحباً! أنا Luna، مساعدة المبيعات بالذكاء الاصطناعي.",
+      "scanning": "أنا أفحص تقويمك وعملاءك المحتملين للبحث عن فرص.",
+      "noProposals": "لا توجد مقترحات نشطة حالياً.",
+      "checkBack": "عد قريباً - أنا دائماً أبحث عن طرق للمساعدة.",
+      "pending": "معلق",
+      "urgent": "عاجل",
+      "executing": "جاري التنفيذ",
+      "later": "لاحقاً",
+      "ctaLabel": "نفذ",
+      "viewActions": "عرض جميع الإجراءات",
+      "snoozeLaterToday": "لاحقاً اليوم",
+      "snoozeTomorrow": "صباح غد",
+      "snoozeNextWorkDay": "يوم العمل التالي",
+      "snoozeAfterMeeting": "بعد هذا الاجتماع",
+      "noMessages": "لا توجد رسائل",
+      "copied": "تم النسخ!",
+      "outreachTitle": "إنشاء تواصل",
+      "outreachDescription": "اختر قناة وأنشئ رسالة تواصل مخصصة",
+      "selectChannel": "اختر القناة",
+      "messageContent": "محتوى الرسالة",
+      "generate": "توليد",
+      "generateSuccess": "تم توليد الرسالة",
+      "generateFailed": "فشل توليد الرسالة",
+      "subject": "الموضوع",
+      "subjectPlaceholder": "أدخل موضوع البريد...",
+      "message": "الرسالة",
+      "messagePlaceholder": "اكتب رسالتك هنا...",
+      "copy": "نسخ",
+      "saveDraft": "حفظ كمسودة",
+      "markAsSent": "وضع علامة مرسل",
+      "skip": "تخطي",
+      "saveDraftSuccess": "تم حفظ المسودة",
+      "saveDraftFailed": "فشل حفظ المسودة",
+      "markSentSuccess": "تم وضع علامة مرسل",
+      "markSentFailed": "فشل وضع علامة مرسل",
+      "missingContactInfo": "معلومات الاتصال مفقودة",
+      "addEmailInfo": "أضف بريد إلكتروني لإرسال بريد",
+      "addLinkedInInfo": "أضف رابط LinkedIn لإرسال رسالة LinkedIn",
+      "addPhoneInfo": "أضف رقم هاتف لإرسال رسالة WhatsApp",
       "emailPlaceholder": "email@example.com",
       "linkedInPlaceholder": "https://linkedin.com/in/...",
       "phonePlaceholder": "+1 555 1234567",
-      "saveContactInfo": "Save",
-      "saveContactInfoSuccess": "Contact info saved",
-      "saveContactInfoFailed": "Failed to save contact info",
-      "customInstructions": "Custom Instructions (Optional)",
-      "customInstructionsPlaceholder": "E.g., \"Focus on their data migration project\" or \"Mention our Databricks expertise\"...",
-      "customInstructionsHint": "Add specific instructions to customize the generated message",
-      "draftLoaded": "Draft loaded",
-      "draftLoadedDesc": "Previous draft has been loaded"
+      "saveContactInfo": "حفظ",
+      "saveContactInfoSuccess": "تم حفظ معلومات الاتصال",
+      "saveContactInfoFailed": "فشل حفظ معلومات الاتصال",
+      "customInstructions": "تعليمات مخصصة (اختياري)",
+      "customInstructionsPlaceholder": "مثلاً، \"\u0631\u0643\u0632 \u0639\u0644\u0649 \u0645\u0634\u0631\u0648\u0639 \u062a\u0631\u062d\u064a\u0644 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a\" \u0623\u0648 \"\u0627\u0630\u0643\u0631 \u062e\u0628\u0631\u062a\u0646\u0627 \u0641\u064a Databricks\"...",
+      "customInstructionsHint": "أضف تعليمات محددة لتخصيص الرسالة المولدة",
+      "draftLoaded": "تم تحميل المسودة",
+      "draftLoadedDesc": "تم تحميل المسودة السابقة"
     }
   },
   "prospecting": {
-    "title": "Prospect Discovery",
-    "subtitle": "Find new prospects that match your profile and offering using AI-powered contextual search",
-    "loading": "Loading prospecting...",
+    "title": "اكتشاف العملاء المحتملين",
+    "subtitle": "ابحث عن عملاء محتملين جدد يتطابقون مع ملفك وعرضك باستخدام البحث السياقي بالذكاء الاصطناعي",
+    "loading": "جاري تحميل البحث...",
     "setup": {
-      "title": "Complete your profile for better results",
-      "createProfile": "Create Sales Profile",
-      "addCompany": "Add Company Profile"
+      "title": "أكمل ملفك لنتائج أفضل",
+      "createProfile": "إنشاء ملف المبيعات",
+      "addCompany": "إضافة ملف الشركة"
     },
     "form": {
-      "title": "Search Criteria",
-      "description": "Describe who you're looking for. Our AI will find matching prospects.",
-      "region": "Region or Country",
-      "regionPlaceholder": "e.g., Netherlands, DACH, Benelux",
-      "sector": "Sector or Domain",
-      "sectorPlaceholder": "e.g., logistics, manufacturing, professional services",
-      "companySize": "Company Size",
-      "companySizePlaceholder": "e.g., mid-sized, enterprise, SMB",
-      "proposition": "What do we sell?",
-      "propositionPlaceholder": "Describe your offering in one sentence...",
-      "targetRole": "For whom is this relevant?",
-      "targetRolePlaceholder": "e.g., CFO, CTO, Supply Chain Director",
-      "painPoint": "Where is pain or urgency?",
-      "painPointPlaceholder": "What challenges are they facing?",
-      "referenceCustomers": "Reference Customers",
-      "referenceCustomersPlaceholder": "e.g., Bol.com, Coolblue, Picnic",
-      "referenceCustomersHelp": "Enter companies that are 100% fit. We'll find similar companies based on shared signals and situations.",
-      "optional": "Optional",
-      "maxResults": "Max results",
-      "searchButton": "Find Prospects",
-      "searching": "Searching..."
+      "title": "معايير البحث",
+      "description": "صف من تبحث عنه. ذكاؤنا الاصطناعي سيجد العملاء المطابقين.",
+      "region": "المنطقة أو الدولة",
+      "regionPlaceholder": "مثلاً، السعودية، الخليج، الشرق الأوسط",
+      "sector": "القطاع أو المجال",
+      "sectorPlaceholder": "مثلاً، اللوجستيات، التصنيع، الخدمات المهنية",
+      "companySize": "حجم الشركة",
+      "companySizePlaceholder": "مثلاً، متوسطة، كبيرة، صغيرة",
+      "proposition": "ماذا نبيع؟",
+      "propositionPlaceholder": "صف عرضك في جملة واحدة...",
+      "targetRole": "لمن هذا مناسب؟",
+      "targetRolePlaceholder": "مثلاً، CFO، CTO، مدير سلسلة التوريد",
+      "painPoint": "أين الألم أو الإلحاح؟",
+      "painPointPlaceholder": "ما التحديات التي يواجهونها؟",
+      "referenceCustomers": "عملاء مرجعيون",
+      "referenceCustomersPlaceholder": "مثلاً، أرامكو، سابك، ستك",
+      "referenceCustomersHelp": "أدخل شركات مطابقة 100%. سنجد شركات مشابهة بناءً على إشارات ومواقف مشتركة.",
+      "optional": "اختياري",
+      "maxResults": "أقصى عدد نتائج",
+      "searchButton": "ابحث عن عملاء",
+      "searching": "جاري البحث..."
     },
     "history": {
-      "title": "Recent Searches",
-      "results": "results",
-      "delete": "Delete",
-      "deleteConfirmTitle": "Delete Search?",
-      "deleteConfirmDescription": "This will permanently delete this search and its results. This action cannot be undone.",
-      "deleteCancel": "Cancel",
-      "deleteConfirm": "Delete",
-      "deleteSuccess": "Search deleted",
-      "deleteSuccessDesc": "The search has been removed.",
-      "deleteFailed": "Failed to delete search"
+      "title": "عمليات البحث الأخيرة",
+      "results": "نتائج",
+      "delete": "حذف",
+      "deleteConfirmTitle": "حذف البحث؟",
+      "deleteConfirmDescription": "سيتم حذف هذا البحث ونتائجه نهائياً. لا يمكن التراجع.",
+      "deleteCancel": "إلغاء",
+      "deleteConfirm": "حذف",
+      "deleteSuccess": "تم حذف البحث",
+      "deleteSuccessDesc": "تم إزالة البحث.",
+      "deleteFailed": "فشل حذف البحث"
     },
     "searching": {
-      "title": "Discovering Prospects",
-      "description": "Analyzing your criteria and searching for matching companies...",
-      "step1": "Generating semantic search queries..."
+      "title": "اكتشاف العملاء",
+      "description": "تحليل معاييرك والبحث عن شركات مطابقة...",
+      "step1": "توليد استعلامات بحث دلالية..."
     },
     "results": {
-      "found": "Found {count} potential prospects",
-      "time": "Completed in {seconds}s",
-      "showQueries": "Show search queries used",
-      "fitScore": "Fit",
-      "imported": "Imported",
-      "import": "Import",
-      "research": "Research",
-      "reject": "Not relevant",
-      "view": "View",
-      "viewSource": "View source",
-      "scoreBreakdown": "Show score breakdown",
-      "propFit": "Proposition",
-      "sellerFit": "Seller",
-      "intent": "Intent",
-      "recency": "Recency",
-      "noResults": "No prospects found",
-      "noResultsDesc": "Try broadening your search criteria or adjusting the region/sector.",
-      "referenceContext": "Based on your reference customers:"
+      "found": "تم العثور على {count} عميل محتمل",
+      "time": "اكتمل في {seconds} ثانية",
+      "showQueries": "عرض استعلامات البحث المستخدمة",
+      "fitScore": "التطابق",
+      "imported": "مستورد",
+      "import": "استيراد",
+      "research": "بحث",
+      "reject": "غير مناسب",
+      "view": "عرض",
+      "viewSource": "عرض المصدر",
+      "scoreBreakdown": "عرض تفصيل الدرجة",
+      "propFit": "العرض",
+      "sellerFit": "البائع",
+      "intent": "النية",
+      "recency": "الحداثة",
+      "noResults": "لم يتم العثور على عملاء",
+      "noResultsDesc": "حاول توسيع معايير البحث أو تعديل المنطقة/القطاع.",
+      "referenceContext": "بناءً على عملائك المرجعيين:"
     },
     "empty": {
-      "title": "Contextual Prospect Discovery",
-      "description": "Use AI to find companies that match your seller profile and offering. This is not a database search - it's intelligent discovery based on public signals.",
-      "howItWorks": "How it works:",
-      "step1": "Enter your search criteria (region, sector, offering)",
-      "step2": "AI generates semantic queries and searches for signals",
-      "step3": "Review scored prospects and import the best fits"
+      "title": "اكتشاف العملاء السياقي",
+      "description": "استخدم الذكاء الاصطناعي للعثور على شركات تتطابق مع ملفك وعرضك. هذا ليس بحث في قاعدة بيانات - إنه اكتشاف ذكي بناءً على إشارات عامة.",
+      "howItWorks": "كيف يعمل:",
+      "step1": "أدخل معايير البحث (المنطقة، القطاع، العرض)",
+      "step2": "الذكاء الاصطناعي يولد استعلامات دلالية ويبحث عن إشارات",
+      "step3": "راجع العملاء المقيمين واستورد الأفضل"
     },
     "errors": {
-      "missingFields": "Missing required fields",
-      "missingFieldsDesc": "Please enter at least a sector or proposition to search."
+      "missingFields": "حقول مطلوبة مفقودة",
+      "missingFieldsDesc": "أدخل على الأقل قطاع أو عرض للبحث."
     },
     "toast": {
-      "searchComplete": "Search completed",
-      "searchCompleteDesc": "Found {count} potential prospects",
-      "searchFailed": "Search failed",
-      "searchFailedDesc": "Failed to search for prospects. Please try again.",
-      "imported": "Prospect imported",
-      "importedDesc": "The prospect has been added to your list.",
-      "importFailed": "Import failed",
-      "rejected": "Prospect rejected",
-      "rejectedDesc": "The prospect has been removed from results.",
-      "rejectFailed": "Reject failed"
+      "searchComplete": "اكتمل البحث",
+      "searchCompleteDesc": "تم العثور على {count} عميل محتمل",
+      "searchFailed": "فشل البحث",
+      "searchFailedDesc": "فشل البحث عن عملاء. حاول مرة أخرى.",
+      "imported": "تم استيراد العميل",
+      "importedDesc": "تمت إضافة العميل إلى قائمتك.",
+      "importFailed": "فشل الاستيراد",
+      "rejected": "تم رفض العميل",
+      "rejectedDesc": "تمت إزالة العميل من النتائج.",
+      "rejectFailed": "فشل الرفض"
     }
   },
   "legal": {
     "privacy": {
-      "title": "Privacy Policy",
-      "lastUpdated": "Last updated",
-      "lastUpdatedDate": "December 23, 2025",
+      "title": "سياسة الخصوصية",
+      "lastUpdated": "آخر تحديث",
+      "lastUpdatedDate": "23 ديسمبر 2025",
       "intro": {
-        "title": "Introduction",
-        "text": "DealMotion B.V. (\"we\", \"us\", or \"our\") respects your privacy and is committed to protecting your personal data. This privacy policy explains how we collect, use, and safeguard your information when you use our AI-powered sales enablement platform."
+        "title": "مقدمة",
+        "text": "تحترم DealMotion B.V. (\"نحن\" أو \"لنا\") خصوصيتك وتلتزم بحماية بياناتك الشخصية. توضح سياسة الخصوصية هذه كيف نجمع ونستخدم ونحمي معلوماتك عند استخدام منصة تمكين المبيعات المدعومة بالذكاء الاصطناعي."
       },
       "controller": {
-        "title": "Data Controller",
+        "title": "متحكم البيانات",
         "company": "DealMotion B.V.",
-        "address": "Amsterdam, The Netherlands",
-        "country": "The Netherlands",
-        "email": "Email"
+        "address": "أمستردام، هولندا",
+        "country": "هولندا",
+        "email": "البريد الإلكتروني"
       },
       "dataCollected": {
-        "title": "Personal Data We Collect",
-        "intro": "We collect the following categories of personal data:",
+        "title": "البيانات الشخصية التي نجمعها",
+        "intro": "نجمع الفئات التالية من البيانات الشخصية:",
         "account": {
-          "title": "Account Information",
-          "item1": "Full name and business email address",
-          "item2": "Password (encrypted)",
-          "item3": "Profile information (role, experience, company details)"
+          "title": "معلومات الحساب",
+          "item1": "الاسم الكامل وعنوان البريد الإلكتروني المهني",
+          "item2": "كلمة المرور (مشفرة)",
+          "item3": "معلومات الملف الشخصي (الدور، الخبرة، تفاصيل الشركة)"
         },
         "content": {
-          "title": "Content You Create",
-          "item1": "Prospect and contact information you enter",
-          "item2": "Research notes, meeting preparations, and follow-up content",
-          "item3": "Uploaded documents to your knowledge base",
-          "item4": "Meeting recordings and transcripts (when using AI Notetaker)"
+          "title": "المحتوى الذي تنشئه",
+          "item1": "معلومات العملاء المحتملين وجهات الاتصال التي تدخلها",
+          "item2": "ملاحظات البحث وتحضيرات الاجتماعات ومحتوى المتابعة",
+          "item3": "المستندات المرفوعة إلى قاعدة المعرفة الخاصة بك",
+          "item4": "تسجيلات ونصوص الاجتماعات (عند استخدام AI Notetaker)"
         },
         "technical": {
-          "title": "Technical Data",
-          "item1": "IP address and browser type",
-          "item2": "Device information and session data",
-          "item3": "Usage analytics (features used, timing)"
+          "title": "البيانات التقنية",
+          "item1": "عنوان IP ونوع المتصفح",
+          "item2": "معلومات الجهاز وبيانات الجلسة",
+          "item3": "تحليلات الاستخدام (الميزات المستخدمة، التوقيت)"
         }
       },
       "purposes": {
-        "title": "How We Use Your Data",
-        "item1": "Provide and improve our AI-powered sales enablement services",
-        "item2": "Generate personalized research, preparation, and follow-up content",
-        "item3": "Process payments and manage your subscription",
-        "item4": "Send transactional emails (account updates, service notifications)",
-        "item5": "Ensure security and prevent fraud"
+        "title": "كيف نستخدم بياناتك",
+        "item1": "تقديم وتحسين خدمات تمكين المبيعات المدعومة بالذكاء الاصطناعي",
+        "item2": "إنشاء محتوى بحث وتحضير ومتابعة مخصص",
+        "item3": "معالجة المدفوعات وإدارة اشتراكك",
+        "item4": "إرسال رسائل بريد إلكتروني معاملاتية (تحديثات الحساب، إشعارات الخدمة)",
+        "item5": "ضمان الأمان ومنع الاحتيال"
       },
       "legalBasis": {
-        "title": "Legal Basis for Processing",
-        "contract": "Contract performance",
-        "contractDesc": "Processing necessary to provide the service you subscribed to",
-        "consent": "Consent",
-        "consentDesc": "For optional features like calendar integration",
-        "legitimate": "Legitimate interest",
-        "legitimateDesc": "For analytics and service improvement",
-        "legal": "Legal obligation",
-        "legalDesc": "For tax and accounting records"
+        "title": "الأساس القانوني للمعالجة",
+        "contract": "تنفيذ العقد",
+        "contractDesc": "المعالجة اللازمة لتقديم الخدمة التي اشتركت فيها",
+        "consent": "الموافقة",
+        "consentDesc": "للميزات الاختيارية مثل تكامل التقويم",
+        "legitimate": "المصلحة المشروعة",
+        "legitimateDesc": "للتحليلات وتحسين الخدمة",
+        "legal": "الالتزام القانوني",
+        "legalDesc": "لسجلات الضرائب والمحاسبة"
       },
       "retention": {
-        "title": "Data Retention",
-        "intro": "We retain your data according to the following principles:",
-        "account": "Account data: Retained while your account is active, deleted within 30 days of account deletion",
-        "content": "Content data: Deleted immediately upon account deletion",
-        "billing": "Billing records: Anonymized and retained for 7 years for tax compliance",
-        "logs": "Technical logs: Automatically deleted after 90 days"
+        "title": "الاحتفاظ بالبيانات",
+        "intro": "نحتفظ ببياناتك وفقاً للمبادئ التالية:",
+        "account": "بيانات الحساب: يتم الاحتفاظ بها طالما حسابك نشط، تُحذف خلال 30 يوماً من حذف الحساب",
+        "content": "بيانات المحتوى: تُحذف فوراً عند حذف الحساب",
+        "billing": "سجلات الفواتير: يتم إخفاء الهوية والاحتفاظ بها لمدة 7 سنوات للامتثال الضريبي",
+        "logs": "السجلات التقنية: تُحذف تلقائياً بعد 90 يوماً"
       },
       "rights": {
-        "title": "Your Rights Under GDPR",
-        "intro": "As an EU resident, you have the following rights:",
-        "access": "Right of Access",
-        "accessDesc": "Request a copy of your personal data",
-        "rectification": "Right to Rectification",
-        "rectificationDesc": "Correct inaccurate personal data",
-        "erasure": "Right to Erasure",
-        "erasureDesc": "Request deletion of your personal data",
-        "portability": "Right to Data Portability",
-        "portabilityDesc": "Receive your data in a machine-readable format",
-        "objection": "Right to Object",
-        "objectionDesc": "Object to processing based on legitimate interest",
-        "withdraw": "Right to Withdraw Consent",
-        "withdrawDesc": "Withdraw consent where processing is based on consent",
-        "howTo": "You can exercise most of these rights directly from your account settings (Settings → Privacy & Data). For other requests, contact us at privacy@dealmotion.ai."
+        "title": "حقوقك بموجب GDPR",
+        "intro": "كمقيم في الاتحاد الأوروبي، لديك الحقوق التالية:",
+        "access": "حق الوصول",
+        "accessDesc": "طلب نسخة من بياناتك الشخصية",
+        "rectification": "حق التصحيح",
+        "rectificationDesc": "تصحيح البيانات الشخصية غير الدقيقة",
+        "erasure": "حق المحو",
+        "erasureDesc": "طلب حذف بياناتك الشخصية",
+        "portability": "حق نقل البيانات",
+        "portabilityDesc": "استلام بياناتك بتنسيق قابل للقراءة آلياً",
+        "objection": "حق الاعتراض",
+        "objectionDesc": "الاعتراض على المعالجة المبنية على المصلحة المشروعة",
+        "withdraw": "حق سحب الموافقة",
+        "withdrawDesc": "سحب الموافقة حيث تكون المعالجة مبنية على الموافقة",
+        "howTo": "يمكنك ممارسة معظم هذه الحقوق مباشرة من إعدادات حسابك (الإعدادات → الخصوصية والبيانات). للطلبات الأخرى، تواصل معنا على privacy@dealmotion.ai."
       },
       "transfers": {
-        "title": "International Data Transfers",
-        "intro": "Some of our service providers are located outside the EU. We only use providers that:",
-        "safeguards": "Have certified under the EU-US Data Privacy Framework (DPF), have signed Standard Contractual Clauses (SCCs), or are located in countries with an EU adequacy decision."
+        "title": "النقل الدولي للبيانات",
+        "intro": "بعض مزودي خدماتنا يقعون خارج الاتحاد الأوروبي. نستخدم فقط المزودين الذين:",
+        "safeguards": "حصلوا على شهادة بموجب إطار خصوصية البيانات بين الاتحاد الأوروبي والولايات المتحدة (DPF)، أو وقعوا بنود تعاقدية قياسية (SCCs)، أو يقعون في دول لديها قرار ملاءمة من الاتحاد الأوروبي."
       },
       "subprocessors": {
-        "title": "Subprocessors",
-        "intro": "We use the following third-party service providers:",
-        "name": "Service",
-        "purpose": "Purpose",
-        "location": "Location",
-        "supabase": "Database and authentication",
-        "vercel": "Frontend hosting",
-        "railway": "Backend hosting",
-        "stripe": "Payment processing",
-        "anthropic": "AI content generation (research, prep, follow-up)",
-        "google": "AI research assistance",
-        "pinecone": "Knowledge base vector storage",
-        "deepgram": "Audio transcription",
-        "inngest": "Background job processing",
-        "sentry": "Error monitoring",
-        "dpfNote": "DPF = EU-US Data Privacy Framework certified"
+        "title": "المعالجون الفرعيون",
+        "intro": "نستخدم مزودي الخدمات التاليين من أطراف ثالثة:",
+        "name": "الخدمة",
+        "purpose": "الغرض",
+        "location": "الموقع",
+        "supabase": "قاعدة البيانات والمصادقة",
+        "vercel": "استضافة الواجهة الأمامية",
+        "railway": "استضافة الخلفية",
+        "stripe": "معالجة المدفوعات",
+        "anthropic": "إنشاء محتوى بالذكاء الاصطناعي (البحث، التحضير، المتابعة)",
+        "google": "مساعدة بحث بالذكاء الاصطناعي",
+        "pinecone": "تخزين متجهات قاعدة المعرفة",
+        "deepgram": "نسخ الصوت",
+        "inngest": "معالجة المهام الخلفية",
+        "sentry": "مراقبة الأخطاء",
+        "dpfNote": "DPF = معتمد بموجب إطار خصوصية البيانات بين الاتحاد الأوروبي والولايات المتحدة"
       },
       "security": {
-        "title": "Security Measures",
-        "intro": "We implement appropriate technical and organizational measures:",
-        "encryption": "Encryption of data in transit (TLS) and at rest (AES-256)",
-        "access": "Role-based access control with principle of least privilege",
-        "monitoring": "Security monitoring and logging (without PII)",
-        "testing": "Regular security reviews and updates"
+        "title": "تدابير الأمان",
+        "intro": "نطبق تدابير تقنية وتنظيمية مناسبة:",
+        "encryption": "تشفير البيانات أثناء النقل (TLS) وفي حالة السكون (AES-256)",
+        "access": "التحكم في الوصول بناءً على الأدوار مع مبدأ الحد الأدنى من الصلاحيات",
+        "monitoring": "مراقبة الأمان والتسجيل (بدون معلومات شخصية)",
+        "testing": "مراجعات وتحديثات أمنية منتظمة"
       },
       "cookies": {
-        "title": "Cookies",
-        "intro": "We use only essential cookies:",
-        "essential": "Essential cookies",
-        "essentialDesc": "Required for authentication and session management",
-        "preferences": "Preference cookies",
-        "preferencesDesc": "Store your language preference",
-        "noTracking": "We do not use tracking cookies or third-party advertising cookies."
+        "title": "ملفات تعريف الارتباط",
+        "intro": "نستخدم فقط ملفات تعريف الارتباط الأساسية:",
+        "essential": "ملفات تعريف الارتباط الأساسية",
+        "essentialDesc": "مطلوبة للمصادقة وإدارة الجلسات",
+        "preferences": "ملفات تعريف التفضيلات",
+        "preferencesDesc": "تخزين تفضيل اللغة الخاص بك",
+        "noTracking": "لا نستخدم ملفات تعريف الارتباط للتتبع أو ملفات تعريف الارتباط الإعلانية من أطراف ثالثة."
       },
       "complaints": {
-        "title": "Complaints",
-        "intro": "If you believe we have not handled your personal data properly, you can lodge a complaint with your local data protection authority:",
-        "authority": "Dutch Data Protection Authority",
+        "title": "الشكاوى",
+        "intro": "إذا كنت تعتقد أننا لم نتعامل مع بياناتك الشخصية بشكل صحيح، يمكنك تقديم شكوى إلى هيئة حماية البيانات المحلية:",
+        "authority": "هيئة حماية البيانات الهولندية",
         "authorityName": "Autoriteit Persoonsgegevens",
         "authorityWebsite": "autoriteitpersoonsgegevens.nl"
       },
       "changes": {
-        "title": "Changes to This Policy",
-        "text": "We may update this privacy policy from time to time. We will notify you of significant changes via email or in-app notification. Continued use of the service after changes constitutes acceptance of the updated policy."
+        "title": "التغييرات على هذه السياسة",
+        "text": "قد نحدث سياسة الخصوصية هذه من وقت لآخر. سنعلمك بالتغييرات المهمة عبر البريد الإلكتروني أو إشعار داخل التطبيق. الاستمرار في استخدام الخدمة بعد التغييرات يعتبر قبولاً للسياسة المحدثة."
       },
       "contact": {
-        "title": "Contact Us",
-        "text": "For privacy-related questions or to exercise your rights, contact us at:"
+        "title": "تواصل معنا",
+        "text": "للأسئلة المتعلقة بالخصوصية أو لممارسة حقوقك، تواصل معنا على:"
       },
       "seeAlso": {
-        "terms": "Terms & Conditions"
+        "terms": "الشروط والأحكام"
       }
     },
     "terms": {
-      "title": "Terms & Conditions",
-      "lastUpdated": "Last updated",
-      "lastUpdatedDate": "December 23, 2025",
+      "title": "الشروط والأحكام",
+      "lastUpdated": "آخر تحديث",
+      "lastUpdatedDate": "23 ديسمبر 2025",
       "intro": {
-        "title": "Introduction",
-        "text": "These Terms & Conditions (\"Terms\") govern your use of DealMotion, an AI-powered B2B sales enablement platform operated by DealMotion B.V. By using our service, you agree to these Terms."
+        "title": "مقدمة",
+        "text": "تحكم هذه الشروط والأحكام (\"الشروط\") استخدامك لـ DealMotion، منصة تمكين مبيعات B2B المدعومة بالذكاء الاصطناعي التي تديرها DealMotion B.V. باستخدام خدمتنا، فإنك توافق على هذه الشروط."
       },
       "definitions": {
-        "title": "Definitions",
-        "service": "Service",
-        "serviceDesc": "The DealMotion platform, including web application, APIs, and related services",
-        "user": "User",
-        "userDesc": "Any individual or entity that registers for and uses the Service",
-        "content": "User Content",
-        "contentDesc": "All data, text, files, and other materials you upload or create in the Service",
-        "subscription": "Subscription",
-        "subscriptionDesc": "Your paid or free plan for accessing the Service"
+        "title": "التعريفات",
+        "service": "الخدمة",
+        "serviceDesc": "منصة DealMotion، بما في ذلك تطبيق الويب وواجهات API والخدمات ذات الصلة",
+        "user": "المستخدم",
+        "userDesc": "أي فرد أو كيان يسجل ويستخدم الخدمة",
+        "content": "محتوى المستخدم",
+        "contentDesc": "جميع البيانات والنصوص والملفات والمواد الأخرى التي ترفعها أو تنشئها في الخدمة",
+        "subscription": "الاشتراك",
+        "subscriptionDesc": "خطتك المدفوعة أو المجانية للوصول إلى الخدمة"
       },
       "service": {
-        "title": "Service Description",
-        "intro": "DealMotion is an AI-powered sales enablement platform that provides:",
-        "feature1": "AI-generated prospect research and intelligence",
-        "feature2": "Meeting preparation briefs",
-        "feature3": "Post-meeting follow-up with action items and email drafts",
-        "feature4": "Meeting recording and transcription (AI Notetaker)",
-        "feature5": "Knowledge base for document storage and RAG-enhanced context"
+        "title": "وصف الخدمة",
+        "intro": "DealMotion هي منصة تمكين مبيعات مدعومة بالذكاء الاصطناعي توفر:",
+        "feature1": "بحث وذكاء العملاء المحتملين المولد بالذكاء الاصطناعي",
+        "feature2": "ملخصات تحضير الاجتماعات",
+        "feature3": "متابعة ما بعد الاجتماع مع بنود الإجراءات ومسودات البريد الإلكتروني",
+        "feature4": "تسجيل ونسخ الاجتماعات (AI Notetaker)",
+        "feature5": "قاعدة معرفة لتخزين المستندات والسياق المعزز بـ RAG"
       },
       "account": {
-        "title": "Account Registration",
-        "item1": "You must provide accurate and complete registration information",
-        "item2": "You are responsible for maintaining the security of your account credentials",
-        "item3": "You must notify us immediately of any unauthorized access",
-        "item4": "One person or entity per account - sharing accounts is not permitted"
+        "title": "تسجيل الحساب",
+        "item1": "يجب تقديم معلومات تسجيل دقيقة وكاملة",
+        "item2": "أنت مسؤول عن الحفاظ على أمان بيانات اعتماد حسابك",
+        "item3": "يجب إخطارنا فوراً بأي وصول غير مصرح به",
+        "item4": "شخص أو كيان واحد لكل حساب - مشاركة الحسابات غير مسموحة"
       },
       "responsibilities": {
-        "title": "User Responsibilities",
-        "intro": "You agree to:",
-        "item1": "Use the Service only for lawful business purposes",
-        "item2": "Ensure you have the right to input any data about third parties (prospects, contacts)",
-        "item3": "Not misrepresent AI-generated content as human-written when legally required",
-        "item4": "Maintain appropriate data protection measures for personal data you process"
+        "title": "مسؤوليات المستخدم",
+        "intro": "توافق على:",
+        "item1": "استخدام الخدمة فقط لأغراض تجارية مشروعة",
+        "item2": "التأكد من أن لديك الحق في إدخال أي بيانات عن أطراف ثالثة (العملاء المحتملين، جهات الاتصال)",
+        "item3": "عدم تقديم المحتوى المولد بالذكاء الاصطناعي على أنه مكتوب بشرياً عندما يكون ذلك مطلوباً قانونياً",
+        "item4": "الحفاظ على تدابير حماية بيانات مناسبة للبيانات الشخصية التي تعالجها"
       },
       "acceptableUse": {
-        "title": "Acceptable Use",
-        "intro": "You may not use the Service to:",
-        "prohibited1": "Violate any applicable laws or regulations",
-        "prohibited2": "Infringe on the intellectual property rights of others",
-        "prohibited3": "Harass, spam, or send unsolicited communications",
-        "prohibited4": "Attempt to reverse engineer, scrape, or access the Service in unauthorized ways",
-        "prohibited5": "Use the AI features to generate harmful, discriminatory, or illegal content"
+        "title": "الاستخدام المقبول",
+        "intro": "لا يجوز لك استخدام الخدمة لـ:",
+        "prohibited1": "انتهاك أي قوانين أو لوائح معمول بها",
+        "prohibited2": "التعدي على حقوق الملكية الفكرية للآخرين",
+        "prohibited3": "المضايقة أو إرسال رسائل غير مرغوب فيها",
+        "prohibited4": "محاولة الهندسة العكسية أو الكشط أو الوصول إلى الخدمة بطرق غير مصرح بها",
+        "prohibited5": "استخدام ميزات الذكاء الاصطناعي لإنشاء محتوى ضار أو تمييزي أو غير قانوني"
       },
       "payment": {
-        "title": "Subscription & Payment",
-        "item1": "Paid plans are billed monthly or annually in advance",
-        "item2": "Prices are in Euros (€) and exclude applicable taxes",
-        "item3": "You can cancel your subscription at any time; access continues until the end of the paid period",
-        "item4": "No refunds for partial subscription periods, except as required by law",
-        "item5": "We may change prices with 30 days' notice; changes apply at your next renewal"
+        "title": "الاشتراك والدفع",
+        "item1": "يتم فوترة الخطط المدفوعة شهرياً أو سنوياً مقدماً",
+        "item2": "الأسعار باليورو (€) ولا تشمل الضرائب المطبقة",
+        "item3": "يمكنك إلغاء اشتراكك في أي وقت؛ يستمر الوصول حتى نهاية الفترة المدفوعة",
+        "item4": "لا استرداد لفترات الاشتراك الجزئية، إلا كما يقتضيه القانون",
+        "item5": "قد نغير الأسعار مع إشعار قبل 30 يوماً؛ تطبق التغييرات عند تجديدك التالي"
       },
       "data": {
-        "title": "Your Data",
-        "intro": "Regarding data you store in the Service:",
-        "item1": "You retain ownership of all User Content you create or upload",
-        "item2": "You grant us a license to process your data to provide the Service",
-        "item3": "We will not use your data to train AI models (other than your personal context within your account)"
+        "title": "بياناتك",
+        "intro": "فيما يتعلق بالبيانات التي تخزنها في الخدمة:",
+        "item1": "تحتفظ بملكية جميع محتوى المستخدم الذي تنشئه أو ترفعه",
+        "item2": "تمنحنا ترخيصاً لمعالجة بياناتك لتقديم الخدمة",
+        "item3": "لن نستخدم بياناتك لتدريب نماذج الذكاء الاصطناعي (بخلاف سياقك الشخصي داخل حسابك)"
       },
       "ip": {
-        "title": "Intellectual Property",
-        "item1": "DealMotion owns all rights to the Service, including software, design, and documentation",
-        "item2": "AI-generated content (research, briefs, emails) may be used freely by you for your business purposes",
-        "item3": "You may not copy, modify, or redistribute the Service or its components"
+        "title": "الملكية الفكرية",
+        "item1": "DealMotion تملك جميع الحقوق في الخدمة، بما في ذلك البرمجيات والتصميم والوثائق",
+        "item2": "يمكنك استخدام المحتوى المولد بالذكاء الاصطناعي (البحث، الملخصات، الرسائل) بحرية لأغراضك التجارية",
+        "item3": "لا يجوز لك نسخ أو تعديل أو إعادة توزيع الخدمة أو مكوناتها"
       },
       "ai": {
-        "title": "AI-Generated Content",
-        "intro": "The Service uses artificial intelligence to generate content. You acknowledge that:",
-        "item1": "AI-generated content may contain inaccuracies and should be reviewed before use",
-        "item2": "You are responsible for verifying facts and claims in AI-generated content",
-        "item3": "AI suggestions are assistance tools, not professional advice (legal, financial, etc.)"
+        "title": "المحتوى المولد بالذكاء الاصطناعي",
+        "intro": "تستخدم الخدمة الذكاء الاصطناعي لإنشاء المحتوى. أنت تقر بأن:",
+        "item1": "قد يحتوي المحتوى المولد بالذكاء الاصطناعي على عدم دقة ويجب مراجعته قبل الاستخدام",
+        "item2": "أنت مسؤول عن التحقق من الحقائق والادعاءات في المحتوى المولد بالذكاء الاصطناعي",
+        "item3": "اقتراحات الذكاء الاصطناعي هي أدوات مساعدة، وليست نصائح مهنية (قانونية، مالية، إلخ)"
       },
       "liability": {
-        "title": "Limitation of Liability",
-        "intro": "To the maximum extent permitted by law:",
-        "item1": "The Service is provided \"as is\" without warranties of any kind",
-        "item2": "We are not liable for indirect, incidental, or consequential damages",
-        "item3": "Our total liability is limited to the amount you paid in the 12 months prior to the claim"
+        "title": "تحديد المسؤولية",
+        "intro": "إلى أقصى حد يسمح به القانون:",
+        "item1": "يتم تقديم الخدمة \"كما هي\" بدون ضمانات من أي نوع",
+        "item2": "لسنا مسؤولين عن الأضرار غير المباشرة أو العرضية أو التبعية",
+        "item3": "مسؤوليتنا الإجمالية محدودة بالمبلغ الذي دفعته في الـ 12 شهراً السابقة للمطالبة"
       },
       "termination": {
-        "title": "Termination",
-        "item1": "You may delete your account at any time via Settings → Privacy & Data",
-        "item2": "We may terminate your account for violation of these Terms with prior notice",
-        "item3": "Upon termination, your data will be deleted according to our Privacy Policy",
-        "item4": "Sections on IP, Liability, and Governing Law survive termination"
+        "title": "الإنهاء",
+        "item1": "يمكنك حذف حسابك في أي وقت عبر الإعدادات → الخصوصية والبيانات",
+        "item2": "قد ننهي حسابك لانتهاك هذه الشروط مع إشعار مسبق",
+        "item3": "عند الإنهاء، سيتم حذف بياناتك وفقاً لسياسة الخصوصية الخاصة بنا",
+        "item4": "تبقى أقسام الملكية الفكرية والمسؤولية والقانون الحاكم سارية بعد الإنهاء"
       },
       "law": {
-        "title": "Governing Law",
-        "text": "These Terms are governed by the laws of The Netherlands.",
-        "disputes": "Any disputes will be submitted to the competent court in Amsterdam, The Netherlands."
+        "title": "القانون الحاكم",
+        "text": "تخضع هذه الشروط لقوانين هولندا.",
+        "disputes": "سيتم تقديم أي نزاعات إلى المحكمة المختصة في أمستردام، هولندا."
       },
       "changes": {
-        "title": "Changes to Terms",
-        "text": "We may update these Terms with 30 days' notice for material changes. Continued use after the effective date constitutes acceptance."
+        "title": "التغييرات على الشروط",
+        "text": "قد نحدث هذه الشروط مع إشعار قبل 30 يوماً للتغييرات الجوهرية. الاستمرار في الاستخدام بعد تاريخ السريان يعتبر قبولاً."
       },
       "contact": {
-        "title": "Contact",
-        "text": "For questions about these Terms, contact us at:"
+        "title": "التواصل",
+        "text": "للأسئلة حول هذه الشروط، تواصل معنا على:"
       },
       "seeAlso": {
-        "privacy": "Privacy Policy"
+        "privacy": "سياسة الخصوصية"
       }
     }
   },
   "affiliate": {
-    "referredBy": "Referred by {name}",
-    "referredByPartner": "You were referred by a DealMotion partner",
-    "errorLoading": "Failed to load affiliate data",
-    "errorApplying": "Failed to apply. Please try again.",
-    "errorConnect": "Failed to set up payments. Please try again.",
+    "referredBy": "أحيل بواسطة {name}",
+    "referredByPartner": "تمت إحالتك بواسطة شريك DealMotion",
+    "errorLoading": "فشل تحميل بيانات الشراكة",
+    "errorApplying": "فشل التقديم. يرجى المحاولة مرة أخرى.",
+    "errorConnect": "فشل إعداد المدفوعات. يرجى المحاولة مرة أخرى.",
     "joinProgram": {
-      "title": "Join the DealMotion Affiliate Program",
-      "subtitle": "Earn recurring commissions by referring sales professionals to DealMotion",
-      "benefit1Title": "15% Commission",
-      "benefit1Desc": "Earn 15% on every subscription payment from your referrals",
-      "benefit2Title": "Automatic Payouts",
-      "benefit2Desc": "Monthly payouts via Stripe directly to your bank account",
-      "benefit3Title": "30-Day Attribution",
-      "benefit3Desc": "Get credited for signups within 30 days of the click",
-      "benefit4Title": "Lifetime Revenue",
-      "benefit4Desc": "Keep earning as long as your referrals stay subscribed",
-      "applyButton": "Become an Affiliate"
+      "title": "انضم إلى برنامج شراكة DealMotion",
+      "subtitle": "اكسب عمولات متكررة بإحالة محترفي المبيعات إلى DealMotion",
+      "benefit1Title": "عمولة 15%",
+      "benefit1Desc": "اكسب 15% على كل دفعة اشتراك من إحالاتك",
+      "benefit2Title": "دفعات تلقائية",
+      "benefit2Desc": "دفعات شهرية عبر Stripe مباشرة إلى حسابك البنكي",
+      "benefit3Title": "إسناد 30 يوم",
+      "benefit3Desc": "احصل على رصيد للتسجيلات خلال 30 يوماً من النقرة",
+      "benefit4Title": "إيرادات مدى الحياة",
+      "benefit4Desc": "استمر في الكسب طالما بقيت إحالاتك مشتركة",
+      "applyButton": "كن شريكاً"
     },
     "dashboard": {
-      "title": "Affiliate Dashboard",
-      "subtitle": "Track your referrals and earnings",
-      "referralLink": "Your Referral Link",
-      "referralLinkDesc": "Share this link to earn commissions on new signups",
+      "title": "لوحة تحكم الشراكة",
+      "subtitle": "تتبع إحالاتك وأرباحك",
+      "referralLink": "رابط الإحالة الخاص بك",
+      "referralLinkDesc": "شارك هذا الرابط لكسب عمولات على التسجيلات الجديدة",
       "commissionRates": {
-        "title": "Your Commission Rates",
-        "subscription": "Subscriptions",
-        "subscriptionDesc": "Pro & Pro+ monthly/yearly",
-        "credits": "Credit Packs",
-        "creditsDesc": "All credit pack purchases"
+        "title": "معدلات عمولتك",
+        "subscription": "الاشتراكات",
+        "subscriptionDesc": "Pro و Pro+ شهري/سنوي",
+        "credits": "حزم الرصيد",
+        "creditsDesc": "جميع مشتريات حزم الرصيد"
       },
       "stats": {
-        "clicks": "Total Clicks",
-        "signups": "Signups",
-        "conversions": "Conversions",
-        "totalEarned": "Total Earned"
+        "clicks": "إجمالي النقرات",
+        "signups": "التسجيلات",
+        "conversions": "التحويلات",
+        "totalEarned": "إجمالي الأرباح"
       },
       "balance": {
-        "title": "Balance",
-        "available": "Available for payout",
-        "pending": "Pending (14-day hold)",
-        "paid": "Total paid out"
+        "title": "الرصيد",
+        "available": "متاح للسحب",
+        "pending": "معلق (تعليق 14 يوم)",
+        "paid": "إجمالي المدفوع"
       },
       "payout": {
-        "title": "Payout Settings",
-        "desc": "Set up Stripe Connect to receive your payouts",
-        "enabled": "Payouts enabled",
-        "setupRequired": "Connect your bank account to receive payouts",
-        "setupButton": "Set Up Payouts",
-        "viewDashboard": "View Stripe Dashboard"
+        "title": "إعدادات الدفع",
+        "desc": "أعد Stripe Connect لاستلام دفعاتك",
+        "enabled": "الدفعات مفعلة",
+        "setupRequired": "اربط حسابك البنكي لاستلام الدفعات",
+        "setupButton": "إعداد الدفعات",
+        "viewDashboard": "عرض لوحة تحكم Stripe"
       },
       "tabs": {
-        "referrals": "Referrals",
-        "commissions": "Commissions",
-        "payouts": "Payouts"
+        "referrals": "الإحالات",
+        "commissions": "العمولات",
+        "payouts": "الدفعات"
       },
       "referrals": {
-        "title": "Recent Referrals",
-        "empty": "No referrals yet. Share your link to get started!",
-        "converted": "Converted",
-        "pending": "Pending"
+        "title": "الإحالات الأخيرة",
+        "empty": "لا توجد إحالات بعد. شارك رابطك للبدء!",
+        "converted": "محول",
+        "pending": "معلق"
       },
       "commissions": {
-        "title": "Recent Commissions",
-        "empty": "No commissions yet. Commissions appear when referrals make payments.",
-        "subscription": "Subscription",
-        "creditPack": "Credit Pack"
+        "title": "العمولات الأخيرة",
+        "empty": "لا توجد عمولات بعد. تظهر العمولات عندما تدفع الإحالات.",
+        "subscription": "الاشتراك",
+        "creditPack": "حزمة الرصيد"
       },
       "payouts": {
-        "title": "Payout History",
-        "empty": "No payouts yet. Payouts are processed monthly.",
-        "commissions": "commissions"
+        "title": "سجل الدفعات",
+        "empty": "لا توجد دفعات بعد. تتم معالجة الدفعات شهرياً.",
+        "commissions": "عمولات"
       }
     }
   },
   "luna": {
-    "title": "Luna",
-    "subtitle": "Your AI Sales Assistant",
+    "title": "لونا",
+    "subtitle": "مساعد المبيعات الذكي",
     "greeting": {
-      "morning": "Good morning! Here's what needs your attention today.",
-      "afternoon": "Good afternoon! Let's keep things moving.",
-      "evening": "Good evening! A few things to review before you wrap up.",
-      "allDone": "You're all caught up! Great work."
+      "morning": "صباح الخير! هذا ما يحتاج انتباهك اليوم.",
+      "afternoon": "مساء الخير! لنستمر في العمل.",
+      "evening": "مساء الخير! بعض الأمور للمراجعة قبل الانتهاء.",
+      "allDone": "أنت على اطلاع! عمل رائع."
     },
-    "noMessages": "No messages",
-    "allCaughtUp": "You're all caught up!",
-    "pending": "pending",
-    "urgent": "Urgent",
-    "executing": "Processing...",
-    "later": "Later",
-    "ctaLabel": "Do it",
-    "snoozeLaterToday": "+4 hours",
-    "snoozeTomorrow": "Tomorrow 9 AM",
-    "snoozeNextWorkDay": "Next working day",
-    "snoozeAfterMeeting": "After meeting",
-    "viewActions": "View all actions",
-    "viewAllActions": "View all {count} actions",
-    "openLunaHome": "Open Luna Home",
+    "noMessages": "لا توجد إجراءات معلقة. ستُعلمك لونا عندما يحتاج شيء ما للانتباه.",
+    "allCaughtUp": "أنت على اطلاع!",
+    "pending": "معلق",
+    "urgent": "عاجل",
+    "executing": "جاري المعالجة...",
+    "later": "لاحقاً",
+    "ctaLabel": "افعلها",
+    "snoozeLaterToday": "+4 ساعات",
+    "snoozeTomorrow": "غداً 9 صباحاً",
+    "snoozeNextWorkDay": "يوم العمل التالي",
+    "snoozeAfterMeeting": "بعد الاجتماع",
+    "viewActions": "عرض جميع الإجراءات",
+    "viewAllActions": "عرض جميع {count} إجراء",
+    "openLunaHome": "فتح صفحة Luna",
     "home": {
-      "title": "Luna Home",
-      "todayProgress": "Today's Progress",
-      "upcomingMeetings": "Upcoming Meetings",
-      "noMeetings": "No meetings scheduled for today",
-      "tipOfDay": "Tip of the Day",
-      "actions": "Actions",
-      "actionsEmpty": "No actions right now. Luna will create suggestions when there's something to do."
+      "title": "صفحة Luna",
+      "todayProgress": "تقدم اليوم",
+      "upcomingMeetings": "الاجتماعات القادمة",
+      "noMeetings": "لا توجد اجتماعات مجدولة لليوم",
+      "tipOfDay": "نصيحة اليوم",
+      "actions": "الإجراءات",
+      "actionsEmpty": "لا توجد إجراءات حالياً. ستنشئ Luna اقتراحات عندما يكون هناك شيء للقيام به."
     },
     "stats": {
-      "research": "Research",
-      "preps": "Preparations",
-      "followups": "Follow-ups",
-      "outreach": "Outreach"
+      "research": "البحث",
+      "preps": "التحضيرات",
+      "followups": "المتابعات",
+      "outreach": "التواصل"
     },
     "settings": {
-      "title": "Luna Settings",
-      "enabled": "Enable Luna",
-      "enabledDesc": "Luna will proactively suggest actions",
-      "showWidget": "Show Widget",
-      "showWidgetDesc": "Display floating Luna widget",
-      "showTips": "Show Contextual Tips",
-      "showTipsDesc": "Display helpful tips throughout the app",
-      "prepReminder": "Prep Reminder Hours",
-      "prepReminderDesc": "Hours before meeting to remind for prep",
-      "outreachCooldown": "Outreach Cooldown Days",
-      "outreachCooldownDesc": "Days between outreach to same contact",
-      "excludedKeywords": "Excluded Meeting Keywords",
-      "excludedKeywordsDesc": "Meetings with these words won't trigger prep suggestions"
+      "title": "إعدادات Luna",
+      "enabled": "تفعيل Luna",
+      "enabledDesc": "Luna ستقترح إجراءات بشكل استباقي",
+      "showWidget": "عرض الويجت",
+      "showWidgetDesc": "عرض ويجت Luna العائم",
+      "showTips": "عرض النصائح السياقية",
+      "showTipsDesc": "عرض نصائح مفيدة في جميع أنحاء التطبيق",
+      "prepReminder": "ساعات تذكير التحضير",
+      "prepReminderDesc": "ساعات قبل الاجتماع للتذكير بالتحضير",
+      "outreachCooldown": "أيام فترة الراحة للتواصل",
+      "outreachCooldownDesc": "أيام بين التواصل مع نفس جهة الاتصال",
+      "excludedKeywords": "كلمات الاجتماعات المستثناة",
+      "excludedKeywordsDesc": "الاجتماعات بهذه الكلمات لن تُفعّل اقتراحات التحضير"
     },
     "widget": {
       "title": "Luna"
     },
     "messages": {
-      "startResearch": "Start Research",
-      "reviewResearch": "Review Research",
-      "prepareOutreach": "Prepare Outreach",
-      "firstTouchSent": "First Touch Sent",
-      "suggestMeeting": "Schedule Meeting",
-      "createPrep": "Create Preparation",
-      "prepReady": "Prep Ready",
-      "reviewSummary": "Review Summary",
-      "reviewReport": "Review Report",
-      "sendEmail": "Send Follow-up Email",
-      "createActions": "Create Action Items",
-      "updateCrm": "Update CRM Notes"
+      "startResearch": "بدء البحث",
+      "reviewResearch": "مراجعة البحث",
+      "prepareOutreach": "تحضير التواصل",
+      "firstTouchSent": "تم إرسال التواصل الأول",
+      "suggestMeeting": "جدولة اجتماع",
+      "createPrep": "إنشاء تحضير",
+      "prepReady": "التحضير جاهز",
+      "reviewSummary": "مراجعة الملخص",
+      "reviewReport": "مراجعة التقرير",
+      "sendEmail": "إرسال بريد المتابعة",
+      "createActions": "إنشاء عناصر الإجراء",
+      "updateCrm": "تحديث ملاحظات CRM"
     },
-    "copied": "Copied!",
-    "outreachTitle": "Create Outreach",
-    "outreachDescription": "Choose a channel and create a personalized outreach message",
-    "selectChannel": "Select Channel",
-    "messageContent": "Message Content",
-    "generate": "Generate",
-    "generateSuccess": "Message generated",
-    "generateFailed": "Failed to generate message",
-    "subject": "Subject",
-    "subjectPlaceholder": "Enter email subject...",
-    "message": "Message",
-    "messagePlaceholder": "Write your message here...",
-    "copy": "Copy",
-    "saveDraft": "Save Draft",
-    "markAsSent": "Mark as Sent",
-    "skip": "Skip",
-    "saveDraftSuccess": "Draft saved",
-    "saveDraftFailed": "Failed to save draft",
-    "markSentSuccess": "Marked as sent",
-    "markSentFailed": "Failed to mark as sent",
-    "missingContactInfo": "Missing Contact Information",
-    "addEmailInfo": "Add an email address to send an email",
-    "addLinkedInInfo": "Add a LinkedIn URL to send a LinkedIn message",
-    "addPhoneInfo": "Add a phone number to send a WhatsApp message",
+    "copied": "تم النسخ!",
+    "outreachTitle": "إنشاء تواصل",
+    "outreachDescription": "اختر قناة وأنشئ رسالة تواصل مخصصة",
+    "selectChannel": "اختر القناة",
+    "messageContent": "محتوى الرسالة",
+    "generate": "توليد",
+    "generateSuccess": "تم توليد الرسالة",
+    "generateFailed": "فشل توليد الرسالة",
+    "subject": "الموضوع",
+    "subjectPlaceholder": "أدخل موضوع البريد...",
+    "message": "الرسالة",
+    "messagePlaceholder": "اكتب رسالتك هنا...",
+    "copy": "نسخ",
+    "saveDraft": "حفظ كمسودة",
+    "markAsSent": "وضع علامة مرسل",
+    "skip": "تخطي",
+    "saveDraftSuccess": "تم حفظ المسودة",
+    "saveDraftFailed": "فشل حفظ المسودة",
+    "markSentSuccess": "تم وضع علامة مرسل",
+    "markSentFailed": "فشل وضع علامة مرسل",
+    "missingContactInfo": "معلومات الاتصال مفقودة",
+    "addEmailInfo": "أضف بريد إلكتروني لإرسال بريد",
+    "addLinkedInInfo": "أضف رابط LinkedIn لإرسال رسالة LinkedIn",
+    "addPhoneInfo": "أضف رقم هاتف لإرسال رسالة WhatsApp",
     "emailPlaceholder": "email@example.com",
     "linkedInPlaceholder": "https://linkedin.com/in/...",
     "phonePlaceholder": "+1 555 1234567",
-    "saveContactInfo": "Save",
-    "saveContactInfoSuccess": "Contact info saved",
-    "saveContactInfoFailed": "Failed to save contact info",
-    "customInstructions": "Custom Instructions (Optional)",
-    "customInstructionsPlaceholder": "E.g., \"Focus on their data migration project\" or \"Mention our Databricks expertise\"...",
-    "customInstructionsHint": "Add specific instructions to customize the generated message",
-    "draftLoaded": "Draft loaded",
-    "draftLoadedDesc": "Previous draft has been loaded",
-    "dontKnow": "I don't know"
+    "saveContactInfo": "حفظ",
+    "saveContactInfoSuccess": "تم حفظ معلومات الاتصال",
+    "saveContactInfoFailed": "فشل حفظ معلومات الاتصال",
+    "customInstructions": "تعليمات مخصصة (اختياري)",
+    "customInstructionsPlaceholder": "مثلاً، \"\u0631\u0643\u0632 \u0639\u0644\u0649 \u0645\u0634\u0631\u0648\u0639 \u062a\u0631\u062d\u064a\u0644 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a\" \u0623\u0648 \"\u0627\u0630\u0643\u0631 \u062e\u0628\u0631\u062a\u0646\u0627 \u0641\u064a Databricks\"...",
+    "customInstructionsHint": "أضف تعليمات محددة لتخصيص الرسالة المولدة",
+    "draftLoaded": "تم تحميل المسودة",
+    "draftLoadedDesc": "تم تحميل المسودة السابقة",
+    "dontKnow": "لا أعرف"
   },
   "lunaHome": {
-    "inbox": "Actions",
-    "pending": "pending",
-    "quickStart": "Quick Start",
-    "todaysMeetings": "Today's Meetings",
-    "noMeetingsToday": "No meetings scheduled for today",
-    "connectYourAgenda": "Connect your calendar to see your meetings here",
-    "connectAgenda": "Connect Calendar",
-    "last7Days": "Last 7 Days",
-    "today": "Today",
-    "completed": "completed",
-    "tipOfDay": "Tip of the Day",
-    "settings": "Luna Settings",
-    "settingsTitle": "Luna Settings",
-    "settingsDescription": "Configure how Luna helps you with your sales workflow.",
+    "inbox": "الإجراءات",
+    "pending": "معلق",
+    "quickStart": "بداية سريعة",
+    "todaysMeetings": "اجتماعات اليوم",
+    "noMeetingsToday": "لا توجد اجتماعات مجدولة لليوم",
+    "connectYourAgenda": "اربط تقويمك لرؤية اجتماعاتك هنا",
+    "connectAgenda": "ربط التقويم",
+    "last7Days": "آخر 7 أيام",
+    "today": "اليوم",
+    "completed": "مكتمل",
+    "tipOfDay": "نصيحة اليوم",
+    "settings": "إعدادات Luna",
+    "settingsTitle": "إعدادات Luna",
+    "settingsDescription": "كوّن كيف تساعدك Luna في سير عمل المبيعات.",
     "tabs": {
-      "active": "Active",
-      "new": "New",
-      "inProgress": "In Progress",
-      "history": "History"
+      "active": "نشط",
+      "new": "جديد",
+      "inProgress": "قيد التنفيذ",
+      "history": "السجل"
     },
     "quickActions": {
-      "research": "Research",
-      "prep": "Prep",
-      "record": "Record"
+      "research": "بحث",
+      "prep": "تحضير",
+      "record": "تسجيل"
     },
     "stats": {
-      "research": "Research",
-      "preps": "Preps",
-      "followups": "Follow-ups",
-      "outreach": "Outreach"
+      "research": "البحث",
+      "preps": "التحضيرات",
+      "followups": "المتابعات",
+      "outreach": "التواصل"
     },
-    "noActiveActions": "No active actions. You're all caught up!",
-    "noNewActions": "No new actions right now.",
-    "noInProgressActions": "No actions in progress.",
-    "noHistoryActions": "No completed actions yet."
+    "noActiveActions": "لا توجد إجراءات نشطة. أنت على اطلاع!",
+    "noNewActions": "لا توجد إجراءات جديدة حالياً.",
+    "noInProgressActions": "لا توجد إجراءات قيد التنفيذ.",
+    "noHistoryActions": "لا توجد إجراءات مكتملة بعد."
   }
 }

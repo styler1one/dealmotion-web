@@ -111,7 +111,7 @@
     "confirm": "Confirmer",
     "processing": "Traitement...",
     "optional": "optionnel",
-    "required": "requis",
+    "required": "obligatoire",
     "export": {
       "markdownDownloaded": "Fichier Markdown téléchargé",
       "pdfDownloaded": "Fichier PDF téléchargé",
@@ -241,9 +241,9 @@
       "startResearch": "Démarrer la recherche",
       "researching": "Analyse...",
       "cancel": "Annuler",
-      "customIntel": "Informations personnalisées",
-      "customIntelDesc": "Ajoutez des informations spécifiques sur lesquelles la recherche doit se concentrer",
-      "customIntelPlaceholder": "Ex: Focus sur les projets de transformation digitale..."
+      "customIntel": "Vos informations (optionnel)",
+      "customIntelDesc": "Vous savez quelque chose sur cette entreprise ? Cela sera ajouté à la recherche en ligne complète.",
+      "customIntelPlaceholder": "Ex. \"J'ai entendu de Jean qu'ils sont en réorganisation...\" ou \"Le PDG est un ancien collègue de notre directeur\""
     },
     "validation": {
       "companyNameTooShort": "Nom d'entreprise trop court",
@@ -421,7 +421,7 @@
         "suggestionsTitle": "Trouvé dans la recherche",
         "orSearchManually": "ou rechercher manuellement",
         "loadingSuggestions": "Chargement des suggestions...",
-        "manualNotesHint": "Share what you already know about this person (background, relationship, conversations, etc.)"
+        "manualNotesHint": "Ajoutez des notes ou du contexte sur ce contact"
       }
     },
     "context": {
@@ -446,7 +446,7 @@
       }
     },
     "actions": {
-      "createOutreach": "Créer une prise de contact"
+      "createOutreach": "Créer Outreach"
     }
   },
   "preparation": {
@@ -739,14 +739,14 @@
       "error": "Erreur",
       "regenerate": "Régénérer",
       "regenerating": "Régénération...",
-      "regeneratingDesc": "Vous pouvez continuer à travailler pendant que cela se génère en arrière-plan.",
+      "regeneratingDesc": "Génération de nouveau contenu...",
       "delete": "Supprimer",
-      "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette action ?",
-      "noContent": "Pas encore de contenu",
-      "generationFailed": "Génération échouée",
-      "alreadyExists": "Action déjà générée",
-      "alreadyExistsDesc": "Cette action a déjà été générée. Cliquez pour voir.",
-      "generationFailedDesc": "Une erreur s'est produite. Veuillez régénérer.",
+      "confirmDelete": "Êtes-vous sûr de vouloir supprimer ceci ?",
+      "noContent": "Pas de contenu",
+      "generationFailed": "Échec de la génération",
+      "alreadyExists": "Existe déjà",
+      "alreadyExistsDesc": "Ce contenu a déjà été généré",
+      "generationFailedDesc": "Impossible de générer le contenu. Veuillez réessayer.",
       "tryAgain": "Réessayer",
       "types": {
         "summary": {
@@ -778,34 +778,34 @@
           "description": "Résumé court pour CRM ou équipe"
         }
       },
-      "summaryReadOnly": "Summary is read-only",
-      "summaryCannotEdit": "The summary cannot be edited here. Edit the main summary above.",
-      "summaryCannotDelete": "The summary cannot be deleted",
-      "summaryCannotRegenerate": "The summary cannot be regenerated here",
-      "contextUsed": "Context used",
-      "wordsGenerated": "words",
-      "generatingContent": "Generating content...",
-      "generatingTime": "This may take 10-30 seconds",
-      "export": "Export",
-      "exportPdf": "Download PDF",
-      "exportDocx": "Download Word",
-      "exportMd": "Download Markdown",
-      "copied": "Copied to clipboard",
-      "changesSaved": "Changes saved",
-      "saveFailed": "Failed to save",
-      "deleteFailed": "Failed to delete",
-      "actionDeleted": "Action deleted",
-      "exportFailed": "Export failed",
-      "pdfDownloaded": "PDF downloaded",
-      "docxDownloaded": "Word document downloaded",
-      "mdDownloaded": "Markdown downloaded",
+      "summaryReadOnly": "Lecture seule",
+      "summaryCannotEdit": "Le résumé ne peut pas être modifié",
+      "summaryCannotDelete": "Le résumé ne peut pas être supprimé",
+      "summaryCannotRegenerate": "Le résumé ne peut pas être régénéré",
+      "contextUsed": "Contexte utilisé",
+      "wordsGenerated": "mots générés",
+      "generatingContent": "Génération du contenu...",
+      "generatingTime": "Cela peut prendre quelques secondes",
+      "export": "Exporter",
+      "exportPdf": "Exporter PDF",
+      "exportDocx": "Exporter Word",
+      "exportMd": "Exporter Markdown",
+      "copied": "Copié !",
+      "changesSaved": "Modifications enregistrées",
+      "saveFailed": "Échec de l'enregistrement",
+      "deleteFailed": "Échec de la suppression",
+      "actionDeleted": "Action supprimée",
+      "exportFailed": "Échec de l'export",
+      "pdfDownloaded": "PDF téléchargé",
+      "docxDownloaded": "Word téléchargé",
+      "mdDownloaded": "Markdown téléchargé",
       "time": {
-        "justNow": "just now",
-        "minAgo": "{count} min ago",
-        "hourAgo": "{count} hour ago",
-        "hoursAgo": "{count} hours ago",
-        "dayAgo": "{count} day ago",
-        "daysAgo": "{count} days ago"
+        "justNow": "À l'instant",
+        "minAgo": "il y a {count} min",
+        "hourAgo": "il y a 1 heure",
+        "hoursAgo": "il y a {count} heures",
+        "dayAgo": "il y a 1 jour",
+        "daysAgo": "il y a {count} jours"
       }
     },
     "toast": {
@@ -1079,249 +1079,249 @@
       "integrations": "Intégrations",
       "notifications": "Notifications",
       "coach": "Coach IA",
-      "privacy": "Privacy & Data"
+      "privacy": "Confidentialité et données"
     },
     "comingSoon": "Bientôt disponible",
     "language": {
-      "title": "Language Settings",
-      "description": "Configure your language preferences for the application",
-      "appLanguage": "App Language",
-      "appLanguageDesc": "The language of the application interface",
-      "outputLanguage": "Default Output Language",
-      "outputLanguageDesc": "The language for AI-generated content (research briefs, preparations)",
-      "outputLanguageHint": "You can override this per action",
-      "emailLanguage": "Default Email Language",
-      "emailLanguageDesc": "The language for generated emails to clients",
-      "emailLanguageHint": "You can override this per follow-up"
+      "title": "Paramètres de langue",
+      "description": "Configurez vos préférences de langue pour l'application",
+      "appLanguage": "Langue de l'application",
+      "appLanguageDesc": "La langue de l'interface de l'application",
+      "outputLanguage": "Langue de sortie par défaut",
+      "outputLanguageDesc": "La langue pour le contenu généré par l'IA (briefs de recherche, préparations)",
+      "outputLanguageHint": "Vous pouvez remplacer ceci par action",
+      "emailLanguage": "Langue d'e-mail par défaut",
+      "emailLanguageDesc": "La langue pour les e-mails générés aux clients",
+      "emailLanguageHint": "Vous pouvez remplacer ceci par suivi"
     },
-    "unsavedChanges": "Unsaved changes",
+    "unsavedChanges": "Modifications non enregistrées",
     "coach": {
-      "title": "AI Coach (Luna)",
-      "description": "Configure your AI sales coach assistant",
-      "enableLabel": "Enable AI Coach",
-      "enableDesc": "Show the floating coach widget on dashboard pages",
-      "resetLabel": "Reset Snoozed Suggestions",
-      "resetHint": "Bring back suggestions you've snoozed",
-      "resetButton": "Reset",
-      "enabled": "Coach Enabled",
-      "enabledDesc": "The AI Coach is now active and will provide suggestions",
-      "disabled": "Coach Disabled",
-      "disabledDesc": "The AI Coach widget is now hidden",
-      "reset": "Suggestions Reset",
-      "resetDesc": "All snoozed suggestions are now visible again"
+      "title": "Coach IA (Luna)",
+      "description": "Configurez votre assistant coach commercial IA",
+      "enableLabel": "Activer le Coach IA",
+      "enableDesc": "Afficher le widget coach flottant sur les pages du tableau de bord",
+      "resetLabel": "Réinitialiser les suggestions reportées",
+      "resetHint": "Ramener les suggestions que vous avez reportées",
+      "resetButton": "Réinitialiser",
+      "enabled": "Coach activé",
+      "enabledDesc": "Le Coach IA est maintenant actif et fournira des suggestions",
+      "disabled": "Coach désactivé",
+      "disabledDesc": "Le widget Coach IA est maintenant masqué",
+      "reset": "Suggestions réinitialisées",
+      "resetDesc": "Toutes les suggestions reportées sont à nouveau visibles"
     },
     "style": {
-      "title": "Communication Style",
-      "description": "Customize how AI generates your emails and reports",
-      "saved": "Style Saved",
-      "savedDesc": "Your communication style preferences have been updated",
-      "tone": "Tone",
-      "toneDesc": "The overall tone of your communications",
-      "toneDirect": "Direct - Get straight to the point",
-      "toneWarm": "Warm - Friendly and personable",
-      "toneFormal": "Formal - Professional and structured",
-      "toneCasual": "Casual - Relaxed and conversational",
-      "toneProfessional": "Professional - Balanced warmth and professionalism",
-      "formality": "Formality Level",
-      "formalityDesc": "How formal should your communications be",
-      "formalityFormal": "Formal - Complete sentences, no contractions",
-      "formalityProfessional": "Professional - Clear and businesslike",
-      "formalityCasual": "Casual - Relaxed grammar, friendly",
-      "emoji": "Use Emoji",
-      "emojiDesc": "Include emoji in professional communications",
-      "length": "Writing Length",
-      "lengthDesc": "How detailed should your communications be",
-      "lengthConcise": "Concise - Short and to the point",
-      "lengthDetailed": "Detailed - Thorough explanations",
-      "signoff": "Email Sign-off",
-      "signoffDesc": "How you prefer to end your emails"
+      "title": "Style de communication",
+      "description": "Personnalisez comment l'IA génère vos e-mails et rapports",
+      "saved": "Style enregistré",
+      "savedDesc": "Vos préférences de style de communication ont été mises à jour",
+      "tone": "Ton",
+      "toneDesc": "Le ton général de vos communications",
+      "toneDirect": "Direct - Aller droit au but",
+      "toneWarm": "Chaleureux - Amical et personnel",
+      "toneFormal": "Formel - Professionnel et structuré",
+      "toneCasual": "Décontracté - Détendu et conversationnel",
+      "toneProfessional": "Professionnel - Équilibre entre chaleur et professionnalisme",
+      "formality": "Niveau de formalité",
+      "formalityDesc": "À quel point vos communications doivent-elles être formelles",
+      "formalityFormal": "Formel - Phrases complètes, pas de contractions",
+      "formalityProfessional": "Professionnel - Clair et professionnel",
+      "formalityCasual": "Décontracté - Grammaire détendue, amical",
+      "emoji": "Utiliser les emoji",
+      "emojiDesc": "Inclure des emoji dans les communications professionnelles",
+      "length": "Longueur d'écriture",
+      "lengthDesc": "À quel point vos communications doivent-elles être détaillées",
+      "lengthConcise": "Concis - Court et direct",
+      "lengthDetailed": "Détaillé - Explications approfondies",
+      "signoff": "Signature d'e-mail",
+      "signoffDesc": "Comment vous préférez terminer vos e-mails"
     },
     "subscription": {
-      "description": "Manage your subscription, view usage and invoices"
+      "description": "Gérez votre abonnement, consultez l'utilisation et les factures"
     },
     "integrations": {
-      "description": "Connect your calendar and recording tools",
-      "title": "Integrations",
-      "subtitle": "Connect your tools to enhance your sales workflow",
+      "description": "Connectez votre calendrier et vos outils d'enregistrement",
+      "title": "Intégrations",
+      "subtitle": "Connectez vos outils pour améliorer votre workflow commercial",
       "calendar": {
-        "title": "Calendar",
-        "description": "Sync your calendar to see upcoming meetings and prepare automatically",
+        "title": "Calendrier",
+        "description": "Synchronisez votre calendrier pour voir les réunions à venir et vous préparer automatiquement",
         "google": "Google Calendar",
         "microsoft": "Microsoft 365",
-        "connect": "Connect",
-        "disconnect": "Disconnect",
-        "disconnectConfirmTitle": "Disconnect Calendar?",
-        "disconnectConfirmDesc": "This will remove your calendar connection and delete all synced meetings. You can reconnect anytime.",
-        "disconnectSuccess": "Calendar disconnected",
-        "disconnectFailed": "Failed to disconnect calendar",
-        "connected": "Connected",
-        "notConnected": "Not connected",
-        "lastSync": "Last sync: {time}",
-        "syncNow": "Sync Now",
-        "syncing": "Syncing...",
-        "meetingsCount": "{count, plural, =0 {No meetings} one {# meeting} other {# meetings}} synced",
-        "needsReauth": "Reconnection required",
-        "reconnect": "Reconnect",
-        "syncEnabled": "Auto-sync enabled",
-        "syncDisabled": "Auto-sync disabled"
+        "connect": "Connecter",
+        "disconnect": "Déconnecter",
+        "disconnectConfirmTitle": "Déconnecter le calendrier ?",
+        "disconnectConfirmDesc": "Cela supprimera votre connexion calendrier et toutes les réunions synchronisées. Vous pouvez vous reconnecter à tout moment.",
+        "disconnectSuccess": "Calendrier déconnecté",
+        "disconnectFailed": "Échec de la déconnexion du calendrier",
+        "connected": "Connecté",
+        "notConnected": "Non connecté",
+        "lastSync": "Dernière synchronisation : {time}",
+        "syncNow": "Synchroniser maintenant",
+        "syncing": "Synchronisation...",
+        "meetingsCount": "{count, plural, =0 {Aucune réunion} one {# réunion} other {# réunions}} synchronisée(s)",
+        "needsReauth": "Reconnexion requise",
+        "reconnect": "Reconnecter",
+        "syncEnabled": "Synchronisation automatique activée",
+        "syncDisabled": "Synchronisation automatique désactivée"
       },
       "recordings": {
-        "title": "Meeting Recordings",
-        "description": "Import recordings from your favorite notetaker apps",
+        "title": "Enregistrements de réunion",
+        "description": "Importez des enregistrements depuis vos applications de prise de notes préférées",
         "fireflies": "Fireflies.ai",
         "zoom": "Zoom",
         "teams": "Microsoft Teams",
-        "connect": "Connect",
-        "disconnect": "Disconnect",
-        "connected": "Connected",
-        "notConnected": "Not connected",
-        "autoImport": "Auto-import recordings",
-        "lastImport": "Last import: {time}",
-        "recordingsCount": "{count, plural, =0 {No recordings} one {# recording} other {# recordings}} imported"
+        "connect": "Connecter",
+        "disconnect": "Déconnecter",
+        "connected": "Connecté",
+        "notConnected": "Non connecté",
+        "autoImport": "Import automatique des enregistrements",
+        "lastImport": "Dernier import : {time}",
+        "recordingsCount": "{count, plural, =0 {Aucun enregistrement} one {# enregistrement} other {# enregistrements}} importé(s)"
       },
       "status": {
-        "checking": "Checking status...",
-        "error": "Could not load integration status",
-        "retry": "Retry"
+        "checking": "Vérification du statut...",
+        "error": "Impossible de charger le statut de l'intégration",
+        "retry": "Réessayer"
       }
     },
     "notifications": {
-      "description": "Configure your email and push notifications"
+      "description": "Configurez vos notifications par e-mail et push"
     },
     "autoRecord": {
-      "title": "Auto-Record Meetings",
-      "description": "Automatically record and transcribe your calendar meetings with AI Notetaker",
-      "saved": "Settings saved",
-      "savedEnabled": "AI Notetaker will automatically join matching meetings",
-      "savedDisabled": "Auto-recording is now disabled",
+      "title": "Enregistrement automatique des réunions",
+      "description": "Enregistrez et transcrivez automatiquement vos réunions de calendrier avec AI Notetaker",
+      "saved": "Paramètres enregistrés",
+      "savedEnabled": "AI Notetaker rejoindra automatiquement les réunions correspondantes",
+      "savedDisabled": "L'enregistrement automatique est maintenant désactivé",
       "mode": {
-        "label": "Recording Mode",
-        "filtered": "Smart Filter",
-        "filteredDesc": "Record meetings matching your keyword rules",
-        "all": "All Meetings",
-        "allDesc": "Record every online meeting automatically",
-        "none": "Off",
-        "noneDesc": "Never auto-record (manual only)"
+        "label": "Mode d'enregistrement",
+        "filtered": "Filtre intelligent",
+        "filteredDesc": "Enregistrer les réunions correspondant à vos règles de mots-clés",
+        "all": "Toutes les réunions",
+        "allDesc": "Enregistrer automatiquement chaque réunion en ligne",
+        "none": "Désactivé",
+        "noneDesc": "Ne jamais enregistrer automatiquement (manuel uniquement)"
       },
-      "externalOnly": "External meetings only",
-      "externalOnlyDesc": "Only record meetings with attendees outside your organization",
-      "minDuration": "Minimum duration",
-      "minDurationDesc": "Skip meetings shorter than this",
+      "externalOnly": "Réunions externes uniquement",
+      "externalOnlyDesc": "Enregistrer uniquement les réunions avec des participants extérieurs à votre organisation",
+      "minDuration": "Durée minimale",
+      "minDurationDesc": "Ignorer les réunions plus courtes que cela",
       "minutes": "min",
-      "includeKeywords": "Record when title contains",
-      "includeKeywordsDesc": "Meeting will be recorded if title contains any of these words",
-      "excludeKeywords": "Never record when title contains",
-      "excludeKeywordsDesc": "These keywords override include rules - meeting will be skipped",
-      "addKeywordPlaceholder": "Add keyword...",
-      "resetDefaults": "Reset to defaults",
-      "keywordsReset": "Keywords reset",
-      "keywordsResetDesc": "Keywords have been reset to default values",
-      "keywordExists": "Keyword already exists",
-      "preview": "Preview upcoming meetings",
-      "previewResults": "Preview Results",
-      "willRecord": "{count} will be recorded",
-      "willSkip": "{count} will be skipped",
+      "includeKeywords": "Enregistrer quand le titre contient",
+      "includeKeywordsDesc": "La réunion sera enregistrée si le titre contient l'un de ces mots",
+      "excludeKeywords": "Ne jamais enregistrer quand le titre contient",
+      "excludeKeywordsDesc": "Ces mots-clés remplacent les règles d'inclusion - la réunion sera ignorée",
+      "addKeywordPlaceholder": "Ajouter un mot-clé...",
+      "resetDefaults": "Réinitialiser par défaut",
+      "keywordsReset": "Mots-clés réinitialisés",
+      "keywordsResetDesc": "Les mots-clés ont été réinitialisés aux valeurs par défaut",
+      "keywordExists": "Le mot-clé existe déjà",
+      "preview": "Aperçu des réunions à venir",
+      "previewResults": "Résultats de l'aperçu",
+      "willRecord": "{count} seront enregistrées",
+      "willSkip": "{count} seront ignorées",
       "error": {
-        "fetchFailed": "Failed to load settings",
-        "saveFailed": "Failed to save settings",
-        "resetFailed": "Failed to reset keywords",
-        "previewFailed": "Failed to load preview"
+        "fetchFailed": "Échec du chargement des paramètres",
+        "saveFailed": "Échec de l'enregistrement des paramètres",
+        "resetFailed": "Échec de la réinitialisation des mots-clés",
+        "previewFailed": "Échec du chargement de l'aperçu"
       }
     },
     "privacy": {
-      "title": "Privacy & Data",
-      "description": "Manage your personal data and privacy settings",
+      "title": "Confidentialité et données",
+      "description": "Gérez vos données personnelles et paramètres de confidentialité",
       "dataOverview": {
-        "title": "Your Data Overview",
-        "description": "Summary of your stored personal data",
-        "accountCreated": "Account created",
-        "profilesTitle": "Profiles",
-        "salesProfile": "Sales Profile",
-        "companyProfile": "Company Profile",
-        "completed": "Completed",
-        "notCompleted": "Not completed",
-        "connections": "Connected Services"
+        "title": "Aperçu de vos données",
+        "description": "Résumé de vos données personnelles stockées",
+        "accountCreated": "Compte créé",
+        "profilesTitle": "Profils",
+        "salesProfile": "Profil commercial",
+        "companyProfile": "Profil d'entreprise",
+        "completed": "Complété",
+        "notCompleted": "Non complété",
+        "connections": "Services connectés"
       },
       "downloadData": {
-        "title": "Download Your Data",
-        "description": "Get a copy of all your personal data in machine-readable format (JSON)",
-        "button": "Download My Data",
-        "requesting": "Requesting...",
-        "requested": "Export Requested",
-        "requestedDesc": "Your data export is being prepared. You'll receive a download link shortly.",
-        "ready": "Export Ready",
-        "readyDesc": "Your data export is ready.",
-        "expiresIn": "Expires in {hours} hours",
-        "download": "Download Export",
-        "processing": "Preparing export...",
-        "stuck": "Export stuck",
-        "stuckDesc": "The export seems to be taking longer than expected. You can retry or cancel.",
-        "retry": "Retry",
-        "cancel": "Cancel",
-        "failed": "Export failed",
-        "failedDesc": "We couldn't prepare your export. Please try again.",
-        "expired": "Export expired",
-        "expiredDesc": "This export has expired. Request a new one.",
-        "rateLimited": "Rate Limited",
-        "rateLimitedDesc": "You can request a new export in {hours} hours.",
-        "alreadyReady": "Export Available",
-        "alreadyReadyDesc": "Your recent data export is still available for download.",
-        "rateInfo": "You can request one data export per 24 hours. Exports are available for 24 hours."
+        "title": "Télécharger vos données",
+        "description": "Obtenez une copie de toutes vos données personnelles au format lisible par machine (JSON)",
+        "button": "Télécharger mes données",
+        "requesting": "Demande en cours...",
+        "requested": "Export demandé",
+        "requestedDesc": "Votre export de données est en préparation. Vous recevrez un lien de téléchargement sous peu.",
+        "ready": "Export prêt",
+        "readyDesc": "Votre export de données est prêt.",
+        "expiresIn": "Expire dans {hours} heures",
+        "download": "Télécharger l'export",
+        "processing": "Préparation de l'export...",
+        "stuck": "Export bloqué",
+        "stuckDesc": "L'export semble prendre plus de temps que prévu. Vous pouvez réessayer ou annuler.",
+        "retry": "Réessayer",
+        "cancel": "Annuler",
+        "failed": "Échec de l'export",
+        "failedDesc": "Nous n'avons pas pu préparer votre export. Veuillez réessayer.",
+        "expired": "Export expiré",
+        "expiredDesc": "Cet export a expiré. Demandez-en un nouveau.",
+        "rateLimited": "Limite atteinte",
+        "rateLimitedDesc": "Vous pouvez demander un nouvel export dans {hours} heures.",
+        "alreadyReady": "Export disponible",
+        "alreadyReadyDesc": "Votre export de données récent est toujours disponible au téléchargement.",
+        "rateInfo": "Vous pouvez demander un export de données toutes les 24 heures. Les exports sont disponibles pendant 24 heures."
       },
       "deleteAccount": {
-        "title": "Delete Account",
-        "description": "Permanently delete your account and all associated data",
-        "button": "Delete My Account",
-        "confirmTitle": "Delete Your Account?",
-        "confirmDesc": "This action cannot be undone. After a 48-hour grace period, your account and all associated data will be permanently deleted. Billing records will be anonymized and retained for legal compliance.",
-        "errorActiveSubscription": "You have an active subscription. Please cancel your subscription first before deleting your account.",
-        "errorDeletionInProgress": "A deletion request is already in progress.",
-        "errorGeneric": "Could not process deletion request. Please try again.",
-        "confirmButton": "Yes, Delete My Account",
-        "cancelButton": "Cancel",
-        "cancelling": "Cancelling...",
-        "scheduled": "Deletion Scheduled",
-        "scheduledDesc": "Your account will be deleted on {date}. You can cancel this anytime before then.",
-        "cancelDeletion": "Cancel Deletion",
-        "cancelled": "Deletion Cancelled",
-        "cancelledDesc": "Your account deletion has been cancelled.",
-        "reason": "Reason (optional)",
-        "reasonPlaceholder": "Help us understand why you're leaving...",
-        "gracePeriod": "48-hour grace period",
-        "gracePeriodDesc": "You can cancel the deletion anytime within 48 hours.",
-        "whatHappens": "What happens when you delete your account:",
-        "deleteProfile": "Your profile and settings will be removed",
-        "deleteContent": "All your prospects, research, and content will be deleted",
-        "deleteFiles": "Uploaded files will be permanently removed",
-        "anonBilling": "Billing records will be anonymized for legal compliance",
-        "processing": "Processing deletion...",
-        "failed": "Deletion failed",
-        "failedDesc": "We couldn't schedule your account deletion. Please try again or contact support."
+        "title": "Supprimer le compte",
+        "description": "Supprimez définitivement votre compte et toutes les données associées",
+        "button": "Supprimer mon compte",
+        "confirmTitle": "Supprimer votre compte ?",
+        "confirmDesc": "Cette action ne peut pas être annulée. Après un délai de grâce de 48 heures, votre compte et toutes les données associées seront définitivement supprimés. Les enregistrements de facturation seront anonymisés et conservés pour conformité légale.",
+        "errorActiveSubscription": "Vous avez un abonnement actif. Veuillez d'abord annuler votre abonnement avant de supprimer votre compte.",
+        "errorDeletionInProgress": "Une demande de suppression est déjà en cours.",
+        "errorGeneric": "Impossible de traiter la demande de suppression. Veuillez réessayer.",
+        "confirmButton": "Oui, supprimer mon compte",
+        "cancelButton": "Annuler",
+        "cancelling": "Annulation...",
+        "scheduled": "Suppression programmée",
+        "scheduledDesc": "Votre compte sera supprimé le {date}. Vous pouvez annuler à tout moment avant cette date.",
+        "cancelDeletion": "Annuler la suppression",
+        "cancelled": "Suppression annulée",
+        "cancelledDesc": "La suppression de votre compte a été annulée.",
+        "reason": "Raison (optionnel)",
+        "reasonPlaceholder": "Aidez-nous à comprendre pourquoi vous partez...",
+        "gracePeriod": "Délai de grâce de 48 heures",
+        "gracePeriodDesc": "Vous pouvez annuler la suppression à tout moment dans les 48 heures.",
+        "whatHappens": "Ce qui se passe quand vous supprimez votre compte :",
+        "deleteProfile": "Votre profil et vos paramètres seront supprimés",
+        "deleteContent": "Tous vos prospects, recherches et contenus seront supprimés",
+        "deleteFiles": "Les fichiers téléchargés seront définitivement supprimés",
+        "anonBilling": "Les enregistrements de facturation seront anonymisés pour conformité légale",
+        "processing": "Traitement de la suppression...",
+        "failed": "Échec de la suppression",
+        "failedDesc": "Nous n'avons pas pu programmer la suppression de votre compte. Veuillez réessayer ou contacter le support."
       },
       "legal": {
-        "title": "Legal Documents",
-        "privacyPolicy": "Privacy Policy",
-        "privacyPolicyDesc": "How we collect, use, and protect your data",
-        "terms": "Terms & Conditions",
-        "termsDesc": "Rules for using DealMotion"
+        "title": "Documents légaux",
+        "privacyPolicy": "Politique de confidentialité",
+        "privacyPolicyDesc": "Comment nous collectons, utilisons et protégeons vos données",
+        "terms": "Conditions générales",
+        "termsDesc": "Règles d'utilisation de DealMotion"
       },
       "dataCategories": {
         "prospects": "Prospects",
-        "prospectsDesc": "Companies you're researching or selling to",
+        "prospectsDesc": "Entreprises que vous recherchez ou auxquelles vous vendez",
         "contacts": "Contacts",
-        "contactsDesc": "People at your prospect companies",
-        "research": "Research Briefs",
-        "researchDesc": "AI-generated company research",
-        "preparations": "Meeting Preparations",
-        "preparationsDesc": "AI-generated meeting briefs",
-        "followups": "Follow-ups",
-        "followupsDesc": "Meeting recordings and summaries",
+        "contactsDesc": "Personnes dans vos entreprises prospects",
+        "research": "Briefs de recherche",
+        "researchDesc": "Recherche d'entreprise générée par l'IA",
+        "preparations": "Préparations de réunion",
+        "preparationsDesc": "Briefs de réunion générés par l'IA",
+        "followups": "Suivis",
+        "followupsDesc": "Enregistrements et résumés de réunion",
         "deals": "Deals",
-        "dealsDesc": "Sales opportunities you're tracking",
+        "dealsDesc": "Opportunités commerciales que vous suivez",
         "notes": "Notes",
-        "notesDesc": "Your notes on prospects",
-        "files": "Knowledge Base Files",
-        "filesDesc": "Documents you've uploaded"
+        "notesDesc": "Vos notes sur les prospects",
+        "files": "Fichiers de la base de connaissances",
+        "filesDesc": "Documents que vous avez téléchargés"
       }
     }
   },
@@ -1350,70 +1350,70 @@
       "getStarted": "Commencer",
       "upgrade": "Améliorer",
       "contactUs": "Contactez-nous",
-      "titleV2": "Simple pricing for every sales pro",
-      "titleV4": "Close more deals, prepare less",
-      "subtitleV2": "Start free with 2 flows. Upgrade when you need more.",
-      "subtitleV4": "AI that researches, prepares, and follows up — so you can focus on selling",
-      "flowExplanation": "1 Flow = 1 Research + 1 Prep + 1 Follow-up",
-      "perMonth": "month",
-      "forever": "forever",
-      "billedYearly": "Billed as {amount}/year",
-      "backToHome": "Back",
+      "titleV2": "Tarification simple pour chaque commercial",
+      "titleV4": "Concluez plus de deals, préparez moins",
+      "subtitleV2": "Commencez gratuitement avec 2 flows. Passez à niveau quand vous en avez besoin.",
+      "subtitleV4": "L'IA qui recherche, prépare et fait le suivi — pour que vous puissiez vous concentrer sur la vente",
+      "flowExplanation": "1 Flow = 1 Recherche + 1 Préparation + 1 Suivi",
+      "perMonth": "mois",
+      "forever": "pour toujours",
+      "billedYearly": "Facturé {amount}/an",
+      "backToHome": "Retour",
       "earlyAdopter": "Early Adopter",
-      "launchOffer": "Early Bird Discount",
-      "launchOfferDescription": "Special launch pricing for early adopters - lock in these rates forever!",
-      "select": "Select",
-      "startTrial": "Start 14-day trial",
-      "choosePro": "Choose Pro",
-      "chooseProPlus": "Choose Pro+",
-      "goUnlimited": "Go Unlimited",
-      "goProPlus": "Get Complete Package",
-      "tryFirstResearch": "Try Your First Research",
-      "contactSales": "Contact Sales",
-      "alreadyFree": "You are already on the free plan.",
-      "donate": "Support us ❤️",
-      "perYear": "per year",
-      "contactForPricing": "Contact us for pricing",
-      "custom": "Custom",
-      "compareFeatures": "Compare all features",
-      "bestPlan": "You have the complete package!",
-      "feature": "Feature",
-      "trustBadges": "🔒 Secure payment via Stripe • 💳 All major cards accepted • ❌ Cancel anytime",
-      "moneyBackTitle": "30-Day Money-Back Guarantee",
-      "moneyBackDescription": "Not satisfied? No problem. Contact us within 30 days and we'll refund your payment in full. No questions asked.",
-      "moneyBackInline": "30-day money-back guarantee • Cancel anytime • No questions asked",
-      "launchEnds": "Launch pricing ends January 31st",
-      "saveAmount": "Save {amount}/year",
-      "noCardRequired": "No credit card required",
+      "launchOffer": "Réduction Early Bird",
+      "launchOfferDescription": "Tarifs de lancement spéciaux pour les early adopters - bloquez ces tarifs pour toujours !",
+      "select": "Sélectionner",
+      "startTrial": "Démarrer l'essai de 14 jours",
+      "choosePro": "Choisir Pro",
+      "chooseProPlus": "Choisir Pro+",
+      "goUnlimited": "Passer en illimité",
+      "goProPlus": "Obtenir le package complet",
+      "tryFirstResearch": "Essayez votre première recherche",
+      "contactSales": "Contacter les ventes",
+      "alreadyFree": "Vous êtes déjà sur le plan gratuit.",
+      "donate": "Soutenez-nous ❤️",
+      "perYear": "par an",
+      "contactForPricing": "Contactez-nous pour les tarifs",
+      "custom": "Personnalisé",
+      "compareFeatures": "Comparer toutes les fonctionnalités",
+      "bestPlan": "Vous avez le package complet !",
+      "feature": "Fonctionnalité",
+      "trustBadges": "🔒 Paiement sécurisé via Stripe • 💳 Toutes les cartes majeures acceptées • ❌ Annulez à tout moment",
+      "moneyBackTitle": "Garantie satisfait ou remboursé 30 jours",
+      "moneyBackDescription": "Pas satisfait ? Pas de problème. Contactez-nous dans les 30 jours et nous vous rembourserons intégralement. Sans questions.",
+      "moneyBackInline": "Garantie satisfait ou remboursé 30 jours • Annulez à tout moment • Sans questions",
+      "launchEnds": "Les tarifs de lancement se terminent le 31 janvier",
+      "saveAmount": "Économisez {amount}/an",
+      "noCardRequired": "Pas de carte de crédit requise",
       "testimonial": {
-        "quote": "DealMotion saves me 4+ hours per meeting. Easy! The AI knows exactly what I need.",
-        "author": "Sales Professional",
-        "company": "Beta User"
+        "quote": "DealMotion me fait gagner plus de 4 heures par réunion. Facile ! L'IA sait exactement ce dont j'ai besoin.",
+        "author": "Commercial",
+        "company": "Utilisateur Beta"
       },
       "value": {
         "research": {
-          "title": "Prospect Intelligence",
-          "description": "Complete company & contact research in minutes"
+          "title": "Intelligence Prospect",
+          "description": "Recherche complète d'entreprise et de contacts en quelques minutes"
         },
         "prep": {
-          "title": "Smart Preparation",
-          "description": "Personalized meeting strategy based on your style"
+          "title": "Préparation intelligente",
+          "description": "Stratégie de réunion personnalisée basée sur votre style"
         },
         "meeting": {
-          "title": "Meeting Analysis",
-          "description": "AI captures everything so you can focus on selling"
+          "title": "Analyse de réunion",
+          "description": "L'IA capture tout pour que vous puissiez vous concentrer sur la vente"
         },
         "followup": {
-          "title": "Instant Follow-up",
-          "description": "Professional meeting reports, emails & action items"
+          "title": "Suivi instantané",
+          "description": "Rapports de réunion professionnels, e-mails et points d'action"
         },
-        "personalized": "All powered by AI that knows your company, your products, and your selling style"
+        "personalized": "Tout alimenté par une IA qui connaît votre entreprise, vos produits et votre style de vente"
       },
-      "whatIsFlow": "What is a Flow?",
-      "flowStep1": "Research",
-      "flowStep2": "Preparation",
-      "flowStep3": "Follow-up",
-      "flowDescription": "A complete sales cycle from prospect research to meeting follow-up."
+      "whatIsFlow": "Qu'est-ce qu'un Flow ?",
+      "flowStep1": "Recherche",
+      "flowStep2": "Préparation",
+      "flowStep3": "Suivi",
+      "flowDescription": "Un cycle de vente complet de la recherche de prospect au suivi de réunion."
     },
     "plans": {
       "free": {
@@ -1430,56 +1430,56 @@
       },
       "v2": {
         "free": {
-          "description": "Start free with 2 flows"
+          "description": "Commencez gratuitement avec 2 flows"
         },
         "lightSolo": {
           "name": "Light Solo",
-          "description": "For the starting sales pro"
+          "description": "Pour le commercial débutant"
         },
         "unlimitedSolo": {
           "name": "Unlimited Solo",
-          "description": "Unlimited for early adopters"
+          "description": "Illimité pour les early adopters"
         },
         "enterprise": {
           "name": "Enterprise",
-          "description": "For teams with CRM needs"
+          "description": "Pour les équipes avec besoins CRM"
         }
       },
       "v3": {
         "free": {
-          "description": "Start free with 2 flows"
+          "description": "Commencez gratuitement avec 2 flows"
         },
         "proSolo": {
           "name": "Pro Solo",
-          "description": "For the active sales pro"
+          "description": "Pour le commercial actif"
         },
         "unlimitedSolo": {
           "name": "Unlimited Solo",
-          "description": "Unlimited for early adopters"
+          "description": "Illimité pour les early adopters"
         },
         "enterprise": {
           "name": "Enterprise",
-          "description": "For teams with CRM needs"
+          "description": "Pour les équipes avec besoins CRM"
         }
       },
       "v4": {
         "free": {
-          "name": "Free",
-          "description": "Everything included — try a complete sales cycle"
+          "name": "Gratuit",
+          "description": "Tout inclus — essayez un cycle de vente complet"
         },
         "pro": {
           "name": "Pro",
-          "description": "Stop wasting hours on research & prep",
-          "settingsDesc": "Stop wasting hours on research & prep"
+          "description": "Arrêtez de perdre des heures en recherche et préparation",
+          "settingsDesc": "Arrêtez de perdre des heures en recherche et préparation"
         },
         "proPlus": {
           "name": "Pro+",
-          "description": "Never take notes again — AI does it for you",
-          "settingsDesc": "Never take notes again — AI does it for you"
+          "description": "Ne prenez plus jamais de notes — l'IA le fait pour vous",
+          "settingsDesc": "Ne prenez plus jamais de notes — l'IA le fait pour vous"
         },
         "enterprise": {
           "name": "Enterprise",
-          "description": "Your entire team, synced with your CRM"
+          "description": "Toute votre équipe, synchronisée avec votre CRM"
         }
       }
     },
@@ -1494,56 +1494,56 @@
       "description": "Votre paiement a été annulé. Vous pouvez réessayer quand vous voulez.",
       "backToPricing": "Retour aux tarifs"
     },
-    "viewUsage": "View your usage",
-    "cancelWarning": "Your subscription will be cancelled on {date}",
-    "checkoutError": "Could not start checkout. Please try again.",
-    "portalError": "Could not open portal. Please try again.",
-    "donationNotConfigured": "Donation link is not configured yet.",
-    "flowsUsed": "Flows used",
-    "flowsRemaining": "Flows remaining",
+    "viewUsage": "Voir votre utilisation",
+    "cancelWarning": "Votre abonnement sera annulé le {date}",
+    "checkoutError": "Impossible de démarrer le paiement. Veuillez réessayer.",
+    "portalError": "Impossible d'ouvrir le portail. Veuillez réessayer.",
+    "donationNotConfigured": "Le lien de don n'est pas encore configuré.",
+    "flowsUsed": "Flows utilisés",
+    "flowsRemaining": "Flows restants",
     "flowPacks": {
-      "title": "Need more flows?",
-      "description": "Buy extra flows when you need them",
+      "title": "Besoin de plus de flows ?",
+      "description": "Achetez des flows supplémentaires quand vous en avez besoin",
       "pack5": {
-        "name": "5 Flow Pack",
-        "price": "€9.95",
-        "pricePerFlow": "€1.99/flow"
+        "name": "Pack 5 Flows",
+        "price": "9,95 €",
+        "pricePerFlow": "1,99 €/flow"
       },
-      "buy": "Buy Flow Pack",
-      "balance": "Flow pack balance",
-      "noBalance": "No flow packs",
-      "history": "Purchase history",
-      "purchased": "Purchased",
-      "remaining": "{count} flows remaining",
-      "depleted": "Depleted",
-      "checkoutSuccess": "Flow pack purchased successfully!",
-      "checkoutError": "Could not purchase flow pack. Please try again."
+      "buy": "Acheter un pack de flows",
+      "balance": "Solde du pack de flows",
+      "noBalance": "Pas de packs de flows",
+      "history": "Historique d'achat",
+      "purchased": "Acheté",
+      "remaining": "{count} flows restants",
+      "depleted": "Épuisé",
+      "checkoutSuccess": "Pack de flows acheté avec succès !",
+      "checkoutError": "Impossible d'acheter le pack de flows. Veuillez réessayer."
     },
     "features": {
-      "researchBriefs": "research briefs",
-      "meetingPreps": "meeting preps",
-      "followups": "follow-ups",
+      "researchBriefs": "briefs de recherche",
+      "meetingPreps": "préparations de réunion",
+      "followups": "suivis",
       "transcription": "Transcription",
-      "knowledgeBase": "Knowledge base",
-      "users": "Users",
-      "crmIntegration": "CRM integration",
-      "perMonth": "/month",
-      "unlimited": "Unlimited",
-      "hours": "hours",
+      "knowledgeBase": "Base de connaissances",
+      "users": "Utilisateurs",
+      "crmIntegration": "Intégration CRM",
+      "perMonth": "/mois",
+      "unlimited": "Illimité",
+      "hours": "heures",
       "docs": "docs",
       "v2": {
-        "flows": "{count} flows per month",
-        "flowsUnlimited": "Unlimited flows",
-        "kb": "Knowledge Base included",
-        "transcription": "Transcription included",
-        "contacts": "Full contact analysis",
-        "pdf": "Clean PDF exports",
-        "user": "{count} user",
-        "usersUnlimited": "Unlimited users",
-        "support": "Email support",
-        "prioritySupport": "Priority support",
-        "dedicatedSupport": "Dedicated support",
-        "crm": "CRM integration",
+        "flows": "{count} flows par mois",
+        "flowsUnlimited": "Flows illimités",
+        "kb": "Base de connaissances incluse",
+        "transcription": "Transcription incluse",
+        "contacts": "Analyse complète des contacts",
+        "pdf": "Exports PDF propres",
+        "user": "{count} utilisateur",
+        "usersUnlimited": "Utilisateurs illimités",
+        "support": "Support par e-mail",
+        "prioritySupport": "Support prioritaire",
+        "dedicatedSupport": "Support dédié",
+        "crm": "Intégration CRM",
         "crmDynamics": "Microsoft Dynamics",
         "crmSalesforce": "Salesforce",
         "crmHubspot": "HubSpot",
@@ -1552,101 +1552,101 @@
         "sso": "SSO/SAML"
       },
       "v3": {
-        "flows": "{count} flows per month",
-        "flowsUnlimited": "Unlimited flows",
-        "kb": "Knowledge Base included",
-        "transcription": "Transcription included",
-        "contacts": "Full contact analysis",
-        "pdf": "Clean PDF exports",
-        "user": "{count} user",
-        "usersUnlimited": "Unlimited users",
-        "support": "Email support",
-        "prioritySupport": "Priority support",
-        "dedicatedSupport": "Dedicated support",
-        "crm": "CRM integration",
+        "flows": "{count} flows par mois",
+        "flowsUnlimited": "Flows illimités",
+        "kb": "Base de connaissances incluse",
+        "transcription": "Transcription incluse",
+        "contacts": "Analyse complète des contacts",
+        "pdf": "Exports PDF propres",
+        "user": "{count} utilisateur",
+        "usersUnlimited": "Utilisateurs illimités",
+        "support": "Support par e-mail",
+        "prioritySupport": "Support prioritaire",
+        "dedicatedSupport": "Support dédié",
+        "crm": "Intégration CRM",
         "crmDynamics": "Microsoft Dynamics",
         "crmSalesforce": "Salesforce",
         "crmHubspot": "HubSpot",
         "crmPipedrive": "Pipedrive",
         "crmZoho": "Zoho CRM",
         "sso": "SSO/SAML",
-        "flowPacks": "Buy extra flow packs"
+        "flowPacks": "Achetez des packs de flows supplémentaires"
       },
       "v4": {
-        "testExperience": "Test & experience the platform",
-        "limitedFlows": "2 flows to get started",
-        "unlimitedFlows": "Unlimited flows",
-        "kb": "Knowledge Base",
-        "transcription": "Meeting transcription",
-        "contacts": "Contact analysis",
-        "pdf": "PDF & DOCX exports",
-        "prioritySupport": "Priority support",
+        "testExperience": "Testez et découvrez la plateforme",
+        "limitedFlows": "2 flows pour commencer",
+        "unlimitedFlows": "Flows illimités",
+        "kb": "Base de connaissances",
+        "transcription": "Transcription de réunion",
+        "contacts": "Analyse des contacts",
+        "pdf": "Exports PDF et DOCX",
+        "prioritySupport": "Support prioritaire",
         "aiNotetaker": "AI Notetaker",
-        "aiNotetakerIncluded": "AI Notetaker Included",
-        "aiNotetakerDescription": "AI joins your meetings to record, transcribe & summarize",
-        "aiNotetakerTitle": "AI Notetaker - Only in Pro+",
-        "aiNotetakerLongDescription": "Let our AI join your meetings to automatically record, transcribe, and create intelligent summaries. Never miss an important detail again.",
-        "notetakerFeature1": "Auto-join meetings",
-        "notetakerFeature2": "Smart summaries",
-        "notetakerFeature3": "Action items",
-        "crm": "CRM integration",
-        "everythingProPlus": "Everything in Pro+",
-        "unlimitedUsers": "Unlimited team members",
+        "aiNotetakerIncluded": "AI Notetaker inclus",
+        "aiNotetakerDescription": "L'IA rejoint vos réunions pour enregistrer, transcrire et résumer",
+        "aiNotetakerTitle": "AI Notetaker - Uniquement dans Pro+",
+        "aiNotetakerLongDescription": "Laissez notre IA rejoindre vos réunions pour enregistrer, transcrire et créer des résumés intelligents automatiquement. Ne manquez plus jamais un détail important.",
+        "notetakerFeature1": "Rejoindre automatiquement les réunions",
+        "notetakerFeature2": "Résumés intelligents",
+        "notetakerFeature3": "Points d'action",
+        "crm": "Intégration CRM",
+        "everythingProPlus": "Tout dans Pro+",
+        "unlimitedUsers": "Membres d'équipe illimités",
         "crmDynamics": "Microsoft Dynamics 365",
         "crmSalesforce": "Salesforce CRM",
         "crmHubspot": "HubSpot CRM",
         "sso": "SSO / SAML",
-        "dedicatedSupport": "Dedicated account manager",
+        "dedicatedSupport": "Gestionnaire de compte dédié",
         "value": {
-          "tryComplete": "Experience the full workflow",
-          "twoFlows": "1 complete sales cycle included",
-          "unlimited": "Unlimited prospects & meetings*",
-          "unlimitedNote": "*Fair use policy",
-          "uploadTranscripts": "Upload your own recordings & transcripts",
-          "prospectIntel": "360° prospect research & insights",
-          "contactAnalysis": "Deep analysis of decision-makers",
-          "meetingPrep": "Personalized meeting preparation",
-          "followupAnalysis": "AI-powered conversation analysis",
-          "meetingReport": "Professional meeting report to share with clients",
-          "dealAnalysis": "Commercial deal analysis with win strategy",
-          "emailsDealNotes": "Follow-up emails & CRM-ready notes",
-          "salesCoach": "Luna - Your AI sales coach",
-          "crmSync": "Sync with your CRM",
-          "teamSharing": "Share insights across your team"
+          "tryComplete": "Découvrez le workflow complet",
+          "twoFlows": "1 cycle de vente complet inclus",
+          "unlimited": "Prospects et réunions illimités*",
+          "unlimitedNote": "*Politique d'utilisation équitable",
+          "uploadTranscripts": "Téléchargez vos propres enregistrements et transcriptions",
+          "prospectIntel": "Recherche et insights prospect à 360°",
+          "contactAnalysis": "Analyse approfondie des décideurs",
+          "meetingPrep": "Préparation de réunion personnalisée",
+          "followupAnalysis": "Analyse de conversation alimentée par l'IA",
+          "meetingReport": "Rapport de réunion professionnel à partager avec les clients",
+          "dealAnalysis": "Analyse commerciale avec stratégie de gain",
+          "emailsDealNotes": "E-mails de suivi et notes prêtes pour le CRM",
+          "salesCoach": "Luna - Votre coach commercial IA",
+          "crmSync": "Synchronisez avec votre CRM",
+          "teamSharing": "Partagez les insights avec votre équipe"
         }
       },
       "free": {
-        "research": "3 research briefs per month",
-        "prep": "3 meeting preps per month",
-        "followup": "1 follow-up transcription",
-        "support": "Community support",
-        "users": "1 user",
-        "kb": "Knowledge base",
-        "contacts": "Full contact analysis",
-        "pdf": "Clean PDF exports"
+        "research": "3 briefs de recherche par mois",
+        "prep": "3 préparations de réunion par mois",
+        "followup": "1 transcription de suivi",
+        "support": "Support communautaire",
+        "users": "1 utilisateur",
+        "kb": "Base de connaissances",
+        "contacts": "Analyse complète des contacts",
+        "pdf": "Exports PDF propres"
       },
       "solo": {
-        "research": "Unlimited research briefs",
-        "prep": "Unlimited meeting preps",
-        "followup": "Unlimited follow-ups",
-        "transcription": "10 hours transcription/month",
-        "kb": "Knowledge base (50 docs)",
-        "contacts": "Full contact analysis",
-        "pdf": "Clean PDF exports",
-        "support": "Email support (48h)",
-        "users": "1 user"
+        "research": "Briefs de recherche illimités",
+        "prep": "Préparations de réunion illimitées",
+        "followup": "Suivis illimités",
+        "transcription": "10 heures de transcription/mois",
+        "kb": "Base de connaissances (50 docs)",
+        "contacts": "Analyse complète des contacts",
+        "pdf": "Exports PDF propres",
+        "support": "Support par e-mail (48h)",
+        "users": "1 utilisateur"
       },
       "teams": {
-        "everything": "Everything in Solo",
-        "users": "Unlimited users",
-        "transcription": "Unlimited transcription",
-        "kb": "Unlimited knowledge base",
-        "crm": "CRM integration",
-        "sharing": "Team sharing & collab",
-        "analytics": "Team analytics",
+        "everything": "Tout dans Solo",
+        "users": "Utilisateurs illimités",
+        "transcription": "Transcription illimitée",
+        "kb": "Base de connaissances illimitée",
+        "crm": "Intégration CRM",
+        "sharing": "Partage et collaboration d'équipe",
+        "analytics": "Analyses d'équipe",
         "sso": "SSO/SAML",
-        "support": "Dedicated support",
-        "onboarding": "Onboarding call"
+        "support": "Support dédié",
+        "onboarding": "Appel d'intégration"
       }
     }
   },
@@ -1667,82 +1667,82 @@
       "title": "Entretien terminé !",
       "description": "Vous pouvez maintenant commencer votre première recherche de prospect",
       "button": "Aller au tableau de bord",
-      "creating": "Creating your personalized profile..."
+      "creating": "Création de votre profil personnalisé..."
     },
     "skip": "Passer",
     "next": "Suivant",
     "back": "Retour",
     "finish": "Terminer",
-    "starting": "Starting your onboarding interview...",
-    "takeYourTime": "Take your time to provide a thoughtful answer",
-    "updateProfile": "Update Profile",
+    "starting": "Démarrage de votre entretien d'intégration...",
+    "takeYourTime": "Prenez votre temps pour fournir une réponse réfléchie",
+    "updateProfile": "Mettre à jour le profil",
     "existingProfile": {
-      "title": "Profile Already Exists",
-      "description": "You already have a sales profile. Would you like to update it with a fresh interview?"
+      "title": "Le profil existe déjà",
+      "description": "Vous avez déjà un profil commercial. Souhaitez-vous le mettre à jour avec un nouvel entretien ?"
     },
     "profile": {
-      "title": "Tell us about yourself",
-      "description": "This information helps the AI generate personalized outputs"
+      "title": "Parlez-nous de vous",
+      "description": "Ces informations aident l'IA à générer des sorties personnalisées"
     },
     "company": {
-      "title": "Tell us about your company",
-      "description": "This helps the AI understand your products and services",
-      "pageTitle": "Company Profile Onboarding",
-      "pageDesc": "Help the AI understand your company",
-      "questionOf": "Question {current} of {total}",
-      "generating": "Generating Company Profile...",
-      "generatingDesc": "AI is analyzing your answers and creating a structured company profile",
-      "generatingWait": "This may take a moment...",
-      "couldNotLoad": "Could not load interview",
-      "startInterview": "Starting interview...",
-      "yourAnswer": "Your answer",
-      "answerPlaceholder": "Type your answer here...",
-      "previous": "Previous",
-      "requiredQuestion": "Required question - answer as completely as possible",
-      "optionalQuestion": "Optional question - you can skip this"
+      "title": "Parlez-nous de votre entreprise",
+      "description": "Cela aide l'IA à comprendre vos produits et services",
+      "pageTitle": "Intégration du profil d'entreprise",
+      "pageDesc": "Aidez l'IA à comprendre votre entreprise",
+      "questionOf": "Question {current} sur {total}",
+      "generating": "Génération du profil d'entreprise...",
+      "generatingDesc": "L'IA analyse vos réponses et crée un profil d'entreprise structuré",
+      "generatingWait": "Cela peut prendre un moment...",
+      "couldNotLoad": "Impossible de charger l'entretien",
+      "startInterview": "Démarrage de l'entretien...",
+      "yourAnswer": "Votre réponse",
+      "answerPlaceholder": "Tapez votre réponse ici...",
+      "previous": "Précédent",
+      "requiredQuestion": "Question obligatoire - répondez aussi complètement que possible",
+      "optionalQuestion": "Question optionnelle - vous pouvez passer"
     },
     "errors": {
-      "startFailed": "Failed to start interview. Please try again.",
-      "submitFailed": "Failed to submit answer. Please try again.",
-      "completeFailed": "Failed to complete interview. Please try again."
+      "startFailed": "Échec du démarrage de l'entretien. Veuillez réessayer.",
+      "submitFailed": "Échec de l'envoi de la réponse. Veuillez réessayer.",
+      "completeFailed": "Échec de la finalisation de l'entretien. Veuillez réessayer."
     },
     "toast": {
-      "startError": "Error starting",
-      "startErrorDesc": "Could not start interview. Please try again.",
-      "saveError": "Error",
-      "saveErrorDesc": "Could not save answer",
-      "profileCreated": "Company profile created! 🎉",
-      "profileCreatedDesc": "Your company profile has been saved successfully.",
-      "createError": "Error",
-      "createErrorDesc": "Could not create profile. Please try again."
+      "startError": "Erreur de démarrage",
+      "startErrorDesc": "Impossible de démarrer l'entretien. Veuillez réessayer.",
+      "saveError": "Erreur",
+      "saveErrorDesc": "Impossible d'enregistrer la réponse",
+      "profileCreated": "Profil d'entreprise créé ! 🎉",
+      "profileCreatedDesc": "Votre profil d'entreprise a été enregistré avec succès.",
+      "createError": "Erreur",
+      "createErrorDesc": "Impossible de créer le profil. Veuillez réessayer."
     },
     "chat": {
-      "title": "Magic Profile Setup",
-      "subtitle": "A short conversation to complete your sales profile",
-      "startWithLinkedIn": "Start with LinkedIn",
-      "startWithLinkedInDesc": "We'll automatically gather as much information as possible",
-      "linkedInUrlLabel": "Your LinkedIn profile URL",
-      "linkedInPlaceholder": "https://linkedin.com/in/your-profile",
-      "startMagicSetup": "Start Magic Setup",
-      "linkedInPrivacy": "Your LinkedIn data is only used to create your profile",
-      "analyzeProfile": "Analyze Profile",
-      "preparingChat": "Preparing chat based on your profile...",
-      "pleaseWait": "Please wait...",
-      "analyzingProfile": "Analyzing your LinkedIn profile",
-      "fetchingProfile": "Fetching profile",
-      "analyzingExperience": "Analyzing experience",
-      "extractingSkills": "Extracting skills",
-      "profileChatTitle": "Sales Profile Chat",
-      "companyProfileChatTitle": "Company Profile Chat",
-      "completeness": "Completeness",
-      "profileComplete": "Profile is complete enough!",
-      "saveProfile": "Save Profile",
-      "typeYourAnswer": "Type your answer...",
-      "profileSaved": "Profile saved!",
-      "redirecting": "Redirecting to dashboard...",
-      "couldNotEnrich": "Could not retrieve LinkedIn profile",
-      "couldNotEnrichDesc": "Please check the URL and try again",
-      "chatError": "Something went wrong with the chat"
+      "title": "Configuration magique du profil",
+      "subtitle": "Une courte conversation pour compléter votre profil commercial",
+      "startWithLinkedIn": "Commencer avec LinkedIn",
+      "startWithLinkedInDesc": "Nous collecterons automatiquement autant d'informations que possible",
+      "linkedInUrlLabel": "URL de votre profil LinkedIn",
+      "linkedInPlaceholder": "https://linkedin.com/in/votre-profil",
+      "startMagicSetup": "Démarrer la configuration magique",
+      "linkedInPrivacy": "Vos données LinkedIn sont uniquement utilisées pour créer votre profil",
+      "analyzeProfile": "Analyser le profil",
+      "preparingChat": "Préparation du chat basé sur votre profil...",
+      "pleaseWait": "Veuillez patienter...",
+      "analyzingProfile": "Analyse de votre profil LinkedIn",
+      "fetchingProfile": "Récupération du profil",
+      "analyzingExperience": "Analyse de l'expérience",
+      "extractingSkills": "Extraction des compétences",
+      "profileChatTitle": "Chat du profil commercial",
+      "companyProfileChatTitle": "Chat du profil d'entreprise",
+      "completeness": "Complétude",
+      "profileComplete": "Le profil est suffisamment complet !",
+      "saveProfile": "Enregistrer le profil",
+      "typeYourAnswer": "Tapez votre réponse...",
+      "profileSaved": "Profil enregistré !",
+      "redirecting": "Redirection vers le tableau de bord...",
+      "couldNotEnrich": "Impossible de récupérer le profil LinkedIn",
+      "couldNotEnrichDesc": "Veuillez vérifier l'URL et réessayer",
+      "chatError": "Une erreur s'est produite avec le chat"
     }
   },
   "authForm": {
@@ -2062,185 +2062,185 @@
       "edit": "Modifier",
       "view": "Voir",
       "loading": "Chargement...",
-      "user": "User",
-      "users": "Users",
+      "user": "Utilisateur",
+      "users": "Utilisateurs",
       "actions": "Actions",
-      "status": "Status",
+      "status": "Statut",
       "date": "Date",
-      "error": "Error",
-      "success": "Success",
-      "confirm": "Confirm",
-      "previous": "Previous",
-      "next": "Next",
-      "showing": "Showing {from} to {to} of {total}",
-      "perPage": "per page"
+      "error": "Erreur",
+      "success": "Succès",
+      "confirm": "Confirmer",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "showing": "Affichage de {from} à {to} sur {total}",
+      "perPage": "par page"
     },
     "roles": {
       "super_admin": "Super Admin",
       "admin": "Admin",
       "support": "Support",
-      "viewer": "Viewer"
+      "viewer": "Lecteur"
     },
     "dashboard": {
-      "title": "Admin Dashboard",
-      "subtitle": "System overview and key metrics",
+      "title": "Tableau de bord Admin",
+      "subtitle": "Aperçu du système et métriques clés",
       "metrics": {
-        "totalUsers": "Total Users",
-        "activeUsers": "Active Users",
-        "mrr": "Monthly Revenue",
-        "activeAlerts": "Active Alerts"
+        "totalUsers": "Utilisateurs totaux",
+        "activeUsers": "Utilisateurs actifs",
+        "mrr": "Revenu mensuel",
+        "activeAlerts": "Alertes actives"
       },
       "trends": {
-        "title": "Usage Trends",
-        "last30Days": "Last 30 days",
-        "users": "Users",
+        "title": "Tendances d'utilisation",
+        "last30Days": "30 derniers jours",
+        "users": "Utilisateurs",
         "flows": "Flows"
       },
       "recentAlerts": {
-        "title": "Recent Alerts",
-        "viewAll": "View all alerts",
-        "noAlerts": "No active alerts"
+        "title": "Alertes récentes",
+        "viewAll": "Voir toutes les alertes",
+        "noAlerts": "Aucune alerte active"
       }
     },
     "users": {
-      "title": "User Management",
-      "subtitle": "View and manage all users",
-      "searchPlaceholder": "Search by email or name...",
-      "filterByPlan": "Filter by plan",
-      "allPlans": "All plans",
-      "noUsers": "No users found",
+      "title": "Gestion des utilisateurs",
+      "subtitle": "Voir et gérer tous les utilisateurs",
+      "searchPlaceholder": "Rechercher par e-mail ou nom...",
+      "filterByPlan": "Filtrer par plan",
+      "allPlans": "Tous les plans",
+      "noUsers": "Aucun utilisateur trouvé",
       "columns": {
-        "user": "User",
-        "organization": "Organization",
+        "user": "Utilisateur",
+        "organization": "Organisation",
         "plan": "Plan",
         "flows": "Flows",
-        "health": "Health",
-        "lastActive": "Last Active",
+        "health": "Santé",
+        "lastActive": "Dernière activité",
         "actions": "Actions"
       },
       "actions": {
-        "viewDetails": "View Details",
-        "resetFlows": "Reset Flows",
-        "addFlows": "Add Flows",
-        "extendTrial": "Extend Trial",
-        "exportData": "Export Data"
+        "viewDetails": "Voir les détails",
+        "resetFlows": "Réinitialiser les flows",
+        "addFlows": "Ajouter des flows",
+        "extendTrial": "Prolonger l'essai",
+        "exportData": "Exporter les données"
       },
       "detail": {
-        "title": "User Details",
-        "overview": "Overview",
-        "activity": "Activity",
-        "flowPacks": "Flow Packs",
-        "billing": "Billing",
-        "errors": "Errors",
-        "notes": "Admin Notes",
-        "createdAt": "Created",
-        "lastLogin": "Last Login",
-        "never": "Never"
+        "title": "Détails de l'utilisateur",
+        "overview": "Aperçu",
+        "activity": "Activité",
+        "flowPacks": "Packs de flows",
+        "billing": "Facturation",
+        "errors": "Erreurs",
+        "notes": "Notes admin",
+        "createdAt": "Créé",
+        "lastLogin": "Dernière connexion",
+        "never": "Jamais"
       },
       "health": {
-        "good": "Good",
-        "warning": "Warning",
-        "critical": "Critical"
+        "good": "Bon",
+        "warning": "Avertissement",
+        "critical": "Critique"
       }
     },
     "alerts": {
-      "title": "System Alerts",
-      "subtitle": "Monitor and resolve system issues",
-      "filterByType": "Filter by type",
-      "filterByStatus": "Filter by status",
-      "allTypes": "All types",
-      "allStatuses": "All statuses",
-      "noAlerts": "No alerts found",
+      "title": "Alertes système",
+      "subtitle": "Surveiller et résoudre les problèmes système",
+      "filterByType": "Filtrer par type",
+      "filterByStatus": "Filtrer par statut",
+      "allTypes": "Tous les types",
+      "allStatuses": "Tous les statuts",
+      "noAlerts": "Aucune alerte trouvée",
       "columns": {
-        "alert": "Alert",
+        "alert": "Alerte",
         "type": "Type",
-        "user": "User",
-        "status": "Status",
-        "createdAt": "Created",
+        "user": "Utilisateur",
+        "status": "Statut",
+        "createdAt": "Créé",
         "actions": "Actions"
       },
       "status": {
-        "active": "Active",
-        "acknowledged": "Acknowledged",
-        "resolved": "Resolved"
+        "active": "Actif",
+        "acknowledged": "Accusé de réception",
+        "resolved": "Résolu"
       },
       "types": {
-        "error": "Error",
-        "warning": "Warning",
+        "error": "Erreur",
+        "warning": "Avertissement",
         "info": "Info",
-        "payment_failed": "Payment Failed",
-        "usage_limit": "Usage Limit",
-        "security": "Security"
+        "payment_failed": "Paiement échoué",
+        "usage_limit": "Limite d'utilisation",
+        "security": "Sécurité"
       },
       "actions": {
-        "acknowledge": "Acknowledge",
-        "resolve": "Resolve"
+        "acknowledge": "Accuser réception",
+        "resolve": "Résoudre"
       }
     },
     "health": {
-      "title": "System Health",
-      "subtitle": "Service status and job monitoring",
-      "overview": "Service Overview",
-      "jobs": "Job Health",
+      "title": "Santé du système",
+      "subtitle": "Statut des services et surveillance des jobs",
+      "overview": "Aperçu des services",
+      "jobs": "Santé des jobs",
       "services": {
-        "api": "API Server",
-        "database": "Database",
+        "api": "Serveur API",
+        "database": "Base de données",
         "inngest": "Inngest Jobs",
         "stripe": "Stripe",
         "supabase": "Supabase"
       },
       "status": {
-        "operational": "Operational",
-        "degraded": "Degraded",
-        "outage": "Outage"
+        "operational": "Opérationnel",
+        "degraded": "Dégradé",
+        "outage": "Panne"
       },
       "jobStats": {
-        "successRate": "Success Rate",
-        "totalJobs": "Total Jobs (24h)",
-        "failed": "Failed",
-        "avgDuration": "Avg Duration"
+        "successRate": "Taux de réussite",
+        "totalJobs": "Jobs totaux (24h)",
+        "failed": "Échoué",
+        "avgDuration": "Durée moyenne"
       }
     },
     "billing": {
-      "title": "Billing Overview",
-      "subtitle": "Revenue and payment metrics",
+      "title": "Aperçu de la facturation",
+      "subtitle": "Métriques de revenus et paiements",
       "metrics": {
-        "mrr": "Monthly Recurring Revenue",
-        "paidUsers": "Paid Users",
-        "churnRate": "Churn Rate",
-        "avgRevenue": "Avg Revenue/User"
+        "mrr": "Revenu mensuel récurrent",
+        "paidUsers": "Utilisateurs payants",
+        "churnRate": "Taux de désabonnement",
+        "avgRevenue": "Revenu moyen/utilisateur"
       },
-      "planDistribution": "Plan Distribution",
-      "recentTransactions": "Recent Transactions",
-      "failedPayments": "Failed Payments",
-      "noTransactions": "No transactions found",
-      "noFailedPayments": "No failed payments"
+      "planDistribution": "Distribution des plans",
+      "recentTransactions": "Transactions récentes",
+      "failedPayments": "Paiements échoués",
+      "noTransactions": "Aucune transaction trouvée",
+      "noFailedPayments": "Aucun paiement échoué"
     },
     "audit": {
-      "title": "Audit Log",
-      "subtitle": "Admin action history",
-      "searchPlaceholder": "Search actions...",
-      "filterByAction": "Filter by action",
-      "allActions": "All actions",
-      "export": "Export CSV",
-      "noLogs": "No audit logs found",
+      "title": "Journal d'audit",
+      "subtitle": "Historique des actions admin",
+      "searchPlaceholder": "Rechercher des actions...",
+      "filterByAction": "Filtrer par action",
+      "allActions": "Toutes les actions",
+      "export": "Exporter CSV",
+      "noLogs": "Aucun journal d'audit trouvé",
       "columns": {
         "admin": "Admin",
         "action": "Action",
-        "target": "Target",
-        "details": "Details",
-        "timestamp": "Timestamp",
-        "ip": "IP Address"
+        "target": "Cible",
+        "details": "Détails",
+        "timestamp": "Horodatage",
+        "ip": "Adresse IP"
       }
     },
     "notes": {
-      "title": "Admin Notes",
-      "addNote": "Add Note",
-      "editNote": "Edit Note",
-      "deleteNote": "Delete Note",
-      "placeholder": "Enter note...",
-      "noNotes": "No notes yet",
-      "confirmDelete": "Are you sure you want to delete this note?"
+      "title": "Notes admin",
+      "addNote": "Ajouter une note",
+      "editNote": "Modifier la note",
+      "deleteNote": "Supprimer la note",
+      "placeholder": "Entrer une note...",
+      "noNotes": "Aucune note pour l'instant",
+      "confirmDelete": "Êtes-vous sûr de vouloir supprimer cette note ?"
     }
   },
   "homepage": {
@@ -2255,8 +2255,8 @@
       "description": "Recherchez des comptes, préparez des réunions, laissez l'IA capturer chaque conversation et faites le suivi—le tout alimenté par une IA qui connaît votre style, votre produit et votre client.",
       "startFree": "Commencer gratuitement",
       "viewPricing": "Voir les tarifs",
-      "startTrial": "Start Free Trial",
-      "watchDemo": "Watch Demo"
+      "startTrial": "Démarrer l'essai gratuit",
+      "watchDemo": "Voir la démo"
     },
     "cta": {
       "title": "Entrez dans chaque réunion avec confiance. Sortez avec un plan clair.",
@@ -2267,295 +2267,295 @@
       "rights": "Tous droits réservés."
     },
     "preview": {
-      "research": "Research",
+      "research": "Recherche",
       "brief": "Brief",
-      "aiMeetingBrief": "AI Meeting Brief",
-      "generatedIn": "Generated in 30 seconds"
+      "aiMeetingBrief": "Brief de réunion IA",
+      "generatedIn": "Généré en 30 secondes"
     },
     "features": {
-      "title": "Everything you need to keep deals moving",
-      "description": "From research to follow-up, we've got you covered at every stage of your deal cycle.",
+      "title": "Tout ce dont vous avez besoin pour faire avancer vos deals",
+      "description": "De la recherche au suivi, nous vous accompagnons à chaque étape de votre cycle de vente.",
       "research": {
-        "title": "Account Research",
-        "description": "AI-powered research on any company. Get insights on their business, challenges, decision makers, and opportunities."
+        "title": "Recherche de compte",
+        "description": "Recherche alimentée par l'IA sur n'importe quelle entreprise. Obtenez des insights sur leur activité, défis, décideurs et opportunités."
       },
       "preparation": {
-        "title": "Meeting Preparation",
-        "description": "Generate personalized meeting briefs with talking points, SPIN questions, and strategy recommendations."
+        "title": "Préparation de réunion",
+        "description": "Générez des briefs de réunion personnalisés avec des points de discussion, questions SPIN et recommandations stratégiques."
       },
       "followup": {
-        "title": "Meeting Follow-up",
-        "description": "Upload recordings, get AI summaries, action items, and customer-facing reports automatically."
+        "title": "Suivi de réunion",
+        "description": "Téléchargez des enregistrements, obtenez des résumés IA, points d'action et rapports clients automatiquement."
       },
       "aiCoach": {
-        "title": "AI Sales Coach",
-        "description": "Your personal sales coach that analyzes your conversations and provides actionable tips to improve."
+        "title": "Coach commercial IA",
+        "description": "Votre coach commercial personnel qui analyse vos conversations et fournit des conseils actionnables pour vous améliorer."
       },
       "knowledgeBase": {
-        "title": "Knowledge Base",
-        "description": "Upload your company docs. The AI uses your context to generate relevant, on-brand content."
+        "title": "Base de connaissances",
+        "description": "Téléchargez vos documents d'entreprise. L'IA utilise votre contexte pour générer du contenu pertinent et conforme à votre marque."
       },
       "contactAnalysis": {
-        "title": "Contact Analysis",
-        "description": "Get detailed profiles on decision makers with communication preferences and engagement tips."
+        "title": "Analyse de contact",
+        "description": "Obtenez des profils détaillés sur les décideurs avec préférences de communication et conseils d'engagement."
       },
       "outreach": {
-        "title": "Smart Outreach",
-        "description": "AI writes your first message to prospects. LinkedIn, email, or WhatsApp—fully personalized based on your research. No generic templates, just messages that land."
+        "title": "Outreach intelligent",
+        "description": "L'IA écrit votre premier message aux prospects. LinkedIn, e-mail ou WhatsApp—entièrement personnalisé basé sur votre recherche. Pas de modèles génériques, juste des messages qui font mouche."
       },
       "meetingsCalendar": {
-        "title": "Meetings Calendar",
-        "description": "All your meetings in one view. Prep status at a glance. Never walk in unprepared again."
+        "title": "Calendrier de réunions",
+        "description": "Toutes vos réunions en une vue. Statut de préparation en un coup d'œil. Ne vous présentez plus jamais non préparé."
       },
       "inPersonMeetings": {
-        "title": "In-Person Meetings",
-        "description": "From Zoom calls to coffee meetings—record and analyze every conversation, anywhere."
+        "title": "Réunions en personne",
+        "description": "Des appels Zoom aux réunions café—enregistrez et analysez chaque conversation, partout."
       },
       "smartIntegrations": {
-        "title": "Smart Integrations",
-        "description": "Connect Google Calendar, Microsoft 365, and Fireflies.ai. CRM sync coming soon."
+        "title": "Intégrations intelligentes",
+        "description": "Connectez Google Calendar, Microsoft 365 et Fireflies.ai. Synchronisation CRM bientôt disponible."
       },
       "aiNotetaker": {
         "title": "AI Notetaker",
-        "description": "Invite notes@dealmotion.ai to any call, or enable auto-record. Our bot joins Teams, Meet, Zoom, and Webex—then transcribes and analyzes automatically."
+        "description": "Invitez notes@dealmotion.ai à n'importe quel appel, ou activez l'enregistrement automatique. Notre bot rejoint Teams, Meet, Zoom et Webex—puis transcrit et analyse automatiquement."
       }
     },
     "socialProof": {
-      "trustedBy": "TRUSTED BY SALES TEAMS AT",
-      "usedBy": "Used by B2B sales professionals worldwide"
+      "trustedBy": "FAIT CONFIANCE PAR LES ÉQUIPES COMMERCIALES DE",
+      "usedBy": "Utilisé par des professionnels de la vente B2B dans le monde entier"
     },
     "howItWorks": {
-      "title": "How it works",
-      "subtitle": "From calendar sync to follow-up—DealMotion covers your entire deal cycle.",
+      "title": "Comment ça marche",
+      "subtitle": "De la synchronisation du calendrier au suivi—DealMotion couvre l'ensemble de votre cycle de vente.",
       "steps": {
         "calendar": {
-          "title": "Calendar",
-          "description": "Sync your meetings"
+          "title": "Calendrier",
+          "description": "Synchronisez vos réunions"
         },
         "research": {
-          "title": "Research",
-          "description": "AI gathers insights"
+          "title": "Recherche",
+          "description": "L'IA collecte les insights"
         },
         "outreach": {
           "title": "Outreach",
-          "description": "Send personalized messages"
+          "description": "Envoyez des messages personnalisés"
         },
         "prep": {
-          "title": "Prep",
-          "description": "Get your brief"
+          "title": "Préparation",
+          "description": "Obtenez votre brief"
         },
         "meeting": {
-          "title": "Meeting",
-          "description": "AI bot joins or record on mobile"
+          "title": "Réunion",
+          "description": "Le bot IA rejoint ou enregistrez sur mobile"
         },
         "analysis": {
-          "title": "Analysis",
-          "description": "7 outputs instantly"
+          "title": "Analyse",
+          "description": "7 outputs instantanément"
         },
         "followup": {
-          "title": "Follow-up",
-          "description": "Send & track"
+          "title": "Suivi",
+          "description": "Envoyez et suivez"
         }
       }
     },
     "integrations": {
-      "title": "Works with your tools",
-      "subtitle": "Connect to your existing workflow in seconds.",
-      "comingSoon": "Coming soon"
+      "title": "Fonctionne avec vos outils",
+      "subtitle": "Connectez-vous à votre workflow existant en quelques secondes.",
+      "comingSoon": "Bientôt disponible"
     },
     "aiContext": {
-      "badge": "The secret sauce",
-      "title": "AI that knows you, your company, and your prospect",
-      "subtitle": "DealMotion learns your style, your products, and your prospect—then personalizes every output.",
-      "inputsTitle": "What the AI knows about you",
+      "badge": "L'ingrédient secret",
+      "title": "Une IA qui vous connaît, connaît votre entreprise et votre prospect",
+      "subtitle": "DealMotion apprend votre style, vos produits et votre prospect—puis personnalise chaque output.",
+      "inputsTitle": "Ce que l'IA sait de vous",
       "layers": {
         "profile": {
-          "title": "Your Sales Profile",
-          "description": "Experience, strengths, communication style"
+          "title": "Votre profil commercial",
+          "description": "Expérience, forces, style de communication"
         },
         "company": {
-          "title": "Your Company",
-          "description": "Products, services, value propositions"
+          "title": "Votre entreprise",
+          "description": "Produits, services, propositions de valeur"
         },
         "knowledge": {
-          "title": "Your Knowledge Base",
-          "description": "Pitch decks, case studies, product docs"
+          "title": "Votre base de connaissances",
+          "description": "Pitch decks, études de cas, docs produit"
         },
         "prospect": {
-          "title": "Your Prospect",
-          "description": "Research, contacts, history, context"
+          "title": "Votre prospect",
+          "description": "Recherche, contacts, historique, contexte"
         }
       },
-      "outputTitle": "Personalized Output",
-      "outputDescription": "Every research report, meeting brief, and follow-up is tailored to you.",
+      "outputTitle": "Output personnalisé",
+      "outputDescription": "Chaque rapport de recherche, brief de réunion et suivi est adapté à vous.",
       "benefits": {
-        "personalized": "Tailored to your style",
-        "instant": "Generated in seconds",
-        "onBrand": "On-brand messaging",
-        "improves": "Gets smarter over time"
+        "personalized": "Adapté à votre style",
+        "instant": "Généré en quelques secondes",
+        "onBrand": "Messages conformes à votre marque",
+        "improves": "Devient plus intelligent avec le temps"
       },
-      "quote": "It's like having a sales assistant who knows your entire playbook."
+      "quote": "C'est comme avoir un assistant commercial qui connaît tout votre playbook."
     },
     "meetingAnalysis": {
-      "badge": "One Recording, 7 Outputs",
-      "title": "Everything you need from one conversation",
-      "subtitle": "Upload any meeting recording and get 7 ready-to-use outputs instantly.",
-      "recording": "Recording",
-      "anyMeeting": "Video or in-person",
+      "badge": "Un enregistrement, 7 outputs",
+      "title": "Tout ce dont vous avez besoin d'une conversation",
+      "subtitle": "Téléchargez n'importe quel enregistrement de réunion et obtenez 7 outputs prêts à l'emploi instantanément.",
+      "recording": "Enregistrement",
+      "anyMeeting": "Vidéo ou en personne",
       "outputs": {
         "summary": {
-          "title": "Summary",
-          "description": "Key points & decisions"
+          "title": "Résumé",
+          "description": "Points clés et décisions"
         },
         "customerReport": {
-          "title": "Customer Report",
-          "description": "Ready to send to your client"
+          "title": "Rapport client",
+          "description": "Prêt à envoyer à votre client"
         },
         "shareEmail": {
-          "title": "Share Email",
-          "description": "Forward to colleagues"
+          "title": "E-mail de partage",
+          "description": "Transférer aux collègues"
         },
         "commercialAnalysis": {
-          "title": "Commercial Analysis",
-          "description": "Deal insights & opportunities"
+          "title": "Analyse commerciale",
+          "description": "Insights et opportunités de deal"
         },
         "salesCoaching": {
-          "title": "Sales Coaching",
-          "description": "Personalized improvement tips"
+          "title": "Coaching commercial",
+          "description": "Conseils d'amélioration personnalisés"
         },
         "actionItems": {
-          "title": "Action Items",
-          "description": "Next steps with owners"
+          "title": "Points d'action",
+          "description": "Prochaines étapes avec responsables"
         },
         "internalReport": {
-          "title": "CRM Update",
-          "description": "Ready for your system"
+          "title": "Mise à jour CRM",
+          "description": "Prêt pour votre système"
         }
       },
-      "highlight": "Customer reports and commercial analysis are unique to DealMotion.",
-      "highlightSub": "Most tools only give you a transcript. We give you ready-to-use outputs."
+      "highlight": "Les rapports clients et l'analyse commerciale sont uniques à DealMotion.",
+      "highlightSub": "La plupart des outils ne vous donnent qu'une transcription. Nous vous donnons des outputs prêts à l'emploi."
     },
     "aiNotetakerSection": {
-      "badge": "Set It & Forget It",
-      "title": "AI that joins your meetings for you",
-      "subtitle": "Never manually start a recording again. Our AI Notetaker joins your video calls automatically, captures everything, and delivers insights before you're back at your desk.",
+      "badge": "Configurez et oubliez",
+      "title": "Une IA qui rejoint vos réunions pour vous",
+      "subtitle": "Ne démarrez plus jamais un enregistrement manuellement. Notre AI Notetaker rejoint vos appels vidéo automatiquement, capture tout et livre des insights avant que vous ne soyez de retour à votre bureau.",
       "emailInvite": {
-        "title": "Invite Like a Colleague",
-        "description": "Just add notes@dealmotion.ai to any meeting invite. Our bot joins, records, and analyzes—no setup required."
+        "title": "Invitez comme un collègue",
+        "description": "Ajoutez simplement notes@dealmotion.ai à n'importe quelle invitation de réunion. Notre bot rejoint, enregistre et analyse—aucune configuration requise."
       },
       "autoRecord": {
-        "title": "Auto-Record from Calendar",
-        "description": "Sync your calendar once. Set rules for which meetings to record. DealMotion handles the rest."
+        "title": "Enregistrement automatique depuis le calendrier",
+        "description": "Synchronisez votre calendrier une fois. Définissez des règles pour les réunions à enregistrer. DealMotion s'occupe du reste."
       },
       "smartFilters": {
-        "title": "Smart Filtering",
-        "description": "Only record what matters. Filter by keywords, external attendees, or meeting duration."
+        "title": "Filtrage intelligent",
+        "description": "N'enregistrez que ce qui compte. Filtrez par mots-clés, participants externes ou durée de réunion."
       },
       "platforms": {
-        "title": "Works Everywhere",
-        "description": "Microsoft Teams, Google Meet, Zoom, and Webex—all supported out of the box."
+        "title": "Fonctionne partout",
+        "description": "Microsoft Teams, Google Meet, Zoom et Webex—tous pris en charge nativement."
       },
       "botName": "DealMotion AI Notes",
-      "howItWorksTitle": "How it works",
+      "howItWorksTitle": "Comment ça marche",
       "steps": {
-        "invite": "Invite bot or sync calendar",
-        "join": "Bot joins automatically",
-        "record": "Records & transcribes",
-        "analyze": "7 outputs delivered"
+        "invite": "Invitez le bot ou synchronisez le calendrier",
+        "join": "Le bot rejoint automatiquement",
+        "record": "Enregistre et transcrit",
+        "analyze": "7 outputs livrés"
       }
     },
     "mobileApp": {
-      "badge": "Beta Available",
-      "title": "Your pocket recording studio",
-      "subtitle": "Record in-person meetings right from your phone. Coffee chats, on-site visits, trade shows—never miss an insight. App Store launch coming soon!",
+      "badge": "Beta disponible",
+      "title": "Votre studio d'enregistrement de poche",
+      "subtitle": "Enregistrez des réunions en personne directement depuis votre téléphone. Réunions café, visites sur site, salons professionnels—ne manquez jamais un insight. Lancement App Store bientôt !",
       "steps": {
-        "record": "Record",
-        "upload": "Upload",
-        "analyze": "Analyze",
-        "share": "Share"
+        "record": "Enregistrer",
+        "upload": "Télécharger",
+        "analyze": "Analyser",
+        "share": "Partager"
       },
-      "useCasesTitle": "Perfect for",
+      "useCasesTitle": "Parfait pour",
       "useCases": {
-        "coffee": "Coffee meetings",
-        "onsite": "On-site visits",
-        "events": "Trade shows",
-        "field": "Field sales"
+        "coffee": "Réunions café",
+        "onsite": "Visites sur site",
+        "events": "Salons professionnels",
+        "field": "Ventes terrain"
       },
-      "tapToRecord": "Tap to start recording"
+      "tapToRecord": "Appuyez pour enregistrer"
     },
     "painPoints": {
-      "title": "Before & after DealMotion",
-      "subtitle": "See how DealMotion transforms your sales workflow.",
-      "before": "Before",
-      "after": "After",
+      "title": "Avant et après DealMotion",
+      "subtitle": "Découvrez comment DealMotion transforme votre workflow commercial.",
+      "before": "Avant",
+      "after": "Après",
       "items": {
         "research": {
-          "before": "30+ minutes researching each account",
-          "after": "Complete research in 30 seconds"
+          "before": "30+ minutes de recherche par compte",
+          "after": "Recherche complète en 30 secondes"
         },
         "outreach": {
-          "before": "Sending generic messages that get ignored",
-          "after": "Personalized outreach based on AI-powered research"
+          "before": "Envoi de messages génériques ignorés",
+          "after": "Outreach personnalisé basé sur la recherche IA"
         },
         "prep": {
-          "before": "Walking into meetings unprepared",
-          "after": "Personalized brief for every meeting"
+          "before": "Arriver aux réunions non préparé",
+          "after": "Brief personnalisé pour chaque réunion"
         },
         "recording": {
-          "before": "Manually starting recordings every call",
-          "after": "AI bot joins and records automatically"
+          "before": "Démarrer manuellement les enregistrements à chaque appel",
+          "after": "Le bot IA rejoint et enregistre automatiquement"
         },
         "notes": {
-          "before": "Scrambling to take notes during calls",
-          "after": "AI captures every detail for you"
+          "before": "Se précipiter pour prendre des notes pendant les appels",
+          "after": "L'IA capture chaque détail pour vous"
         },
         "insights": {
-          "before": "No insight into deal health or how to improve",
-          "after": "AI-powered deal analysis and personal coaching after every call"
+          "before": "Aucun insight sur la santé du deal ou comment s'améliorer",
+          "after": "Analyse de deal alimentée par l'IA et coaching personnel après chaque appel"
         },
         "followup": {
-          "before": "Hours writing follow-up emails",
-          "after": "Ready-to-send reports in minutes"
+          "before": "Des heures à écrire des e-mails de suivi",
+          "after": "Rapports prêts à envoyer en quelques minutes"
         }
       }
     },
     "dayInTheLife": {
-      "title": "A day with DealMotion",
-      "intro": "Monday morning. You open DealMotion.",
+      "title": "Une journée avec DealMotion",
+      "intro": "Lundi matin. Vous ouvrez DealMotion.",
       "steps": {
         "open": {
-          "time": "8:30 AM",
-          "text": "You see 3 meetings this week."
+          "time": "8:30",
+          "text": "Vous voyez 3 réunions cette semaine."
         },
         "unprepared": {
-          "time": "8:31 AM",
-          "text": "One meeting isn't prepared yet."
+          "time": "8:31",
+          "text": "Une réunion n'est pas encore préparée."
         },
         "brief": {
-          "time": "8:32 AM",
-          "text": "Click. Personalized brief in 30 seconds.",
-          "highlight": "AI knows your style and your prospect"
+          "time": "8:32",
+          "text": "Clic. Brief personnalisé en 30 secondes.",
+          "highlight": "L'IA connaît votre style et votre prospect"
         },
         "confident": {
-          "time": "10:00 AM",
-          "text": "Walk into the meeting confident."
+          "time": "10:00",
+          "text": "Entrez dans la réunion en confiance."
         },
         "botJoins": {
-          "time": "10:01 AM",
-          "text": "AI Notetaker joins automatically. You focus on the conversation.",
-          "highlight": "No manual recording needed"
+          "time": "10:01",
+          "text": "AI Notetaker rejoint automatiquement. Vous vous concentrez sur la conversation.",
+          "highlight": "Pas d'enregistrement manuel nécessaire"
         },
         "record": {
-          "time": "11:00 AM",
-          "text": "Meeting ends. 7 outputs ready instantly.",
-          "highlight": "Summary, customer report, coaching, and more"
+          "time": "11:00",
+          "text": "La réunion se termine. 7 outputs prêts instantanément.",
+          "highlight": "Résumé, rapport client, coaching et plus"
         },
         "sent": {
-          "time": "11:05 AM",
-          "text": "Customer report sent before your next coffee."
+          "time": "11:05",
+          "text": "Rapport client envoyé avant votre prochain café."
         }
       },
-      "tagline": "That's DealMotion. Put your deals in motion."
+      "tagline": "C'est DealMotion. Mettez vos deals en mouvement."
     }
   },
   "prospects": {
@@ -2760,332 +2760,332 @@
       "notPrepared": "Non préparé"
     },
     "documents": {
-      "research": "Company Research",
-      "preparation": "Meeting Preparations",
-      "followup": "Meeting Analysis & Follow-ups",
-      "recordings": "Meeting Recordings"
+      "research": "Recherche d'entreprise",
+      "preparation": "Préparations de réunion",
+      "followup": "Analyse et suivis de réunion",
+      "recordings": "Enregistrements de réunion"
     },
     "status": {
-      "inProgress": "In Progress"
+      "inProgress": "En cours"
     },
     "documentStatus": {
-      "pending": "Pending",
-      "generating": "Generating...",
-      "transcribing": "Transcribing...",
-      "summarizing": "Analyzing...",
-      "completed": "Completed",
-      "failed": "Failed"
+      "pending": "En attente",
+      "generating": "Génération...",
+      "transcribing": "Transcription...",
+      "summarizing": "Analyse...",
+      "completed": "Terminé",
+      "failed": "Échoué"
     },
-    "more": "more",
+    "more": "plus",
     "confirm": {
-      "deleteNoteTitle": "Delete Note",
-      "deleteNoteDescription": "Are you sure you want to delete this note? This cannot be undone."
+      "deleteNoteTitle": "Supprimer la note",
+      "deleteNoteDescription": "Êtes-vous sûr de vouloir supprimer cette note ? Cette action est irréversible."
     },
     "errors": {
-      "loadFailed": "Failed to load prospect data",
-      "notFound": "Prospect not found",
-      "noteSaveFailed": "Failed to save note",
-      "noChannelsAvailable": "No channels available",
-      "addContactInfo": "Add an email, LinkedIn, or phone number to this contact first."
+      "loadFailed": "Échec du chargement des données du prospect",
+      "notFound": "Prospect non trouvé",
+      "noteSaveFailed": "Échec de l'enregistrement de la note",
+      "noChannelsAvailable": "Aucun canal disponible",
+      "addContactInfo": "Ajoutez d'abord un e-mail, LinkedIn ou numéro de téléphone à ce contact."
     },
     "sheets": {
-      "startResearch": "Start Company Research",
-      "startResearchDesc": "Search and verify this company to start AI research.",
-      "createPrep": "Create Meeting Preparation",
-      "createPrepDesc": "Prepare for your meeting with {company}.",
-      "uploadFollowup": "Upload Meeting Recording",
-      "uploadFollowupDesc": "Upload audio or transcript from your meeting with {company}.",
-      "planMeeting": "Plan Meeting",
-      "planMeetingDesc": "Plan a meeting with"
+      "startResearch": "Démarrer la recherche d'entreprise",
+      "startResearchDesc": "Recherchez et vérifiez cette entreprise pour démarrer la recherche IA.",
+      "createPrep": "Créer une préparation de réunion",
+      "createPrepDesc": "Préparez-vous pour votre réunion avec {company}.",
+      "uploadFollowup": "Télécharger un enregistrement de réunion",
+      "uploadFollowupDesc": "Téléchargez l'audio ou la transcription de votre réunion avec {company}.",
+      "planMeeting": "Planifier une réunion",
+      "planMeetingDesc": "Planifier une réunion avec"
     },
     "hints": {
-      "createPrepFirst": "Create a prep first",
-      "prepNeededForMeeting": "A preparation is needed to plan a meeting."
+      "createPrepFirst": "Créez d'abord une préparation",
+      "prepNeededForMeeting": "Une préparation est nécessaire pour planifier une réunion."
     },
     "toast": {
-      "researchStarted": "Research started successfully",
-      "prepStarted": "Preparation generation started",
-      "followupStarted": "Follow-up processing started",
-      "contactAdded": "Contact added successfully",
-      "meetingPlanned": "Meeting planned!",
-      "meetingPlannedDesc": "Don't forget to send the invitation.",
-      "outreachCreated": "Outreach created!"
+      "researchStarted": "Recherche démarrée avec succès",
+      "prepStarted": "Génération de la préparation démarrée",
+      "followupStarted": "Traitement du suivi démarré",
+      "contactAdded": "Contact ajouté avec succès",
+      "meetingPlanned": "Réunion planifiée !",
+      "meetingPlannedDesc": "N'oubliez pas d'envoyer l'invitation.",
+      "outreachCreated": "Outreach créé !"
     },
     "contactDetail": {
-      "profileBrief": "Profile Analysis",
-      "openingSuggestions": "Opening Suggestions",
-      "questionsToAsk": "Questions to Ask",
-      "topicsToAvoid": "Topics to Avoid"
+      "profileBrief": "Analyse du profil",
+      "openingSuggestions": "Suggestions d'ouverture",
+      "questionsToAsk": "Questions à poser",
+      "topicsToAvoid": "Sujets à éviter"
     }
   },
   "credits": {
-    "title": "Credits & Usage",
-    "subtitle": "Complete overview of your credit usage",
-    "unlimited": "Unlimited credits",
-    "available": "available",
-    "until": "until",
-    "subscription": "subscription",
+    "title": "Crédits et utilisation",
+    "subtitle": "Aperçu complet de votre utilisation de crédits",
+    "unlimited": "Crédits illimités",
+    "available": "disponibles",
+    "until": "jusqu'au",
+    "subscription": "abonnement",
     "packs": "packs",
-    "used": "used",
-    "exhausted": "Credits depleted!",
-    "almostEmpty": "Almost empty! {credits} credits left",
-    "buyCredits": "Buy Credits",
-    "errorLoading": "Failed to load credits",
-    "backToSettings": "Back to settings",
-    "refresh": "Refresh",
-    "thisPeriod": "This period",
-    "expires": "Expires",
-    "consumed": "Consumed",
-    "added": "Added",
+    "used": "utilisés",
+    "exhausted": "Crédits épuisés !",
+    "almostEmpty": "Presque vide ! {credits} crédits restants",
+    "buyCredits": "Acheter des crédits",
+    "errorLoading": "Échec du chargement des crédits",
+    "backToSettings": "Retour aux paramètres",
+    "refresh": "Actualiser",
+    "thisPeriod": "Cette période",
+    "expires": "Expire",
+    "consumed": "Consommés",
+    "added": "Ajoutés",
     "transactions": "Transactions",
-    "usageByFunction": "Usage by function",
-    "transactionHistory": "Transaction history",
-    "allTransactionsDetails": "All credit transactions with full details",
-    "allTypes": "All types",
-    "consumption": "Consumption",
-    "subscriptionType": "Subscription",
-    "creditPacks": "Credit Packs",
-    "allFunctions": "All functions",
-    "noTransactionsYet": "No transactions found yet",
-    "tryOtherFilters": "Try different filters",
-    "startUsingDealMotion": "Start using DealMotion features",
-    "balance": "Balance",
-    "pageOf": "Page {page} of {total} ({count} transactions)",
-    "previous": "Previous",
-    "next": "Next",
-    "howCreditsWork": "How do credits work?",
-    "howCreditsWorkDescription": "Credits are used for AI features like research, meeting prep, transcriptions and follow-ups. Your subscription includes a monthly amount of credits that reset each month. Purchased credit packs remain valid until used.",
-    "justNow": "Just now",
-    "minutesAgo": "{minutes} min ago",
-    "hoursAgo": "{hours} hours ago",
-    "daysAgo": "{days} days ago",
-    "creditsAvailable": "{credits} credits available",
-    "extra": "extra",
-    "resetInDays": "Resets in {days} day",
-    "resetInDaysPlural": "Resets in {days} days",
-    "clickToBuyMore": "Click to buy more credits →",
-    "buyPacks": "Buy Credit Packs",
-    "buyPacksDescription": "Buy extra credits to continue with your sales intelligence. Credits never expire.",
-    "noPacksAvailable": "No credit packs available",
-    "upgradeRequired": "Upgrade to Pro or Pro+",
-    "upgradeRequiredDescription": "Credit packs are only available for Pro and Pro+ subscribers. Upgrade your plan to purchase extra credits.",
-    "viewPlans": "View plans",
-    "popular": "Popular",
-    "bestDeal": "Best Deal",
-    "salesCycles": "~{count} sales cycles",
-    "perCredit": "per credit",
-    "neverExpire": "Never expire",
-    "availableImmediately": "Available immediately",
-    "buy": "Buy",
-    "pleaseWait": "Please wait...",
-    "checkoutError": "Could not start checkout. Please try again.",
-    "error": "Error"
+    "usageByFunction": "Utilisation par fonction",
+    "transactionHistory": "Historique des transactions",
+    "allTransactionsDetails": "Toutes les transactions de crédits avec détails complets",
+    "allTypes": "Tous les types",
+    "consumption": "Consommation",
+    "subscriptionType": "Abonnement",
+    "creditPacks": "Packs de crédits",
+    "allFunctions": "Toutes les fonctions",
+    "noTransactionsYet": "Aucune transaction trouvée",
+    "tryOtherFilters": "Essayez d'autres filtres",
+    "startUsingDealMotion": "Commencez à utiliser les fonctionnalités DealMotion",
+    "balance": "Solde",
+    "pageOf": "Page {page} sur {total} ({count} transactions)",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "howCreditsWork": "Comment fonctionnent les crédits ?",
+    "howCreditsWorkDescription": "Les crédits sont utilisés pour les fonctionnalités IA comme la recherche, la préparation de réunion, les transcriptions et les suivis. Votre abonnement inclut un montant mensuel de crédits qui se réinitialise chaque mois. Les packs de crédits achetés restent valides jusqu'à utilisation.",
+    "justNow": "À l'instant",
+    "minutesAgo": "Il y a {minutes} min",
+    "hoursAgo": "Il y a {hours} heures",
+    "daysAgo": "Il y a {days} jours",
+    "creditsAvailable": "{credits} crédits disponibles",
+    "extra": "supplémentaires",
+    "resetInDays": "Réinitialisation dans {days} jour",
+    "resetInDaysPlural": "Réinitialisation dans {days} jours",
+    "clickToBuyMore": "Cliquez pour acheter plus de crédits →",
+    "buyPacks": "Acheter des packs de crédits",
+    "buyPacksDescription": "Achetez des crédits supplémentaires pour continuer avec votre intelligence commerciale. Les crédits n'expirent jamais.",
+    "noPacksAvailable": "Aucun pack de crédits disponible",
+    "upgradeRequired": "Passez à Pro ou Pro+",
+    "upgradeRequiredDescription": "Les packs de crédits sont uniquement disponibles pour les abonnés Pro et Pro+. Passez à un plan supérieur pour acheter des crédits supplémentaires.",
+    "viewPlans": "Voir les plans",
+    "popular": "Populaire",
+    "bestDeal": "Meilleure offre",
+    "salesCycles": "~{count} cycles de vente",
+    "perCredit": "par crédit",
+    "neverExpire": "N'expirent jamais",
+    "availableImmediately": "Disponibles immédiatement",
+    "buy": "Acheter",
+    "pleaseWait": "Veuillez patienter...",
+    "checkoutError": "Impossible de démarrer le paiement. Veuillez réessayer.",
+    "error": "Erreur"
   },
   "autopilot": {
     "title": "Autopilot",
     "inbox": {
-      "title": "Autopilot Inbox",
+      "title": "Boîte de réception Autopilot",
       "tabs": {
-        "active": "Active",
-        "proposed": "New",
-        "executing": "In Progress",
-        "completed": "History"
+        "active": "Actif",
+        "proposed": "Nouveau",
+        "executing": "En cours",
+        "completed": "Historique"
       },
-      "empty": "No proposals right now. I'm scanning for opportunities.",
-      "pending": "pending",
-      "waiting": "waiting"
+      "empty": "Aucune proposition pour le moment. Je recherche des opportunités.",
+      "pending": "en attente",
+      "waiting": "en attente"
     },
     "proposal": {
-      "why": "Why?",
-      "accept": "Accept",
-      "decline": "Decline",
-      "snooze": "Snooze",
-      "retry": "Retry",
-      "viewDetails": "View details",
-      "executing": "Executing...",
-      "failed": "Failed",
-      "completed": "Completed"
+      "why": "Pourquoi ?",
+      "accept": "Accepter",
+      "decline": "Refuser",
+      "snooze": "Reporter",
+      "retry": "Réessayer",
+      "viewDetails": "Voir les détails",
+      "executing": "Exécution...",
+      "failed": "Échoué",
+      "completed": "Terminé"
     },
     "snooze": {
-      "oneHour": "1 hour",
-      "thisEvening": "This evening",
-      "tomorrow": "Tomorrow",
-      "afterMeeting": "After meeting",
-      "nextWeek": "Next week",
-      "inThreeDays": "In 3 days"
+      "oneHour": "1 heure",
+      "thisEvening": "Ce soir",
+      "tomorrow": "Demain",
+      "afterMeeting": "Après la réunion",
+      "nextWeek": "Semaine prochaine",
+      "inThreeDays": "Dans 3 jours"
     },
     "actions": {
-      "addContacts": "Add contacts",
-      "createPrep": "Create prep",
-      "planMeeting": "Plan meeting",
-      "uploadRecording": "Upload recording",
-      "generateActions": "Generate actions",
-      "completeActions": "Complete actions",
-      "startResearch": "Start research"
+      "addContacts": "Ajouter des contacts",
+      "createPrep": "Créer une préparation",
+      "planMeeting": "Planifier une réunion",
+      "uploadRecording": "Télécharger un enregistrement",
+      "generateActions": "Générer des actions",
+      "completeActions": "Terminer les actions",
+      "startResearch": "Démarrer la recherche"
     },
     "meetingRequest": {
       "contacts": "Contacts",
-      "noContacts": "No contacts found. Add a contact first.",
-      "moreContacts": "more contacts",
-      "emailTemplate": "Meeting invitation",
-      "to": "To",
-      "regenerate": "Regenerate",
-      "regenerating": "Generating AI email...",
-      "copyEmail": "Copy",
-      "openEmail": "Email",
-      "call": "Call",
-      "copyTemplate": "Copy text",
-      "openInEmail": "Open in email",
-      "planInCalendar": "Add to your calendar",
-      "prepHighlights": "Prep highlights",
-      "viewFullPrep": "View full prep",
-      "meetingPlannedButton": "Meeting planned - Mark as complete",
-      "meetingPlanned": "Meeting planned!",
-      "proposalCompleted": "The proposal has been completed.",
-      "emailCopied": "Email copied",
-      "templateCopied": "Email template copied",
-      "pasteInEmail": "Paste in your email client",
-      "cancel": "Cancel"
+      "noContacts": "Aucun contact trouvé. Ajoutez d'abord un contact.",
+      "moreContacts": "plus de contacts",
+      "emailTemplate": "Invitation de réunion",
+      "to": "À",
+      "regenerate": "Régénérer",
+      "regenerating": "Génération de l'e-mail IA...",
+      "copyEmail": "Copier",
+      "openEmail": "E-mail",
+      "call": "Appeler",
+      "copyTemplate": "Copier le texte",
+      "openInEmail": "Ouvrir dans l'e-mail",
+      "planInCalendar": "Ajouter à votre calendrier",
+      "prepHighlights": "Points clés de la préparation",
+      "viewFullPrep": "Voir la préparation complète",
+      "meetingPlannedButton": "Réunion planifiée - Marquer comme terminé",
+      "meetingPlanned": "Réunion planifiée !",
+      "proposalCompleted": "La proposition a été terminée.",
+      "emailCopied": "E-mail copié",
+      "templateCopied": "Modèle d'e-mail copié",
+      "pasteInEmail": "Collez dans votre client e-mail",
+      "cancel": "Annuler"
     },
     "luna": {
-      "greeting": "Hey! I'm Luna, your AI sales assistant.",
-      "scanning": "I'm scanning your calendar and prospects for opportunities.",
-      "noProposals": "No active proposals right now.",
-      "checkBack": "Check back soon - I'm always looking for ways to help.",
-      "pending": "pending",
+      "greeting": "Salut ! Je suis Luna, votre assistante commerciale IA.",
+      "scanning": "Je scanne votre calendrier et vos prospects pour des opportunités.",
+      "noProposals": "Aucune proposition active pour le moment.",
+      "checkBack": "Revenez bientôt - je cherche toujours des moyens de vous aider.",
+      "pending": "en attente",
       "urgent": "Urgent",
-      "executing": "Executing",
-      "later": "Later",
-      "ctaLabel": "Do it",
-      "viewActions": "View all actions",
-      "snoozeLaterToday": "Later today",
-      "snoozeTomorrow": "Tomorrow morning",
-      "snoozeNextWorkDay": "Next working day",
-      "snoozeAfterMeeting": "After this meeting",
-      "noMessages": "No messages",
-      "copied": "Copied!",
-      "outreachTitle": "Create Outreach",
-      "outreachDescription": "Choose a channel and create a personalized outreach message",
-      "selectChannel": "Select Channel",
-      "messageContent": "Message Content",
-      "generate": "Generate",
-      "generateSuccess": "Message generated",
-      "generateFailed": "Failed to generate message",
-      "subject": "Subject",
-      "subjectPlaceholder": "Enter email subject...",
+      "executing": "Exécution",
+      "later": "Plus tard",
+      "ctaLabel": "Faire",
+      "viewActions": "Voir toutes les actions",
+      "snoozeLaterToday": "Plus tard aujourd'hui",
+      "snoozeTomorrow": "Demain matin",
+      "snoozeNextWorkDay": "Prochain jour ouvrable",
+      "snoozeAfterMeeting": "Après cette réunion",
+      "noMessages": "Aucun message",
+      "copied": "Copié !",
+      "outreachTitle": "Créer un outreach",
+      "outreachDescription": "Choisissez un canal et créez un message d'outreach personnalisé",
+      "selectChannel": "Sélectionner le canal",
+      "messageContent": "Contenu du message",
+      "generate": "Générer",
+      "generateSuccess": "Message généré",
+      "generateFailed": "Échec de la génération du message",
+      "subject": "Objet",
+      "subjectPlaceholder": "Entrez l'objet de l'e-mail...",
       "message": "Message",
-      "messagePlaceholder": "Write your message here...",
-      "copy": "Copy",
-      "saveDraft": "Save Draft",
-      "markAsSent": "Mark as Sent",
-      "skip": "Skip",
-      "saveDraftSuccess": "Draft saved",
-      "saveDraftFailed": "Failed to save draft",
-      "markSentSuccess": "Marked as sent",
-      "markSentFailed": "Failed to mark as sent",
-      "missingContactInfo": "Missing Contact Information",
-      "addEmailInfo": "Add an email address to send an email",
-      "addLinkedInInfo": "Add a LinkedIn URL to send a LinkedIn message",
-      "addPhoneInfo": "Add a phone number to send a WhatsApp message",
+      "messagePlaceholder": "Écrivez votre message ici...",
+      "copy": "Copier",
+      "saveDraft": "Enregistrer le brouillon",
+      "markAsSent": "Marquer comme envoyé",
+      "skip": "Passer",
+      "saveDraftSuccess": "Brouillon enregistré",
+      "saveDraftFailed": "Échec de l'enregistrement du brouillon",
+      "markSentSuccess": "Marqué comme envoyé",
+      "markSentFailed": "Échec du marquage comme envoyé",
+      "missingContactInfo": "Informations de contact manquantes",
+      "addEmailInfo": "Ajoutez une adresse e-mail pour envoyer un e-mail",
+      "addLinkedInInfo": "Ajoutez une URL LinkedIn pour envoyer un message LinkedIn",
+      "addPhoneInfo": "Ajoutez un numéro de téléphone pour envoyer un message WhatsApp",
       "emailPlaceholder": "email@example.com",
       "linkedInPlaceholder": "https://linkedin.com/in/...",
-      "phonePlaceholder": "+1 555 1234567",
-      "saveContactInfo": "Save",
-      "saveContactInfoSuccess": "Contact info saved",
-      "saveContactInfoFailed": "Failed to save contact info",
-      "customInstructions": "Custom Instructions (Optional)",
-      "customInstructionsPlaceholder": "E.g., \"Focus on their data migration project\" or \"Mention our Databricks expertise\"...",
-      "customInstructionsHint": "Add specific instructions to customize the generated message",
-      "draftLoaded": "Draft loaded",
-      "draftLoadedDesc": "Previous draft has been loaded"
+      "phonePlaceholder": "+33 6 12 34 56 78",
+      "saveContactInfo": "Enregistrer",
+      "saveContactInfoSuccess": "Informations de contact enregistrées",
+      "saveContactInfoFailed": "Échec de l'enregistrement des informations de contact",
+      "customInstructions": "Instructions personnalisées (optionnel)",
+      "customInstructionsPlaceholder": "Ex. : « Concentrez-vous sur leur projet de migration de données » ou « Mentionnez notre expertise Databricks »...",
+      "customInstructionsHint": "Ajoutez des instructions spécifiques pour personnaliser le message généré",
+      "draftLoaded": "Brouillon chargé",
+      "draftLoadedDesc": "Le brouillon précédent a été chargé"
     }
   },
   "prospecting": {
-    "title": "Prospect Discovery",
-    "subtitle": "Find new prospects that match your profile and offering using AI-powered contextual search",
-    "loading": "Loading prospecting...",
+    "title": "Découverte de prospects",
+    "subtitle": "Trouvez de nouveaux prospects qui correspondent à votre profil et offre grâce à la recherche contextuelle alimentée par l'IA",
+    "loading": "Chargement de la prospection...",
     "setup": {
-      "title": "Complete your profile for better results",
-      "createProfile": "Create Sales Profile",
-      "addCompany": "Add Company Profile"
+      "title": "Complétez votre profil pour de meilleurs résultats",
+      "createProfile": "Créer un profil commercial",
+      "addCompany": "Ajouter un profil d'entreprise"
     },
     "form": {
-      "title": "Search Criteria",
-      "description": "Describe who you're looking for. Our AI will find matching prospects.",
-      "region": "Region or Country",
-      "regionPlaceholder": "e.g., Netherlands, DACH, Benelux",
-      "sector": "Sector or Domain",
-      "sectorPlaceholder": "e.g., logistics, manufacturing, professional services",
-      "companySize": "Company Size",
-      "companySizePlaceholder": "e.g., mid-sized, enterprise, SMB",
-      "proposition": "What do we sell?",
-      "propositionPlaceholder": "Describe your offering in one sentence...",
-      "targetRole": "For whom is this relevant?",
-      "targetRolePlaceholder": "e.g., CFO, CTO, Supply Chain Director",
-      "painPoint": "Where is pain or urgency?",
-      "painPointPlaceholder": "What challenges are they facing?",
-      "referenceCustomers": "Reference Customers",
-      "referenceCustomersPlaceholder": "e.g., Bol.com, Coolblue, Picnic",
-      "referenceCustomersHelp": "Enter companies that are 100% fit. We'll find similar companies based on shared signals and situations.",
-      "optional": "Optional",
-      "maxResults": "Max results",
-      "searchButton": "Find Prospects",
-      "searching": "Searching..."
+      "title": "Critères de recherche",
+      "description": "Décrivez qui vous recherchez. Notre IA trouvera des prospects correspondants.",
+      "region": "Région ou pays",
+      "regionPlaceholder": "ex. : France, DACH, Benelux",
+      "sector": "Secteur ou domaine",
+      "sectorPlaceholder": "ex. : logistique, industrie, services professionnels",
+      "companySize": "Taille de l'entreprise",
+      "companySizePlaceholder": "ex. : PME, ETI, grande entreprise",
+      "proposition": "Que vendons-nous ?",
+      "propositionPlaceholder": "Décrivez votre offre en une phrase...",
+      "targetRole": "Pour qui est-ce pertinent ?",
+      "targetRolePlaceholder": "ex. : DAF, DSI, Directeur Supply Chain",
+      "painPoint": "Où est la douleur ou l'urgence ?",
+      "painPointPlaceholder": "Quels défis rencontrent-ils ?",
+      "referenceCustomers": "Clients de référence",
+      "referenceCustomersPlaceholder": "ex. : Carrefour, LVMH, Decathlon",
+      "referenceCustomersHelp": "Entrez des entreprises qui correspondent à 100%. Nous trouverons des entreprises similaires basées sur des signaux et situations partagés.",
+      "optional": "Optionnel",
+      "maxResults": "Résultats max",
+      "searchButton": "Trouver des prospects",
+      "searching": "Recherche..."
     },
     "history": {
-      "title": "Recent Searches",
-      "results": "results",
-      "delete": "Delete",
-      "deleteConfirmTitle": "Delete Search?",
-      "deleteConfirmDescription": "This will permanently delete this search and its results. This action cannot be undone.",
-      "deleteCancel": "Cancel",
-      "deleteConfirm": "Delete",
-      "deleteSuccess": "Search deleted",
-      "deleteSuccessDesc": "The search has been removed.",
-      "deleteFailed": "Failed to delete search"
+      "title": "Recherches récentes",
+      "results": "résultats",
+      "delete": "Supprimer",
+      "deleteConfirmTitle": "Supprimer la recherche ?",
+      "deleteConfirmDescription": "Cela supprimera définitivement cette recherche et ses résultats. Cette action est irréversible.",
+      "deleteCancel": "Annuler",
+      "deleteConfirm": "Supprimer",
+      "deleteSuccess": "Recherche supprimée",
+      "deleteSuccessDesc": "La recherche a été supprimée.",
+      "deleteFailed": "Échec de la suppression de la recherche"
     },
     "searching": {
-      "title": "Discovering Prospects",
-      "description": "Analyzing your criteria and searching for matching companies...",
-      "step1": "Generating semantic search queries..."
+      "title": "Découverte de prospects",
+      "description": "Analyse de vos critères et recherche d'entreprises correspondantes...",
+      "step1": "Génération de requêtes de recherche sémantique..."
     },
     "results": {
-      "found": "Found {count} potential prospects",
-      "time": "Completed in {seconds}s",
-      "showQueries": "Show search queries used",
-      "fitScore": "Fit",
-      "imported": "Imported",
-      "import": "Import",
-      "research": "Research",
-      "reject": "Not relevant",
-      "view": "View",
-      "viewSource": "View source",
-      "scoreBreakdown": "Show score breakdown",
+      "found": "{count} prospects potentiels trouvés",
+      "time": "Terminé en {seconds}s",
+      "showQueries": "Afficher les requêtes de recherche utilisées",
+      "fitScore": "Correspondance",
+      "imported": "Importé",
+      "import": "Importer",
+      "research": "Rechercher",
+      "reject": "Non pertinent",
+      "view": "Voir",
+      "viewSource": "Voir la source",
+      "scoreBreakdown": "Afficher le détail du score",
       "propFit": "Proposition",
-      "sellerFit": "Seller",
-      "intent": "Intent",
-      "recency": "Recency",
-      "noResults": "No prospects found",
-      "noResultsDesc": "Try broadening your search criteria or adjusting the region/sector.",
-      "referenceContext": "Based on your reference customers:"
+      "sellerFit": "Vendeur",
+      "intent": "Intention",
+      "recency": "Récence",
+      "noResults": "Aucun prospect trouvé",
+      "noResultsDesc": "Essayez d'élargir vos critères de recherche ou d'ajuster la région/secteur.",
+      "referenceContext": "Basé sur vos clients de référence :"
     },
     "empty": {
-      "title": "Contextual Prospect Discovery",
-      "description": "Use AI to find companies that match your seller profile and offering. This is not a database search - it's intelligent discovery based on public signals.",
-      "howItWorks": "How it works:",
-      "step1": "Enter your search criteria (region, sector, offering)",
-      "step2": "AI generates semantic queries and searches for signals",
-      "step3": "Review scored prospects and import the best fits"
+      "title": "Découverte contextuelle de prospects",
+      "description": "Utilisez l'IA pour trouver des entreprises qui correspondent à votre profil de vendeur et offre. Ce n'est pas une recherche de base de données - c'est une découverte intelligente basée sur des signaux publics.",
+      "howItWorks": "Comment ça marche :",
+      "step1": "Entrez vos critères de recherche (région, secteur, offre)",
+      "step2": "L'IA génère des requêtes sémantiques et recherche des signaux",
+      "step3": "Examinez les prospects notés et importez les meilleurs"
     },
     "errors": {
-      "missingFields": "Missing required fields",
-      "missingFieldsDesc": "Please enter at least a sector or proposition to search."
+      "missingFields": "Champs requis manquants",
+      "missingFieldsDesc": "Veuillez entrer au moins un secteur ou une proposition pour rechercher."
     },
     "toast": {
-      "searchComplete": "Search completed",
-      "searchCompleteDesc": "Found {count} potential prospects",
-      "searchFailed": "Search failed",
-      "searchFailedDesc": "Failed to search for prospects. Please try again.",
+      "searchComplete": "Recherche terminée",
+      "searchCompleteDesc": "{count} prospects potentiels trouvés",
+      "searchFailed": "Échec de la recherche",
+      "searchFailedDesc": "Échec de la recherche de prospects. Veuillez réessayer.",
       "imported": "Prospect imported",
       "importedDesc": "The prospect has been added to your list.",
       "importFailed": "Import failed",
@@ -3096,475 +3096,475 @@
   },
   "legal": {
     "privacy": {
-      "title": "Privacy Policy",
-      "lastUpdated": "Last updated",
-      "lastUpdatedDate": "December 23, 2025",
+      "title": "Politique de Confidentialité",
+      "lastUpdated": "Dernière mise à jour",
+      "lastUpdatedDate": "23 décembre 2025",
       "intro": {
         "title": "Introduction",
-        "text": "DealMotion B.V. (\"we\", \"us\", or \"our\") respects your privacy and is committed to protecting your personal data. This privacy policy explains how we collect, use, and safeguard your information when you use our AI-powered sales enablement platform."
+        "text": "DealMotion B.V. (\"nous\", \"notre\" ou \"nos\") respecte votre vie privée et s'engage à protéger vos données personnelles. Cette politique de confidentialité explique comment nous collectons, utilisons et protégeons vos informations lorsque vous utilisez notre plateforme d'aide à la vente alimentée par l'IA."
       },
       "controller": {
-        "title": "Data Controller",
+        "title": "Responsable du Traitement",
         "company": "DealMotion B.V.",
-        "address": "Amsterdam, The Netherlands",
-        "country": "The Netherlands",
-        "email": "Email"
+        "address": "Amsterdam, Pays-Bas",
+        "country": "Pays-Bas",
+        "email": "E-mail"
       },
       "dataCollected": {
-        "title": "Personal Data We Collect",
-        "intro": "We collect the following categories of personal data:",
+        "title": "Données Personnelles Collectées",
+        "intro": "Nous collectons les catégories suivantes de données personnelles :",
         "account": {
-          "title": "Account Information",
-          "item1": "Full name and business email address",
-          "item2": "Password (encrypted)",
-          "item3": "Profile information (role, experience, company details)"
+          "title": "Informations de Compte",
+          "item1": "Nom complet et adresse email professionnelle",
+          "item2": "Mot de passe (chiffré)",
+          "item3": "Informations de profil (rôle, expérience, détails de l'entreprise)"
         },
         "content": {
-          "title": "Content You Create",
-          "item1": "Prospect and contact information you enter",
-          "item2": "Research notes, meeting preparations, and follow-up content",
-          "item3": "Uploaded documents to your knowledge base",
-          "item4": "Meeting recordings and transcripts (when using AI Notetaker)"
+          "title": "Contenu que Vous Créez",
+          "item1": "Informations sur les prospects et contacts que vous saisissez",
+          "item2": "Notes de recherche, préparations de réunion et contenu de suivi",
+          "item3": "Documents téléchargés dans votre base de connaissances",
+          "item4": "Enregistrements et transcriptions de réunions (lors de l'utilisation de AI Notetaker)"
         },
         "technical": {
-          "title": "Technical Data",
-          "item1": "IP address and browser type",
-          "item2": "Device information and session data",
-          "item3": "Usage analytics (features used, timing)"
+          "title": "Données Techniques",
+          "item1": "Adresse IP et type de navigateur",
+          "item2": "Informations sur l'appareil et données de session",
+          "item3": "Analyses d'utilisation (fonctionnalités utilisées, timing)"
         }
       },
       "purposes": {
-        "title": "How We Use Your Data",
-        "item1": "Provide and improve our AI-powered sales enablement services",
-        "item2": "Generate personalized research, preparation, and follow-up content",
-        "item3": "Process payments and manage your subscription",
-        "item4": "Send transactional emails (account updates, service notifications)",
-        "item5": "Ensure security and prevent fraud"
+        "title": "Comment Nous Utilisons Vos Données",
+        "item1": "Fournir et améliorer nos services d'aide à la vente alimentés par l'IA",
+        "item2": "Générer du contenu personnalisé de recherche, préparation et suivi",
+        "item3": "Traiter les paiements et gérer votre abonnement",
+        "item4": "Envoyer des emails transactionnels (mises à jour de compte, notifications de service)",
+        "item5": "Assurer la sécurité et prévenir la fraude"
       },
       "legalBasis": {
-        "title": "Legal Basis for Processing",
-        "contract": "Contract performance",
-        "contractDesc": "Processing necessary to provide the service you subscribed to",
-        "consent": "Consent",
-        "consentDesc": "For optional features like calendar integration",
-        "legitimate": "Legitimate interest",
-        "legitimateDesc": "For analytics and service improvement",
-        "legal": "Legal obligation",
-        "legalDesc": "For tax and accounting records"
+        "title": "Base Légale du Traitement",
+        "contract": "Exécution du contrat",
+        "contractDesc": "Traitement nécessaire pour fournir le service auquel vous êtes abonné",
+        "consent": "Consentement",
+        "consentDesc": "Pour les fonctionnalités optionnelles comme l'intégration du calendrier",
+        "legitimate": "Intérêt légitime",
+        "legitimateDesc": "Pour les analyses et l'amélioration du service",
+        "legal": "Obligation légale",
+        "legalDesc": "Pour les registres fiscaux et comptables"
       },
       "retention": {
-        "title": "Data Retention",
-        "intro": "We retain your data according to the following principles:",
-        "account": "Account data: Retained while your account is active, deleted within 30 days of account deletion",
-        "content": "Content data: Deleted immediately upon account deletion",
-        "billing": "Billing records: Anonymized and retained for 7 years for tax compliance",
-        "logs": "Technical logs: Automatically deleted after 90 days"
+        "title": "Conservation des Données",
+        "intro": "Nous conservons vos données selon les principes suivants :",
+        "account": "Données de compte : Conservées tant que votre compte est actif, supprimées dans les 30 jours suivant la suppression du compte",
+        "content": "Données de contenu : Supprimées immédiatement lors de la suppression du compte",
+        "billing": "Registres de facturation : Anonymisés et conservés pendant 7 ans pour la conformité fiscale",
+        "logs": "Journaux techniques : Supprimés automatiquement après 90 jours"
       },
       "rights": {
-        "title": "Your Rights Under GDPR",
-        "intro": "As an EU resident, you have the following rights:",
-        "access": "Right of Access",
-        "accessDesc": "Request a copy of your personal data",
-        "rectification": "Right to Rectification",
-        "rectificationDesc": "Correct inaccurate personal data",
-        "erasure": "Right to Erasure",
-        "erasureDesc": "Request deletion of your personal data",
-        "portability": "Right to Data Portability",
-        "portabilityDesc": "Receive your data in a machine-readable format",
-        "objection": "Right to Object",
-        "objectionDesc": "Object to processing based on legitimate interest",
-        "withdraw": "Right to Withdraw Consent",
-        "withdrawDesc": "Withdraw consent where processing is based on consent",
-        "howTo": "You can exercise most of these rights directly from your account settings (Settings → Privacy & Data). For other requests, contact us at privacy@dealmotion.ai."
+        "title": "Vos Droits en vertu du RGPD",
+        "intro": "En tant que résident de l'UE, vous disposez des droits suivants :",
+        "access": "Droit d'Accès",
+        "accessDesc": "Demander une copie de vos données personnelles",
+        "rectification": "Droit de Rectification",
+        "rectificationDesc": "Corriger les données personnelles inexactes",
+        "erasure": "Droit à l'Effacement",
+        "erasureDesc": "Demander la suppression de vos données personnelles",
+        "portability": "Droit à la Portabilité des Données",
+        "portabilityDesc": "Recevoir vos données dans un format lisible par machine",
+        "objection": "Droit d'Opposition",
+        "objectionDesc": "S'opposer au traitement basé sur l'intérêt légitime",
+        "withdraw": "Droit de Retirer le Consentement",
+        "withdrawDesc": "Retirer le consentement lorsque le traitement est basé sur le consentement",
+        "howTo": "Vous pouvez exercer la plupart de ces droits directement depuis les paramètres de votre compte (Paramètres → Confidentialité et Données). Pour d'autres demandes, contactez-nous à privacy@dealmotion.ai."
       },
       "transfers": {
-        "title": "International Data Transfers",
-        "intro": "Some of our service providers are located outside the EU. We only use providers that:",
-        "safeguards": "Have certified under the EU-US Data Privacy Framework (DPF), have signed Standard Contractual Clauses (SCCs), or are located in countries with an EU adequacy decision."
+        "title": "Transferts Internationaux de Données",
+        "intro": "Certains de nos prestataires de services sont situés en dehors de l'UE. Nous n'utilisons que des prestataires qui :",
+        "safeguards": "Sont certifiés dans le cadre du EU-US Data Privacy Framework (DPF), ont signé des Clauses Contractuelles Types (CCT), ou sont situés dans des pays bénéficiant d'une décision d'adéquation de l'UE."
       },
       "subprocessors": {
-        "title": "Subprocessors",
-        "intro": "We use the following third-party service providers:",
+        "title": "Sous-traitants",
+        "intro": "Nous utilisons les prestataires de services tiers suivants :",
         "name": "Service",
-        "purpose": "Purpose",
-        "location": "Location",
-        "supabase": "Database and authentication",
-        "vercel": "Frontend hosting",
-        "railway": "Backend hosting",
-        "stripe": "Payment processing",
-        "anthropic": "AI content generation (research, prep, follow-up)",
-        "google": "AI research assistance",
-        "pinecone": "Knowledge base vector storage",
-        "deepgram": "Audio transcription",
-        "inngest": "Background job processing",
-        "sentry": "Error monitoring",
-        "dpfNote": "DPF = EU-US Data Privacy Framework certified"
+        "purpose": "Finalité",
+        "location": "Localisation",
+        "supabase": "Base de données et authentification",
+        "vercel": "Hébergement frontend",
+        "railway": "Hébergement backend",
+        "stripe": "Traitement des paiements",
+        "anthropic": "Génération de contenu IA (recherche, prép, suivi)",
+        "google": "Assistance IA pour la recherche",
+        "pinecone": "Stockage vectoriel de la base de connaissances",
+        "deepgram": "Transcription audio",
+        "inngest": "Traitement des tâches en arrière-plan",
+        "sentry": "Surveillance des erreurs",
+        "dpfNote": "DPF = Certifié EU-US Data Privacy Framework"
       },
       "security": {
-        "title": "Security Measures",
-        "intro": "We implement appropriate technical and organizational measures:",
-        "encryption": "Encryption of data in transit (TLS) and at rest (AES-256)",
-        "access": "Role-based access control with principle of least privilege",
-        "monitoring": "Security monitoring and logging (without PII)",
-        "testing": "Regular security reviews and updates"
+        "title": "Mesures de Sécurité",
+        "intro": "Nous mettons en œuvre des mesures techniques et organisationnelles appropriées :",
+        "encryption": "Chiffrement des données en transit (TLS) et au repos (AES-256)",
+        "access": "Contrôle d'accès basé sur les rôles avec le principe du moindre privilège",
+        "monitoring": "Surveillance de la sécurité et journalisation (sans PII)",
+        "testing": "Revues de sécurité et mises à jour régulières"
       },
       "cookies": {
         "title": "Cookies",
-        "intro": "We use only essential cookies:",
-        "essential": "Essential cookies",
-        "essentialDesc": "Required for authentication and session management",
-        "preferences": "Preference cookies",
-        "preferencesDesc": "Store your language preference",
-        "noTracking": "We do not use tracking cookies or third-party advertising cookies."
+        "intro": "Nous n'utilisons que des cookies essentiels :",
+        "essential": "Cookies essentiels",
+        "essentialDesc": "Nécessaires pour l'authentification et la gestion de session",
+        "preferences": "Cookies de préférences",
+        "preferencesDesc": "Stockent votre préférence de langue",
+        "noTracking": "Nous n'utilisons pas de cookies de suivi ni de cookies publicitaires tiers."
       },
       "complaints": {
-        "title": "Complaints",
-        "intro": "If you believe we have not handled your personal data properly, you can lodge a complaint with your local data protection authority:",
-        "authority": "Dutch Data Protection Authority",
+        "title": "Réclamations",
+        "intro": "Si vous estimez que nous n'avons pas traité correctement vos données personnelles, vous pouvez déposer une plainte auprès de votre autorité locale de protection des données :",
+        "authority": "Autorité Néerlandaise de Protection des Données",
         "authorityName": "Autoriteit Persoonsgegevens",
         "authorityWebsite": "autoriteitpersoonsgegevens.nl"
       },
       "changes": {
-        "title": "Changes to This Policy",
-        "text": "We may update this privacy policy from time to time. We will notify you of significant changes via email or in-app notification. Continued use of the service after changes constitutes acceptance of the updated policy."
+        "title": "Modifications de Cette Politique",
+        "text": "Nous pouvons mettre à jour cette politique de confidentialité de temps en temps. Nous vous informerons des changements importants par email ou notification dans l'application. L'utilisation continue du service après les modifications constitue une acceptation de la politique mise à jour."
       },
       "contact": {
-        "title": "Contact Us",
-        "text": "For privacy-related questions or to exercise your rights, contact us at:"
+        "title": "Nous Contacter",
+        "text": "Pour les questions liées à la confidentialité ou pour exercer vos droits, contactez-nous à :"
       },
       "seeAlso": {
-        "terms": "Terms & Conditions"
+        "terms": "Conditions Générales"
       }
     },
     "terms": {
-      "title": "Terms & Conditions",
-      "lastUpdated": "Last updated",
-      "lastUpdatedDate": "December 23, 2025",
+      "title": "Conditions Générales",
+      "lastUpdated": "Dernière mise à jour",
+      "lastUpdatedDate": "23 décembre 2025",
       "intro": {
         "title": "Introduction",
-        "text": "These Terms & Conditions (\"Terms\") govern your use of DealMotion, an AI-powered B2B sales enablement platform operated by DealMotion B.V. By using our service, you agree to these Terms."
+        "text": "Ces Conditions Générales (\"Conditions\") régissent votre utilisation de DealMotion, une plateforme d'aide à la vente B2B alimentée par l'IA, exploitée par DealMotion B.V. En utilisant notre service, vous acceptez ces Conditions."
       },
       "definitions": {
-        "title": "Definitions",
+        "title": "Définitions",
         "service": "Service",
-        "serviceDesc": "The DealMotion platform, including web application, APIs, and related services",
-        "user": "User",
-        "userDesc": "Any individual or entity that registers for and uses the Service",
-        "content": "User Content",
-        "contentDesc": "All data, text, files, and other materials you upload or create in the Service",
-        "subscription": "Subscription",
-        "subscriptionDesc": "Your paid or free plan for accessing the Service"
+        "serviceDesc": "La plateforme DealMotion, y compris l'application web, les APIs et les services associés",
+        "user": "Utilisateur",
+        "userDesc": "Toute personne physique ou morale qui s'inscrit et utilise le Service",
+        "content": "Contenu Utilisateur",
+        "contentDesc": "Toutes les données, textes, fichiers et autres matériaux que vous téléchargez ou créez dans le Service",
+        "subscription": "Abonnement",
+        "subscriptionDesc": "Votre forfait payant ou gratuit pour accéder au Service"
       },
       "service": {
-        "title": "Service Description",
-        "intro": "DealMotion is an AI-powered sales enablement platform that provides:",
-        "feature1": "AI-generated prospect research and intelligence",
-        "feature2": "Meeting preparation briefs",
-        "feature3": "Post-meeting follow-up with action items and email drafts",
-        "feature4": "Meeting recording and transcription (AI Notetaker)",
-        "feature5": "Knowledge base for document storage and RAG-enhanced context"
+        "title": "Description du Service",
+        "intro": "DealMotion est une plateforme d'aide à la vente alimentée par l'IA qui fournit :",
+        "feature1": "Recherche et intelligence sur les prospects générées par IA",
+        "feature2": "Briefings de préparation de réunion",
+        "feature3": "Suivi post-réunion avec actions et brouillons d'emails",
+        "feature4": "Enregistrement et transcription de réunions (AI Notetaker)",
+        "feature5": "Base de connaissances pour le stockage de documents et contexte amélioré par RAG"
       },
       "account": {
-        "title": "Account Registration",
-        "item1": "You must provide accurate and complete registration information",
-        "item2": "You are responsible for maintaining the security of your account credentials",
-        "item3": "You must notify us immediately of any unauthorized access",
-        "item4": "One person or entity per account - sharing accounts is not permitted"
+        "title": "Inscription au Compte",
+        "item1": "Vous devez fournir des informations d'inscription exactes et complètes",
+        "item2": "Vous êtes responsable du maintien de la sécurité de vos identifiants de compte",
+        "item3": "Vous devez nous notifier immédiatement de tout accès non autorisé",
+        "item4": "Une personne ou entité par compte - le partage de comptes n'est pas autorisé"
       },
       "responsibilities": {
-        "title": "User Responsibilities",
-        "intro": "You agree to:",
-        "item1": "Use the Service only for lawful business purposes",
-        "item2": "Ensure you have the right to input any data about third parties (prospects, contacts)",
-        "item3": "Not misrepresent AI-generated content as human-written when legally required",
-        "item4": "Maintain appropriate data protection measures for personal data you process"
+        "title": "Responsabilités de l'Utilisateur",
+        "intro": "Vous acceptez de :",
+        "item1": "Utiliser le Service uniquement à des fins commerciales légales",
+        "item2": "Vous assurer que vous avez le droit de saisir des données sur des tiers (prospects, contacts)",
+        "item3": "Ne pas présenter le contenu généré par IA comme écrit par un humain lorsque la loi l'exige",
+        "item4": "Maintenir des mesures de protection des données appropriées pour les données personnelles que vous traitez"
       },
       "acceptableUse": {
-        "title": "Acceptable Use",
-        "intro": "You may not use the Service to:",
-        "prohibited1": "Violate any applicable laws or regulations",
-        "prohibited2": "Infringe on the intellectual property rights of others",
-        "prohibited3": "Harass, spam, or send unsolicited communications",
-        "prohibited4": "Attempt to reverse engineer, scrape, or access the Service in unauthorized ways",
-        "prohibited5": "Use the AI features to generate harmful, discriminatory, or illegal content"
+        "title": "Utilisation Acceptable",
+        "intro": "Vous ne pouvez pas utiliser le Service pour :",
+        "prohibited1": "Violer les lois ou règlements applicables",
+        "prohibited2": "Porter atteinte aux droits de propriété intellectuelle d'autrui",
+        "prohibited3": "Harcèler, spammer ou envoyer des communications non sollicitées",
+        "prohibited4": "Tenter de rétro-concevoir, scraper ou accéder au Service de manière non autorisée",
+        "prohibited5": "Utiliser les fonctionnalités IA pour générer du contenu nuisible, discriminatoire ou illégal"
       },
       "payment": {
-        "title": "Subscription & Payment",
-        "item1": "Paid plans are billed monthly or annually in advance",
-        "item2": "Prices are in Euros (€) and exclude applicable taxes",
-        "item3": "You can cancel your subscription at any time; access continues until the end of the paid period",
-        "item4": "No refunds for partial subscription periods, except as required by law",
-        "item5": "We may change prices with 30 days' notice; changes apply at your next renewal"
+        "title": "Abonnement et Paiement",
+        "item1": "Les forfaits payants sont facturés mensuellement ou annuellement à l'avance",
+        "item2": "Les prix sont en Euros (€) et hors taxes applicables",
+        "item3": "Vous pouvez annuler votre abonnement à tout moment ; l'accès continue jusqu'à la fin de la période payée",
+        "item4": "Pas de remboursement pour les périodes d'abonnement partielles, sauf si la loi l'exige",
+        "item5": "Nous pouvons modifier les prix avec un préavis de 30 jours ; les changements s'appliquent à votre prochain renouvellement"
       },
       "data": {
-        "title": "Your Data",
-        "intro": "Regarding data you store in the Service:",
-        "item1": "You retain ownership of all User Content you create or upload",
-        "item2": "You grant us a license to process your data to provide the Service",
-        "item3": "We will not use your data to train AI models (other than your personal context within your account)"
+        "title": "Vos Données",
+        "intro": "Concernant les données que vous stockez dans le Service :",
+        "item1": "Vous conservez la propriété de tout le Contenu Utilisateur que vous créez ou téléchargez",
+        "item2": "Vous nous accordez une licence pour traiter vos données afin de fournir le Service",
+        "item3": "Nous n'utiliserons pas vos données pour entraîner des modèles IA (autre que votre contexte personnel dans votre compte)"
       },
       "ip": {
-        "title": "Intellectual Property",
-        "item1": "DealMotion owns all rights to the Service, including software, design, and documentation",
-        "item2": "AI-generated content (research, briefs, emails) may be used freely by you for your business purposes",
-        "item3": "You may not copy, modify, or redistribute the Service or its components"
+        "title": "Propriété Intellectuelle",
+        "item1": "DealMotion détient tous les droits sur le Service, y compris le logiciel, le design et la documentation",
+        "item2": "Le contenu généré par IA (recherche, briefings, emails) peut être utilisé librement par vous à des fins commerciales",
+        "item3": "Vous ne pouvez pas copier, modifier ou redistribuer le Service ou ses composants"
       },
       "ai": {
-        "title": "AI-Generated Content",
-        "intro": "The Service uses artificial intelligence to generate content. You acknowledge that:",
-        "item1": "AI-generated content may contain inaccuracies and should be reviewed before use",
-        "item2": "You are responsible for verifying facts and claims in AI-generated content",
-        "item3": "AI suggestions are assistance tools, not professional advice (legal, financial, etc.)"
+        "title": "Contenu Généré par IA",
+        "intro": "Le Service utilise l'intelligence artificielle pour générer du contenu. Vous reconnaissez que :",
+        "item1": "Le contenu généré par IA peut contenir des inexactitudes et doit être vérifié avant utilisation",
+        "item2": "Vous êtes responsable de la vérification des faits et affirmations dans le contenu généré par IA",
+        "item3": "Les suggestions IA sont des outils d'assistance, pas des conseils professionnels (juridiques, financiers, etc.)"
       },
       "liability": {
-        "title": "Limitation of Liability",
-        "intro": "To the maximum extent permitted by law:",
-        "item1": "The Service is provided \"as is\" without warranties of any kind",
-        "item2": "We are not liable for indirect, incidental, or consequential damages",
-        "item3": "Our total liability is limited to the amount you paid in the 12 months prior to the claim"
+        "title": "Limitation de Responsabilité",
+        "intro": "Dans la mesure maximale permise par la loi :",
+        "item1": "Le Service est fourni \"tel quel\" sans garantie d'aucune sorte",
+        "item2": "Nous ne sommes pas responsables des dommages indirects, accessoires ou consécutifs",
+        "item3": "Notre responsabilité totale est limitée au montant que vous avez payé dans les 12 mois précédant la réclamation"
       },
       "termination": {
-        "title": "Termination",
-        "item1": "You may delete your account at any time via Settings → Privacy & Data",
-        "item2": "We may terminate your account for violation of these Terms with prior notice",
-        "item3": "Upon termination, your data will be deleted according to our Privacy Policy",
-        "item4": "Sections on IP, Liability, and Governing Law survive termination"
+        "title": "Résiliation",
+        "item1": "Vous pouvez supprimer votre compte à tout moment via Paramètres → Confidentialité et Données",
+        "item2": "Nous pouvons résilier votre compte pour violation de ces Conditions avec préavis",
+        "item3": "À la résiliation, vos données seront supprimées conformément à notre Politique de Confidentialité",
+        "item4": "Les sections sur la PI, la Responsabilité et la Loi Applicable survivent à la résiliation"
       },
       "law": {
-        "title": "Governing Law",
-        "text": "These Terms are governed by the laws of The Netherlands.",
-        "disputes": "Any disputes will be submitted to the competent court in Amsterdam, The Netherlands."
+        "title": "Loi Applicable",
+        "text": "Ces Conditions sont régies par les lois des Pays-Bas.",
+        "disputes": "Tout litige sera soumis au tribunal compétent d'Amsterdam, Pays-Bas."
       },
       "changes": {
-        "title": "Changes to Terms",
-        "text": "We may update these Terms with 30 days' notice for material changes. Continued use after the effective date constitutes acceptance."
+        "title": "Modifications des Conditions",
+        "text": "Nous pouvons mettre à jour ces Conditions avec un préavis de 30 jours pour les changements importants. L'utilisation continue après la date d'effet constitue une acceptation."
       },
       "contact": {
         "title": "Contact",
-        "text": "For questions about these Terms, contact us at:"
+        "text": "Pour toute question concernant ces Conditions, contactez-nous à :"
       },
       "seeAlso": {
-        "privacy": "Privacy Policy"
+        "privacy": "Politique de Confidentialité"
       }
     }
   },
   "affiliate": {
-    "referredBy": "Referred by {name}",
-    "referredByPartner": "You were referred by a DealMotion partner",
-    "errorLoading": "Failed to load affiliate data",
-    "errorApplying": "Failed to apply. Please try again.",
-    "errorConnect": "Failed to set up payments. Please try again.",
+    "referredBy": "Référé par {name}",
+    "referredByPartner": "Vous avez été référé par un partenaire DealMotion",
+    "errorLoading": "Échec du chargement des données affilié",
+    "errorApplying": "Échec de la candidature. Veuillez réessayer.",
+    "errorConnect": "Échec de la configuration des paiements. Veuillez réessayer.",
     "joinProgram": {
-      "title": "Join the DealMotion Affiliate Program",
-      "subtitle": "Earn recurring commissions by referring sales professionals to DealMotion",
-      "benefit1Title": "15% Commission",
-      "benefit1Desc": "Earn 15% on every subscription payment from your referrals",
-      "benefit2Title": "Automatic Payouts",
-      "benefit2Desc": "Monthly payouts via Stripe directly to your bank account",
-      "benefit3Title": "30-Day Attribution",
-      "benefit3Desc": "Get credited for signups within 30 days of the click",
-      "benefit4Title": "Lifetime Revenue",
-      "benefit4Desc": "Keep earning as long as your referrals stay subscribed",
-      "applyButton": "Become an Affiliate"
+      "title": "Rejoignez le Programme d'Affiliation DealMotion",
+      "subtitle": "Gagnez des commissions récurrentes en référant des professionnels de la vente à DealMotion",
+      "benefit1Title": "15% de Commission",
+      "benefit1Desc": "Gagnez 15% sur chaque paiement d'abonnement de vos filleuls",
+      "benefit2Title": "Paiements Automatiques",
+      "benefit2Desc": "Paiements mensuels via Stripe directement sur votre compte bancaire",
+      "benefit3Title": "Attribution 30 Jours",
+      "benefit3Desc": "Recevez le crédit pour les inscriptions dans les 30 jours suivant le clic",
+      "benefit4Title": "Revenus à Vie",
+      "benefit4Desc": "Continuez à gagner tant que vos filleuls restent abonnés",
+      "applyButton": "Devenir Affilié"
     },
     "dashboard": {
-      "title": "Affiliate Dashboard",
-      "subtitle": "Track your referrals and earnings",
-      "referralLink": "Your Referral Link",
-      "referralLinkDesc": "Share this link to earn commissions on new signups",
+      "title": "Tableau de Bord Affilié",
+      "subtitle": "Suivez vos filleuls et vos gains",
+      "referralLink": "Votre Lien de Parrainage",
+      "referralLinkDesc": "Partagez ce lien pour gagner des commissions sur les nouvelles inscriptions",
       "commissionRates": {
-        "title": "Your Commission Rates",
-        "subscription": "Subscriptions",
-        "subscriptionDesc": "Pro & Pro+ monthly/yearly",
-        "credits": "Credit Packs",
-        "creditsDesc": "All credit pack purchases"
+        "title": "Vos Taux de Commission",
+        "subscription": "Abonnements",
+        "subscriptionDesc": "Pro & Pro+ mensuel/annuel",
+        "credits": "Packs de Crédits",
+        "creditsDesc": "Tous les achats de packs de crédits"
       },
       "stats": {
-        "clicks": "Total Clicks",
-        "signups": "Signups",
+        "clicks": "Clics Totaux",
+        "signups": "Inscriptions",
         "conversions": "Conversions",
-        "totalEarned": "Total Earned"
+        "totalEarned": "Total Gagné"
       },
       "balance": {
-        "title": "Balance",
-        "available": "Available for payout",
-        "pending": "Pending (14-day hold)",
-        "paid": "Total paid out"
+        "title": "Solde",
+        "available": "Disponible pour paiement",
+        "pending": "En attente (blocage 14 jours)",
+        "paid": "Total versé"
       },
       "payout": {
-        "title": "Payout Settings",
-        "desc": "Set up Stripe Connect to receive your payouts",
-        "enabled": "Payouts enabled",
-        "setupRequired": "Connect your bank account to receive payouts",
-        "setupButton": "Set Up Payouts",
-        "viewDashboard": "View Stripe Dashboard"
+        "title": "Paramètres de Paiement",
+        "desc": "Configurez Stripe Connect pour recevoir vos paiements",
+        "enabled": "Paiements activés",
+        "setupRequired": "Connectez votre compte bancaire pour recevoir les paiements",
+        "setupButton": "Configurer les Paiements",
+        "viewDashboard": "Voir le Tableau de Bord Stripe"
       },
       "tabs": {
-        "referrals": "Referrals",
+        "referrals": "Filleuls",
         "commissions": "Commissions",
-        "payouts": "Payouts"
+        "payouts": "Paiements"
       },
       "referrals": {
-        "title": "Recent Referrals",
-        "empty": "No referrals yet. Share your link to get started!",
-        "converted": "Converted",
-        "pending": "Pending"
+        "title": "Filleuls Récents",
+        "empty": "Pas encore de filleuls. Partagez votre lien pour commencer !",
+        "converted": "Converti",
+        "pending": "En attente"
       },
       "commissions": {
-        "title": "Recent Commissions",
-        "empty": "No commissions yet. Commissions appear when referrals make payments.",
-        "subscription": "Subscription",
-        "creditPack": "Credit Pack"
+        "title": "Commissions Récentes",
+        "empty": "Pas encore de commissions. Les commissions apparaissent quand les filleuls effectuent des paiements.",
+        "subscription": "Abonnement",
+        "creditPack": "Pack de Crédits"
       },
       "payouts": {
-        "title": "Payout History",
-        "empty": "No payouts yet. Payouts are processed monthly.",
+        "title": "Historique des Paiements",
+        "empty": "Aucun paiement pour le moment. Les paiements sont traités mensuellement.",
         "commissions": "commissions"
       }
     }
   },
   "luna": {
     "title": "Luna",
-    "subtitle": "Your AI Sales Assistant",
+    "subtitle": "Votre Assistant Commercial IA",
     "greeting": {
-      "morning": "Good morning! Here's what needs your attention today.",
-      "afternoon": "Good afternoon! Let's keep things moving.",
-      "evening": "Good evening! A few things to review before you wrap up.",
-      "allDone": "You're all caught up! Great work."
+      "morning": "Bonjour ! Voici ce qui nécessite votre attention aujourd'hui.",
+      "afternoon": "Bon après-midi ! Continuons.",
+      "evening": "Bonsoir ! Quelques éléments à revoir avant de terminer.",
+      "allDone": "Vous êtes à jour ! Bon travail."
     },
-    "noMessages": "No messages",
-    "allCaughtUp": "You're all caught up!",
-    "pending": "pending",
+    "noMessages": "Aucune action en attente. Luna vous notifiera quand quelque chose nécessite attention.",
+    "allCaughtUp": "Vous êtes à jour !",
+    "pending": "en attente",
     "urgent": "Urgent",
-    "executing": "Processing...",
-    "later": "Later",
-    "ctaLabel": "Do it",
-    "snoozeLaterToday": "+4 hours",
-    "snoozeTomorrow": "Tomorrow 9 AM",
-    "snoozeNextWorkDay": "Next working day",
-    "snoozeAfterMeeting": "After meeting",
-    "viewActions": "View all actions",
-    "viewAllActions": "View all {count} actions",
-    "openLunaHome": "Open Luna Home",
+    "executing": "Traitement...",
+    "later": "Plus tard",
+    "ctaLabel": "Faire",
+    "snoozeLaterToday": "+4 heures",
+    "snoozeTomorrow": "Demain 9h",
+    "snoozeNextWorkDay": "Prochain jour ouvré",
+    "snoozeAfterMeeting": "Après la réunion",
+    "viewActions": "Voir toutes les actions",
+    "viewAllActions": "Voir les {count} actions",
+    "openLunaHome": "Ouvrir Luna Home",
     "home": {
       "title": "Luna Home",
-      "todayProgress": "Today's Progress",
-      "upcomingMeetings": "Upcoming Meetings",
-      "noMeetings": "No meetings scheduled for today",
-      "tipOfDay": "Tip of the Day",
+      "todayProgress": "Progrès du Jour",
+      "upcomingMeetings": "Réunions à Venir",
+      "noMeetings": "Aucune réunion prévue aujourd'hui",
+      "tipOfDay": "Conseil du Jour",
       "actions": "Actions",
-      "actionsEmpty": "No actions right now. Luna will create suggestions when there's something to do."
+      "actionsEmpty": "Aucune action pour le moment. Luna créera des suggestions quand il y aura quelque chose à faire."
     },
     "stats": {
-      "research": "Research",
-      "preps": "Preparations",
-      "followups": "Follow-ups",
-      "outreach": "Outreach"
+      "research": "Recherche",
+      "preps": "Préparations",
+      "followups": "Suivis",
+      "outreach": "Prospection"
     },
     "settings": {
-      "title": "Luna Settings",
-      "enabled": "Enable Luna",
-      "enabledDesc": "Luna will proactively suggest actions",
-      "showWidget": "Show Widget",
-      "showWidgetDesc": "Display floating Luna widget",
-      "showTips": "Show Contextual Tips",
-      "showTipsDesc": "Display helpful tips throughout the app",
-      "prepReminder": "Prep Reminder Hours",
-      "prepReminderDesc": "Hours before meeting to remind for prep",
-      "outreachCooldown": "Outreach Cooldown Days",
-      "outreachCooldownDesc": "Days between outreach to same contact",
-      "excludedKeywords": "Excluded Meeting Keywords",
-      "excludedKeywordsDesc": "Meetings with these words won't trigger prep suggestions"
+      "title": "Paramètres Luna",
+      "enabled": "Activer Luna",
+      "enabledDesc": "Luna suggérera des actions de manière proactive",
+      "showWidget": "Afficher le Widget",
+      "showWidgetDesc": "Afficher le widget flottant Luna",
+      "showTips": "Afficher les Conseils Contextuels",
+      "showTipsDesc": "Afficher des conseils utiles dans l'application",
+      "prepReminder": "Heures de Rappel Prép",
+      "prepReminderDesc": "Heures avant la réunion pour rappeler la prép",
+      "outreachCooldown": "Jours de Pause Prospection",
+      "outreachCooldownDesc": "Jours entre les prospections vers le même contact",
+      "excludedKeywords": "Mots-clés de Réunion Exclus",
+      "excludedKeywordsDesc": "Les réunions avec ces mots ne déclencheront pas de suggestions de prép"
     },
     "widget": {
       "title": "Luna"
     },
     "messages": {
-      "startResearch": "Start Research",
-      "reviewResearch": "Review Research",
-      "prepareOutreach": "Prepare Outreach",
-      "firstTouchSent": "First Touch Sent",
-      "suggestMeeting": "Schedule Meeting",
-      "createPrep": "Create Preparation",
-      "prepReady": "Prep Ready",
-      "reviewSummary": "Review Summary",
-      "reviewReport": "Review Report",
-      "sendEmail": "Send Follow-up Email",
-      "createActions": "Create Action Items",
-      "updateCrm": "Update CRM Notes"
+      "startResearch": "Démarrer la Recherche",
+      "reviewResearch": "Revoir la Recherche",
+      "prepareOutreach": "Préparer la Prospection",
+      "firstTouchSent": "Premier Contact Envoyé",
+      "suggestMeeting": "Planifier une Réunion",
+      "createPrep": "Créer une Préparation",
+      "prepReady": "Prép Prête",
+      "reviewSummary": "Revoir le Résumé",
+      "reviewReport": "Revoir le Rapport",
+      "sendEmail": "Envoyer l'Email de Suivi",
+      "createActions": "Créer des Actions",
+      "updateCrm": "Mettre à jour les Notes CRM"
     },
-    "copied": "Copied!",
-    "outreachTitle": "Create Outreach",
-    "outreachDescription": "Choose a channel and create a personalized outreach message",
-    "selectChannel": "Select Channel",
-    "messageContent": "Message Content",
-    "generate": "Generate",
-    "generateSuccess": "Message generated",
-    "generateFailed": "Failed to generate message",
-    "subject": "Subject",
-    "subjectPlaceholder": "Enter email subject...",
+    "copied": "Copié !",
+    "outreachTitle": "Créer une Prospection",
+    "outreachDescription": "Choisissez un canal et créez un message de prospection personnalisé",
+    "selectChannel": "Sélectionner le Canal",
+    "messageContent": "Contenu du Message",
+    "generate": "Générer",
+    "generateSuccess": "Message généré",
+    "generateFailed": "Échec de la génération du message",
+    "subject": "Objet",
+    "subjectPlaceholder": "Entrez l'objet de l'email...",
     "message": "Message",
-    "messagePlaceholder": "Write your message here...",
-    "copy": "Copy",
-    "saveDraft": "Save Draft",
-    "markAsSent": "Mark as Sent",
-    "skip": "Skip",
-    "saveDraftSuccess": "Draft saved",
-    "saveDraftFailed": "Failed to save draft",
-    "markSentSuccess": "Marked as sent",
-    "markSentFailed": "Failed to mark as sent",
-    "missingContactInfo": "Missing Contact Information",
-    "addEmailInfo": "Add an email address to send an email",
-    "addLinkedInInfo": "Add a LinkedIn URL to send a LinkedIn message",
-    "addPhoneInfo": "Add a phone number to send a WhatsApp message",
-    "emailPlaceholder": "email@example.com",
+    "messagePlaceholder": "Écrivez votre message ici...",
+    "copy": "Copier",
+    "saveDraft": "Enregistrer le Brouillon",
+    "markAsSent": "Marquer comme Envoyé",
+    "skip": "Passer",
+    "saveDraftSuccess": "Brouillon enregistré",
+    "saveDraftFailed": "Échec de l'enregistrement du brouillon",
+    "markSentSuccess": "Marqué comme envoyé",
+    "markSentFailed": "Échec du marquage comme envoyé",
+    "missingContactInfo": "Informations de Contact Manquantes",
+    "addEmailInfo": "Ajoutez une adresse email pour envoyer un email",
+    "addLinkedInInfo": "Ajoutez une URL LinkedIn pour envoyer un message LinkedIn",
+    "addPhoneInfo": "Ajoutez un numéro de téléphone pour envoyer un message WhatsApp",
+    "emailPlaceholder": "email@exemple.fr",
     "linkedInPlaceholder": "https://linkedin.com/in/...",
-    "phonePlaceholder": "+1 555 1234567",
-    "saveContactInfo": "Save",
-    "saveContactInfoSuccess": "Contact info saved",
-    "saveContactInfoFailed": "Failed to save contact info",
-    "customInstructions": "Custom Instructions (Optional)",
-    "customInstructionsPlaceholder": "E.g., \"Focus on their data migration project\" or \"Mention our Databricks expertise\"...",
-    "customInstructionsHint": "Add specific instructions to customize the generated message",
-    "draftLoaded": "Draft loaded",
-    "draftLoadedDesc": "Previous draft has been loaded",
-    "dontKnow": "I don't know"
+    "phonePlaceholder": "+33 6 12 34 56 78",
+    "saveContactInfo": "Enregistrer",
+    "saveContactInfoSuccess": "Informations de contact enregistrées",
+    "saveContactInfoFailed": "Échec de l'enregistrement des informations de contact",
+    "customInstructions": "Instructions Personnalisées (Optionnel)",
+    "customInstructionsPlaceholder": "Ex. \"Concentrez-vous sur leur projet de migration de données\" ou \"Mentionnez notre expertise Databricks\"...",
+    "customInstructionsHint": "Ajoutez des instructions spécifiques pour personnaliser le message généré",
+    "draftLoaded": "Brouillon chargé",
+    "draftLoadedDesc": "Le brouillon précédent a été chargé",
+    "dontKnow": "Je ne sais pas"
   },
   "lunaHome": {
     "inbox": "Actions",
-    "pending": "pending",
-    "quickStart": "Quick Start",
-    "todaysMeetings": "Today's Meetings",
-    "noMeetingsToday": "No meetings scheduled for today",
-    "connectYourAgenda": "Connect your calendar to see your meetings here",
-    "connectAgenda": "Connect Calendar",
-    "last7Days": "Last 7 Days",
-    "today": "Today",
-    "completed": "completed",
-    "tipOfDay": "Tip of the Day",
-    "settings": "Luna Settings",
-    "settingsTitle": "Luna Settings",
-    "settingsDescription": "Configure how Luna helps you with your sales workflow.",
+    "pending": "en attente",
+    "quickStart": "Démarrage Rapide",
+    "todaysMeetings": "Réunions d'Aujourd'hui",
+    "noMeetingsToday": "Aucune réunion prévue aujourd'hui",
+    "connectYourAgenda": "Connectez votre calendrier pour voir vos réunions ici",
+    "connectAgenda": "Connecter le Calendrier",
+    "last7Days": "7 Derniers Jours",
+    "today": "Aujourd'hui",
+    "completed": "terminé",
+    "tipOfDay": "Conseil du Jour",
+    "settings": "Paramètres Luna",
+    "settingsTitle": "Paramètres Luna",
+    "settingsDescription": "Configurez comment Luna vous aide dans votre workflow commercial.",
     "tabs": {
-      "active": "Active",
-      "new": "New",
-      "inProgress": "In Progress",
-      "history": "History"
+      "active": "Actif",
+      "new": "Nouveau",
+      "inProgress": "En Cours",
+      "history": "Historique"
     },
     "quickActions": {
-      "research": "Research",
-      "prep": "Prep",
-      "record": "Record"
+      "research": "Recherche",
+      "prep": "Prép",
+      "record": "Enregistrer"
     },
     "stats": {
-      "research": "Research",
-      "preps": "Preps",
-      "followups": "Follow-ups",
-      "outreach": "Outreach"
+      "research": "Recherche",
+      "preps": "Préparations",
+      "followups": "Suivis",
+      "outreach": "Prospection"
     },
-    "noActiveActions": "No active actions. You're all caught up!",
-    "noNewActions": "No new actions right now.",
-    "noInProgressActions": "No actions in progress.",
-    "noHistoryActions": "No completed actions yet."
+    "noActiveActions": "Aucune action active. Vous êtes à jour !",
+    "noNewActions": "Aucune nouvelle action pour le moment.",
+    "noInProgressActions": "Aucune action en cours.",
+    "noHistoryActions": "Aucune action terminée pour le moment."
   }
 }

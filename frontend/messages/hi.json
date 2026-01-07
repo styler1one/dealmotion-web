@@ -241,9 +241,9 @@
       "startResearch": "शोध शुरू करें",
       "researching": "विश्लेषण हो रहा है...",
       "cancel": "रद्द करें",
-      "customIntel": "कस्टम जानकारी",
-      "customIntelDesc": "विशिष्ट जानकारी जोड़ें जिस पर आप रिसर्च को फोकस करना चाहते हैं",
-      "customIntelPlaceholder": "उदा: डिजिटल ट्रांसफॉर्मेशन प्रोजेक्ट्स पर फोकस करें..."
+      "customIntel": "आपकी जानकारी (वैकल्पिक)",
+      "customIntelDesc": "क्या आप इस कंपनी के बारे में कुछ जानते हैं? इसे पूर्ण ऑनलाइन रिसर्च में जोड़ा जाएगा।",
+      "customIntelPlaceholder": "उदा. \"राहुल से सुना कि वे पुनर्गठन कर रहे हैं...\" या \"CEO हमारे डायरेक्टर के पूर्व सहकर्मी हैं\""
     },
     "validation": {
       "companyNameTooShort": "कंपनी का नाम बहुत छोटा है",
@@ -359,69 +359,69 @@
       "addFailed": "संपर्क नहीं जोड़ सके",
       "saved": "संपर्क सेव हुआ",
       "savedDesc": "आपके परिवर्तन सेव हो गए",
-      "foundDesc": "{role} on LinkedIn",
-      "foundProfile": "LinkedIn profile found",
-      "notFoundDesc": "Could not find a LinkedIn profile. Enter manually.",
-      "searchFailed": "Search failed",
-      "searchFailedDesc": "An error occurred while searching",
-      "saveFailed": "Save failed",
-      "saveFailedDesc": "Could not save contact changes",
-      "editPlaceholder": "Edit the contact analysis...",
-      "openingLines": "Opening Lines",
-      "confirmDeleteTitle": "Delete Contact?",
-      "confirmDeleteDescription": "This will permanently delete this contact and their analysis. This action cannot be undone.",
+      "foundDesc": "LinkedIn पर {role}",
+      "foundProfile": "LinkedIn प्रोफ़ाइल मिली",
+      "notFoundDesc": "LinkedIn प्रोफ़ाइल नहीं मिली। मैन्युअल रूप से दर्ज करें।",
+      "searchFailed": "खोज विफल",
+      "searchFailedDesc": "खोज करते समय त्रुटि हुई",
+      "saveFailed": "सेव विफल",
+      "saveFailedDesc": "संपर्क परिवर्तन सेव नहीं हो सके",
+      "editPlaceholder": "संपर्क विश्लेषण संपादित करें...",
+      "openingLines": "शुरुआती पंक्तियाँ",
+      "confirmDeleteTitle": "संपर्क हटाएं?",
+      "confirmDeleteDescription": "यह इस संपर्क और उनके विश्लेषण को स्थायी रूप से हटा देगा। यह क्रिया पूर्ववत नहीं की जा सकती।",
       "search": {
-        "title": "Search Contact",
-        "subtitle": "Search for a contact at {company}",
-        "nameLabel": "Name",
-        "namePlaceholder": "Enter contact name",
-        "roleLabel": "Role (optional)",
-        "rolePlaceholder": "e.g., CFO, Sales Director",
-        "searchButton": "Search LinkedIn Profile",
-        "skipSearch": "Add manually without search",
-        "resultsTitle": "Found Profiles",
-        "resultsSubtitle": "Results for \"{name}\" at {company}",
-        "noResults": "No matching profiles found",
-        "addManually": "Add manually",
-        "confirmTitle": "Confirm Contact",
-        "enrichTitle": "Enrich Profile Data",
-        "enrichTip": "Help the AI understand this person better",
-        "enrichDescription": "LinkedIn blocks automatic access to profiles. Copy-paste relevant info from their LinkedIn profile for a richer analysis.",
-        "openLinkedIn": "Open LinkedIn Profile",
-        "searchLinkedIn": "Search on LinkedIn",
-        "aboutLabel": "About / Summary",
-        "aboutHint": "Copy from their LinkedIn 'About' section",
-        "aboutPlaceholder": "Paste their LinkedIn summary here...",
-        "experienceLabel": "Experience / Background",
-        "experienceHint": "Copy relevant job history, education, or achievements",
-        "experiencePlaceholder": "Paste relevant experience here...",
-        "notesLabel": "Your notes",
-        "notesHint": "Any other info: recent posts, mutual connections, news mentions...",
-        "notesPlaceholder": "E.g. \"Met at event X\", \"Introduced by John\", \"Interested in our product Y\"...",
-        "manualNotesHint": "Share what you already know about this person (background, relationship, conversations, etc.)",
-        "skipEnrich": "Skip for now",
-        "continueButton": "Continue",
-        "selectedProfile": "Selected profile",
-        "extraInfo": "Additional information (optional)",
-        "emailLabel": "Email",
-        "phoneLabel": "Phone",
-        "primaryContact": "This is the primary contact",
-        "addAndAnalyze": "Add & Analyze",
+        "title": "संपर्क खोजें",
+        "subtitle": "{company} में संपर्क खोजें",
+        "nameLabel": "नाम",
+        "namePlaceholder": "संपर्क का नाम दर्ज करें",
+        "roleLabel": "भूमिका (वैकल्पिक)",
+        "rolePlaceholder": "जैसे CFO, बिक्री निदेशक",
+        "searchButton": "LinkedIn प्रोफ़ाइल खोजें",
+        "skipSearch": "खोज के बिना मैन्युअल रूप से जोड़ें",
+        "resultsTitle": "मिली प्रोफ़ाइल",
+        "resultsSubtitle": "{company} में \"{name}\" के परिणाम",
+        "noResults": "कोई मिलती-जुलती प्रोफ़ाइल नहीं मिली",
+        "addManually": "मैन्युअल रूप से जोड़ें",
+        "confirmTitle": "संपर्क की पुष्टि करें",
+        "enrichTitle": "प्रोफ़ाइल डेटा समृद्ध करें",
+        "enrichTip": "AI को इस व्यक्ति को बेहतर समझने में मदद करें",
+        "enrichDescription": "LinkedIn प्रोफ़ाइल तक स्वचालित पहुंच को ब्लॉक करता है। बेहतर विश्लेषण के लिए उनकी LinkedIn प्रोफ़ाइल से प्रासंगिक जानकारी कॉपी-पेस्ट करें।",
+        "openLinkedIn": "LinkedIn प्रोफ़ाइल खोलें",
+        "searchLinkedIn": "LinkedIn पर खोजें",
+        "aboutLabel": "परिचय / सारांश",
+        "aboutHint": "उनके LinkedIn 'About' सेक्शन से कॉपी करें",
+        "aboutPlaceholder": "उनका LinkedIn सारांश यहाँ पेस्ट करें...",
+        "experienceLabel": "अनुभव / पृष्ठभूमि",
+        "experienceHint": "प्रासंगिक नौकरी इतिहास, शिक्षा, या उपलब्धियाँ कॉपी करें",
+        "experiencePlaceholder": "प्रासंगिक अनुभव यहाँ पेस्ट करें...",
+        "notesLabel": "आपके नोट्स",
+        "notesHint": "कोई अन्य जानकारी: हाल की पोस्ट, आपसी कनेक्शन, समाचार उल्लेख...",
+        "notesPlaceholder": "जैसे \"इवेंट X में मिले\", \"जॉन द्वारा परिचय\", \"हमारे उत्पाद Y में रुचि\"...",
+        "manualNotesHint": "इस संपर्क के बारे में नोट्स या संदर्भ जोड़ें",
+        "skipEnrich": "अभी छोड़ें",
+        "continueButton": "जारी रखें",
+        "selectedProfile": "चयनित प्रोफ़ाइल",
+        "extraInfo": "अतिरिक्त जानकारी (वैकल्पिक)",
+        "emailLabel": "ईमेल",
+        "phoneLabel": "फ़ोन",
+        "primaryContact": "यह प्राथमिक संपर्क है",
+        "addAndAnalyze": "जोड़ें और विश्लेषण करें",
         "confidence": {
-          "high": "High confidence",
-          "medium": "Medium confidence",
-          "low": "Low confidence"
+          "high": "उच्च विश्वास",
+          "medium": "मध्यम विश्वास",
+          "low": "कम विश्वास"
         },
         "matchReason": {
-          "exact": "Name + Company + Role exact match",
-          "partial": "Name match, different details",
-          "nameOnly": "Name match only"
+          "exact": "नाम + कंपनी + भूमिका सटीक मेल",
+          "partial": "नाम मेल, अलग विवरण",
+          "nameOnly": "केवल नाम मेल"
         },
-        "errorTitle": "Error",
-        "errorAddFailed": "Failed to add contact",
-        "suggestionsTitle": "Found in Research",
-        "orSearchManually": "or search manually",
-        "loadingSuggestions": "Loading suggestions..."
+        "errorTitle": "त्रुटि",
+        "errorAddFailed": "संपर्क जोड़ने में विफल",
+        "suggestionsTitle": "रिसर्च में मिला",
+        "orSearchManually": "या मैन्युअल रूप से खोजें",
+        "loadingSuggestions": "सुझाव लोड हो रहे हैं..."
       }
     },
     "context": {
@@ -607,13 +607,13 @@
       "uploaded": "रिकॉर्डिंग अपलोड हुई",
       "uploadedDesc": "AI विश्लेषण जारी है...",
       "uploadFailed": "अपलोड विफल",
-      "requestingAccess": "Requesting microphone access...",
-      "accessDenied": "Microphone access denied. Please allow access in your browser settings.",
-      "error": "Recording Error",
-      "accessRequired": "Microphone Access Required",
-      "accessRequiredDesc": "Please allow microphone access to record meetings.",
-      "startFailed": "Failed to Start Recording",
-      "startFailedDesc": "Could not access microphone."
+      "requestingAccess": "माइक्रोफ़ोन एक्सेस का अनुरोध कर रहे हैं...",
+      "accessDenied": "माइक्रोफ़ोन एक्सेस अस्वीकृत। कृपया अपनी ब्राउज़र सेटिंग्स में एक्सेस दें।",
+      "error": "रिकॉर्डिंग त्रुटि",
+      "accessRequired": "माइक्रोफ़ोन एक्सेस आवश्यक",
+      "accessRequiredDesc": "मीटिंग रिकॉर्ड करने के लिए कृपया माइक्रोफ़ोन एक्सेस दें।",
+      "startFailed": "रिकॉर्डिंग शुरू करने में विफल",
+      "startFailedDesc": "माइक्रोफ़ोन एक्सेस नहीं हो सका।"
     },
     "sync": {
       "lastSync": "अंतिम सिंक {time}",
@@ -627,9 +627,9 @@
       "unlink": "अनलिंक करें",
       "linkSuccess": "मीटिंग {name} से लिंक हुई",
       "unlinkSuccess": "संभावित ग्राहक लिंक हटाया गया",
-      "unlinkConfirm": "Remove link to {name}?",
-      "suggestedMatches": "Suggested matches",
-      "noMatches": "No matching prospects found",
+      "unlinkConfirm": "{name} से लिंक हटाएं?",
+      "suggestedMatches": "सुझाए गए मेल",
+      "noMatches": "कोई मिलते-जुलते संभावित ग्राहक नहीं मिले",
       "confidence": "{percent}% match"
     },
     "contact": {
@@ -768,44 +768,44 @@
           "description": "CRM या टीम के लिए संक्षिप्त सारांश"
         }
       },
-      "regenerating": "Regenerating...",
-      "regeneratingDesc": "You can continue working while this generates in the background.",
-      "delete": "Delete",
-      "confirmDelete": "Are you sure you want to delete this action?",
-      "noContent": "No content yet",
-      "generationFailed": "Generation failed",
-      "alreadyExists": "Action already generated",
-      "alreadyExistsDesc": "This action was already generated. Click to view it.",
-      "generationFailedDesc": "An error occurred. Please try regenerating.",
-      "tryAgain": "Try Again",
-      "summaryReadOnly": "Summary is read-only",
-      "summaryCannotEdit": "The summary cannot be edited here. Edit the main summary above.",
-      "summaryCannotDelete": "The summary cannot be deleted",
-      "summaryCannotRegenerate": "The summary cannot be regenerated here",
-      "contextUsed": "Context used",
-      "wordsGenerated": "words",
-      "generatingContent": "Generating content...",
-      "generatingTime": "This may take 10-30 seconds",
-      "export": "Export",
-      "exportPdf": "Download PDF",
-      "exportDocx": "Download Word",
-      "exportMd": "Download Markdown",
-      "copied": "Copied to clipboard",
-      "changesSaved": "Changes saved",
-      "saveFailed": "Failed to save",
-      "deleteFailed": "Failed to delete",
-      "actionDeleted": "Action deleted",
-      "exportFailed": "Export failed",
-      "pdfDownloaded": "PDF downloaded",
-      "docxDownloaded": "Word document downloaded",
-      "mdDownloaded": "Markdown downloaded",
+      "regenerating": "पुनः जनरेट हो रहा है...",
+      "regeneratingDesc": "नई सामग्री जनरेट हो रही है...",
+      "delete": "हटाएं",
+      "confirmDelete": "क्या आप वाकई इसे हटाना चाहते हैं?",
+      "noContent": "कोई सामग्री नहीं",
+      "generationFailed": "जनरेशन विफल",
+      "alreadyExists": "पहले से मौजूद",
+      "alreadyExistsDesc": "यह सामग्री पहले ही जनरेट हो चुकी है",
+      "generationFailedDesc": "सामग्री जनरेट नहीं हो सकी। कृपया पुनः प्रयास करें।",
+      "tryAgain": "पुनः प्रयास करें",
+      "summaryReadOnly": "सारांश केवल पढ़ने के लिए है",
+      "summaryCannotEdit": "सारांश यहाँ संपादित नहीं किया जा सकता। ऊपर मुख्य सारांश संपादित करें।",
+      "summaryCannotDelete": "सारांश हटाया नहीं जा सकता",
+      "summaryCannotRegenerate": "सारांश यहाँ पुनः जनरेट नहीं किया जा सकता",
+      "contextUsed": "उपयोग किया गया संदर्भ",
+      "wordsGenerated": "शब्द",
+      "generatingContent": "सामग्री जनरेट हो रही है...",
+      "generatingTime": "इसमें 10-30 सेकंड लग सकते हैं",
+      "export": "एक्सपोर्ट",
+      "exportPdf": "PDF डाउनलोड करें",
+      "exportDocx": "Word डाउनलोड करें",
+      "exportMd": "Markdown डाउनलोड करें",
+      "copied": "कॉपी हो गया!",
+      "changesSaved": "बदलाव सहेजे गए",
+      "saveFailed": "सहेजना विफल",
+      "deleteFailed": "हटाना विफल",
+      "actionDeleted": "कार्य हटाया गया",
+      "exportFailed": "एक्सपोर्ट विफल",
+      "pdfDownloaded": "PDF डाउनलोड हुई",
+      "docxDownloaded": "Word दस्तावेज़ डाउनलोड हुई",
+      "mdDownloaded": "Markdown डाउनलोड हुई",
       "time": {
-        "justNow": "just now",
-        "minAgo": "{count} min ago",
-        "hourAgo": "{count} hour ago",
-        "hoursAgo": "{count} hours ago",
-        "dayAgo": "{count} day ago",
-        "daysAgo": "{count} days ago"
+        "justNow": "अभी",
+        "minAgo": "{count} मिनट पहले",
+        "hourAgo": "1 घंटा पहले",
+        "hoursAgo": "{count} घंटे पहले",
+        "dayAgo": "1 दिन पहले",
+        "daysAgo": "{count} दिन पहले"
       }
     },
     "toast": {
@@ -818,19 +818,19 @@
       "selectFile": "फ़ाइल चुनें",
       "deleted": "हटा दिया गया",
       "deletedDesc": "फॉलो-अप हटा दिया गया है",
-      "invalidFileType": "Invalid file type",
-      "invalidFileTypeDescAudio": "Upload an mp3, m4a, wav or webm file",
-      "invalidFileTypeDescTranscript": "Upload a txt, md, docx or srt file",
-      "fileTooLarge": "File too large",
-      "fileTooLargeDescAudio": "Maximum file size is 50MB",
-      "fileTooLargeDescTranscript": "Maximum file size is 10MB",
-      "noFileSelected": "No file selected",
-      "noFileSelectedDesc": "Select a file first",
-      "notFound": "Follow-up not found",
-      "deleteFailed": "Delete failed",
-      "deleteFailedDesc": "Could not delete follow-up",
-      "uploadStarted": "Upload started",
-      "uploadStartedDesc": "Your file is being processed"
+      "invalidFileType": "अमान्य फ़ाइल प्रकार",
+      "invalidFileTypeDescAudio": "mp3, m4a, wav या webm फ़ाइल अपलोड करें",
+      "invalidFileTypeDescTranscript": "txt, md, docx या srt फ़ाइल अपलोड करें",
+      "fileTooLarge": "फ़ाइल बहुत बड़ी",
+      "fileTooLargeDescAudio": "अधिकतम फ़ाइल आकार 50MB है",
+      "fileTooLargeDescTranscript": "अधिकतम फ़ाइल आकार 10MB है",
+      "noFileSelected": "कोई फ़ाइल नहीं चुनी",
+      "noFileSelectedDesc": "पहले एक फ़ाइल चुनें",
+      "notFound": "फॉलो-अप नहीं मिला",
+      "deleteFailed": "हटाना विफल",
+      "deleteFailedDesc": "फॉलो-अप हटाया नहीं जा सका",
+      "uploadStarted": "अपलोड शुरू हुआ",
+      "uploadStartedDesc": "आपकी फ़ाइल प्रोसेस हो रही है"
     },
     "confirm": {
       "deleteTitle": "फॉलो-अप हटाएं?",
@@ -869,70 +869,70 @@
       "failed": "सेव विफल",
       "failedDesc": "प्रोफ़ाइल सेव नहीं हो सकी"
     },
-    "cancel": "Cancel",
-    "fieldSaved": "Saved!",
-    "addNewTag": "Add new...",
-    "selectOption": "Select...",
-    "editHint": "Hover over any field to edit it directly",
-    "yourName": "Your name",
-    "yourRole": "Your role",
-    "refreshWithAI": "Refresh with AI",
+    "cancel": "रद्द करें",
+    "fieldSaved": "सेव हुआ!",
+    "addNewTag": "नया जोड़ें...",
+    "selectOption": "चुनें...",
+    "editHint": "सीधे संपादित करने के लिए किसी भी फ़ील्ड पर होवर करें",
+    "yourName": "आपका नाम",
+    "yourRole": "आपकी भूमिका",
+    "refreshWithAI": "AI से रिफ्रेश करें",
     "sections": {
-      "personal": "Personal Details",
-      "experience": "Experience & Expertise",
-      "style": "Sales Style",
-      "goals": "Goals & Targets",
-      "targetMarket": "Target Market",
-      "goalsPrefs": "Goals & Preferences"
+      "personal": "व्यक्तिगत विवरण",
+      "experience": "अनुभव और विशेषज्ञता",
+      "style": "बिक्री शैली",
+      "goals": "लक्ष्य और टारगेट",
+      "targetMarket": "लक्ष्य बाज़ार",
+      "goalsPrefs": "लक्ष्य और प्राथमिकताएं"
     },
     "fields": {
-      "fullName": "Full Name",
-      "email": "Email",
-      "phone": "Phone",
-      "jobTitle": "Job Title",
-      "yearsExperience": "Years of Experience",
-      "industries": "Industries",
-      "specializations": "Specializations",
-      "sellingStyle": "Selling Style",
-      "communicationPreference": "Communication Preference",
-      "targetMarket": "Target Market",
-      "quotaTarget": "Quota Target",
-      "regions": "Regions",
-      "companySizes": "Company Sizes",
-      "quarterlyGoals": "Quarterly Goals",
-      "meetingTypes": "Meeting Types"
+      "fullName": "पूरा नाम",
+      "email": "ईमेल",
+      "phone": "फ़ोन",
+      "jobTitle": "पद",
+      "yearsExperience": "अनुभव के वर्ष",
+      "industries": "उद्योग",
+      "specializations": "विशेषज्ञताएं",
+      "sellingStyle": "बिक्री शैली",
+      "communicationPreference": "संचार प्राथमिकता",
+      "targetMarket": "लक्ष्य बाज़ार",
+      "quotaTarget": "कोटा टारगेट",
+      "regions": "क्षेत्र",
+      "companySizes": "कंपनी आकार",
+      "quarterlyGoals": "तिमाही लक्ष्य",
+      "meetingTypes": "मीटिंग प्रकार"
     },
     "communicationStyle": {
-      "title": "Communication Style & Email Preferences",
-      "description": "This is how DealMotion writes emails and messages on your behalf",
-      "writingTone": "Writing Tone",
-      "messageLength": "Message Length",
-      "concise": "Short & concise",
-      "detailed": "Detailed",
-      "standard": "Standard",
-      "emojiUsage": "Emoji Usage",
-      "emojiYes": "Yes, in emails",
-      "emojiNo": "No",
-      "emailSignoff": "Email Sign-off",
-      "persuasionStyle": "Persuasion Style",
-      "persuasionLogic": "Logic & data - Convinces with facts, numbers, and rational arguments",
-      "persuasionStory": "Storytelling - Convinces with stories, examples, and emotion",
-      "persuasionReference": "Social proof - Convinces with references, cases, and testimonials",
-      "persuasionAuthority": "Authority - Convinces with expertise and thought leadership",
-      "toneProfessional": "Professional",
-      "toneDirect": "Direct",
-      "toneWarm": "Warm",
-      "toneFormal": "Formal",
-      "toneCasual": "Casual"
+      "title": "संचार शैली और ईमेल प्राथमिकताएं",
+      "description": "DealMotion आपकी ओर से ईमेल और संदेश ऐसे लिखता है",
+      "writingTone": "लेखन शैली",
+      "messageLength": "संदेश लंबाई",
+      "concise": "छोटा और संक्षिप्त",
+      "detailed": "विस्तृत",
+      "standard": "मानक",
+      "emojiUsage": "इमोजी उपयोग",
+      "emojiYes": "हाँ, ईमेल में",
+      "emojiNo": "नहीं",
+      "emailSignoff": "ईमेल साइन-ऑफ",
+      "persuasionStyle": "प्रेरणा शैली",
+      "persuasionLogic": "तर्क और डेटा - तथ्यों, संख्याओं और तार्किक तर्कों से मनाता है",
+      "persuasionStory": "कहानी सुनाना - कहानियों, उदाहरणों और भावनाओं से मनाता है",
+      "persuasionReference": "सामाजिक प्रमाण - संदर्भों, केस और प्रशंसापत्रों से मनाता है",
+      "persuasionAuthority": "अधिकार - विशेषज्ञता और विचार नेतृत्व से मनाता है",
+      "toneProfessional": "पेशेवर",
+      "toneDirect": "सीधा",
+      "toneWarm": "आत्मीय",
+      "toneFormal": "औपचारिक",
+      "toneCasual": "अनौपचारिक"
     },
     "howUsed": {
-      "title": "How is this used?",
-      "prep": "Meeting Prep",
-      "prepDesc": "AI generates briefs tailored to your style and strengths",
-      "followup": "Follow-up Emails",
-      "followupDesc": "Emails are written in your tone of voice",
-      "research": "Research",
-      "researchDesc": "Focus on information relevant to your target market"
+      "title": "इसका उपयोग कैसे होता है?",
+      "prep": "मीटिंग तैयारी",
+      "prepDesc": "AI आपकी शैली और ताकत के अनुसार ब्रीफ जनरेट करता है",
+      "followup": "फॉलो-अप ईमेल",
+      "followupDesc": "ईमेल आपकी आवाज़ में लिखे जाते हैं",
+      "research": "रिसर्च",
+      "researchDesc": "आपके लक्ष्य बाज़ार से संबंधित जानकारी पर फोकस"
     }
   },
   "companyProfile": {
@@ -956,59 +956,59 @@
       "failed": "सेव विफल",
       "failedDesc": "प्रोफ़ाइल सेव नहीं हो सकी"
     },
-    "cancel": "Cancel",
-    "noProducts": "No products added yet",
-    "noPersonas": "No personas added yet",
-    "noCaseStudies": "No case studies added yet",
-    "fieldSaved": "Saved!",
-    "addNew": "Add new...",
-    "editHint": "Hover over any field to edit it directly",
-    "companyName": "Company name",
-    "industry": "Industry",
-    "refreshWithAI": "Refresh with AI",
-    "addProduct": "Add Product",
-    "addPersona": "Add Persona",
-    "addCaseStudy": "Add Case Study",
-    "addPainPoint": "Add pain point...",
-    "productName": "Product/Service name",
-    "productDescription": "Description",
-    "productValue": "Value proposition",
-    "personaTitle": "Role/Title (e.g., CTO, VP Sales)",
-    "personaSeniority": "Seniority level (e.g., C-level, Director)",
-    "caseCustomer": "Customer name",
-    "caseIndustry": "Industry",
-    "caseResults": "Key results achieved",
+    "cancel": "रद्द करें",
+    "noProducts": "अभी कोई उत्पाद नहीं जोड़ा गया",
+    "noPersonas": "अभी कोई पर्सोना नहीं जोड़ा गया",
+    "noCaseStudies": "अभी कोई केस स्टडी नहीं जोड़ी गई",
+    "fieldSaved": "सेव हुआ!",
+    "addNew": "नया जोड़ें...",
+    "editHint": "सीधे संपादित करने के लिए किसी भी फ़ील्ड पर होवर करें",
+    "companyName": "कंपनी का नाम",
+    "industry": "उद्योग",
+    "refreshWithAI": "AI से रिफ्रेश करें",
+    "addProduct": "उत्पाद जोड़ें",
+    "addPersona": "पर्सोना जोड़ें",
+    "addCaseStudy": "केस स्टडी जोड़ें",
+    "addPainPoint": "पेन पॉइंट जोड़ें...",
+    "productName": "उत्पाद/सेवा का नाम",
+    "productDescription": "विवरण",
+    "productValue": "मूल्य प्रस्ताव",
+    "personaTitle": "भूमिका/पद (जैसे CTO, VP Sales)",
+    "personaSeniority": "वरिष्ठता स्तर (जैसे C-level, Director)",
+    "caseCustomer": "ग्राहक का नाम",
+    "caseIndustry": "उद्योग",
+    "caseResults": "प्राप्त मुख्य परिणाम",
     "sections": {
-      "basic": "Basic Information",
-      "products": "Products & Services",
-      "market": "Market & Competition",
-      "values": "Values & USPs",
-      "valueProps": "Value Propositions",
-      "differentiators": "Differentiators",
-      "icp": "Ideal Customer Profile",
-      "personas": "Buyer Personas",
-      "caseStudies": "Case Studies",
-      "salesInfo": "Sales Information"
+      "basic": "मूल जानकारी",
+      "products": "उत्पाद और सेवाएं",
+      "market": "बाज़ार और प्रतिस्पर्धा",
+      "values": "मूल्य और USPs",
+      "valueProps": "मूल्य प्रस्ताव",
+      "differentiators": "विभेदक",
+      "icp": "आदर्श ग्राहक प्रोफ़ाइल",
+      "personas": "खरीदार पर्सोना",
+      "caseStudies": "केस स्टडीज़",
+      "salesInfo": "बिक्री जानकारी"
     },
     "fields": {
-      "industries": "Industries",
-      "companySizes": "Company Sizes",
-      "painPoints": "Pain Points",
-      "salesCycle": "Sales Cycle",
-      "avgDeal": "Average Deal Size",
-      "competitors": "Competitors",
-      "competitiveAdvantage": "Competitive Advantage",
-      "valueProps": "Core Value Propositions",
-      "result": "Result"
+      "industries": "उद्योग",
+      "companySizes": "कंपनी आकार",
+      "painPoints": "पेन पॉइंट्स",
+      "salesCycle": "बिक्री चक्र",
+      "avgDeal": "औसत डील आकार",
+      "competitors": "प्रतिस्पर्धी",
+      "competitiveAdvantage": "प्रतिस्पर्धात्मक लाभ",
+      "valueProps": "मूल मूल्य प्रस्ताव",
+      "result": "परिणाम"
     },
     "howUsed": {
-      "title": "How is this used?",
-      "prep": "Meeting Prep",
-      "prepDesc": "AI uses your value props and case studies in briefs",
-      "followup": "Follow-up Emails",
-      "followupDesc": "Relevant product info is added automatically",
-      "research": "Research",
-      "researchDesc": "ICP is used to filter relevant prospect info"
+      "title": "इसका उपयोग कैसे होता है?",
+      "prep": "मीटिंग तैयारी",
+      "prepDesc": "AI आपके मूल्य प्रस्ताव और केस स्टडीज़ का उपयोग ब्रीफ में करता है",
+      "followup": "फॉलो-अप ईमेल",
+      "followupDesc": "प्रासंगिक उत्पाद जानकारी स्वचालित रूप से जोड़ी जाती है",
+      "research": "रिसर्च",
+      "researchDesc": "ICP का उपयोग प्रासंगिक संभावित ग्राहक जानकारी फ़िल्टर करने के लिए किया जाता है"
     }
   },
   "knowledgeBase": {
@@ -1038,13 +1038,13 @@
       "deletedDesc": "दस्तावेज़ ज्ञान आधार से हटा दिया गया है",
       "failed": "अपलोड विफल",
       "failedDesc": "दस्तावेज़ अपलोड नहीं हो सका",
-      "deleteFailed": "Delete failed",
-      "deleteFailedDesc": "Could not delete the file"
+      "deleteFailed": "हटाना विफल",
+      "deleteFailedDesc": "फ़ाइल हटाई नहीं जा सकी"
     },
     "stats": {
-      "completed": "Completed",
-      "processing": "Processing",
-      "failed": "Failed"
+      "completed": "पूर्ण",
+      "processing": "प्रोसेस हो रहा है",
+      "failed": "विफल"
     }
   },
   "language": {
@@ -1079,249 +1079,249 @@
       "integrations": "इंटीग्रेशन",
       "notifications": "सूचनाएं",
       "coach": "AI कोच",
-      "privacy": "Privacy & Data"
+      "privacy": "गोपनीयता और डेटा"
     },
     "comingSoon": "जल्द आ रहा है",
     "language": {
-      "title": "Language Settings",
-      "description": "Configure your language preferences for the application",
-      "appLanguage": "App Language",
-      "appLanguageDesc": "The language of the application interface",
-      "outputLanguage": "Default Output Language",
-      "outputLanguageDesc": "The language for AI-generated content (research briefs, preparations)",
-      "outputLanguageHint": "You can override this per action",
-      "emailLanguage": "Default Email Language",
-      "emailLanguageDesc": "The language for generated emails to clients",
-      "emailLanguageHint": "You can override this per follow-up"
+      "title": "भाषा सेटिंग्स",
+      "description": "एप्लिकेशन के लिए अपनी भाषा प्राथमिकताएं कॉन्फ़िगर करें",
+      "appLanguage": "एप्लिकेशन भाषा",
+      "appLanguageDesc": "एप्लिकेशन इंटरफेस की भाषा",
+      "outputLanguage": "डिफॉल्ट आउटपुट भाषा",
+      "outputLanguageDesc": "AI-जनरेटेड कंटेंट की भाषा (शोध सारांश, तैयारियां)",
+      "outputLanguageHint": "आप प्रति कार्य इसे बदल सकते हैं",
+      "emailLanguage": "डिफॉल्ट ईमेल भाषा",
+      "emailLanguageDesc": "ग्राहकों को भेजे जाने वाले ईमेल की भाषा",
+      "emailLanguageHint": "आप प्रति फॉलो-अप इसे बदल सकते हैं"
     },
-    "unsavedChanges": "Unsaved changes",
+    "unsavedChanges": "असेव परिवर्तन",
     "coach": {
-      "title": "AI Coach (Luna)",
-      "description": "Configure your AI sales coach assistant",
-      "enableLabel": "Enable AI Coach",
-      "enableDesc": "Show the floating coach widget on dashboard pages",
-      "resetLabel": "Reset Snoozed Suggestions",
-      "resetHint": "Bring back suggestions you've snoozed",
-      "resetButton": "Reset",
-      "enabled": "Coach Enabled",
-      "enabledDesc": "The AI Coach is now active and will provide suggestions",
-      "disabled": "Coach Disabled",
-      "disabledDesc": "The AI Coach widget is now hidden",
-      "reset": "Suggestions Reset",
-      "resetDesc": "All snoozed suggestions are now visible again"
+      "title": "AI कोच (Luna)",
+      "description": "अपने AI बिक्री कोच सहायक को कॉन्फ़िगर करें",
+      "enableLabel": "AI कोच सक्षम करें",
+      "enableDesc": "डैशबोर्ड पेजों पर फ्लोटिंग कोच विजेट दिखाएं",
+      "resetLabel": "स्नूज़ किए सुझाव रीसेट करें",
+      "resetHint": "आपके स्नूज़ किए सुझाव वापस लाएं",
+      "resetButton": "रीसेट",
+      "enabled": "कोच सक्षम",
+      "enabledDesc": "AI कोच अब सक्रिय है और सुझाव प्रदान करेगा",
+      "disabled": "कोच अक्षम",
+      "disabledDesc": "AI कोच विजेट अब छिपा हुआ है",
+      "reset": "सुझाव रीसेट",
+      "resetDesc": "सभी स्नूज़ किए सुझाव अब फिर से दिखाई दे रहे हैं"
     },
     "style": {
-      "title": "Communication Style",
-      "description": "Customize how AI generates your emails and reports",
-      "saved": "Style Saved",
-      "savedDesc": "Your communication style preferences have been updated",
-      "tone": "Tone",
-      "toneDesc": "The overall tone of your communications",
-      "toneDirect": "Direct - Get straight to the point",
-      "toneWarm": "Warm - Friendly and personable",
-      "toneFormal": "Formal - Professional and structured",
-      "toneCasual": "Casual - Relaxed and conversational",
-      "toneProfessional": "Professional - Balanced warmth and professionalism",
-      "formality": "Formality Level",
-      "formalityDesc": "How formal should your communications be",
-      "formalityFormal": "Formal - Complete sentences, no contractions",
-      "formalityProfessional": "Professional - Clear and businesslike",
-      "formalityCasual": "Casual - Relaxed grammar, friendly",
-      "emoji": "Use Emoji",
-      "emojiDesc": "Include emoji in professional communications",
-      "length": "Writing Length",
-      "lengthDesc": "How detailed should your communications be",
-      "lengthConcise": "Concise - Short and to the point",
-      "lengthDetailed": "Detailed - Thorough explanations",
-      "signoff": "Email Sign-off",
-      "signoffDesc": "How you prefer to end your emails"
+      "title": "संचार शैली",
+      "description": "AI आपके ईमेल और रिपोर्ट कैसे जनरेट करता है कस्टमाइज़ करें",
+      "saved": "शैली सेव हुई",
+      "savedDesc": "आपकी संचार शैली प्राथमिकताएं अपडेट हो गईं",
+      "tone": "टोन",
+      "toneDesc": "आपके संचार का समग्र टोन",
+      "toneDirect": "सीधा - सीधे मुद्दे पर आएं",
+      "toneWarm": "गर्मजोशी - मित्रतापूर्ण और व्यक्तिगत",
+      "toneFormal": "औपचारिक - पेशेवर और संरचित",
+      "toneCasual": "अनौपचारिक - आरामदायक और बातचीत",
+      "toneProfessional": "पेशेवर - संतुलित गर्मजोशी और पेशेवरता",
+      "formality": "औपचारिकता स्तर",
+      "formalityDesc": "आपके संचार कितने औपचारिक होने चाहिए",
+      "formalityFormal": "औपचारिक - पूर्ण वाक्य, कोई संक्षेप नहीं",
+      "formalityProfessional": "पेशेवर - स्पष्ट और व्यापारिक",
+      "formalityCasual": "अनौपचारिक - आरामदायक व्याकरण, मित्रतापूर्ण",
+      "emoji": "इमोजी उपयोग करें",
+      "emojiDesc": "पेशेवर संचार में इमोजी शामिल करें",
+      "length": "लेखन लंबाई",
+      "lengthDesc": "आपके संचार कितने विस्तृत होने चाहिए",
+      "lengthConcise": "संक्षिप्त - छोटा और मुद्दे पर",
+      "lengthDetailed": "विस्तृत - विस्तारपूर्ण व्याख्या",
+      "signoff": "ईमेल साइन-ऑफ",
+      "signoffDesc": "आप अपने ईमेल कैसे समाप्त करना पसंद करते हैं"
     },
     "subscription": {
-      "description": "Manage your subscription, view usage and invoices"
+      "description": "अपनी सदस्यता प्रबंधित करें, उपयोग और इनवॉइस देखें"
     },
     "integrations": {
-      "description": "Connect your calendar and recording tools",
-      "title": "Integrations",
-      "subtitle": "Connect your tools to enhance your sales workflow",
+      "description": "अपने कैलेंडर और रिकॉर्डिंग टूल्स कनेक्ट करें",
+      "title": "इंटीग्रेशन",
+      "subtitle": "अपने बिक्री वर्कफ्लो को बेहतर बनाने के लिए अपने टूल्स कनेक्ट करें",
       "calendar": {
-        "title": "Calendar",
-        "description": "Sync your calendar to see upcoming meetings and prepare automatically",
+        "title": "कैलेंडर",
+        "description": "आने वाली मीटिंग्स देखने और स्वचालित तैयारी के लिए अपना कैलेंडर सिंक करें",
         "google": "Google Calendar",
         "microsoft": "Microsoft 365",
-        "connect": "Connect",
-        "disconnect": "Disconnect",
-        "disconnectConfirmTitle": "Disconnect Calendar?",
-        "disconnectConfirmDesc": "This will remove your calendar connection and delete all synced meetings. You can reconnect anytime.",
-        "disconnectSuccess": "Calendar disconnected",
-        "disconnectFailed": "Failed to disconnect calendar",
-        "connected": "Connected",
-        "notConnected": "Not connected",
-        "lastSync": "Last sync: {time}",
-        "syncNow": "Sync Now",
-        "syncing": "Syncing...",
-        "meetingsCount": "{count, plural, =0 {No meetings} one {# meeting} other {# meetings}} synced",
-        "needsReauth": "Reconnection required",
-        "reconnect": "Reconnect",
-        "syncEnabled": "Auto-sync enabled",
-        "syncDisabled": "Auto-sync disabled"
+        "connect": "कनेक्ट करें",
+        "disconnect": "डिस्कनेक्ट करें",
+        "disconnectConfirmTitle": "कैलेंडर डिस्कनेक्ट करें?",
+        "disconnectConfirmDesc": "यह आपके कैलेंडर कनेक्शन को हटा देगा और सभी सिंक की गई मीटिंग्स डिलीट कर देगा। आप कभी भी पुनः कनेक्ट कर सकते हैं।",
+        "disconnectSuccess": "कैलेंडर डिस्कनेक्ट हो गया",
+        "disconnectFailed": "कैलेंडर डिस्कनेक्ट विफल",
+        "connected": "कनेक्टेड",
+        "notConnected": "कनेक्टेड नहीं",
+        "lastSync": "अंतिम सिंक: {time}",
+        "syncNow": "अभी सिंक करें",
+        "syncing": "सिंक हो रहा है...",
+        "meetingsCount": "{count, plural, =0 {कोई मीटिंग नहीं} one {# मीटिंग} other {# मीटिंग्स}} सिंक हुई",
+        "needsReauth": "पुनः कनेक्शन आवश्यक",
+        "reconnect": "पुनः कनेक्ट करें",
+        "syncEnabled": "ऑटो-सिंक सक्षम",
+        "syncDisabled": "ऑटो-सिंक अक्षम"
       },
       "recordings": {
-        "title": "Meeting Recordings",
-        "description": "Import recordings from your favorite notetaker apps",
+        "title": "मीटिंग रिकॉर्डिंग्स",
+        "description": "अपने पसंदीदा नोटटेकर एप्स से रिकॉर्डिंग्स इम्पोर्ट करें",
         "fireflies": "Fireflies.ai",
         "zoom": "Zoom",
         "teams": "Microsoft Teams",
-        "connect": "Connect",
-        "disconnect": "Disconnect",
-        "connected": "Connected",
-        "notConnected": "Not connected",
-        "autoImport": "Auto-import recordings",
-        "lastImport": "Last import: {time}",
-        "recordingsCount": "{count, plural, =0 {No recordings} one {# recording} other {# recordings}} imported"
+        "connect": "कनेक्ट करें",
+        "disconnect": "डिस्कनेक्ट करें",
+        "connected": "कनेक्टेड",
+        "notConnected": "कनेक्टेड नहीं",
+        "autoImport": "रिकॉर्डिंग्स ऑटो-इम्पोर्ट",
+        "lastImport": "अंतिम इम्पोर्ट: {time}",
+        "recordingsCount": "{count, plural, =0 {कोई रिकॉर्डिंग नहीं} one {# रिकॉर्डिंग} other {# रिकॉर्डिंग्स}} इम्पोर्ट हुई"
       },
       "status": {
-        "checking": "Checking status...",
-        "error": "Could not load integration status",
-        "retry": "Retry"
+        "checking": "स्टेटस चेक हो रहा है...",
+        "error": "इंटीग्रेशन स्टेटस लोड नहीं हो सका",
+        "retry": "पुनः प्रयास करें"
       }
     },
     "notifications": {
-      "description": "Configure your email and push notifications"
+      "description": "अपनी ईमेल और पुश नोटिफिकेशन कॉन्फ़िगर करें"
     },
     "autoRecord": {
-      "title": "Auto-Record Meetings",
-      "description": "Automatically record and transcribe your calendar meetings with AI Notetaker",
-      "saved": "Settings saved",
-      "savedEnabled": "AI Notetaker will automatically join matching meetings",
-      "savedDisabled": "Auto-recording is now disabled",
+      "title": "मीटिंग्स ऑटो-रिकॉर्ड",
+      "description": "AI Notetaker के साथ अपनी कैलेंडर मीटिंग्स को स्वचालित रूप से रिकॉर्ड और ट्रांस्क्राइब करें",
+      "saved": "सेटिंग्स सेव हुई",
+      "savedEnabled": "AI Notetaker स्वचालित रूप से मैचिंग मीटिंग्स में शामिल होगा",
+      "savedDisabled": "ऑटो-रिकॉर्डिंग अब अक्षम है",
       "mode": {
-        "label": "Recording Mode",
-        "filtered": "Smart Filter",
-        "filteredDesc": "Record meetings matching your keyword rules",
-        "all": "All Meetings",
-        "allDesc": "Record every online meeting automatically",
-        "none": "Off",
-        "noneDesc": "Never auto-record (manual only)"
+        "label": "रिकॉर्डिंग मोड",
+        "filtered": "स्मार्ट फिल्टर",
+        "filteredDesc": "आपके कीवर्ड नियमों से मैच करने वाली मीटिंग्स रिकॉर्ड करें",
+        "all": "सभी मीटिंग्स",
+        "allDesc": "हर ऑनलाइन मीटिंग स्वचालित रूप से रिकॉर्ड करें",
+        "none": "बंद",
+        "noneDesc": "कभी ऑटो-रिकॉर्ड न करें (केवल मैनुअल)"
       },
-      "externalOnly": "External meetings only",
-      "externalOnlyDesc": "Only record meetings with attendees outside your organization",
-      "minDuration": "Minimum duration",
-      "minDurationDesc": "Skip meetings shorter than this",
-      "minutes": "min",
-      "includeKeywords": "Record when title contains",
-      "includeKeywordsDesc": "Meeting will be recorded if title contains any of these words",
-      "excludeKeywords": "Never record when title contains",
-      "excludeKeywordsDesc": "These keywords override include rules - meeting will be skipped",
-      "addKeywordPlaceholder": "Add keyword...",
-      "resetDefaults": "Reset to defaults",
-      "keywordsReset": "Keywords reset",
-      "keywordsResetDesc": "Keywords have been reset to default values",
-      "keywordExists": "Keyword already exists",
-      "preview": "Preview upcoming meetings",
-      "previewResults": "Preview Results",
-      "willRecord": "{count} will be recorded",
-      "willSkip": "{count} will be skipped",
+      "externalOnly": "केवल बाहरी मीटिंग्स",
+      "externalOnlyDesc": "केवल आपके संगठन के बाहर के प्रतिभागियों वाली मीटिंग्स रिकॉर्ड करें",
+      "minDuration": "न्यूनतम अवधि",
+      "minDurationDesc": "इससे छोटी मीटिंग्स स्किप करें",
+      "minutes": "मिनट",
+      "includeKeywords": "जब शीर्षक में हो तब रिकॉर्ड करें",
+      "includeKeywordsDesc": "मीटिंग रिकॉर्ड होगी अगर शीर्षक में इनमें से कोई शब्द हो",
+      "excludeKeywords": "जब शीर्षक में हो तब कभी रिकॉर्ड न करें",
+      "excludeKeywordsDesc": "ये कीवर्ड इंक्लूड नियमों को ओवरराइड करते हैं - मीटिंग स्किप हो जाएगी",
+      "addKeywordPlaceholder": "कीवर्ड जोड़ें...",
+      "resetDefaults": "डिफॉल्ट पर रीसेट करें",
+      "keywordsReset": "कीवर्ड रीसेट",
+      "keywordsResetDesc": "कीवर्ड डिफॉल्ट मानों पर रीसेट हो गए",
+      "keywordExists": "कीवर्ड पहले से मौजूद है",
+      "preview": "आने वाली मीटिंग्स का प्रीव्यू",
+      "previewResults": "प्रीव्यू परिणाम",
+      "willRecord": "{count} रिकॉर्ड होंगी",
+      "willSkip": "{count} स्किप होंगी",
       "error": {
-        "fetchFailed": "Failed to load settings",
-        "saveFailed": "Failed to save settings",
-        "resetFailed": "Failed to reset keywords",
-        "previewFailed": "Failed to load preview"
+        "fetchFailed": "सेटिंग्स लोड विफल",
+        "saveFailed": "सेटिंग्स सेव विफल",
+        "resetFailed": "कीवर्ड रीसेट विफल",
+        "previewFailed": "प्रीव्यू लोड विफल"
       }
     },
     "privacy": {
-      "title": "Privacy & Data",
-      "description": "Manage your personal data and privacy settings",
+      "title": "गोपनीयता और डेटा",
+      "description": "अपना व्यक्तिगत डेटा और गोपनीयता सेटिंग्स प्रबंधित करें",
       "dataOverview": {
-        "title": "Your Data Overview",
-        "description": "Summary of your stored personal data",
-        "accountCreated": "Account created",
-        "profilesTitle": "Profiles",
-        "salesProfile": "Sales Profile",
-        "companyProfile": "Company Profile",
-        "completed": "Completed",
-        "notCompleted": "Not completed",
-        "connections": "Connected Services"
+        "title": "आपका डेटा अवलोकन",
+        "description": "आपके संग्रहीत व्यक्तिगत डेटा का सारांश",
+        "accountCreated": "खाता बनाया गया",
+        "profilesTitle": "प्रोफ़ाइल्स",
+        "salesProfile": "बिक्री प्रोफ़ाइल",
+        "companyProfile": "कंपनी प्रोफ़ाइल",
+        "completed": "पूर्ण",
+        "notCompleted": "अपूर्ण",
+        "connections": "कनेक्टेड सर्विसेज़"
       },
       "downloadData": {
-        "title": "Download Your Data",
-        "description": "Get a copy of all your personal data in machine-readable format (JSON)",
-        "button": "Download My Data",
-        "requesting": "Requesting...",
-        "requested": "Export Requested",
-        "requestedDesc": "Your data export is being prepared. You'll receive a download link shortly.",
-        "ready": "Export Ready",
-        "readyDesc": "Your data export is ready.",
-        "expiresIn": "Expires in {hours} hours",
-        "download": "Download Export",
-        "processing": "Preparing export...",
-        "stuck": "Export stuck",
-        "stuckDesc": "The export seems to be taking longer than expected. You can retry or cancel.",
-        "retry": "Retry",
-        "cancel": "Cancel",
-        "failed": "Export failed",
-        "failedDesc": "We couldn't prepare your export. Please try again.",
-        "expired": "Export expired",
-        "expiredDesc": "This export has expired. Request a new one.",
-        "rateLimited": "Rate Limited",
-        "rateLimitedDesc": "You can request a new export in {hours} hours.",
-        "alreadyReady": "Export Available",
-        "alreadyReadyDesc": "Your recent data export is still available for download.",
-        "rateInfo": "You can request one data export per 24 hours. Exports are available for 24 hours."
+        "title": "अपना डेटा डाउनलोड करें",
+        "description": "अपने सभी व्यक्तिगत डेटा की मशीन-रीडेबल फॉर्मेट (JSON) में कॉपी प्राप्त करें",
+        "button": "मेरा डेटा डाउनलोड करें",
+        "requesting": "अनुरोध हो रहा है...",
+        "requested": "एक्सपोर्ट अनुरोधित",
+        "requestedDesc": "आपका डेटा एक्सपोर्ट तैयार हो रहा है। आपको जल्द ही डाउनलोड लिंक मिलेगा।",
+        "ready": "एक्सपोर्ट तैयार",
+        "readyDesc": "आपका डेटा एक्सपोर्ट तैयार है।",
+        "expiresIn": "{hours} घंटों में समाप्त",
+        "download": "एक्सपोर्ट डाउनलोड करें",
+        "processing": "एक्सपोर्ट तैयार हो रहा है...",
+        "stuck": "एक्सपोर्ट अटका",
+        "stuckDesc": "एक्सपोर्ट अपेक्षा से अधिक समय ले रहा है। आप पुनः प्रयास या रद्द कर सकते हैं।",
+        "retry": "पुनः प्रयास",
+        "cancel": "रद्द करें",
+        "failed": "एक्सपोर्ट विफल",
+        "failedDesc": "हम आपका एक्सपोर्ट तैयार नहीं कर सके। कृपया पुनः प्रयास करें।",
+        "expired": "एक्सपोर्ट समाप्त",
+        "expiredDesc": "यह एक्सपोर्ट समाप्त हो गया है। नया अनुरोध करें।",
+        "rateLimited": "दर सीमित",
+        "rateLimitedDesc": "आप {hours} घंटों में नया एक्सपोर्ट अनुरोध कर सकते हैं।",
+        "alreadyReady": "एक्सपोर्ट उपलब्ध",
+        "alreadyReadyDesc": "आपका हालिया डेटा एक्सपोर्ट अभी भी डाउनलोड के लिए उपलब्ध है।",
+        "rateInfo": "आप प्रति 24 घंटे में एक डेटा एक्सपोर्ट अनुरोध कर सकते हैं। एक्सपोर्ट 24 घंटे के लिए उपलब्ध रहते हैं।"
       },
       "deleteAccount": {
-        "title": "Delete Account",
-        "description": "Permanently delete your account and all associated data",
-        "button": "Delete My Account",
-        "confirmTitle": "Delete Your Account?",
-        "confirmDesc": "This action cannot be undone. After a 48-hour grace period, your account and all associated data will be permanently deleted. Billing records will be anonymized and retained for legal compliance.",
-        "errorActiveSubscription": "You have an active subscription. Please cancel your subscription first before deleting your account.",
-        "errorDeletionInProgress": "A deletion request is already in progress.",
-        "errorGeneric": "Could not process deletion request. Please try again.",
-        "confirmButton": "Yes, Delete My Account",
-        "cancelButton": "Cancel",
-        "cancelling": "Cancelling...",
-        "scheduled": "Deletion Scheduled",
-        "scheduledDesc": "Your account will be deleted on {date}. You can cancel this anytime before then.",
-        "cancelDeletion": "Cancel Deletion",
-        "cancelled": "Deletion Cancelled",
-        "cancelledDesc": "Your account deletion has been cancelled.",
-        "reason": "Reason (optional)",
-        "reasonPlaceholder": "Help us understand why you're leaving...",
-        "gracePeriod": "48-hour grace period",
-        "gracePeriodDesc": "You can cancel the deletion anytime within 48 hours.",
-        "whatHappens": "What happens when you delete your account:",
-        "deleteProfile": "Your profile and settings will be removed",
-        "deleteContent": "All your prospects, research, and content will be deleted",
-        "deleteFiles": "Uploaded files will be permanently removed",
-        "anonBilling": "Billing records will be anonymized for legal compliance",
-        "processing": "Processing deletion...",
-        "failed": "Deletion failed",
-        "failedDesc": "We couldn't schedule your account deletion. Please try again or contact support."
+        "title": "खाता हटाएं",
+        "description": "अपना खाता और सभी संबंधित डेटा स्थायी रूप से हटाएं",
+        "button": "मेरा खाता हटाएं",
+        "confirmTitle": "अपना खाता हटाएं?",
+        "confirmDesc": "यह कार्य वापस नहीं हो सकता। 48 घंटे की ग्रेस अवधि के बाद, आपका खाता और सभी संबंधित डेटा स्थायी रूप से हटा दिया जाएगा। बिलिंग रिकॉर्ड कानूनी अनुपालन के लिए अनाम और संरक्षित रखे जाएंगे।",
+        "errorActiveSubscription": "आपकी सक्रिय सदस्यता है। कृपया अपना खाता हटाने से पहले अपनी सदस्यता रद्द करें।",
+        "errorDeletionInProgress": "एक हटाने का अनुरोध पहले से प्रगति में है।",
+        "errorGeneric": "हटाने का अनुरोध प्रोसेस नहीं हो सका। कृपया पुनः प्रयास करें।",
+        "confirmButton": "हां, मेरा खाता हटाएं",
+        "cancelButton": "रद्द करें",
+        "cancelling": "रद्द हो रहा है...",
+        "scheduled": "हटाना निर्धारित",
+        "scheduledDesc": "आपका खाता {date} को हटा दिया जाएगा। आप उससे पहले कभी भी रद्द कर सकते हैं।",
+        "cancelDeletion": "हटाना रद्द करें",
+        "cancelled": "हटाना रद्द",
+        "cancelledDesc": "आपके खाते का हटाना रद्द कर दिया गया है।",
+        "reason": "कारण (वैकल्पिक)",
+        "reasonPlaceholder": "हमें बताएं आप क्यों जा रहे हैं...",
+        "gracePeriod": "48 घंटे की ग्रेस अवधि",
+        "gracePeriodDesc": "आप 48 घंटों के भीतर कभी भी हटाना रद्द कर सकते हैं।",
+        "whatHappens": "जब आप अपना खाता हटाते हैं तब क्या होता है:",
+        "deleteProfile": "आपकी प्रोफ़ाइल और सेटिंग्स हटा दी जाएंगी",
+        "deleteContent": "आपके सभी संभावित ग्राहक, शोध और कंटेंट हटा दिए जाएंगे",
+        "deleteFiles": "अपलोड की गई फ़ाइलें स्थायी रूप से हटा दी जाएंगी",
+        "anonBilling": "बिलिंग रिकॉर्ड कानूनी अनुपालन के लिए अनाम कर दिए जाएंगे",
+        "processing": "हटाना प्रोसेस हो रहा है...",
+        "failed": "हटाना विफल",
+        "failedDesc": "हम आपके खाते का हटाना निर्धारित नहीं कर सके। कृपया पुनः प्रयास करें या सपोर्ट से संपर्क करें।"
       },
       "legal": {
-        "title": "Legal Documents",
-        "privacyPolicy": "Privacy Policy",
-        "privacyPolicyDesc": "How we collect, use, and protect your data",
-        "terms": "Terms & Conditions",
-        "termsDesc": "Rules for using DealMotion"
+        "title": "कानूनी दस्तावेज़",
+        "privacyPolicy": "गोपनीयता नीति",
+        "privacyPolicyDesc": "हम आपका डेटा कैसे एकत्र, उपयोग और सुरक्षित करते हैं",
+        "terms": "नियम और शर्तें",
+        "termsDesc": "DealMotion उपयोग के नियम"
       },
       "dataCategories": {
-        "prospects": "Prospects",
-        "prospectsDesc": "Companies you're researching or selling to",
-        "contacts": "Contacts",
-        "contactsDesc": "People at your prospect companies",
-        "research": "Research Briefs",
-        "researchDesc": "AI-generated company research",
-        "preparations": "Meeting Preparations",
-        "preparationsDesc": "AI-generated meeting briefs",
-        "followups": "Follow-ups",
-        "followupsDesc": "Meeting recordings and summaries",
-        "deals": "Deals",
-        "dealsDesc": "Sales opportunities you're tracking",
-        "notes": "Notes",
-        "notesDesc": "Your notes on prospects",
-        "files": "Knowledge Base Files",
-        "filesDesc": "Documents you've uploaded"
+        "prospects": "संभावित ग्राहक",
+        "prospectsDesc": "जिन कंपनियों पर आप शोध या बिक्री कर रहे हैं",
+        "contacts": "संपर्क",
+        "contactsDesc": "आपकी संभावित ग्राहक कंपनियों के लोग",
+        "research": "शोध सारांश",
+        "researchDesc": "AI-जनरेटेड कंपनी शोध",
+        "preparations": "मीटिंग तैयारियां",
+        "preparationsDesc": "AI-जनरेटेड मीटिंग सारांश",
+        "followups": "फॉलो-अप",
+        "followupsDesc": "मीटिंग रिकॉर्डिंग्स और सारांश",
+        "deals": "सौदे",
+        "dealsDesc": "जिन बिक्री अवसरों को आप ट्रैक कर रहे हैं",
+        "notes": "नोट्स",
+        "notesDesc": "संभावित ग्राहकों पर आपके नोट्स",
+        "files": "नॉलेज बेस फ़ाइलें",
+        "filesDesc": "आपके अपलोड किए दस्तावेज़"
       }
     }
   },
@@ -1350,70 +1350,70 @@
       "getStarted": "शुरू करें",
       "upgrade": "अपग्रेड करें",
       "contactUs": "संपर्क करें",
-      "titleV2": "Simple pricing for every sales pro",
-      "titleV4": "Close more deals, prepare less",
-      "subtitleV2": "Start free with 2 flows. Upgrade when you need more.",
-      "subtitleV4": "AI that researches, prepares, and follows up — so you can focus on selling",
-      "flowExplanation": "1 Flow = 1 Research + 1 Prep + 1 Follow-up",
-      "perMonth": "month",
-      "forever": "forever",
-      "billedYearly": "Billed as {amount}/year",
-      "backToHome": "Back",
-      "earlyAdopter": "Early Adopter",
-      "launchOffer": "Early Bird Discount",
-      "launchOfferDescription": "Special launch pricing for early adopters - lock in these rates forever!",
-      "select": "Select",
-      "startTrial": "Start 14-day trial",
-      "choosePro": "Choose Pro",
-      "chooseProPlus": "Choose Pro+",
-      "goUnlimited": "Go Unlimited",
-      "goProPlus": "Get Complete Package",
-      "tryFirstResearch": "Try Your First Research",
-      "contactSales": "Contact Sales",
-      "alreadyFree": "You are already on the free plan.",
-      "donate": "Support us ❤️",
-      "perYear": "per year",
-      "contactForPricing": "Contact us for pricing",
-      "custom": "Custom",
-      "compareFeatures": "Compare all features",
-      "bestPlan": "You have the complete package!",
-      "feature": "Feature",
-      "trustBadges": "🔒 Secure payment via Stripe • 💳 All major cards accepted • ❌ Cancel anytime",
-      "moneyBackTitle": "30-Day Money-Back Guarantee",
-      "moneyBackDescription": "Not satisfied? No problem. Contact us within 30 days and we'll refund your payment in full. No questions asked.",
-      "moneyBackInline": "30-day money-back guarantee • Cancel anytime • No questions asked",
-      "launchEnds": "Launch pricing ends January 31st",
-      "saveAmount": "Save {amount}/year",
-      "noCardRequired": "No credit card required",
+      "titleV2": "हर बिक्री पेशेवर के लिए सरल मूल्य निर्धारण",
+      "titleV4": "अधिक सौदे बंद करें, कम तैयारी करें",
+      "subtitleV2": "2 फ्लो के साथ मुफ्त शुरू करें। जरूरत होने पर अपग्रेड करें।",
+      "subtitleV4": "AI जो शोध करता है, तैयार करता है, और फॉलो-अप करता है — ताकि आप बेचने पर ध्यान दे सकें",
+      "flowExplanation": "1 फ्लो = 1 शोध + 1 तैयारी + 1 फॉलो-अप",
+      "perMonth": "महीना",
+      "forever": "हमेशा के लिए",
+      "billedYearly": "{amount}/वर्ष बिल किया जाएगा",
+      "backToHome": "वापस",
+      "earlyAdopter": "अर्ली एडॉप्टर",
+      "launchOffer": "अर्ली बर्ड डिस्काउंट",
+      "launchOfferDescription": "अर्ली एडॉप्टर्स के लिए विशेष लॉन्च मूल्य - इन दरों को हमेशा के लिए लॉक करें!",
+      "select": "चुनें",
+      "startTrial": "14 दिन का ट्रायल शुरू करें",
+      "choosePro": "Pro चुनें",
+      "chooseProPlus": "Pro+ चुनें",
+      "goUnlimited": "असीमित पाएं",
+      "goProPlus": "पूर्ण पैकेज पाएं",
+      "tryFirstResearch": "अपना पहला शोध आज़माएं",
+      "contactSales": "बिक्री से संपर्क करें",
+      "alreadyFree": "आप पहले से मुफ्त प्लान पर हैं।",
+      "donate": "हमारा समर्थन करें ❤️",
+      "perYear": "प्रति वर्ष",
+      "contactForPricing": "मूल्य के लिए संपर्क करें",
+      "custom": "कस्टम",
+      "compareFeatures": "सभी सुविधाओं की तुलना करें",
+      "bestPlan": "आपके पास पूर्ण पैकेज है!",
+      "feature": "सुविधा",
+      "trustBadges": "🔒 Stripe के माध्यम से सुरक्षित भुगतान • 💳 सभी प्रमुख कार्ड स्वीकृत • ❌ कभी भी रद्द करें",
+      "moneyBackTitle": "30 दिन की मनी-बैक गारंटी",
+      "moneyBackDescription": "संतुष्ट नहीं? कोई बात नहीं। 30 दिनों के भीतर संपर्क करें और हम आपका पूरा भुगतान वापस कर देंगे। कोई सवाल नहीं।",
+      "moneyBackInline": "30 दिन की मनी-बैक गारंटी • कभी भी रद्द करें • कोई सवाल नहीं",
+      "launchEnds": "लॉन्च मूल्य 31 जनवरी को समाप्त",
+      "saveAmount": "{amount}/वर्ष बचाएं",
+      "noCardRequired": "क्रेडिट कार्ड आवश्यक नहीं",
       "testimonial": {
-        "quote": "DealMotion saves me 4+ hours per meeting. Easy! The AI knows exactly what I need.",
-        "author": "Sales Professional",
-        "company": "Beta User"
+        "quote": "DealMotion मुझे प्रति मीटिंग 4+ घंटे बचाता है। आसान! AI बिल्कुल जानता है मुझे क्या चाहिए।",
+        "author": "बिक्री पेशेवर",
+        "company": "बीटा यूज़र"
       },
       "value": {
         "research": {
-          "title": "Prospect Intelligence",
-          "description": "Complete company & contact research in minutes"
+          "title": "संभावित ग्राहक इंटेलिजेंस",
+          "description": "मिनटों में पूर्ण कंपनी और संपर्क शोध"
         },
         "prep": {
-          "title": "Smart Preparation",
-          "description": "Personalized meeting strategy based on your style"
+          "title": "स्मार्ट तैयारी",
+          "description": "आपकी शैली के आधार पर व्यक्तिगत मीटिंग रणनीति"
         },
         "meeting": {
-          "title": "Meeting Analysis",
-          "description": "AI captures everything so you can focus on selling"
+          "title": "मीटिंग विश्लेषण",
+          "description": "AI सब कुछ कैप्चर करता है ताकि आप बेचने पर ध्यान दे सकें"
         },
         "followup": {
-          "title": "Instant Follow-up",
-          "description": "Professional meeting reports, emails & action items"
+          "title": "तुरंत फॉलो-अप",
+          "description": "पेशेवर मीटिंग रिपोर्ट, ईमेल और कार्य आइटम"
         },
-        "personalized": "All powered by AI that knows your company, your products, and your selling style"
+        "personalized": "सब कुछ AI द्वारा संचालित जो आपकी कंपनी, आपके उत्पाद और आपकी बिक्री शैली जानता है"
       },
-      "whatIsFlow": "What is a Flow?",
-      "flowStep1": "Research",
-      "flowStep2": "Preparation",
-      "flowStep3": "Follow-up",
-      "flowDescription": "A complete sales cycle from prospect research to meeting follow-up."
+      "whatIsFlow": "फ्लो क्या है?",
+      "flowStep1": "शोध",
+      "flowStep2": "तैयारी",
+      "flowStep3": "फॉलो-अप",
+      "flowDescription": "संभावित ग्राहक शोध से मीटिंग फॉलो-अप तक एक पूर्ण बिक्री चक्र।"
     },
     "plans": {
       "free": {
@@ -1430,56 +1430,56 @@
       },
       "v2": {
         "free": {
-          "description": "Start free with 2 flows"
+          "description": "2 फ्लो के साथ मुफ्त शुरू करें"
         },
         "lightSolo": {
           "name": "Light Solo",
-          "description": "For the starting sales pro"
+          "description": "शुरुआती बिक्री पेशेवर के लिए"
         },
         "unlimitedSolo": {
           "name": "Unlimited Solo",
-          "description": "Unlimited for early adopters"
+          "description": "अर्ली एडॉप्टर्स के लिए असीमित"
         },
         "enterprise": {
           "name": "Enterprise",
-          "description": "For teams with CRM needs"
+          "description": "CRM जरूरतों वाली टीमों के लिए"
         }
       },
       "v3": {
         "free": {
-          "description": "Start free with 2 flows"
+          "description": "2 फ्लो के साथ मुफ्त शुरू करें"
         },
         "proSolo": {
           "name": "Pro Solo",
-          "description": "For the active sales pro"
+          "description": "सक्रिय बिक्री पेशेवर के लिए"
         },
         "unlimitedSolo": {
           "name": "Unlimited Solo",
-          "description": "Unlimited for early adopters"
+          "description": "अर्ली एडॉप्टर्स के लिए असीमित"
         },
         "enterprise": {
           "name": "Enterprise",
-          "description": "For teams with CRM needs"
+          "description": "CRM जरूरतों वाली टीमों के लिए"
         }
       },
       "v4": {
         "free": {
-          "name": "Free",
-          "description": "Everything included — try a complete sales cycle"
+          "name": "मुफ्त",
+          "description": "सब कुछ शामिल — एक पूर्ण बिक्री चक्र आज़माएं"
         },
         "pro": {
           "name": "Pro",
-          "description": "Stop wasting hours on research & prep",
-          "settingsDesc": "Stop wasting hours on research & prep"
+          "description": "शोध और तैयारी पर घंटे बर्बाद करना बंद करें",
+          "settingsDesc": "शोध और तैयारी पर घंटे बर्बाद करना बंद करें"
         },
         "proPlus": {
           "name": "Pro+",
-          "description": "Never take notes again — AI does it for you",
-          "settingsDesc": "Never take notes again — AI does it for you"
+          "description": "फिर कभी नोट्स न लें — AI आपके लिए करता है",
+          "settingsDesc": "फिर कभी नोट्स न लें — AI आपके लिए करता है"
         },
         "enterprise": {
           "name": "Enterprise",
-          "description": "Your entire team, synced with your CRM"
+          "description": "आपकी पूरी टीम, आपके CRM के साथ सिंक"
         }
       }
     },
@@ -1494,56 +1494,56 @@
       "description": "आपका भुगतान रद्द हो गया। आप जब चाहें पुनः प्रयास कर सकते हैं।",
       "backToPricing": "मूल्य पर वापस जाएं"
     },
-    "viewUsage": "View your usage",
-    "cancelWarning": "Your subscription will be cancelled on {date}",
-    "checkoutError": "Could not start checkout. Please try again.",
-    "portalError": "Could not open portal. Please try again.",
-    "donationNotConfigured": "Donation link is not configured yet.",
-    "flowsUsed": "Flows used",
-    "flowsRemaining": "Flows remaining",
+    "viewUsage": "अपना उपयोग देखें",
+    "cancelWarning": "आपकी सदस्यता {date} को रद्द हो जाएगी",
+    "checkoutError": "चेकआउट शुरू नहीं हो सका। कृपया पुनः प्रयास करें।",
+    "portalError": "पोर्टल नहीं खुल सका। कृपया पुनः प्रयास करें।",
+    "donationNotConfigured": "दान लिंक अभी कॉन्फ़िगर नहीं है।",
+    "flowsUsed": "उपयोग किए गए फ्लो",
+    "flowsRemaining": "शेष फ्लो",
     "flowPacks": {
-      "title": "Need more flows?",
-      "description": "Buy extra flows when you need them",
+      "title": "अधिक फ्लो चाहिए?",
+      "description": "जरूरत होने पर अतिरिक्त फ्लो खरीदें",
       "pack5": {
-        "name": "5 Flow Pack",
+        "name": "5 फ्लो पैक",
         "price": "€9.95",
-        "pricePerFlow": "€1.99/flow"
+        "pricePerFlow": "€1.99/फ्लो"
       },
-      "buy": "Buy Flow Pack",
-      "balance": "Flow pack balance",
-      "noBalance": "No flow packs",
-      "history": "Purchase history",
-      "purchased": "Purchased",
-      "remaining": "{count} flows remaining",
-      "depleted": "Depleted",
-      "checkoutSuccess": "Flow pack purchased successfully!",
-      "checkoutError": "Could not purchase flow pack. Please try again."
+      "buy": "फ्लो पैक खरीदें",
+      "balance": "फ्लो पैक बैलेंस",
+      "noBalance": "कोई फ्लो पैक नहीं",
+      "history": "खरीद इतिहास",
+      "purchased": "खरीदा गया",
+      "remaining": "{count} फ्लो शेष",
+      "depleted": "समाप्त",
+      "checkoutSuccess": "फ्लो पैक सफलतापूर्वक खरीदा गया!",
+      "checkoutError": "फ्लो पैक नहीं खरीदा जा सका। कृपया पुनः प्रयास करें।"
     },
     "features": {
-      "researchBriefs": "research briefs",
-      "meetingPreps": "meeting preps",
-      "followups": "follow-ups",
-      "transcription": "Transcription",
-      "knowledgeBase": "Knowledge base",
-      "users": "Users",
-      "crmIntegration": "CRM integration",
-      "perMonth": "/month",
-      "unlimited": "Unlimited",
-      "hours": "hours",
-      "docs": "docs",
+      "researchBriefs": "शोध सारांश",
+      "meetingPreps": "मीटिंग तैयारियां",
+      "followups": "फॉलो-अप",
+      "transcription": "ट्रांस्क्रिप्शन",
+      "knowledgeBase": "नॉलेज बेस",
+      "users": "उपयोगकर्ता",
+      "crmIntegration": "CRM इंटीग्रेशन",
+      "perMonth": "/महीना",
+      "unlimited": "असीमित",
+      "hours": "घंटे",
+      "docs": "दस्तावेज़",
       "v2": {
-        "flows": "{count} flows per month",
-        "flowsUnlimited": "Unlimited flows",
-        "kb": "Knowledge Base included",
-        "transcription": "Transcription included",
-        "contacts": "Full contact analysis",
-        "pdf": "Clean PDF exports",
-        "user": "{count} user",
-        "usersUnlimited": "Unlimited users",
-        "support": "Email support",
-        "prioritySupport": "Priority support",
-        "dedicatedSupport": "Dedicated support",
-        "crm": "CRM integration",
+        "flows": "{count} फ्लो प्रति माह",
+        "flowsUnlimited": "असीमित फ्लो",
+        "kb": "नॉलेज बेस शामिल",
+        "transcription": "ट्रांस्क्रिप्शन शामिल",
+        "contacts": "पूर्ण संपर्क विश्लेषण",
+        "pdf": "साफ़ PDF एक्सपोर्ट",
+        "user": "{count} उपयोगकर्ता",
+        "usersUnlimited": "असीमित उपयोगकर्ता",
+        "support": "ईमेल सपोर्ट",
+        "prioritySupport": "प्राथमिकता सपोर्ट",
+        "dedicatedSupport": "समर्पित सपोर्ट",
+        "crm": "CRM इंटीग्रेशन",
         "crmDynamics": "Microsoft Dynamics",
         "crmSalesforce": "Salesforce",
         "crmHubspot": "HubSpot",
@@ -1552,101 +1552,101 @@
         "sso": "SSO/SAML"
       },
       "v3": {
-        "flows": "{count} flows per month",
-        "flowsUnlimited": "Unlimited flows",
-        "kb": "Knowledge Base included",
-        "transcription": "Transcription included",
-        "contacts": "Full contact analysis",
-        "pdf": "Clean PDF exports",
-        "user": "{count} user",
-        "usersUnlimited": "Unlimited users",
-        "support": "Email support",
-        "prioritySupport": "Priority support",
-        "dedicatedSupport": "Dedicated support",
-        "crm": "CRM integration",
+        "flows": "{count} फ्लो प्रति माह",
+        "flowsUnlimited": "असीमित फ्लो",
+        "kb": "नॉलेज बेस शामिल",
+        "transcription": "ट्रांस्क्रिप्शन शामिल",
+        "contacts": "पूर्ण संपर्क विश्लेषण",
+        "pdf": "साफ़ PDF एक्सपोर्ट",
+        "user": "{count} उपयोगकर्ता",
+        "usersUnlimited": "असीमित उपयोगकर्ता",
+        "support": "ईमेल सपोर्ट",
+        "prioritySupport": "प्राथमिकता सपोर्ट",
+        "dedicatedSupport": "समर्पित सपोर्ट",
+        "crm": "CRM इंटीग्रेशन",
         "crmDynamics": "Microsoft Dynamics",
         "crmSalesforce": "Salesforce",
         "crmHubspot": "HubSpot",
         "crmPipedrive": "Pipedrive",
         "crmZoho": "Zoho CRM",
         "sso": "SSO/SAML",
-        "flowPacks": "Buy extra flow packs"
+        "flowPacks": "अतिरिक्त फ्लो पैक खरीदें"
       },
       "v4": {
-        "testExperience": "Test & experience the platform",
-        "limitedFlows": "2 flows to get started",
-        "unlimitedFlows": "Unlimited flows",
-        "kb": "Knowledge Base",
-        "transcription": "Meeting transcription",
-        "contacts": "Contact analysis",
-        "pdf": "PDF & DOCX exports",
-        "prioritySupport": "Priority support",
+        "testExperience": "प्लेटफॉर्म का परीक्षण और अनुभव करें",
+        "limitedFlows": "शुरू करने के लिए 2 फ्लो",
+        "unlimitedFlows": "असीमित फ्लो",
+        "kb": "नॉलेज बेस",
+        "transcription": "मीटिंग ट्रांस्क्रिप्शन",
+        "contacts": "संपर्क विश्लेषण",
+        "pdf": "PDF और DOCX एक्सपोर्ट",
+        "prioritySupport": "प्राथमिकता सपोर्ट",
         "aiNotetaker": "AI Notetaker",
-        "aiNotetakerIncluded": "AI Notetaker Included",
-        "aiNotetakerDescription": "AI joins your meetings to record, transcribe & summarize",
-        "aiNotetakerTitle": "AI Notetaker - Only in Pro+",
-        "aiNotetakerLongDescription": "Let our AI join your meetings to automatically record, transcribe, and create intelligent summaries. Never miss an important detail again.",
-        "notetakerFeature1": "Auto-join meetings",
-        "notetakerFeature2": "Smart summaries",
-        "notetakerFeature3": "Action items",
-        "crm": "CRM integration",
-        "everythingProPlus": "Everything in Pro+",
-        "unlimitedUsers": "Unlimited team members",
+        "aiNotetakerIncluded": "AI Notetaker शामिल",
+        "aiNotetakerDescription": "AI आपकी मीटिंग्स में शामिल होकर रिकॉर्ड, ट्रांस्क्राइब और सारांश करता है",
+        "aiNotetakerTitle": "AI Notetaker - सिर्फ Pro+ में",
+        "aiNotetakerLongDescription": "हमारे AI को आपकी मीटिंग्स में शामिल होने दें ताकि स्वचालित रूप से रिकॉर्ड, ट्रांस्क्राइब और स्मार्ट सारांश बनाए। फिर कभी कोई महत्वपूर्ण विवरण न छूटें।",
+        "notetakerFeature1": "मीटिंग्स में ऑटो-जॉइन",
+        "notetakerFeature2": "स्मार्ट सारांश",
+        "notetakerFeature3": "कार्य आइटम",
+        "crm": "CRM इंटीग्रेशन",
+        "everythingProPlus": "Pro+ में सब कुछ",
+        "unlimitedUsers": "असीमित टीम सदस्य",
         "crmDynamics": "Microsoft Dynamics 365",
         "crmSalesforce": "Salesforce CRM",
         "crmHubspot": "HubSpot CRM",
         "sso": "SSO / SAML",
-        "dedicatedSupport": "Dedicated account manager",
+        "dedicatedSupport": "समर्पित अकाउंट मैनेजर",
         "value": {
-          "tryComplete": "Experience the full workflow",
-          "twoFlows": "1 complete sales cycle included",
-          "unlimited": "Unlimited prospects & meetings*",
-          "unlimitedNote": "*Fair use policy",
-          "uploadTranscripts": "Upload your own recordings & transcripts",
-          "prospectIntel": "360° prospect research & insights",
-          "contactAnalysis": "Deep analysis of decision-makers",
-          "meetingPrep": "Personalized meeting preparation",
-          "followupAnalysis": "AI-powered conversation analysis",
-          "meetingReport": "Professional meeting report to share with clients",
-          "dealAnalysis": "Commercial deal analysis with win strategy",
-          "emailsDealNotes": "Follow-up emails & CRM-ready notes",
-          "salesCoach": "Luna - Your AI sales coach",
-          "crmSync": "Sync with your CRM",
-          "teamSharing": "Share insights across your team"
+          "tryComplete": "पूर्ण वर्कफ्लो का अनुभव करें",
+          "twoFlows": "1 पूर्ण बिक्री चक्र शामिल",
+          "unlimited": "असीमित संभावित ग्राहक और मीटिंग्स*",
+          "unlimitedNote": "*उचित उपयोग नीति",
+          "uploadTranscripts": "अपनी रिकॉर्डिंग और ट्रांस्क्रिप्ट अपलोड करें",
+          "prospectIntel": "360° संभावित ग्राहक शोध और इंसाइट्स",
+          "contactAnalysis": "निर्णयकर्ताओं का गहन विश्लेषण",
+          "meetingPrep": "व्यक्तिगत मीटिंग तैयारी",
+          "followupAnalysis": "AI-संचालित वार्तालाप विश्लेषण",
+          "meetingReport": "ग्राहकों के साथ साझा करने के लिए पेशेवर मीटिंग रिपोर्ट",
+          "dealAnalysis": "जीत रणनीति के साथ वाणिज्यिक सौदा विश्लेषण",
+          "emailsDealNotes": "फॉलो-अप ईमेल और CRM-तैयार नोट्स",
+          "salesCoach": "Luna - आपका AI बिक्री कोच",
+          "crmSync": "अपने CRM के साथ सिंक करें",
+          "teamSharing": "अपनी टीम में इंसाइट्स साझा करें"
         }
       },
       "free": {
-        "research": "3 research briefs per month",
-        "prep": "3 meeting preps per month",
-        "followup": "1 follow-up transcription",
-        "support": "Community support",
-        "users": "1 user",
-        "kb": "Knowledge base",
-        "contacts": "Full contact analysis",
-        "pdf": "Clean PDF exports"
+        "research": "3 शोध सारांश प्रति माह",
+        "prep": "3 मीटिंग तैयारियां प्रति माह",
+        "followup": "1 फॉलो-अप ट्रांस्क्रिप्शन",
+        "support": "कम्युनिटी सपोर्ट",
+        "users": "1 उपयोगकर्ता",
+        "kb": "नॉलेज बेस",
+        "contacts": "पूर्ण संपर्क विश्लेषण",
+        "pdf": "साफ़ PDF एक्सपोर्ट"
       },
       "solo": {
-        "research": "Unlimited research briefs",
-        "prep": "Unlimited meeting preps",
-        "followup": "Unlimited follow-ups",
-        "transcription": "10 hours transcription/month",
-        "kb": "Knowledge base (50 docs)",
-        "contacts": "Full contact analysis",
-        "pdf": "Clean PDF exports",
-        "support": "Email support (48h)",
-        "users": "1 user"
+        "research": "असीमित शोध सारांश",
+        "prep": "असीमित मीटिंग तैयारियां",
+        "followup": "असीमित फॉलो-अप",
+        "transcription": "10 घंटे ट्रांस्क्रिप्शन/माह",
+        "kb": "नॉलेज बेस (50 दस्तावेज़)",
+        "contacts": "पूर्ण संपर्क विश्लेषण",
+        "pdf": "साफ़ PDF एक्सपोर्ट",
+        "support": "ईमेल सपोर्ट (48 घंटे)",
+        "users": "1 उपयोगकर्ता"
       },
       "teams": {
-        "everything": "Everything in Solo",
-        "users": "Unlimited users",
-        "transcription": "Unlimited transcription",
-        "kb": "Unlimited knowledge base",
-        "crm": "CRM integration",
-        "sharing": "Team sharing & collab",
-        "analytics": "Team analytics",
+        "everything": "Solo में सब कुछ",
+        "users": "असीमित उपयोगकर्ता",
+        "transcription": "असीमित ट्रांस्क्रिप्शन",
+        "kb": "असीमित नॉलेज बेस",
+        "crm": "CRM इंटीग्रेशन",
+        "sharing": "टीम शेयरिंग और सहयोग",
+        "analytics": "टीम एनालिटिक्स",
         "sso": "SSO/SAML",
-        "support": "Dedicated support",
-        "onboarding": "Onboarding call"
+        "support": "समर्पित सपोर्ट",
+        "onboarding": "ऑनबोर्डिंग कॉल"
       }
     }
   },
@@ -1667,82 +1667,82 @@
       "title": "साक्षात्कार पूर्ण!",
       "description": "अब आप अपना पहला संभावित ग्राहक शोध शुरू कर सकते हैं",
       "button": "डैशबोर्ड पर जाएं",
-      "creating": "Creating your personalized profile..."
+      "creating": "आपकी व्यक्तिगत प्रोफ़ाइल बनाई जा रही है..."
     },
     "skip": "छोड़ें",
     "next": "अगला",
     "back": "वापस",
     "finish": "समाप्त",
-    "starting": "Starting your onboarding interview...",
-    "takeYourTime": "Take your time to provide a thoughtful answer",
-    "updateProfile": "Update Profile",
+    "starting": "आपका ऑनबोर्डिंग साक्षात्कार शुरू हो रहा है...",
+    "takeYourTime": "विचारशील उत्तर देने के लिए अपना समय लें",
+    "updateProfile": "प्रोफ़ाइल अपडेट करें",
     "existingProfile": {
-      "title": "Profile Already Exists",
-      "description": "You already have a sales profile. Would you like to update it with a fresh interview?"
+      "title": "प्रोफ़ाइल पहले से मौजूद है",
+      "description": "आपके पास पहले से एक बिक्री प्रोफ़ाइल है। क्या आप इसे नए साक्षात्कार से अपडेट करना चाहेंगे?"
     },
     "profile": {
-      "title": "Tell us about yourself",
-      "description": "This information helps the AI generate personalized outputs"
+      "title": "अपने बारे में बताएं",
+      "description": "यह जानकारी AI को व्यक्तिगत आउटपुट जनरेट करने में मदद करती है"
     },
     "company": {
-      "title": "Tell us about your company",
-      "description": "This helps the AI understand your products and services",
-      "pageTitle": "Company Profile Onboarding",
-      "pageDesc": "Help the AI understand your company",
-      "questionOf": "Question {current} of {total}",
-      "generating": "Generating Company Profile...",
-      "generatingDesc": "AI is analyzing your answers and creating a structured company profile",
-      "generatingWait": "This may take a moment...",
-      "couldNotLoad": "Could not load interview",
-      "startInterview": "Starting interview...",
-      "yourAnswer": "Your answer",
-      "answerPlaceholder": "Type your answer here...",
-      "previous": "Previous",
-      "requiredQuestion": "Required question - answer as completely as possible",
-      "optionalQuestion": "Optional question - you can skip this"
+      "title": "अपनी कंपनी के बारे में बताएं",
+      "description": "यह AI को आपके उत्पादों और सेवाओं को समझने में मदद करता है",
+      "pageTitle": "कंपनी प्रोफ़ाइल ऑनबोर्डिंग",
+      "pageDesc": "AI को आपकी कंपनी समझने में मदद करें",
+      "questionOf": "प्रश्न {current} / {total}",
+      "generating": "कंपनी प्रोफ़ाइल जनरेट हो रही है...",
+      "generatingDesc": "AI आपके उत्तरों का विश्लेषण कर रहा है और एक संरचित कंपनी प्रोफ़ाइल बना रहा है",
+      "generatingWait": "इसमें कुछ समय लग सकता है...",
+      "couldNotLoad": "साक्षात्कार लोड नहीं हो सका",
+      "startInterview": "साक्षात्कार शुरू हो रहा है...",
+      "yourAnswer": "आपका उत्तर",
+      "answerPlaceholder": "अपना उत्तर यहाँ टाइप करें...",
+      "previous": "पिछला",
+      "requiredQuestion": "आवश्यक प्रश्न - यथासंभव पूर्ण उत्तर दें",
+      "optionalQuestion": "वैकल्पिक प्रश्न - आप इसे छोड़ सकते हैं"
     },
     "errors": {
-      "startFailed": "Failed to start interview. Please try again.",
-      "submitFailed": "Failed to submit answer. Please try again.",
-      "completeFailed": "Failed to complete interview. Please try again."
+      "startFailed": "साक्षात्कार शुरू करने में विफल। कृपया पुनः प्रयास करें।",
+      "submitFailed": "उत्तर सबमिट करने में विफल। कृपया पुनः प्रयास करें।",
+      "completeFailed": "साक्षात्कार पूरा करने में विफल। कृपया पुनः प्रयास करें।"
     },
     "toast": {
-      "startError": "Error starting",
-      "startErrorDesc": "Could not start interview. Please try again.",
-      "saveError": "Error",
-      "saveErrorDesc": "Could not save answer",
-      "profileCreated": "Company profile created! 🎉",
-      "profileCreatedDesc": "Your company profile has been saved successfully.",
-      "createError": "Error",
-      "createErrorDesc": "Could not create profile. Please try again."
+      "startError": "शुरू करने में त्रुटि",
+      "startErrorDesc": "साक्षात्कार शुरू नहीं हो सका। कृपया पुनः प्रयास करें।",
+      "saveError": "त्रुटि",
+      "saveErrorDesc": "उत्तर सेव नहीं हो सका",
+      "profileCreated": "कंपनी प्रोफ़ाइल बन गई! 🎉",
+      "profileCreatedDesc": "आपकी कंपनी प्रोफ़ाइल सफलतापूर्वक सेव हो गई।",
+      "createError": "त्रुटि",
+      "createErrorDesc": "प्रोफ़ाइल बनाई नहीं जा सकी। कृपया पुनः प्रयास करें।"
     },
     "chat": {
-      "title": "Magic Profile Setup",
-      "subtitle": "A short conversation to complete your sales profile",
-      "startWithLinkedIn": "Start with LinkedIn",
-      "startWithLinkedInDesc": "We'll automatically gather as much information as possible",
-      "linkedInUrlLabel": "Your LinkedIn profile URL",
+      "title": "मैजिक प्रोफ़ाइल सेटअप",
+      "subtitle": "आपकी बिक्री प्रोफ़ाइल पूरी करने के लिए एक छोटी बातचीत",
+      "startWithLinkedIn": "LinkedIn से शुरू करें",
+      "startWithLinkedInDesc": "हम स्वचालित रूप से यथासंभव जानकारी एकत्र करेंगे",
+      "linkedInUrlLabel": "आपकी LinkedIn प्रोफ़ाइल URL",
       "linkedInPlaceholder": "https://linkedin.com/in/your-profile",
-      "startMagicSetup": "Start Magic Setup",
-      "linkedInPrivacy": "Your LinkedIn data is only used to create your profile",
-      "analyzeProfile": "Analyze Profile",
-      "preparingChat": "Preparing chat based on your profile...",
-      "pleaseWait": "Please wait...",
-      "analyzingProfile": "Analyzing your LinkedIn profile",
-      "fetchingProfile": "Fetching profile",
-      "analyzingExperience": "Analyzing experience",
-      "extractingSkills": "Extracting skills",
-      "profileChatTitle": "Sales Profile Chat",
-      "companyProfileChatTitle": "Company Profile Chat",
-      "completeness": "Completeness",
-      "profileComplete": "Profile is complete enough!",
-      "saveProfile": "Save Profile",
-      "typeYourAnswer": "Type your answer...",
-      "profileSaved": "Profile saved!",
-      "redirecting": "Redirecting to dashboard...",
-      "couldNotEnrich": "Could not retrieve LinkedIn profile",
-      "couldNotEnrichDesc": "Please check the URL and try again",
-      "chatError": "Something went wrong with the chat"
+      "startMagicSetup": "मैजिक सेटअप शुरू करें",
+      "linkedInPrivacy": "आपका LinkedIn डेटा केवल आपकी प्रोफ़ाइल बनाने के लिए उपयोग किया जाता है",
+      "analyzeProfile": "प्रोफ़ाइल विश्लेषण करें",
+      "preparingChat": "आपकी प्रोफ़ाइल के आधार पर चैट तैयार हो रही है...",
+      "pleaseWait": "कृपया प्रतीक्षा करें...",
+      "analyzingProfile": "आपकी LinkedIn प्रोफ़ाइल का विश्लेषण हो रहा है",
+      "fetchingProfile": "प्रोफ़ाइल प्राप्त हो रही है",
+      "analyzingExperience": "अनुभव का विश्लेषण हो रहा है",
+      "extractingSkills": "कौशल निकाले जा रहे हैं",
+      "profileChatTitle": "बिक्री प्रोफ़ाइल चैट",
+      "companyProfileChatTitle": "कंपनी प्रोफ़ाइल चैट",
+      "completeness": "पूर्णता",
+      "profileComplete": "प्रोफ़ाइल पर्याप्त पूर्ण है!",
+      "saveProfile": "प्रोफ़ाइल सेव करें",
+      "typeYourAnswer": "अपना उत्तर टाइप करें...",
+      "profileSaved": "प्रोफ़ाइल सेव हुई!",
+      "redirecting": "डैशबोर्ड पर रीडायरेक्ट हो रहा है...",
+      "couldNotEnrich": "LinkedIn प्रोफ़ाइल प्राप्त नहीं हो सकी",
+      "couldNotEnrichDesc": "कृपया URL जांचें और पुनः प्रयास करें",
+      "chatError": "चैट में कुछ गलत हो गई"
     }
   },
   "authForm": {
@@ -1758,14 +1758,14 @@
     "privacyPolicy": "गोपनीयता नीति",
     "checkYourEmail": "अपना ईमेल जांचें",
     "backToLogin": "लॉगिन पर वापस जाएं",
-    "confirmationEmailSent": "We've sent a confirmation link to {email}. Click the link to verify your account. Didn't receive an email? Check your spam folder.",
-    "userAlreadyExists": "An account with this email already exists. Please log in instead.",
+    "confirmationEmailSent": "हमने {email} पर एक पुष्टिकरण लिंक भेजा है। अपना खाता सत्यापित करने के लिए लिंक पर क्लिक करें। ईमेल नहीं मिला? अपना स्पैम फ़ोल्डर जांचें।",
+    "userAlreadyExists": "इस ईमेल से एक खाता पहले से मौजूद है। कृपया इसके बजाय लॉग इन करें।",
     "errors": {
-      "oauthError": "Authentication failed. Please try again.",
-      "accessDenied": "Sign in was cancelled.",
-      "serverError": "The authentication provider is temporarily unavailable. Please try again later.",
-      "genericSignIn": "An error occurred during sign in.",
-      "genericSignUp": "An error occurred during sign up."
+      "oauthError": "प्रमाणीकरण विफल। कृपया पुनः प्रयास करें।",
+      "accessDenied": "साइन इन रद्द कर दिया गया।",
+      "serverError": "प्रमाणीकरण प्रदाता अस्थायी रूप से अनुपलब्ध है। कृपया बाद में पुनः प्रयास करें।",
+      "genericSignIn": "साइन इन के दौरान एक त्रुटि हुई।",
+      "genericSignUp": "साइन अप के दौरान एक त्रुटि हुई।"
     }
   },
   "recordings": {
@@ -2255,8 +2255,8 @@
       "description": "खातों का शोध करें, मीटिंग तैयार करें, AI को हर बातचीत कैप्चर करने दें, और फॉलो-अप करें—सब AI द्वारा संचालित जो आपकी शैली, उत्पाद और ग्राहक को जानता है।",
       "startFree": "मुफ्त शुरू करें",
       "viewPricing": "मूल्य देखें",
-      "startTrial": "Start Free Trial",
-      "watchDemo": "Watch Demo"
+      "startTrial": "मुफ्त ट्रायल शुरू करें",
+      "watchDemo": "डेमो देखें"
     },
     "cta": {
       "title": "हर मीटिंग में आत्मविश्वास से जाएं। स्पष्ट योजना के साथ बाहर आएं।",
@@ -2267,295 +2267,295 @@
       "rights": "सर्वाधिकार सुरक्षित।"
     },
     "preview": {
-      "research": "Research",
-      "brief": "Brief",
-      "aiMeetingBrief": "AI Meeting Brief",
-      "generatedIn": "Generated in 30 seconds"
+      "research": "शोध",
+      "brief": "सारांश",
+      "aiMeetingBrief": "AI मीटिंग सारांश",
+      "generatedIn": "30 सेकंड में जेनरेट"
     },
     "features": {
-      "title": "Everything you need to keep deals moving",
-      "description": "From research to follow-up, we've got you covered at every stage of your deal cycle.",
+      "title": "डील्स को गति देने के लिए सब कुछ",
+      "description": "शोध से फॉलो-अप तक, हम आपकी डील साइकल के हर चरण में आपके साथ हैं।",
       "research": {
-        "title": "Account Research",
-        "description": "AI-powered research on any company. Get insights on their business, challenges, decision makers, and opportunities."
+        "title": "अकाउंट शोध",
+        "description": "किसी भी कंपनी पर AI-संचालित शोध। उनके बिज़नेस, चुनौतियों, निर्णयकर्ताओं, और अवसरों पर इंसाइट्स पाएं।"
       },
       "preparation": {
-        "title": "Meeting Preparation",
-        "description": "Generate personalized meeting briefs with talking points, SPIN questions, and strategy recommendations."
+        "title": "मीटिंग तैयारी",
+        "description": "टॉकिंग पॉइंट्स, SPIN सवालों, और रणनीति सिफारिशों के साथ व्यक्तिगत मीटिंग सारांश जेनरेट करें।"
       },
       "followup": {
-        "title": "Meeting Follow-up",
-        "description": "Upload recordings, get AI summaries, action items, and customer-facing reports automatically."
+        "title": "मीटिंग फॉलो-अप",
+        "description": "रिकॉर्डिंग्स अपलोड करें, AI सारांश, कार्रवाई आइटम्स, और ग्राहक-उन्मुख रिपोर्ट्स स्वचालित पाएं।"
       },
       "aiCoach": {
-        "title": "AI Sales Coach",
-        "description": "Your personal sales coach that analyzes your conversations and provides actionable tips to improve."
+        "title": "AI सेल्स कोच",
+        "description": "आपका व्यक्तिगत सेल्स कोच जो आपकी बातचीत का विश्लेषण करता है और सुधार के लिए कार्ययोग्य सुझाव देता है।"
       },
       "knowledgeBase": {
-        "title": "Knowledge Base",
-        "description": "Upload your company docs. The AI uses your context to generate relevant, on-brand content."
+        "title": "नॉलेज बेस",
+        "description": "अपनी कंपनी दस्तावेज़ अपलोड करें। AI आपके संदर्भ का उपयोग करके प्रासंगिक, ब्रांड-अनुकूल कंटेंट जेनरेट करता है।"
       },
       "contactAnalysis": {
-        "title": "Contact Analysis",
-        "description": "Get detailed profiles on decision makers with communication preferences and engagement tips."
+        "title": "संपर्क विश्लेषण",
+        "description": "संचार प्राथमिकताओं और एंगेजमेंट टिप्स के साथ निर्णयकर्ताओं की विस्तृत प्रोफ़ाइल पाएं।"
       },
       "outreach": {
-        "title": "Smart Outreach",
-        "description": "AI writes your first message to prospects. LinkedIn, email, or WhatsApp—fully personalized based on your research. No generic templates, just messages that land."
+        "title": "स्मार्ट आउटरीच",
+        "description": "AI आपका पहला संदेश संभावित ग्राहकों को लिखता है। LinkedIn, ईमेल, या WhatsApp—आपके शोध पर आधारित पूरी तरह व्यक्तिगत। कोई जेनेरिक टेम्पलेट नहीं, सिर्फ संदेश जो प्रभावी हों।"
       },
       "meetingsCalendar": {
-        "title": "Meetings Calendar",
-        "description": "All your meetings in one view. Prep status at a glance. Never walk in unprepared again."
+        "title": "मीटिंग्स कैलेंडर",
+        "description": "आपकी सभी मीटिंग्स एक व्यू में। एक नज़र में तैयारी स्थिति। फिर कभी बिना तैयारी न जाएं।"
       },
       "inPersonMeetings": {
-        "title": "In-Person Meetings",
-        "description": "From Zoom calls to coffee meetings—record and analyze every conversation, anywhere."
+        "title": "इन-पर्सन मीटिंग्स",
+        "description": "Zoom कॉल्स से कॉफी मीटिंग्स तक—हर बातचीत को कहीं भी रिकॉर्ड और विश्लेषण करें।"
       },
       "smartIntegrations": {
-        "title": "Smart Integrations",
-        "description": "Connect Google Calendar, Microsoft 365, and Fireflies.ai. CRM sync coming soon."
+        "title": "स्मार्ट इंटीग्रेशन्स",
+        "description": "Google Calendar, Microsoft 365, और Fireflies.ai कनेक्ट करें। CRM सिंक जल्द आ रहा है।"
       },
       "aiNotetaker": {
         "title": "AI Notetaker",
-        "description": "Invite notes@dealmotion.ai to any call, or enable auto-record. Our bot joins Teams, Meet, Zoom, and Webex—then transcribes and analyzes automatically."
+        "description": "किसी भी कॉल में notes@dealmotion.ai को आमंत्रित करें, या ऑटो-रिकॉर्ड सक्षम करें। हमारा बॉट Teams, Meet, Zoom, और Webex में शामिल होता है—फिर स्वचालित ट्रांसक्राइब और विश्लेषण करता है।"
       }
     },
     "socialProof": {
-      "trustedBy": "TRUSTED BY SALES TEAMS AT",
-      "usedBy": "Used by B2B sales professionals worldwide"
+      "trustedBy": "सेल्स टीमों द्वारा विश्वसनीय",
+      "usedBy": "दुनिया भर में B2B सेल्स पेशेवरों द्वारा उपयोग किया जाता है"
     },
     "howItWorks": {
-      "title": "How it works",
-      "subtitle": "From calendar sync to follow-up—DealMotion covers your entire deal cycle.",
+      "title": "यह कैसे काम करता है",
+      "subtitle": "कैलेंडर सिंक से फॉलो-अप तक—DealMotion आपकी पूरी डील साइकल कवर करता है।",
       "steps": {
         "calendar": {
-          "title": "Calendar",
-          "description": "Sync your meetings"
+          "title": "कैलेंडर",
+          "description": "अपनी मीटिंग्स सिंक करें"
         },
         "research": {
-          "title": "Research",
-          "description": "AI gathers insights"
+          "title": "शोध",
+          "description": "AI इंसाइट्स इकट्ठा करता है"
         },
         "outreach": {
-          "title": "Outreach",
-          "description": "Send personalized messages"
+          "title": "आउटरीच",
+          "description": "व्यक्तिगत संदेश भेजें"
         },
         "prep": {
-          "title": "Prep",
-          "description": "Get your brief"
+          "title": "तैयारी",
+          "description": "अपना सारांश पाएं"
         },
         "meeting": {
-          "title": "Meeting",
-          "description": "AI bot joins or record on mobile"
+          "title": "मीटिंग",
+          "description": "AI बॉट शामिल होता है या मोबाइल पर रिकॉर्ड करें"
         },
         "analysis": {
-          "title": "Analysis",
-          "description": "7 outputs instantly"
+          "title": "विश्लेषण",
+          "description": "7 आउटपुट तुरंत"
         },
         "followup": {
-          "title": "Follow-up",
-          "description": "Send & track"
+          "title": "फॉलो-अप",
+          "description": "भेजें और ट्रैक करें"
         }
       }
     },
     "integrations": {
-      "title": "Works with your tools",
-      "subtitle": "Connect to your existing workflow in seconds.",
-      "comingSoon": "Coming soon"
+      "title": "आपके टूल्स के साथ काम करता है",
+      "subtitle": "सेकंडों में अपने मौजूदा वर्कफ्लो से कनेक्ट करें।",
+      "comingSoon": "जल्द आ रहा है"
     },
     "aiContext": {
-      "badge": "The secret sauce",
-      "title": "AI that knows you, your company, and your prospect",
-      "subtitle": "DealMotion learns your style, your products, and your prospect—then personalizes every output.",
-      "inputsTitle": "What the AI knows about you",
+      "badge": "सीक्रेट सॉस",
+      "title": "AI जो आपको, आपकी कंपनी, और आपके संभावित ग्राहक को जानता है",
+      "subtitle": "DealMotion आपकी शैली, आपके उत्पाद, और आपके संभावित ग्राहक को सीखता है—फिर हर आउटपुट को व्यक्तिगत करता है।",
+      "inputsTitle": "AI आपके बारे में क्या जानता है",
       "layers": {
         "profile": {
-          "title": "Your Sales Profile",
-          "description": "Experience, strengths, communication style"
+          "title": "आपकी सेल्स प्रोफ़ाइल",
+          "description": "अनुभव, ताकत, संचार शैली"
         },
         "company": {
-          "title": "Your Company",
-          "description": "Products, services, value propositions"
+          "title": "आपकी कंपनी",
+          "description": "उत्पाद, सेवाएं, मूल्य प्रस्ताव"
         },
         "knowledge": {
-          "title": "Your Knowledge Base",
-          "description": "Pitch decks, case studies, product docs"
+          "title": "आपका नॉलेज बेस",
+          "description": "पिच डेक्स, केस स्टडीज़, प्रोडक्ट दस्तावेज़"
         },
         "prospect": {
-          "title": "Your Prospect",
-          "description": "Research, contacts, history, context"
+          "title": "आपका संभावित ग्राहक",
+          "description": "शोध, संपर्क, इतिहास, संदर्भ"
         }
       },
-      "outputTitle": "Personalized Output",
-      "outputDescription": "Every research report, meeting brief, and follow-up is tailored to you.",
+      "outputTitle": "व्यक्तिगत आउटपुट",
+      "outputDescription": "हर शोध रिपोर्ट, मीटिंग सारांश, और फॉलो-अप आपके लिए अनुकूलित है।",
       "benefits": {
-        "personalized": "Tailored to your style",
-        "instant": "Generated in seconds",
-        "onBrand": "On-brand messaging",
-        "improves": "Gets smarter over time"
+        "personalized": "आपकी शैली के अनुसार",
+        "instant": "सेकंडों में जेनरेट",
+        "onBrand": "ब्रांड-अनुकूल मैसेजिंग",
+        "improves": "समय के साथ स्मार्ट होता है"
       },
-      "quote": "It's like having a sales assistant who knows your entire playbook."
+      "quote": "यह एक सेल्स असिस्टेंट होने जैसा है जो आपकी पूरी प्लेबुक जानता है।"
     },
     "meetingAnalysis": {
-      "badge": "One Recording, 7 Outputs",
-      "title": "Everything you need from one conversation",
-      "subtitle": "Upload any meeting recording and get 7 ready-to-use outputs instantly.",
-      "recording": "Recording",
-      "anyMeeting": "Video or in-person",
+      "badge": "एक रिकॉर्डिंग, 7 आउटपुट",
+      "title": "एक बातचीत से सब कुछ ",
+      "subtitle": "कोई भी मीटिंग रिकॉर्डिंग अपलोड करें और तुरंत 7 उपयोग के लिए तैयार आउटपुट पाएं।",
+      "recording": "रिकॉर्डिंग",
+      "anyMeeting": "वीडियो या इन-पर्सन",
       "outputs": {
         "summary": {
-          "title": "Summary",
-          "description": "Key points & decisions"
+          "title": "सारांश",
+          "description": "मुख्य बिंदु और निर्णय"
         },
         "customerReport": {
-          "title": "Customer Report",
-          "description": "Ready to send to your client"
+          "title": "ग्राहक रिपोर्ट",
+          "description": "अपने क्लाइंट को भेजने के लिए तैयार"
         },
         "shareEmail": {
-          "title": "Share Email",
-          "description": "Forward to colleagues"
+          "title": "शेयर ईमेल",
+          "description": "सहकर्मियों को फॉरवर्ड करें"
         },
         "commercialAnalysis": {
-          "title": "Commercial Analysis",
-          "description": "Deal insights & opportunities"
+          "title": "कमर्शियल विश्लेषण",
+          "description": "डील इंसाइट्स और अवसर"
         },
         "salesCoaching": {
-          "title": "Sales Coaching",
-          "description": "Personalized improvement tips"
+          "title": "सेल्स कोचिंग",
+          "description": "व्यक्तिगत सुधार सुझाव"
         },
         "actionItems": {
-          "title": "Action Items",
-          "description": "Next steps with owners"
+          "title": "कार्रवाई आइटम्स",
+          "description": "मालिकों के साथ अगले कदम"
         },
         "internalReport": {
-          "title": "CRM Update",
-          "description": "Ready for your system"
+          "title": "CRM अपडेट",
+          "description": "आपके सिस्टम के लिए तैयार"
         }
       },
-      "highlight": "Customer reports and commercial analysis are unique to DealMotion.",
-      "highlightSub": "Most tools only give you a transcript. We give you ready-to-use outputs."
+      "highlight": "ग्राहक रिपोर्ट्स और कमर्शियल विश्लेषण DealMotion की विशेषता है।",
+      "highlightSub": "ज़्यादातर टूल्स सिर्फ ट्रांसक्रिप्ट देते हैं। हम उपयोग के लिए तैयार आउटपुट देते हैं।"
     },
     "aiNotetakerSection": {
-      "badge": "Set It & Forget It",
-      "title": "AI that joins your meetings for you",
-      "subtitle": "Never manually start a recording again. Our AI Notetaker joins your video calls automatically, captures everything, and delivers insights before you're back at your desk.",
+      "badge": "सेट करें और भूल जाएं",
+      "title": "AI जो आपकी मीटिंग्स में शामिल होता है",
+      "subtitle": "फिर कभी मैन्युअली रिकॉर्डिंग शुरू न करें। हमारा AI Notetaker आपकी वीडियो कॉल्स में स्वचालित शामिल होता है, सब कुछ कैप्चर करता है, और आपके डेस्क पर वापस आने से पहले इंसाइट्स देता है।",
       "emailInvite": {
-        "title": "Invite Like a Colleague",
-        "description": "Just add notes@dealmotion.ai to any meeting invite. Our bot joins, records, and analyzes—no setup required."
+        "title": "सहकर्मी की तरह आमंत्रित करें",
+        "description": "बस किसी भी मीटिंग इनवाइट में notes@dealmotion.ai जोड़ें। हमारा बॉट शामिल होता है, रिकॉर्ड करता है, और विश्लेषण करता है—कोई सेटअप नहीं।"
       },
       "autoRecord": {
-        "title": "Auto-Record from Calendar",
-        "description": "Sync your calendar once. Set rules for which meetings to record. DealMotion handles the rest."
+        "title": "कैलेंडर से ऑटो-रिकॉर्ड",
+        "description": "अपना कैलेंडर एक बार सिंक करें। कौन सी मीटिंग्स रिकॉर्ड करनी हैं इसके नियम सेट करें। बाकी DealMotion संभालता है।"
       },
       "smartFilters": {
-        "title": "Smart Filtering",
-        "description": "Only record what matters. Filter by keywords, external attendees, or meeting duration."
+        "title": "स्मार्ट फ़िल्टरिंग",
+        "description": "सिर्फ वही रिकॉर्ड करें जो मायने रखता है। कीवर्ड्स, बाहरी प्रतिभागियों, या मीटिंग अवधि से फ़िल्टर करें।"
       },
       "platforms": {
-        "title": "Works Everywhere",
-        "description": "Microsoft Teams, Google Meet, Zoom, and Webex—all supported out of the box."
+        "title": "हर जगह काम करता है",
+        "description": "Microsoft Teams, Google Meet, Zoom, और Webex—सभी बॉक्स से बाहर समर्थित।"
       },
       "botName": "DealMotion AI Notes",
-      "howItWorksTitle": "How it works",
+      "howItWorksTitle": "यह कैसे काम करता है",
       "steps": {
-        "invite": "Invite bot or sync calendar",
-        "join": "Bot joins automatically",
-        "record": "Records & transcribes",
-        "analyze": "7 outputs delivered"
+        "invite": "बॉट को आमंत्रित करें या कैलेंडर सिंक करें",
+        "join": "बॉट स्वचालित शामिल होता है",
+        "record": "रिकॉर्ड और ट्रांसक्राइब करता है",
+        "analyze": "7 आउटपुट डिलीवर होते हैं"
       }
     },
     "mobileApp": {
-      "badge": "Beta Available",
-      "title": "Your pocket recording studio",
-      "subtitle": "Record in-person meetings right from your phone. Coffee chats, on-site visits, trade shows—never miss an insight. App Store launch coming soon!",
+      "badge": "बीटा उपलब्ध",
+      "title": "आपका पॉकेट रिकॉर्डिंग स्टूडियो",
+      "subtitle": "अपने फोन से सीधे इन-पर्सन मीटिंग्स रिकॉर्ड करें। कॉफी चैट्स, ऑन-साइट विज़िट्स, ट्रेड शो—कोई इंसाइट न चूकें। App Store लॉन्च जल्द आ रहा है!",
       "steps": {
-        "record": "Record",
-        "upload": "Upload",
-        "analyze": "Analyze",
-        "share": "Share"
+        "record": "रिकॉर्ड",
+        "upload": "अपलोड",
+        "analyze": "विश्लेषण",
+        "share": "शेयर"
       },
-      "useCasesTitle": "Perfect for",
+      "useCasesTitle": "इसके लिए परफेक्ट",
       "useCases": {
-        "coffee": "Coffee meetings",
-        "onsite": "On-site visits",
-        "events": "Trade shows",
-        "field": "Field sales"
+        "coffee": "कॉफी मीटिंग्स",
+        "onsite": "ऑन-साइट विज़िट्स",
+        "events": "ट्रेड शो",
+        "field": "फील्ड सेल्स"
       },
-      "tapToRecord": "Tap to start recording"
+      "tapToRecord": "रिकॉर्डिंग शुरू करने के लिए टैप करें"
     },
     "painPoints": {
-      "title": "Before & after DealMotion",
-      "subtitle": "See how DealMotion transforms your sales workflow.",
-      "before": "Before",
-      "after": "After",
+      "title": "DealMotion से पहले और बाद",
+      "subtitle": "देखें DealMotion आपके सेल्स वर्कफ्लो को कैसे बदलता है।",
+      "before": "पहले",
+      "after": "बाद में",
       "items": {
         "research": {
-          "before": "30+ minutes researching each account",
-          "after": "Complete research in 30 seconds"
+          "before": "हर अकाउंट पर 30+ मिनट शोध",
+          "after": "30 सेकंड में पूरा शोध"
         },
         "outreach": {
-          "before": "Sending generic messages that get ignored",
-          "after": "Personalized outreach based on AI-powered research"
+          "before": "जेनेरिक संदेश भेजना जो नज़रअंदाज़ होते हैं",
+          "after": "AI-संचालित शोध पर आधारित व्यक्तिगत आउटरीच"
         },
         "prep": {
-          "before": "Walking into meetings unprepared",
-          "after": "Personalized brief for every meeting"
+          "before": "बिना तैयारी मीटिंग्स में जाना",
+          "after": "हर मीटिंग के लिए व्यक्तिगत सारांश"
         },
         "recording": {
-          "before": "Manually starting recordings every call",
-          "after": "AI bot joins and records automatically"
+          "before": "हर कॉल पर मैन्युअली रिकॉर्डिंग शुरू करना",
+          "after": "AI बॉट स्वचालित शामिल होता और रिकॉर्ड करता है"
         },
         "notes": {
-          "before": "Scrambling to take notes during calls",
-          "after": "AI captures every detail for you"
+          "before": "कॉल्स के दौरान नोट्स लेने की जद्दोजहद",
+          "after": "AI आपके लिए हर विवरण कैप्चर करता है"
         },
         "insights": {
-          "before": "No insight into deal health or how to improve",
-          "after": "AI-powered deal analysis and personal coaching after every call"
+          "before": "डील हेल्थ या सुधार के तरीकों की कोई जानकारी नहीं",
+          "after": "हर कॉल के बाद AI-संचालित डील विश्लेषण और व्यक्तिगत कोचिंग"
         },
         "followup": {
-          "before": "Hours writing follow-up emails",
-          "after": "Ready-to-send reports in minutes"
+          "before": "फॉलो-अप ईमेल लिखने में घंटे",
+          "after": "मिनटों में भेजने के लिए तैयार रिपोर्ट्स"
         }
       }
     },
     "dayInTheLife": {
-      "title": "A day with DealMotion",
-      "intro": "Monday morning. You open DealMotion.",
+      "title": "DealMotion के साथ एक दिन",
+      "intro": "सोमवार सुबह। आप DealMotion खोलते हैं।",
       "steps": {
         "open": {
           "time": "8:30 AM",
-          "text": "You see 3 meetings this week."
+          "text": "आप इस हफ्ते 3 मीटिंग्स देखते हैं।"
         },
         "unprepared": {
           "time": "8:31 AM",
-          "text": "One meeting isn't prepared yet."
+          "text": "एक मीटिंग अभी तैयार नहीं है।"
         },
         "brief": {
           "time": "8:32 AM",
-          "text": "Click. Personalized brief in 30 seconds.",
-          "highlight": "AI knows your style and your prospect"
+          "text": "क्लिक। 30 सेकंड में व्यक्तिगत सारांश।",
+          "highlight": "AI आपकी शैली और आपके प्रॉस्पेक्ट को जानता है"
         },
         "confident": {
           "time": "10:00 AM",
-          "text": "Walk into the meeting confident."
+          "text": "आत्मविश्वास से मीटिंग में जाएं।"
         },
         "botJoins": {
           "time": "10:01 AM",
-          "text": "AI Notetaker joins automatically. You focus on the conversation.",
-          "highlight": "No manual recording needed"
+          "text": "AI Notetaker स्वचालित शामिल होता है। आप बातचीत पर ध्यान दें।",
+          "highlight": "कोई मैन्युअल रिकॉर्डिंग नहीं"
         },
         "record": {
           "time": "11:00 AM",
-          "text": "Meeting ends. 7 outputs ready instantly.",
-          "highlight": "Summary, customer report, coaching, and more"
+          "text": "मीटिंग समाप्त। 7 आउटपुट तुरंत तैयार।",
+          "highlight": "सारांश, ग्राहक रिपोर्ट, कोचिंग, और अधिक"
         },
         "sent": {
           "time": "11:05 AM",
-          "text": "Customer report sent before your next coffee."
+          "text": "आपकी अगली कॉफी से पहले ग्राहक रिपोर्ट भेजी गई।"
         }
       },
-      "tagline": "That's DealMotion. Put your deals in motion."
+      "tagline": "यही है DealMotion। अपनी डील्स को गति दें।"
     }
   },
   "prospects": {
@@ -2573,7 +2573,7 @@
       "won": "जीता",
       "lost": "हारा",
       "inactive": "निष्क्रिय",
-      "on_hold": "On Hold"
+      "on_hold": "होल्ड पर"
     },
     "empty": {
       "title": "अभी कोई संभावित ग्राहक नहीं",
@@ -2582,38 +2582,38 @@
     "toast": {
       "deleted": "संभावित ग्राहक हटाया गया",
       "deletedDesc": "संभावित ग्राहक हटा दिया गया है",
-      "deleteFailed": "Delete failed",
-      "deleteFailedDesc": "Could not delete the prospect",
-      "researchStarted": "Research started - prospect will be created automatically"
+      "deleteFailed": "हटाना विफल",
+      "deleteFailedDesc": "संभावित ग्राहक को हटाया नहीं जा सका",
+      "researchStarted": "शोध शुरू - संभावित ग्राहक स्वचालित बनेगा"
     },
     "sort": {
-      "activity": "Activity"
+      "activity": "गतिविधि"
     },
     "stats": {
-      "title": "Overview",
-      "total": "Total",
-      "active": "Active"
+      "title": "अवलोकन",
+      "total": "कुल",
+      "active": "सक्रिय"
     },
     "filters": {
-      "title": "Filter by Status",
-      "all": "All Prospects"
+      "title": "स्थिति से फ़िल्टर करें",
+      "all": "सभी संभावित ग्राहक"
     },
     "actions": {
-      "title": "Quick Actions",
-      "newProspect": "New Prospect",
-      "startResearch": "Start Research"
+      "title": "त्वरित कार्रवाइयां",
+      "newProspect": "नया संभावित ग्राहक",
+      "startResearch": "शोध शुरू करें"
     },
     "confirm": {
-      "deleteTitle": "Delete Prospect",
-      "deleteDescription": "Are you sure you want to delete this prospect? This action cannot be undone.",
-      "deleteButton": "Delete"
+      "deleteTitle": "संभावित ग्राहक हटाएं",
+      "deleteDescription": "क्या आप वाकई इस संभावित ग्राहक को हटाना चाहते हैं? यह कार्रवाई वापस नहीं हो सकती।",
+      "deleteButton": "हटाएं"
     },
     "sheet": {
-      "newProspect": "Add New Prospect",
-      "newProspectDesc": "Search for a company to start AI research and create a new prospect."
+      "newProspect": "नया संभावित ग्राहक जोड़ें",
+      "newProspectDesc": "AI शोध शुरू करने और नया संभावित ग्राहक बनाने के लिए कंपनी खोजें।"
     },
     "errors": {
-      "loadFailed": "Failed to load prospects"
+      "loadFailed": "संभावित ग्राहक लोड करने में विफल"
     }
   },
   "deals": {
@@ -2621,15 +2621,15 @@
       "title": "नई डील बनाएं",
       "for": "के लिए",
       "create": "डील बनाएं",
-      "info": "Deals help you organize multiple meetings and activities for the same opportunity. You can create preparations and follow-ups linked to this deal."
+      "info": "डील्स आपको एक ही अवसर के लिए कई मीटिंग्स और गतिविधियों को व्यवस्थित करने में मदद करती हैं। आप इस डील से जुड़ी तैयारियां और फॉलो-अप बना सकते हैं।"
     },
     "form": {
       "name": "डील का नाम",
       "namePlaceholder": "जैसे एंटरप्राइज लाइसेंस 2025",
       "description": "विवरण (वैकल्पिक)",
-      "nameHelp": "Give your deal a clear, descriptive name",
-      "descriptionPlaceholder": "Context, notes, or anything useful for this opportunity...",
-      "descriptionHelp": "Add any context that helps you track this opportunity"
+      "nameHelp": "अपनी डील को स्पष्ट, वर्णनात्मक नाम दें",
+      "descriptionPlaceholder": "संदर्भ, नोट्स, या इस अवसर के लिए कुछ भी उपयोगी...",
+      "descriptionHelp": "कोई भी संदर्भ जोड़ें जो इस अवसर को ट्रैक करने में मदद करे"
     },
     "status": {
       "active": "सक्रिय",
@@ -2638,62 +2638,62 @@
     "success": {
       "created": "डील सफलतापूर्वक बनाई गई",
       "deleted": "डील हटाई गई",
-      "archived": "Deal archived",
-      "activated": "Deal activated"
+      "archived": "डील संग्रहीत",
+      "activated": "डील सक्रिय"
     },
     "errors": {
       "nameRequired": "डील का नाम आवश्यक है",
-      "createFailed": "Failed to create deal",
-      "updateFailed": "Failed to update deal",
-      "deleteFailed": "Failed to delete deal",
-      "loadFailed": "Failed to load deal",
-      "notFound": "Deal not found"
+      "createFailed": "डील बनाने में विफल",
+      "updateFailed": "डील अपडेट करने में विफल",
+      "deleteFailed": "डील हटाने में विफल",
+      "loadFailed": "डील लोड करने में विफल",
+      "notFound": "डील नहीं मिली"
     },
     "backToProspect": "संभावित ग्राहक पर वापस जाएं",
     "stats": {
-      "meetings": "Meetings",
-      "preps": "Preparations",
-      "followups": "Follow-ups"
+      "meetings": "मीटिंग्स",
+      "preps": "तैयारियां",
+      "followups": "फॉलो-अप्स"
     },
     "sections": {
-      "meetings": "Meetings",
-      "meetingsDesc": "All meetings linked to this deal"
+      "meetings": "मीटिंग्स",
+      "meetingsDesc": "इस डील से जुड़ी सभी मीटिंग्स"
     },
     "actions": {
-      "archive": "Archive Deal",
-      "activate": "Activate Deal",
-      "delete": "Delete Deal",
-      "addMeeting": "Add Meeting",
-      "scheduleFirst": "Schedule First Meeting"
+      "archive": "डील संग्रहीत करें",
+      "activate": "डील सक्रिय करें",
+      "delete": "डील हटाएं",
+      "addMeeting": "मीटिंग जोड़ें",
+      "scheduleFirst": "पहली मीटिंग शेड्यूल करें"
     },
     "links": {
-      "viewPrep": "View Prep",
-      "createPrep": "Create Prep",
-      "viewFollowup": "View Follow-up",
-      "createFollowup": "Create Follow-up"
+      "viewPrep": "तैयारी देखें",
+      "createPrep": "तैयारी बनाएं",
+      "viewFollowup": "फॉलो-अप देखें",
+      "createFollowup": "फॉलो-अप बनाएं"
     },
     "empty": {
-      "noMeetings": "No Meetings Yet",
-      "noMeetingsDesc": "Start by scheduling your first meeting for this deal"
+      "noMeetings": "अभी कोई मीटिंग नहीं",
+      "noMeetingsDesc": "इस डील के लिए अपनी पहली मीटिंग शेड्यूल करके शुरू करें"
     },
     "confirm": {
-      "delete": "Are you sure you want to delete this deal? All linked meetings will be unlinked.",
-      "deleteTitle": "Delete Deal?",
-      "deleteDescription": "This action cannot be undone. All meetings linked to this deal will be unlinked."
+      "delete": "क्या आप वाकई इस डील को हटाना चाहते हैं? सभी जुड़ी मीटिंग्स अनलिंक हो जाएंगी।",
+      "deleteTitle": "डील हटाएं?",
+      "deleteDescription": "यह कार्रवाई वापस नहीं हो सकती। इस डील से जुड़ी सभी मीटिंग्स अनलिंक हो जाएंगी।"
     },
     "meetingStatus": {
-      "scheduled": "Scheduled",
-      "completed": "Completed",
-      "cancelled": "Cancelled",
-      "noShow": "No Show"
+      "scheduled": "शेड्यूल्ड",
+      "completed": "पूर्ण",
+      "cancelled": "रद्द",
+      "noShow": "नो शो"
     },
     "meetingTypes": {
-      "discovery": "Discovery",
-      "demo": "Demo",
-      "negotiation": "Negotiation",
-      "closing": "Closing",
-      "review": "Review",
-      "other": "Other"
+      "discovery": "डिस्कवरी",
+      "demo": "डेमो",
+      "negotiation": "नेगोशिएशन",
+      "closing": "क्लोज़िंग",
+      "review": "रिव्यू",
+      "other": "अन्य"
     }
   },
   "prospectHub": {
@@ -2704,7 +2704,7 @@
       "journey": "बिक्री यात्रा",
       "timeline": "हाल की गतिविधि",
       "notes": "त्वरित नोट्स",
-      "upcomingMeetings": "Upcoming Meetings"
+      "upcomingMeetings": "आगामी मीटिंग्स"
     },
     "journey": {
       "research": "शोध",
@@ -2721,15 +2721,15 @@
       "addFollowup": "मीटिंग प्रोसेस करें",
       "allDone": "सही दिशा में",
       "viewFollowups": "फॉलो-अप देखें",
-      "startResearchDesc": "Begin by researching this company",
-      "startResearchBtn": "Start Research",
-      "addContactsDesc": "Add the people you'll be meeting with",
-      "addContactsBtn": "Add Contact",
-      "createPrepDesc": "Prepare for your upcoming meeting",
-      "createPrepBtn": "Create Prep",
-      "addFollowupDesc": "Upload your meeting recording for analysis",
-      "addFollowupBtn": "Upload Recording",
-      "allDoneDesc": "Review your latest follow-ups and action items"
+      "startResearchDesc": "इस कंपनी का शोध करके शुरू करें",
+      "startResearchBtn": "शोध शुरू करें",
+      "addContactsDesc": "उन लोगों को जोड़ें जिनसे आप मिलेंगे",
+      "addContactsBtn": "संपर्क जोड़ें",
+      "createPrepDesc": "अपनी आगामी मीटिंग के लिए तैयारी करें",
+      "createPrepBtn": "तैयारी बनाएं",
+      "addFollowupDesc": "विश्लेषण के लिए अपनी मीटिंग रिकॉर्डिंग अपलोड करें",
+      "addFollowupBtn": "रिकॉर्डिंग अपलोड करें",
+      "allDoneDesc": "अपने नवीनतम फॉलो-अप्स और कार्रवाई आइटम्स देखें"
     },
     "notes": {
       "placeholder": "त्वरित नोट जोड़ें...",
@@ -2743,12 +2743,12 @@
       "viewAll": "सभी देखें",
       "viewPrep": "तैयारी देखें",
       "viewFollowup": "विश्लेषण देखें",
-      "viewFullResearch": "View full research",
-      "manage": "Manage",
-      "createNew": "Create New",
-      "prepareNow": "Prepare Now",
-      "planMeeting": "Plan Meeting",
-      "createOutreach": "Create Outreach"
+      "viewFullResearch": "पूरा शोध देखें",
+      "manage": "प्रबंधित करें",
+      "createNew": "नया बनाएं",
+      "prepareNow": "अभी तैयारी करें",
+      "planMeeting": "मीटिंग प्लान करें",
+      "createOutreach": "आउटरीच बनाएं"
     },
     "empty": {
       "noContacts": "अभी कोई संपर्क नहीं जोड़े गए",
@@ -2760,811 +2760,811 @@
       "notPrepared": "तैयार नहीं"
     },
     "documents": {
-      "research": "Company Research",
-      "preparation": "Meeting Preparations",
-      "followup": "Meeting Analysis & Follow-ups",
-      "recordings": "Meeting Recordings"
+      "research": "कंपनी शोध",
+      "preparation": "मीटिंग तैयारियां",
+      "followup": "मीटिंग विश्लेषण और फॉलो-अप्स",
+      "recordings": "मीटिंग रिकॉर्डिंग्स"
     },
     "status": {
-      "inProgress": "In Progress"
+      "inProgress": "प्रगति में"
     },
     "documentStatus": {
-      "pending": "Pending",
-      "generating": "Generating...",
-      "transcribing": "Transcribing...",
-      "summarizing": "Analyzing...",
-      "completed": "Completed",
-      "failed": "Failed"
+      "pending": "पेंडिंग",
+      "generating": "जेनरेट हो रहा है...",
+      "transcribing": "ट्रांसक्राइब हो रहा है...",
+      "summarizing": "विश्लेषण हो रहा है...",
+      "completed": "पूर्ण",
+      "failed": "विफल"
     },
-    "more": "more",
+    "more": "और",
     "confirm": {
-      "deleteNoteTitle": "Delete Note",
-      "deleteNoteDescription": "Are you sure you want to delete this note? This cannot be undone."
+      "deleteNoteTitle": "नोट हटाएं",
+      "deleteNoteDescription": "क्या आप वाकई इस नोट को हटाना चाहते हैं? यह वापस नहीं हो सकता।"
     },
     "errors": {
-      "loadFailed": "Failed to load prospect data",
-      "notFound": "Prospect not found",
-      "noteSaveFailed": "Failed to save note",
-      "noChannelsAvailable": "No channels available",
-      "addContactInfo": "Add an email, LinkedIn, or phone number to this contact first."
+      "loadFailed": "संभावित ग्राहक डेटा लोड करने में विफल",
+      "notFound": "संभावित ग्राहक नहीं मिला",
+      "noteSaveFailed": "नोट सेव करने में विफल",
+      "noChannelsAvailable": "कोई चैनल उपलब्ध नहीं",
+      "addContactInfo": "पहले इस संपर्क में ईमेल, LinkedIn, या फोन नंबर जोड़ें।"
     },
     "sheets": {
-      "startResearch": "Start Company Research",
-      "startResearchDesc": "Search and verify this company to start AI research.",
-      "createPrep": "Create Meeting Preparation",
-      "createPrepDesc": "Prepare for your meeting with {company}.",
-      "uploadFollowup": "Upload Meeting Recording",
-      "uploadFollowupDesc": "Upload audio or transcript from your meeting with {company}.",
-      "planMeeting": "Plan Meeting",
-      "planMeetingDesc": "Plan a meeting with"
+      "startResearch": "कंपनी शोध शुरू करें",
+      "startResearchDesc": "AI शोध शुरू करने के लिए इस कंपनी को खोजें और सत्यापित करें।",
+      "createPrep": "मीटिंग तैयारी बनाएं",
+      "createPrepDesc": "{company} के साथ अपनी मीटिंग के लिए तैयारी करें।",
+      "uploadFollowup": "मीटिंग रिकॉर्डिंग अपलोड करें",
+      "uploadFollowupDesc": "{company} के साथ अपनी मीटिंग से ऑडियो या ट्रांसक्रिप्ट अपलोड करें।",
+      "planMeeting": "मीटिंग प्लान करें",
+      "planMeetingDesc": "के साथ मीटिंग प्लान करें"
     },
     "hints": {
-      "createPrepFirst": "Create a prep first",
-      "prepNeededForMeeting": "A preparation is needed to plan a meeting."
+      "createPrepFirst": "पहले तैयारी बनाएं",
+      "prepNeededForMeeting": "मीटिंग प्लान करने के लिए तैयारी आवश्यक है।"
     },
     "toast": {
-      "researchStarted": "Research started successfully",
-      "prepStarted": "Preparation generation started",
-      "followupStarted": "Follow-up processing started",
-      "contactAdded": "Contact added successfully",
-      "meetingPlanned": "Meeting planned!",
-      "meetingPlannedDesc": "Don't forget to send the invitation.",
-      "outreachCreated": "Outreach created!"
+      "researchStarted": "शोध सफलतापूर्वक शुरू हुआ",
+      "prepStarted": "तैयारी जेनरेशन शुरू हुआ",
+      "followupStarted": "फॉलो-अप प्रोसेसिंग शुरू हुई",
+      "contactAdded": "संपर्क सफलतापूर्वक जोड़ा गया",
+      "meetingPlanned": "मीटिंग प्लान हो गई!",
+      "meetingPlannedDesc": "आमंत्रण भेजना न भूलें।",
+      "outreachCreated": "आउटरीच बनाई गई!"
     },
     "contactDetail": {
-      "profileBrief": "Profile Analysis",
-      "openingSuggestions": "Opening Suggestions",
-      "questionsToAsk": "Questions to Ask",
-      "topicsToAvoid": "Topics to Avoid"
+      "profileBrief": "प्रोफ़ाइल विश्लेषण",
+      "openingSuggestions": "ओपनिंग सुझाव",
+      "questionsToAsk": "पूछने के सवाल",
+      "topicsToAvoid": "बचने वाले विषय"
     }
   },
   "credits": {
-    "title": "Credits & Usage",
-    "subtitle": "Complete overview of your credit usage",
-    "unlimited": "Unlimited credits",
-    "available": "available",
-    "until": "until",
-    "subscription": "subscription",
-    "packs": "packs",
-    "used": "used",
-    "exhausted": "Credits depleted!",
-    "almostEmpty": "Almost empty! {credits} credits left",
-    "buyCredits": "Buy Credits",
-    "errorLoading": "Failed to load credits",
-    "backToSettings": "Back to settings",
-    "refresh": "Refresh",
-    "thisPeriod": "This period",
-    "expires": "Expires",
-    "consumed": "Consumed",
-    "added": "Added",
-    "transactions": "Transactions",
-    "usageByFunction": "Usage by function",
-    "transactionHistory": "Transaction history",
-    "allTransactionsDetails": "All credit transactions with full details",
-    "allTypes": "All types",
-    "consumption": "Consumption",
-    "subscriptionType": "Subscription",
-    "creditPacks": "Credit Packs",
-    "allFunctions": "All functions",
-    "noTransactionsYet": "No transactions found yet",
-    "tryOtherFilters": "Try different filters",
-    "startUsingDealMotion": "Start using DealMotion features",
-    "balance": "Balance",
-    "pageOf": "Page {page} of {total} ({count} transactions)",
-    "previous": "Previous",
-    "next": "Next",
-    "howCreditsWork": "How do credits work?",
-    "howCreditsWorkDescription": "Credits are used for AI features like research, meeting prep, transcriptions and follow-ups. Your subscription includes a monthly amount of credits that reset each month. Purchased credit packs remain valid until used.",
-    "justNow": "Just now",
-    "minutesAgo": "{minutes} min ago",
-    "hoursAgo": "{hours} hours ago",
-    "daysAgo": "{days} days ago",
-    "creditsAvailable": "{credits} credits available",
-    "extra": "extra",
-    "resetInDays": "Resets in {days} day",
-    "resetInDaysPlural": "Resets in {days} days",
-    "clickToBuyMore": "Click to buy more credits →",
-    "buyPacks": "Buy Credit Packs",
-    "buyPacksDescription": "Buy extra credits to continue with your sales intelligence. Credits never expire.",
-    "noPacksAvailable": "No credit packs available",
-    "upgradeRequired": "Upgrade to Pro or Pro+",
-    "upgradeRequiredDescription": "Credit packs are only available for Pro and Pro+ subscribers. Upgrade your plan to purchase extra credits.",
-    "viewPlans": "View plans",
-    "popular": "Popular",
-    "bestDeal": "Best Deal",
-    "salesCycles": "~{count} sales cycles",
-    "perCredit": "per credit",
-    "neverExpire": "Never expire",
-    "availableImmediately": "Available immediately",
-    "buy": "Buy",
-    "pleaseWait": "Please wait...",
-    "checkoutError": "Could not start checkout. Please try again.",
-    "error": "Error"
+    "title": "क्रेडिट्स और उपयोग",
+    "subtitle": "आपके क्रेडिट उपयोग का पूर्ण अवलोकन",
+    "unlimited": "असीमित क्रेडिट्स",
+    "available": "उपलब्ध",
+    "until": "तक",
+    "subscription": "सब्सक्रिप्शन",
+    "packs": "पैक्स",
+    "used": "उपयोग किया",
+    "exhausted": "क्रेडिट्स समाप्त!",
+    "almostEmpty": "लगभग खत्म! {credits} क्रेडिट्स बचे",
+    "buyCredits": "क्रेडिट्स खरीदें",
+    "errorLoading": "क्रेडिट्स लोड करने में विफल",
+    "backToSettings": "सेटिंग्स पर वापस जाएं",
+    "refresh": "रिफ्रेश करें",
+    "thisPeriod": "इस अवधि",
+    "expires": "समाप्ति",
+    "consumed": "खपत",
+    "added": "जोड़ा गया",
+    "transactions": "लेनदेन",
+    "usageByFunction": "फंक्शन द्वारा उपयोग",
+    "transactionHistory": "लेनदेन इतिहास",
+    "allTransactionsDetails": "पूर्ण विवरण के साथ सभी क्रेडिट लेनदेन",
+    "allTypes": "सभी प्रकार",
+    "consumption": "खपत",
+    "subscriptionType": "सब्सक्रिप्शन",
+    "creditPacks": "क्रेडिट पैक्स",
+    "allFunctions": "सभी फंक्शन",
+    "noTransactionsYet": "अभी कोई लेनदेन नहीं मिला",
+    "tryOtherFilters": "अलग फ़िल्टर आज़माएं",
+    "startUsingDealMotion": "DealMotion फीचर्स का उपयोग शुरू करें",
+    "balance": "बैलेंस",
+    "pageOf": "पेज {page} / {total} ({count} लेनदेन)",
+    "previous": "पिछला",
+    "next": "अगला",
+    "howCreditsWork": "क्रेडिट्स कैसे काम करते हैं?",
+    "howCreditsWorkDescription": "क्रेडिट्स AI फीचर्स जैसे शोध, मीटिंग तैयारी, ट्रांसक्रिप्शन और फॉलो-अप्स के लिए उपयोग होते हैं। आपकी सब्सक्रिप्शन में मासिक क्रेडिट्स शामिल हैं जो हर महीने रिसेट होते हैं। खरीदे गए क्रेडिट पैक्स उपयोग होने तक वैध रहते हैं।",
+    "justNow": "अभी",
+    "minutesAgo": "{minutes} मिनट पहले",
+    "hoursAgo": "{hours} घंटे पहले",
+    "daysAgo": "{days} दिन पहले",
+    "creditsAvailable": "{credits} क्रेडिट्स उपलब्ध",
+    "extra": "अतिरिक्त",
+    "resetInDays": "{days} दिन में रिसेट",
+    "resetInDaysPlural": "{days} दिनों में रिसेट",
+    "clickToBuyMore": "और क्रेडिट्स खरीदने के लिए क्लिक करें →",
+    "buyPacks": "क्रेडिट पैक्स खरीदें",
+    "buyPacksDescription": "अपनी सेल्स इंटेलिजेंस जारी रखने के लिए अतिरिक्त क्रेडिट्स खरीदें। क्रेडिट्स कभी समाप्त नहीं होते।",
+    "noPacksAvailable": "कोई क्रेडिट पैक्स उपलब्ध नहीं",
+    "upgradeRequired": "Pro या Pro+ में अपग्रेड करें",
+    "upgradeRequiredDescription": "क्रेडिट पैक्स केवल Pro और Pro+ सब्सक्राइबर्स के लिए उपलब्ध हैं। अतिरिक्त क्रेडिट्स खरीदने के लिए अपना प्लान अपग्रेड करें।",
+    "viewPlans": "प्लान देखें",
+    "popular": "लोकप्रिय",
+    "bestDeal": "सबसे अच्छी डील",
+    "salesCycles": "~{count} सेल्स साइकल",
+    "perCredit": "प्रति क्रेडिट",
+    "neverExpire": "कभी समाप्त नहीं होते",
+    "availableImmediately": "तुरंत उपलब्ध",
+    "buy": "खरीदें",
+    "pleaseWait": "कृपया प्रतीक्षा करें...",
+    "checkoutError": "चेकआउट शुरू नहीं हो सका। कृपया पुनः प्रयास करें।",
+    "error": "त्रुटि"
   },
   "autopilot": {
-    "title": "Autopilot",
+    "title": "ऑटोपायलट",
     "inbox": {
-      "title": "Autopilot Inbox",
+      "title": "ऑटोपायलट इनबॉक्स",
       "tabs": {
-        "active": "Active",
-        "proposed": "New",
-        "executing": "In Progress",
-        "completed": "History"
+        "active": "सक्रिय",
+        "proposed": "नया",
+        "executing": "प्रगति में",
+        "completed": "इतिहास"
       },
-      "empty": "No proposals right now. I'm scanning for opportunities.",
-      "pending": "pending",
-      "waiting": "waiting"
+      "empty": "अभी कोई प्रस्ताव नहीं। मैं अवसरों की तलाश कर रहा हूं।",
+      "pending": "पेंडिंग",
+      "waiting": "प्रतीक्षा में"
     },
     "proposal": {
-      "why": "Why?",
-      "accept": "Accept",
-      "decline": "Decline",
-      "snooze": "Snooze",
-      "retry": "Retry",
-      "viewDetails": "View details",
-      "executing": "Executing...",
-      "failed": "Failed",
-      "completed": "Completed"
+      "why": "क्यों?",
+      "accept": "स्वीकार करें",
+      "decline": "अस्वीकार करें",
+      "snooze": "स्नूज़ करें",
+      "retry": "पुनः प्रयास",
+      "viewDetails": "विवरण देखें",
+      "executing": "कार्यान्वित हो रहा है...",
+      "failed": "विफल",
+      "completed": "पूर्ण"
     },
     "snooze": {
-      "oneHour": "1 hour",
-      "thisEvening": "This evening",
-      "tomorrow": "Tomorrow",
-      "afterMeeting": "After meeting",
-      "nextWeek": "Next week",
-      "inThreeDays": "In 3 days"
+      "oneHour": "1 घंटा",
+      "thisEvening": "आज शाम",
+      "tomorrow": "कल",
+      "afterMeeting": "मीटिंग के बाद",
+      "nextWeek": "अगले हफ्ते",
+      "inThreeDays": "3 दिनों में"
     },
     "actions": {
-      "addContacts": "Add contacts",
-      "createPrep": "Create prep",
-      "planMeeting": "Plan meeting",
-      "uploadRecording": "Upload recording",
-      "generateActions": "Generate actions",
-      "completeActions": "Complete actions",
-      "startResearch": "Start research"
+      "addContacts": "संपर्क जोड़ें",
+      "createPrep": "तैयारी बनाएं",
+      "planMeeting": "मीटिंग प्लान करें",
+      "uploadRecording": "रिकॉर्डिंग अपलोड करें",
+      "generateActions": "कार्रवाइयां जेनरेट करें",
+      "completeActions": "कार्रवाइयां पूरी करें",
+      "startResearch": "शोध शुरू करें"
     },
     "meetingRequest": {
-      "contacts": "Contacts",
-      "noContacts": "No contacts found. Add a contact first.",
-      "moreContacts": "more contacts",
-      "emailTemplate": "Meeting invitation",
-      "to": "To",
-      "regenerate": "Regenerate",
-      "regenerating": "Generating AI email...",
-      "copyEmail": "Copy",
-      "openEmail": "Email",
-      "call": "Call",
-      "copyTemplate": "Copy text",
-      "openInEmail": "Open in email",
-      "planInCalendar": "Add to your calendar",
-      "prepHighlights": "Prep highlights",
-      "viewFullPrep": "View full prep",
-      "meetingPlannedButton": "Meeting planned - Mark as complete",
-      "meetingPlanned": "Meeting planned!",
-      "proposalCompleted": "The proposal has been completed.",
-      "emailCopied": "Email copied",
-      "templateCopied": "Email template copied",
-      "pasteInEmail": "Paste in your email client",
-      "cancel": "Cancel"
+      "contacts": "संपर्क",
+      "noContacts": "कोई संपर्क नहीं मिला। पहले संपर्क जोड़ें।",
+      "moreContacts": "और संपर्क",
+      "emailTemplate": "मीटिंग आमंत्रण",
+      "to": "को",
+      "regenerate": "पुनः जेनरेट करें",
+      "regenerating": "AI ईमेल जेनरेट हो रहा है...",
+      "copyEmail": "कॉपी करें",
+      "openEmail": "ईमेल",
+      "call": "कॉल",
+      "copyTemplate": "टेक्स्ट कॉपी करें",
+      "openInEmail": "ईमेल में खोलें",
+      "planInCalendar": "अपने कैलेंडर में जोड़ें",
+      "prepHighlights": "तैयारी हाइलाइट्स",
+      "viewFullPrep": "पूरी तैयारी देखें",
+      "meetingPlannedButton": "मीटिंग प्लान हुई - पूर्ण करें",
+      "meetingPlanned": "मीटिंग प्लान हो गई!",
+      "proposalCompleted": "प्रस्ताव पूरा हो गया है।",
+      "emailCopied": "ईमेल कॉपी हो गई",
+      "templateCopied": "ईमेल टेम्पलेट कॉपी हो गई",
+      "pasteInEmail": "अपने ईमेल क्लाइंट में पेस्ट करें",
+      "cancel": "रद्द करें"
     },
     "luna": {
-      "greeting": "Hey! I'm Luna, your AI sales assistant.",
-      "scanning": "I'm scanning your calendar and prospects for opportunities.",
-      "noProposals": "No active proposals right now.",
-      "checkBack": "Check back soon - I'm always looking for ways to help.",
-      "pending": "pending",
-      "urgent": "Urgent",
-      "executing": "Executing",
-      "later": "Later",
-      "ctaLabel": "Do it",
-      "viewActions": "View all actions",
-      "snoozeLaterToday": "Later today",
-      "snoozeTomorrow": "Tomorrow morning",
-      "snoozeNextWorkDay": "Next working day",
-      "snoozeAfterMeeting": "After this meeting",
-      "noMessages": "No messages",
-      "copied": "Copied!",
-      "outreachTitle": "Create Outreach",
-      "outreachDescription": "Choose a channel and create a personalized outreach message",
-      "selectChannel": "Select Channel",
-      "messageContent": "Message Content",
-      "generate": "Generate",
-      "generateSuccess": "Message generated",
-      "generateFailed": "Failed to generate message",
-      "subject": "Subject",
-      "subjectPlaceholder": "Enter email subject...",
-      "message": "Message",
-      "messagePlaceholder": "Write your message here...",
-      "copy": "Copy",
-      "saveDraft": "Save Draft",
-      "markAsSent": "Mark as Sent",
-      "skip": "Skip",
-      "saveDraftSuccess": "Draft saved",
-      "saveDraftFailed": "Failed to save draft",
-      "markSentSuccess": "Marked as sent",
-      "markSentFailed": "Failed to mark as sent",
-      "missingContactInfo": "Missing Contact Information",
-      "addEmailInfo": "Add an email address to send an email",
-      "addLinkedInInfo": "Add a LinkedIn URL to send a LinkedIn message",
-      "addPhoneInfo": "Add a phone number to send a WhatsApp message",
+      "greeting": "हे! मैं Luna हूं, आपकी AI सेल्स असिस्टेंट।",
+      "scanning": "मैं अवसरों के लिए आपके कैलेंडर और संभावित ग्राहकों को स्कैन कर रही हूं।",
+      "noProposals": "अभी कोई सक्रिय प्रस्ताव नहीं।",
+      "checkBack": "जल्द वापस आएं - मैं हमेशा मदद के तरीके खोज रही हूं।",
+      "pending": "पेंडिंग",
+      "urgent": "अर्जेंट",
+      "executing": "कार्यान्वित",
+      "later": "बाद में",
+      "ctaLabel": "करें",
+      "viewActions": "सभी कार्रवाइयां देखें",
+      "snoozeLaterToday": "आज बाद में",
+      "snoozeTomorrow": "कल सुबह",
+      "snoozeNextWorkDay": "अगला कार्य दिवस",
+      "snoozeAfterMeeting": "इस मीटिंग के बाद",
+      "noMessages": "कोई संदेश नहीं",
+      "copied": "कॉपी हो गई!",
+      "outreachTitle": "आउटरीच बनाएं",
+      "outreachDescription": "चैनल चुनें और व्यक्तिगत आउटरीच संदेश बनाएं",
+      "selectChannel": "चैनल चुनें",
+      "messageContent": "संदेश सामग्री",
+      "generate": "जेनरेट करें",
+      "generateSuccess": "संदेश जेनरेट हुआ",
+      "generateFailed": "संदेश जेनरेट करने में विफल",
+      "subject": "विषय",
+      "subjectPlaceholder": "ईमेल विषय दर्ज करें...",
+      "message": "संदेश",
+      "messagePlaceholder": "अपना संदेश यहां लिखें...",
+      "copy": "कॉपी करें",
+      "saveDraft": "ड्राफ्ट सेव करें",
+      "markAsSent": "भेजा गया चिह्नित करें",
+      "skip": "छोड़ें",
+      "saveDraftSuccess": "ड्राफ्ट सेव हुआ",
+      "saveDraftFailed": "ड्राफ्ट सेव करने में विफल",
+      "markSentSuccess": "भेजा गया चिह्नित",
+      "markSentFailed": "भेजा गया चिह्नित करने में विफल",
+      "missingContactInfo": "संपर्क जानकारी गायब",
+      "addEmailInfo": "ईमेल भेजने के लिए ईमेल पता जोड़ें",
+      "addLinkedInInfo": "LinkedIn संदेश भेजने के लिए LinkedIn URL जोड़ें",
+      "addPhoneInfo": "WhatsApp संदेश भेजने के लिए फोन नंबर जोड़ें",
       "emailPlaceholder": "email@example.com",
       "linkedInPlaceholder": "https://linkedin.com/in/...",
       "phonePlaceholder": "+1 555 1234567",
-      "saveContactInfo": "Save",
-      "saveContactInfoSuccess": "Contact info saved",
-      "saveContactInfoFailed": "Failed to save contact info",
-      "customInstructions": "Custom Instructions (Optional)",
-      "customInstructionsPlaceholder": "E.g., \"Focus on their data migration project\" or \"Mention our Databricks expertise\"...",
-      "customInstructionsHint": "Add specific instructions to customize the generated message",
-      "draftLoaded": "Draft loaded",
-      "draftLoadedDesc": "Previous draft has been loaded"
+      "saveContactInfo": "सेव करें",
+      "saveContactInfoSuccess": "संपर्क जानकारी सेव हुई",
+      "saveContactInfoFailed": "संपर्क जानकारी सेव करने में विफल",
+      "customInstructions": "कस्टम निर्देश (वैकल्पिक)",
+      "customInstructionsPlaceholder": "जैसे, \"उनके डेटा माइग्रेशन प्रोजेक्ट पर फोकस करें\" या \"हमारी Databricks विशेषज्ञता का उल्लेख करें\"...",
+      "customInstructionsHint": "जेनरेट संदेश को कस्टमाइज़ करने के लिए विशेष निर्देश जोड़ें",
+      "draftLoaded": "ड्राफ्ट लोड हुआ",
+      "draftLoadedDesc": "पिछला ड्राफ्ट लोड हो गया है"
     }
   },
   "prospecting": {
-    "title": "Prospect Discovery",
-    "subtitle": "Find new prospects that match your profile and offering using AI-powered contextual search",
-    "loading": "Loading prospecting...",
+    "title": "प्रॉस्पेक्ट डिस्कवरी",
+    "subtitle": "AI-संचालित सांदर्भिक खोज का उपयोग करके आपकी प्रोफ़ाइल और पेशकश से मेल खाते नए संभावित ग्राहक खोजें",
+    "loading": "प्रॉस्पेक्टिंग लोड हो रही है...",
     "setup": {
-      "title": "Complete your profile for better results",
-      "createProfile": "Create Sales Profile",
-      "addCompany": "Add Company Profile"
+      "title": "बेहतर परिणामों के लिए अपनी प्रोफ़ाइल पूरी करें",
+      "createProfile": "सेल्स प्रोफ़ाइल बनाएं",
+      "addCompany": "कंपनी प्रोफ़ाइल जोड़ें"
     },
     "form": {
-      "title": "Search Criteria",
-      "description": "Describe who you're looking for. Our AI will find matching prospects.",
-      "region": "Region or Country",
-      "regionPlaceholder": "e.g., Netherlands, DACH, Benelux",
-      "sector": "Sector or Domain",
-      "sectorPlaceholder": "e.g., logistics, manufacturing, professional services",
-      "companySize": "Company Size",
-      "companySizePlaceholder": "e.g., mid-sized, enterprise, SMB",
-      "proposition": "What do we sell?",
-      "propositionPlaceholder": "Describe your offering in one sentence...",
-      "targetRole": "For whom is this relevant?",
-      "targetRolePlaceholder": "e.g., CFO, CTO, Supply Chain Director",
-      "painPoint": "Where is pain or urgency?",
-      "painPointPlaceholder": "What challenges are they facing?",
-      "referenceCustomers": "Reference Customers",
-      "referenceCustomersPlaceholder": "e.g., Bol.com, Coolblue, Picnic",
-      "referenceCustomersHelp": "Enter companies that are 100% fit. We'll find similar companies based on shared signals and situations.",
-      "optional": "Optional",
-      "maxResults": "Max results",
-      "searchButton": "Find Prospects",
-      "searching": "Searching..."
+      "title": "खोज मानदंड",
+      "description": "बताएं आप किसे खोज रहे हैं। हमारा AI मेल खाते संभावित ग्राहक खोजेगा।",
+      "region": "क्षेत्र या देश",
+      "regionPlaceholder": "जैसे, भारत, दक्षिण एशिया, मध्य पूर्व",
+      "sector": "सेक्टर या डोमेन",
+      "sectorPlaceholder": "जैसे, लॉजिस्टिक्स, मैन्युफैक्चरिंग, प्रोफेशनल सर्विसेज",
+      "companySize": "कंपनी आकार",
+      "companySizePlaceholder": "जैसे, मध्यम आकार, एंटरप्राइज़, SMB",
+      "proposition": "हम क्या बेचते हैं?",
+      "propositionPlaceholder": "अपनी पेशकश एक वाक्य में बताएं...",
+      "targetRole": "यह किसके लिए प्रासंगिक है?",
+      "targetRolePlaceholder": "जैसे, CFO, CTO, सप्लाई चेन डायरेक्टर",
+      "painPoint": "दर्द या तात्कालिकता कहां है?",
+      "painPointPlaceholder": "वे किन चुनौतियों का सामना कर रहे हैं?",
+      "referenceCustomers": "रेफरेंस ग्राहक",
+      "referenceCustomersPlaceholder": "जैसे, Tata, Infosys, Reliance",
+      "referenceCustomersHelp": "उन कंपनियों को दर्ज करें जो 100% फिट हैं। हम साझा संकेतों और स्थितियों के आधार पर समान कंपनियां खोजेंगे।",
+      "optional": "वैकल्पिक",
+      "maxResults": "अधिकतम परिणाम",
+      "searchButton": "संभावित ग्राहक खोजें",
+      "searching": "खोज रहे हैं..."
     },
     "history": {
-      "title": "Recent Searches",
-      "results": "results",
-      "delete": "Delete",
-      "deleteConfirmTitle": "Delete Search?",
-      "deleteConfirmDescription": "This will permanently delete this search and its results. This action cannot be undone.",
-      "deleteCancel": "Cancel",
-      "deleteConfirm": "Delete",
-      "deleteSuccess": "Search deleted",
-      "deleteSuccessDesc": "The search has been removed.",
-      "deleteFailed": "Failed to delete search"
+      "title": "हाल की खोजें",
+      "results": "परिणाम",
+      "delete": "हटाएं",
+      "deleteConfirmTitle": "खोज हटाएं?",
+      "deleteConfirmDescription": "यह इस खोज और इसके परिणामों को स्थायी रूप से हटा देगा। यह कार्रवाई वापस नहीं हो सकती।",
+      "deleteCancel": "रद्द करें",
+      "deleteConfirm": "हटाएं",
+      "deleteSuccess": "खोज हटाई गई",
+      "deleteSuccessDesc": "खोज हटा दी गई है।",
+      "deleteFailed": "खोज हटाने में विफल"
     },
     "searching": {
-      "title": "Discovering Prospects",
-      "description": "Analyzing your criteria and searching for matching companies...",
-      "step1": "Generating semantic search queries..."
+      "title": "संभावित ग्राहक खोज रहे हैं",
+      "description": "आपके मानदंडों का विश्लेषण और मेल खाती कंपनियों की खोज हो रही है...",
+      "step1": "सीमैंटिक सर्च क्वेरीज़ जेनरेट हो रही हैं..."
     },
     "results": {
-      "found": "Found {count} potential prospects",
-      "time": "Completed in {seconds}s",
-      "showQueries": "Show search queries used",
-      "fitScore": "Fit",
-      "imported": "Imported",
-      "import": "Import",
-      "research": "Research",
-      "reject": "Not relevant",
-      "view": "View",
-      "viewSource": "View source",
-      "scoreBreakdown": "Show score breakdown",
-      "propFit": "Proposition",
-      "sellerFit": "Seller",
-      "intent": "Intent",
-      "recency": "Recency",
-      "noResults": "No prospects found",
-      "noResultsDesc": "Try broadening your search criteria or adjusting the region/sector.",
-      "referenceContext": "Based on your reference customers:"
+      "found": "{count} संभावित ग्राहक मिले",
+      "time": "{seconds} सेकंड में पूरा",
+      "showQueries": "उपयोग की गई सर्च क्वेरीज़ दिखाएं",
+      "fitScore": "फिट",
+      "imported": "इम्पोर्ट किया",
+      "import": "इम्पोर्ट करें",
+      "research": "शोध",
+      "reject": "प्रासंगिक नहीं",
+      "view": "देखें",
+      "viewSource": "स्रोत देखें",
+      "scoreBreakdown": "स्कोर ब्रेकडाउन दिखाएं",
+      "propFit": "प्रॉपोज़िशन",
+      "sellerFit": "सेलर",
+      "intent": "इंटेंट",
+      "recency": "रीसेंसी",
+      "noResults": "कोई संभावित ग्राहक नहीं मिले",
+      "noResultsDesc": "अपने खोज मानदंड को विस्तृत करने या क्षेत्र/सेक्टर समायोजित करने का प्रयास करें।",
+      "referenceContext": "आपके रेफरेंस ग्राहकों के आधार पर:"
     },
     "empty": {
-      "title": "Contextual Prospect Discovery",
-      "description": "Use AI to find companies that match your seller profile and offering. This is not a database search - it's intelligent discovery based on public signals.",
-      "howItWorks": "How it works:",
-      "step1": "Enter your search criteria (region, sector, offering)",
-      "step2": "AI generates semantic queries and searches for signals",
-      "step3": "Review scored prospects and import the best fits"
+      "title": "सांदर्भिक प्रॉस्पेक्ट डिस्कवरी",
+      "description": "आपकी सेलर प्रोफ़ाइल और पेशकश से मेल खाती कंपनियां खोजने के लिए AI का उपयोग करें। यह डेटाबेस सर्च नहीं है - यह सार्वजनिक संकेतों पर आधारित बुद्धिमान खोज है।",
+      "howItWorks": "यह कैसे काम करता है:",
+      "step1": "अपने खोज मानदंड दर्ज करें (क्षेत्र, सेक्टर, पेशकश)",
+      "step2": "AI सीमैंटिक क्वेरीज़ जेनरेट करता है और संकेतों की खोज करता है",
+      "step3": "स्कोर किए गए संभावित ग्राहकों की समीक्षा करें और सबसे अच्छे फिट्स इम्पोर्ट करें"
     },
     "errors": {
-      "missingFields": "Missing required fields",
-      "missingFieldsDesc": "Please enter at least a sector or proposition to search."
+      "missingFields": "आवश्यक फ़ील्ड्स गायब",
+      "missingFieldsDesc": "कृपया खोजने के लिए कम से कम सेक्टर या प्रॉपोज़िशन दर्ज करें।"
     },
     "toast": {
-      "searchComplete": "Search completed",
-      "searchCompleteDesc": "Found {count} potential prospects",
-      "searchFailed": "Search failed",
-      "searchFailedDesc": "Failed to search for prospects. Please try again.",
-      "imported": "Prospect imported",
-      "importedDesc": "The prospect has been added to your list.",
-      "importFailed": "Import failed",
-      "rejected": "Prospect rejected",
-      "rejectedDesc": "The prospect has been removed from results.",
-      "rejectFailed": "Reject failed"
+      "searchComplete": "खोज पूरी हुई",
+      "searchCompleteDesc": "{count} संभावित ग्राहक मिले",
+      "searchFailed": "खोज विफल",
+      "searchFailedDesc": "संभावित ग्राहक खोजने में विफल। कृपया पुनः प्रयास करें।",
+      "imported": "संभावित ग्राहक इम्पोर्ट हुआ",
+      "importedDesc": "संभावित ग्राहक आपकी सूची में जोड़ा गया है।",
+      "importFailed": "इम्पोर्ट विफल",
+      "rejected": "संभावित ग्राहक अस्वीकृत",
+      "rejectedDesc": "संभावित ग्राहक परिणामों से हटा दिया गया है।",
+      "rejectFailed": "अस्वीकृत करना विफल"
     }
   },
   "legal": {
     "privacy": {
-      "title": "Privacy Policy",
-      "lastUpdated": "Last updated",
-      "lastUpdatedDate": "December 23, 2025",
+      "title": "गोपनीयता नीति",
+      "lastUpdated": "अंतिम अपडेट",
+      "lastUpdatedDate": "23 दिसंबर 2025",
       "intro": {
-        "title": "Introduction",
-        "text": "DealMotion B.V. (\"we\", \"us\", or \"our\") respects your privacy and is committed to protecting your personal data. This privacy policy explains how we collect, use, and safeguard your information when you use our AI-powered sales enablement platform."
+        "title": "परिचय",
+        "text": "DealMotion B.V. (\"हम\", \"हमारा\") आपकी गोपनीयता का सम्मान करता है और आपके व्यक्तिगत डेटा की सुरक्षा के लिए प्रतिबद्ध है। यह गोपनीयता नीति बताती है कि जब आप हमारे AI-संचालित सेल्स इनेबलमेंट प्लेटफॉर्म का उपयोग करते हैं तो हम आपकी जानकारी कैसे एकत्र, उपयोग और सुरक्षित करते हैं।"
       },
       "controller": {
-        "title": "Data Controller",
+        "title": "डेटा कंट्रोलर",
         "company": "DealMotion B.V.",
-        "address": "Amsterdam, The Netherlands",
-        "country": "The Netherlands",
-        "email": "Email"
+        "address": "एम्स्टरडम, नीदरलैंड्स",
+        "country": "नीदरलैंड्स",
+        "email": "ईमेल"
       },
       "dataCollected": {
-        "title": "Personal Data We Collect",
-        "intro": "We collect the following categories of personal data:",
+        "title": "हम जो व्यक्तिगत डेटा एकत्र करते हैं",
+        "intro": "हम निम्नलिखित श्रेणियों का व्यक्तिगत डेटा एकत्र करते हैं:",
         "account": {
-          "title": "Account Information",
-          "item1": "Full name and business email address",
-          "item2": "Password (encrypted)",
-          "item3": "Profile information (role, experience, company details)"
+          "title": "खाता जानकारी",
+          "item1": "पूरा नाम और व्यापारिक ईमेल पता",
+          "item2": "पासवर्ड (एन्क्रिप्टेड)",
+          "item3": "प्रोफ़ाइल जानकारी (भूमिका, अनुभव, कंपनी विवरण)"
         },
         "content": {
-          "title": "Content You Create",
-          "item1": "Prospect and contact information you enter",
-          "item2": "Research notes, meeting preparations, and follow-up content",
-          "item3": "Uploaded documents to your knowledge base",
-          "item4": "Meeting recordings and transcripts (when using AI Notetaker)"
+          "title": "आपके बनाए कंटेंट",
+          "item1": "आपके दर्ज संभावित ग्राहक और संपर्क जानकारी",
+          "item2": "शोध नोट्स, मीटिंग तैयारियां, और फॉलो-अप कंटेंट",
+          "item3": "आपके नॉलेज बेस में अपलोड किए दस्तावेज़",
+          "item4": "मीटिंग रिकॉर्डिंग्स और ट्रांस्क्रिप्ट (AI Notetaker उपयोग करते समय)"
         },
         "technical": {
-          "title": "Technical Data",
-          "item1": "IP address and browser type",
-          "item2": "Device information and session data",
-          "item3": "Usage analytics (features used, timing)"
+          "title": "तकनीकी डेटा",
+          "item1": "IP पता और ब्राउज़र प्रकार",
+          "item2": "डिवाइस जानकारी और सेशन डेटा",
+          "item3": "उपयोग एनालिटिक्स (उपयोग की गई सुविधाएं, समय)"
         }
       },
       "purposes": {
-        "title": "How We Use Your Data",
-        "item1": "Provide and improve our AI-powered sales enablement services",
-        "item2": "Generate personalized research, preparation, and follow-up content",
-        "item3": "Process payments and manage your subscription",
-        "item4": "Send transactional emails (account updates, service notifications)",
-        "item5": "Ensure security and prevent fraud"
+        "title": "हम आपका डेटा कैसे उपयोग करते हैं",
+        "item1": "हमारी AI-संचालित सेल्स इनेबलमेंट सेवाएं प्रदान और सुधारना",
+        "item2": "व्यक्तिगत शोध, तैयारी, और फॉलो-अप कंटेंट जनरेट करना",
+        "item3": "भुगतान प्रोसेस करना और आपकी सदस्यता प्रबंधित करना",
+        "item4": "ट्रांजेक्शनल ईमेल भेजना (खाता अपडेट, सेवा सूचनाएं)",
+        "item5": "सुरक्षा सुनिश्चित करना और धोखाधड़ी रोकना"
       },
       "legalBasis": {
-        "title": "Legal Basis for Processing",
-        "contract": "Contract performance",
-        "contractDesc": "Processing necessary to provide the service you subscribed to",
-        "consent": "Consent",
-        "consentDesc": "For optional features like calendar integration",
-        "legitimate": "Legitimate interest",
-        "legitimateDesc": "For analytics and service improvement",
-        "legal": "Legal obligation",
-        "legalDesc": "For tax and accounting records"
+        "title": "प्रोसेसिंग का कानूनी आधार",
+        "contract": "अनुबंध प्रदर्शन",
+        "contractDesc": "आपकी सदस्यता वाली सेवा प्रदान करने के लिए आवश्यक प्रोसेसिंग",
+        "consent": "सहमति",
+        "consentDesc": "कैलेंडर इंटीग्रेशन जैसी वैकल्पिक सुविधाओं के लिए",
+        "legitimate": "वैध हित",
+        "legitimateDesc": "एनालिटिक्स और सेवा सुधार के लिए",
+        "legal": "कानूनी दायित्व",
+        "legalDesc": "कर और लेखा रिकॉर्ड के लिए"
       },
       "retention": {
-        "title": "Data Retention",
-        "intro": "We retain your data according to the following principles:",
-        "account": "Account data: Retained while your account is active, deleted within 30 days of account deletion",
-        "content": "Content data: Deleted immediately upon account deletion",
-        "billing": "Billing records: Anonymized and retained for 7 years for tax compliance",
-        "logs": "Technical logs: Automatically deleted after 90 days"
+        "title": "डेटा संरक्षण",
+        "intro": "हम निम्नलिखित सिद्धांतों के अनुसार आपका डेटा संरक्षित करते हैं:",
+        "account": "खाता डेटा: जब तक आपका खाता सक्रिय है तब तक संरक्षित, खाता हटाने के 30 दिनों के भीतर हटाया जाता है",
+        "content": "कंटेंट डेटा: खाता हटाने पर तुरंत हटाया जाता है",
+        "billing": "बिलिंग रिकॉर्ड: कर अनुपालन के लिए अनाम और 7 वर्षों के लिए संरक्षित",
+        "logs": "तकनीकी लॉग: 90 दिनों के बाद स्वचालित रूप से हटाए जाते हैं"
       },
       "rights": {
-        "title": "Your Rights Under GDPR",
-        "intro": "As an EU resident, you have the following rights:",
-        "access": "Right of Access",
-        "accessDesc": "Request a copy of your personal data",
-        "rectification": "Right to Rectification",
-        "rectificationDesc": "Correct inaccurate personal data",
-        "erasure": "Right to Erasure",
-        "erasureDesc": "Request deletion of your personal data",
-        "portability": "Right to Data Portability",
-        "portabilityDesc": "Receive your data in a machine-readable format",
-        "objection": "Right to Object",
-        "objectionDesc": "Object to processing based on legitimate interest",
-        "withdraw": "Right to Withdraw Consent",
-        "withdrawDesc": "Withdraw consent where processing is based on consent",
-        "howTo": "You can exercise most of these rights directly from your account settings (Settings → Privacy & Data). For other requests, contact us at privacy@dealmotion.ai."
+        "title": "GDPR के तहत आपके अधिकार",
+        "intro": "EU निवासी के रूप में, आपके पास निम्नलिखित अधिकार हैं:",
+        "access": "पहुंच का अधिकार",
+        "accessDesc": "अपने व्यक्तिगत डेटा की कॉपी का अनुरोध करें",
+        "rectification": "सुधार का अधिकार",
+        "rectificationDesc": "गलत व्यक्तिगत डेटा सही करें",
+        "erasure": "हटाने का अधिकार",
+        "erasureDesc": "अपने व्यक्तिगत डेटा को हटाने का अनुरोध करें",
+        "portability": "डेटा पोर्टेबिलिटी का अधिकार",
+        "portabilityDesc": "अपना डेटा मशीन-रीडेबल फॉर्मेट में प्राप्त करें",
+        "objection": "आपत्ति का अधिकार",
+        "objectionDesc": "वैध हित पर आधारित प्रोसेसिंग पर आपत्ति करें",
+        "withdraw": "सहमति वापस लेने का अधिकार",
+        "withdrawDesc": "जहां प्रोसेसिंग सहमति पर आधारित है वहां सहमति वापस लें",
+        "howTo": "आप इनमें से अधिकांश अधिकारों का उपयोग सीधे अपनी खाता सेटिंग्स से कर सकते हैं (सेटिंग्स → गोपनीयता और डेटा)। अन्य अनुरोधों के लिए, privacy@dealmotion.ai पर संपर्क करें।"
       },
       "transfers": {
-        "title": "International Data Transfers",
-        "intro": "Some of our service providers are located outside the EU. We only use providers that:",
-        "safeguards": "Have certified under the EU-US Data Privacy Framework (DPF), have signed Standard Contractual Clauses (SCCs), or are located in countries with an EU adequacy decision."
+        "title": "अंतर्राष्ट्रीय डेटा स्थानांतरण",
+        "intro": "हमारे कुछ सेवा प्रदाता EU के बाहर स्थित हैं। हम केवल उन प्रदाताओं का उपयोग करते हैं जो:",
+        "safeguards": "EU-US डेटा प्राइवेसी फ्रेमवर्क (DPF) के तहत प्रमाणित हैं, मानक अनुबंध धाराएं (SCCs) पर हस्ताक्षर किए हैं, या EU पर्याप्तता निर्णय वाले देशों में स्थित हैं।"
       },
       "subprocessors": {
-        "title": "Subprocessors",
-        "intro": "We use the following third-party service providers:",
-        "name": "Service",
-        "purpose": "Purpose",
-        "location": "Location",
-        "supabase": "Database and authentication",
-        "vercel": "Frontend hosting",
-        "railway": "Backend hosting",
-        "stripe": "Payment processing",
-        "anthropic": "AI content generation (research, prep, follow-up)",
-        "google": "AI research assistance",
-        "pinecone": "Knowledge base vector storage",
-        "deepgram": "Audio transcription",
-        "inngest": "Background job processing",
-        "sentry": "Error monitoring",
-        "dpfNote": "DPF = EU-US Data Privacy Framework certified"
+        "title": "सबप्रोसेसर",
+        "intro": "हम निम्नलिखित तृतीय-पक्ष सेवा प्रदाताओं का उपयोग करते हैं:",
+        "name": "सेवा",
+        "purpose": "उद्देश्य",
+        "location": "स्थान",
+        "supabase": "डेटाबेस और प्रमाणीकरण",
+        "vercel": "फ्रंटएंड होस्टिंग",
+        "railway": "बैकएंड होस्टिंग",
+        "stripe": "भुगतान प्रोसेसिंग",
+        "anthropic": "AI कंटेंट जनरेशन (शोध, तैयारी, फॉलो-अप)",
+        "google": "AI शोध सहायता",
+        "pinecone": "नॉलेज बेस वेक्टर स्टोरेज",
+        "deepgram": "ऑडियो ट्रांस्क्रिप्शन",
+        "inngest": "बैकग्राउंड जॉब प्रोसेसिंग",
+        "sentry": "एरर मॉनिटरिंग",
+        "dpfNote": "DPF = EU-US डेटा प्राइवेसी फ्रेमवर्क प्रमाणित"
       },
       "security": {
-        "title": "Security Measures",
-        "intro": "We implement appropriate technical and organizational measures:",
-        "encryption": "Encryption of data in transit (TLS) and at rest (AES-256)",
-        "access": "Role-based access control with principle of least privilege",
-        "monitoring": "Security monitoring and logging (without PII)",
-        "testing": "Regular security reviews and updates"
+        "title": "सुरक्षा उपाय",
+        "intro": "हम उचित तकनीकी और सांगठनिक उपाय लागू करते हैं:",
+        "encryption": "ट्रांजिट (TLS) और रेस्ट (AES-256) में डेटा एन्क्रिप्शन",
+        "access": "न्यूनतम विशेषाधिकार सिद्धांत के साथ भूमिका-आधारित पहुंच नियंत्रण",
+        "monitoring": "सुरक्षा मॉनिटरिंग और लॉगिंग (PII के बिना)",
+        "testing": "नियमित सुरक्षा समीक्षा और अपडेट"
       },
       "cookies": {
-        "title": "Cookies",
-        "intro": "We use only essential cookies:",
-        "essential": "Essential cookies",
-        "essentialDesc": "Required for authentication and session management",
-        "preferences": "Preference cookies",
-        "preferencesDesc": "Store your language preference",
-        "noTracking": "We do not use tracking cookies or third-party advertising cookies."
+        "title": "कुकीज़",
+        "intro": "हम केवल आवश्यक कुकीज़ का उपयोग करते हैं:",
+        "essential": "आवश्यक कुकीज़",
+        "essentialDesc": "प्रमाणीकरण और सेशन प्रबंधन के लिए आवश्यक",
+        "preferences": "प्राथमिकता कुकीज़",
+        "preferencesDesc": "आपकी भाषा प्राथमिकता संग्रहीत करें",
+        "noTracking": "हम ट्रैकिंग कुकीज़ या तृतीय-पक्ष विज्ञापन कुकीज़ का उपयोग नहीं करते।"
       },
       "complaints": {
-        "title": "Complaints",
-        "intro": "If you believe we have not handled your personal data properly, you can lodge a complaint with your local data protection authority:",
-        "authority": "Dutch Data Protection Authority",
+        "title": "शिकायतें",
+        "intro": "यदि आपको लगता है कि हमने आपके व्यक्तिगत डेटा को सही ढंग से नहीं संभाला, तो आप अपने स्थानीय डेटा सुरक्षा प्राधिकरण के पास शिकायत दर्ज कर सकते हैं:",
+        "authority": "डच डेटा सुरक्षा प्राधिकरण",
         "authorityName": "Autoriteit Persoonsgegevens",
         "authorityWebsite": "autoriteitpersoonsgegevens.nl"
       },
       "changes": {
-        "title": "Changes to This Policy",
-        "text": "We may update this privacy policy from time to time. We will notify you of significant changes via email or in-app notification. Continued use of the service after changes constitutes acceptance of the updated policy."
+        "title": "इस नीति में परिवर्तन",
+        "text": "हम समय-समय पर इस गोपनीयता नीति को अपडेट कर सकते हैं। हम आपको ईमेल या इन-एप नोटिफिकेशन के माध्यम से महत्वपूर्ण परिवर्तनों की सूचना देंगे। परिवर्तनों के बाद सेवा का निरंतर उपयोग अपडेट नीति की स्वीकृति माना जाएगा।"
       },
       "contact": {
-        "title": "Contact Us",
-        "text": "For privacy-related questions or to exercise your rights, contact us at:"
+        "title": "हमसे संपर्क करें",
+        "text": "गोपनीयता संबंधी प्रश्नों या अपने अधिकारों का उपयोग करने के लिए, हमसे संपर्क करें:"
       },
       "seeAlso": {
-        "terms": "Terms & Conditions"
+        "terms": "नियम और शर्तें"
       }
     },
     "terms": {
-      "title": "Terms & Conditions",
-      "lastUpdated": "Last updated",
-      "lastUpdatedDate": "December 23, 2025",
+      "title": "नियम और शर्तें",
+      "lastUpdated": "अंतिम अपडेट",
+      "lastUpdatedDate": "23 दिसंबर 2025",
       "intro": {
-        "title": "Introduction",
-        "text": "These Terms & Conditions (\"Terms\") govern your use of DealMotion, an AI-powered B2B sales enablement platform operated by DealMotion B.V. By using our service, you agree to these Terms."
+        "title": "परिचय",
+        "text": "ये नियम और शर्तें (\"Terms\") DealMotion के आपके उपयोग को नियंत्रित करती हैं, जो DealMotion B.V. द्वारा संचालित AI-संचालित B2B सेल्स इनेबलमेंट प्लेटफॉर्म है। हमारी सेवा का उपयोग करके, आप इन शर्तों से सहमत हैं।"
       },
       "definitions": {
-        "title": "Definitions",
-        "service": "Service",
-        "serviceDesc": "The DealMotion platform, including web application, APIs, and related services",
-        "user": "User",
-        "userDesc": "Any individual or entity that registers for and uses the Service",
-        "content": "User Content",
-        "contentDesc": "All data, text, files, and other materials you upload or create in the Service",
-        "subscription": "Subscription",
-        "subscriptionDesc": "Your paid or free plan for accessing the Service"
+        "title": "परिभाषाएं",
+        "service": "सेवा",
+        "serviceDesc": "DealMotion प्लेटफॉर्म, जिसमें वेब एप्लिकेशन, APIs, और संबंधित सेवाएं शामिल हैं",
+        "user": "उपयोगकर्ता",
+        "userDesc": "कोई भी व्यक्ति या संस्था जो सेवा के लिए पंजीकरण करती है और उपयोग करती है",
+        "content": "उपयोगकर्ता कंटेंट",
+        "contentDesc": "सभी डेटा, टेक्स्ट, फ़ाइलें, और अन्य सामग्री जो आप सेवा में अपलोड या बनाते हैं",
+        "subscription": "सदस्यता",
+        "subscriptionDesc": "सेवा तक पहुंचने के लिए आपका भुगतान या मुफ्त प्लान"
       },
       "service": {
-        "title": "Service Description",
-        "intro": "DealMotion is an AI-powered sales enablement platform that provides:",
-        "feature1": "AI-generated prospect research and intelligence",
-        "feature2": "Meeting preparation briefs",
-        "feature3": "Post-meeting follow-up with action items and email drafts",
-        "feature4": "Meeting recording and transcription (AI Notetaker)",
-        "feature5": "Knowledge base for document storage and RAG-enhanced context"
+        "title": "सेवा विवरण",
+        "intro": "DealMotion एक AI-संचालित सेल्स इनेबलमेंट प्लेटफॉर्म है जो प्रदान करता है:",
+        "feature1": "AI-जेनरेटेड संभावित ग्राहक शोध और इंटेलिजेंस",
+        "feature2": "मीटिंग तैयारी सारांश",
+        "feature3": "कार्रवाई आइटम्स और ईमेल ड्राफ्ट्स के साथ मीटिंग के बाद फॉलो-अप",
+        "feature4": "मीटिंग रिकॉर्डिंग और ट्रांसक्रिप्शन (AI Notetaker)",
+        "feature5": "दस्तावेज़ स्टोरेज और RAG-संवर्धित संदर्भ के लिए नॉलेज बेस"
       },
       "account": {
-        "title": "Account Registration",
-        "item1": "You must provide accurate and complete registration information",
-        "item2": "You are responsible for maintaining the security of your account credentials",
-        "item3": "You must notify us immediately of any unauthorized access",
-        "item4": "One person or entity per account - sharing accounts is not permitted"
+        "title": "खाता पंजीकरण",
+        "item1": "आपको सटीक और पूर्ण पंजीकरण जानकारी प्रदान करनी होगी",
+        "item2": "आप अपने खाता क्रेडेंशियल्स की सुरक्षा बनाए रखने के लिए जिम्मेदार हैं",
+        "item3": "आपको किसी भी अनधिकृत पहुंच की तुरंत सूचना देनी होगी",
+        "item4": "प्रति खाता एक व्यक्ति या संस्था - खाते साझा करने की अनुमति नहीं है"
       },
       "responsibilities": {
-        "title": "User Responsibilities",
-        "intro": "You agree to:",
-        "item1": "Use the Service only for lawful business purposes",
-        "item2": "Ensure you have the right to input any data about third parties (prospects, contacts)",
-        "item3": "Not misrepresent AI-generated content as human-written when legally required",
-        "item4": "Maintain appropriate data protection measures for personal data you process"
+        "title": "उपयोगकर्ता जिम्मेदारियां",
+        "intro": "आप सहमत हैं:",
+        "item1": "सेवा का उपयोग केवल वैध व्यावसायिक उद्देश्यों के लिए करें",
+        "item2": "सुनिश्चित करें कि आपके पास तृतीय पक्षों (संभावित ग्राहक, संपर्क) के बारे में डेटा दर्ज करने का अधिकार है",
+        "item3": "जब कानूनी रूप से आवश्यक हो AI-जेनरेटेड कंटेंट को मानव-लिखित के रूप में गलत पेश न करें",
+        "item4": "आपके द्वारा प्रोसेस किए जाने वाले व्यक्तिगत डेटा के लिए उचित डेटा सुरक्षा उपाय बनाए रखें"
       },
       "acceptableUse": {
-        "title": "Acceptable Use",
-        "intro": "You may not use the Service to:",
-        "prohibited1": "Violate any applicable laws or regulations",
-        "prohibited2": "Infringe on the intellectual property rights of others",
-        "prohibited3": "Harass, spam, or send unsolicited communications",
-        "prohibited4": "Attempt to reverse engineer, scrape, or access the Service in unauthorized ways",
-        "prohibited5": "Use the AI features to generate harmful, discriminatory, or illegal content"
+        "title": "स्वीकार्य उपयोग",
+        "intro": "आप सेवा का उपयोग नहीं कर सकते:",
+        "prohibited1": "किसी भी लागू कानून या नियमों का उल्लंघन करने के लिए",
+        "prohibited2": "दूसरों के बौद्धिक संपदा अधिकारों का उल्लंघन करने के लिए",
+        "prohibited3": "उत्पीड़न, स्पैम, या अनचाहे संचार भेजने के लिए",
+        "prohibited4": "सेवा को रिवर्स इंजीनियर, स्क्रैप, या अनधिकृत तरीकों से एक्सेस करने का प्रयास करने के लिए",
+        "prohibited5": "AI फीचर्स का उपयोग हानिकारक, भेदभावपूर्ण, या अवैध कंटेंट जेनरेट करने के लिए"
       },
       "payment": {
-        "title": "Subscription & Payment",
-        "item1": "Paid plans are billed monthly or annually in advance",
-        "item2": "Prices are in Euros (€) and exclude applicable taxes",
-        "item3": "You can cancel your subscription at any time; access continues until the end of the paid period",
-        "item4": "No refunds for partial subscription periods, except as required by law",
-        "item5": "We may change prices with 30 days' notice; changes apply at your next renewal"
+        "title": "सदस्यता और भुगतान",
+        "item1": "भुगतान प्लान मासिक या वार्षिक अग्रिम में बिल किए जाते हैं",
+        "item2": "कीमतें यूरो (€) में हैं और लागू करों को छोड़कर",
+        "item3": "आप किसी भी समय अपनी सदस्यता रद्द कर सकते हैं; भुगतान अवधि समाप्त होने तक पहुंच जारी रहती है",
+        "item4": "आंशिक सदस्यता अवधि के लिए कोई रिफंड नहीं, कानून द्वारा आवश्यक होने पर छोड़कर",
+        "item5": "हम 30 दिनों की सूचना के साथ कीमतें बदल सकते हैं; परिवर्तन आपके अगले नवीनीकरण पर लागू होते हैं"
       },
       "data": {
-        "title": "Your Data",
-        "intro": "Regarding data you store in the Service:",
-        "item1": "You retain ownership of all User Content you create or upload",
-        "item2": "You grant us a license to process your data to provide the Service",
-        "item3": "We will not use your data to train AI models (other than your personal context within your account)"
+        "title": "आपका डेटा",
+        "intro": "सेवा में आपके संग्रहीत डेटा के संबंध में:",
+        "item1": "आप अपने द्वारा बनाए या अपलोड किए सभी उपयोगकर्ता कंटेंट का स्वामित्व बनाए रखते हैं",
+        "item2": "आप हमें सेवा प्रदान करने के लिए आपके डेटा को प्रोसेस करने का लाइसेंस देते हैं",
+        "item3": "हम आपके डेटा का उपयोग AI मॉडल्स को ट्रेन करने के लिए नहीं करेंगे (आपके खाते के भीतर आपके व्यक्तिगत संदर्भ को छोड़कर)"
       },
       "ip": {
-        "title": "Intellectual Property",
-        "item1": "DealMotion owns all rights to the Service, including software, design, and documentation",
-        "item2": "AI-generated content (research, briefs, emails) may be used freely by you for your business purposes",
-        "item3": "You may not copy, modify, or redistribute the Service or its components"
+        "title": "बौद्धिक संपदा",
+        "item1": "DealMotion सेवा के सभी अधिकारों का मालिक है, जिसमें सॉफ्टवेयर, डिज़ाइन, और दस्तावेज़ शामिल हैं",
+        "item2": "AI-जेनरेटेड कंटेंट (शोध, सारांश, ईमेल) आप अपने व्यावसायिक उद्देश्यों के लिए स्वतंत्र रूप से उपयोग कर सकते हैं",
+        "item3": "आप सेवा या इसके घटकों को कॉपी, संशोधित, या पुनर्वितरित नहीं कर सकते"
       },
       "ai": {
-        "title": "AI-Generated Content",
-        "intro": "The Service uses artificial intelligence to generate content. You acknowledge that:",
-        "item1": "AI-generated content may contain inaccuracies and should be reviewed before use",
-        "item2": "You are responsible for verifying facts and claims in AI-generated content",
-        "item3": "AI suggestions are assistance tools, not professional advice (legal, financial, etc.)"
+        "title": "AI-जेनरेटेड कंटेंट",
+        "intro": "सेवा कंटेंट जेनरेट करने के लिए आर्टिफिशियल इंटेलिजेंस का उपयोग करती है। आप स्वीकार करते हैं कि:",
+        "item1": "AI-जेनरेटेड कंटेंट में अशुद्धियां हो सकती हैं और उपयोग से पहले समीक्षा की जानी चाहिए",
+        "item2": "आप AI-जेनरेटेड कंटेंट में तथ्यों और दावों को सत्यापित करने के लिए जिम्मेदार हैं",
+        "item3": "AI सुझाव सहायता उपकरण हैं, पेशेवर सलाह नहीं (कानूनी, वित्तीय, आदि)"
       },
       "liability": {
-        "title": "Limitation of Liability",
-        "intro": "To the maximum extent permitted by law:",
-        "item1": "The Service is provided \"as is\" without warranties of any kind",
-        "item2": "We are not liable for indirect, incidental, or consequential damages",
-        "item3": "Our total liability is limited to the amount you paid in the 12 months prior to the claim"
+        "title": "दायित्व की सीमा",
+        "intro": "कानून द्वारा अनुमत अधिकतम सीमा तक:",
+        "item1": "सेवा \"as is\" प्रदान की जाती है बिना किसी प्रकार की वारंटी के",
+        "item2": "हम अप्रत्यक्ष, आकस्मिक, या परिणामी नुकसान के लिए उत्तरदायी नहीं हैं",
+        "item3": "हमारा कुल दायित्व दावे से पहले 12 महीनों में आपके द्वारा भुगतान की गई राशि तक सीमित है"
       },
       "termination": {
-        "title": "Termination",
-        "item1": "You may delete your account at any time via Settings → Privacy & Data",
-        "item2": "We may terminate your account for violation of these Terms with prior notice",
-        "item3": "Upon termination, your data will be deleted according to our Privacy Policy",
-        "item4": "Sections on IP, Liability, and Governing Law survive termination"
+        "title": "समाप्ति",
+        "item1": "आप किसी भी समय सेटिंग्स → गोपनीयता और डेटा के माध्यम से अपना खाता हटा सकते हैं",
+        "item2": "हम पूर्व सूचना के साथ इन शर्तों के उल्लंघन के लिए आपका खाता समाप्त कर सकते हैं",
+        "item3": "समाप्ति पर, आपका डेटा हमारी गोपनीयता नीति के अनुसार हटा दिया जाएगा",
+        "item4": "IP, दायित्व, और शासी कानून के अनुभाग समाप्ति के बाद भी लागू रहते हैं"
       },
       "law": {
-        "title": "Governing Law",
-        "text": "These Terms are governed by the laws of The Netherlands.",
-        "disputes": "Any disputes will be submitted to the competent court in Amsterdam, The Netherlands."
+        "title": "शासी कानून",
+        "text": "ये शर्तें नीदरलैंड्स के कानूनों द्वारा शासित हैं।",
+        "disputes": "कोई भी विवाद एम्स्टरडम, नीदरलैंड्स की सक्षम अदालत में प्रस्तुत किया जाएगा।"
       },
       "changes": {
-        "title": "Changes to Terms",
-        "text": "We may update these Terms with 30 days' notice for material changes. Continued use after the effective date constitutes acceptance."
+        "title": "शर्तों में परिवर्तन",
+        "text": "हम महत्वपूर्ण परिवर्तनों के लिए 30 दिनों की सूचना के साथ इन शर्तों को अपडेट कर सकते हैं। प्रभावी तिथि के बाद निरंतर उपयोग स्वीकृति माना जाता है।"
       },
       "contact": {
-        "title": "Contact",
-        "text": "For questions about these Terms, contact us at:"
+        "title": "संपर्क",
+        "text": "इन शर्तों के बारे में प्रश्नों के लिए, हमसे संपर्क करें:"
       },
       "seeAlso": {
-        "privacy": "Privacy Policy"
+        "privacy": "गोपनीयता नीति"
       }
     }
   },
   "affiliate": {
-    "referredBy": "Referred by {name}",
-    "referredByPartner": "You were referred by a DealMotion partner",
-    "errorLoading": "Failed to load affiliate data",
-    "errorApplying": "Failed to apply. Please try again.",
-    "errorConnect": "Failed to set up payments. Please try again.",
+    "referredBy": "{name} द्वारा रेफर किया गया",
+    "referredByPartner": "आपको DealMotion पार्टनर द्वारा रेफर किया गया था",
+    "errorLoading": "एफिलिएट डेटा लोड करने में विफल",
+    "errorApplying": "आवेदन करने में विफल। कृपया पुनः प्रयास करें।",
+    "errorConnect": "भुगतान सेटअप करने में विफल। कृपया पुनः प्रयास करें।",
     "joinProgram": {
-      "title": "Join the DealMotion Affiliate Program",
-      "subtitle": "Earn recurring commissions by referring sales professionals to DealMotion",
-      "benefit1Title": "15% Commission",
-      "benefit1Desc": "Earn 15% on every subscription payment from your referrals",
-      "benefit2Title": "Automatic Payouts",
-      "benefit2Desc": "Monthly payouts via Stripe directly to your bank account",
-      "benefit3Title": "30-Day Attribution",
-      "benefit3Desc": "Get credited for signups within 30 days of the click",
-      "benefit4Title": "Lifetime Revenue",
-      "benefit4Desc": "Keep earning as long as your referrals stay subscribed",
-      "applyButton": "Become an Affiliate"
+      "title": "DealMotion एफिलिएट प्रोग्राम में शामिल हों",
+      "subtitle": "सेल्स पेशेवरों को DealMotion रेफर करके आवर्ती कमीशन कमाएं",
+      "benefit1Title": "15% कमीशन",
+      "benefit1Desc": "आपके रेफरल्स के हर सब्सक्रिप्शन भुगतान पर 15% कमाएं",
+      "benefit2Title": "ऑटोमैटिक पेआउट",
+      "benefit2Desc": "Stripe के माध्यम से सीधे आपके बैंक खाते में मासिक पेआउट",
+      "benefit3Title": "30-दिन एट्रिब्यूशन",
+      "benefit3Desc": "क्लिक के 30 दिनों के भीतर साइनअप के लिए क्रेडिट पाएं",
+      "benefit4Title": "लाइफटाइम रेवेन्यू",
+      "benefit4Desc": "जब तक आपके रेफरल्स सब्सक्राइब्ड रहें कमाते रहें",
+      "applyButton": "एफिलिएट बनें"
     },
     "dashboard": {
-      "title": "Affiliate Dashboard",
-      "subtitle": "Track your referrals and earnings",
-      "referralLink": "Your Referral Link",
-      "referralLinkDesc": "Share this link to earn commissions on new signups",
+      "title": "एफिलिएट डैशबोर्ड",
+      "subtitle": "अपने रेफरल्स और कमाई ट्रैक करें",
+      "referralLink": "आपका रेफरल लिंक",
+      "referralLinkDesc": "नए साइनअप पर कमीशन कमाने के लिए यह लिंक शेयर करें",
       "commissionRates": {
-        "title": "Your Commission Rates",
-        "subscription": "Subscriptions",
-        "subscriptionDesc": "Pro & Pro+ monthly/yearly",
-        "credits": "Credit Packs",
-        "creditsDesc": "All credit pack purchases"
+        "title": "आपकी कमीशन दरें",
+        "subscription": "सब्सक्रिप्शन",
+        "subscriptionDesc": "Pro और Pro+ मासिक/वार्षिक",
+        "credits": "क्रेडिट पैक्स",
+        "creditsDesc": "सभी क्रेडिट पैक खरीदारी"
       },
       "stats": {
-        "clicks": "Total Clicks",
-        "signups": "Signups",
-        "conversions": "Conversions",
-        "totalEarned": "Total Earned"
+        "clicks": "कुल क्लिक्स",
+        "signups": "साइनअप",
+        "conversions": "कन्वर्जन",
+        "totalEarned": "कुल कमाई"
       },
       "balance": {
-        "title": "Balance",
-        "available": "Available for payout",
-        "pending": "Pending (14-day hold)",
-        "paid": "Total paid out"
+        "title": "बैलेंस",
+        "available": "पेआउट के लिए उपलब्ध",
+        "pending": "पेंडिंग (14-दिन होल्ड)",
+        "paid": "कुल भुगतान"
       },
       "payout": {
-        "title": "Payout Settings",
-        "desc": "Set up Stripe Connect to receive your payouts",
-        "enabled": "Payouts enabled",
-        "setupRequired": "Connect your bank account to receive payouts",
-        "setupButton": "Set Up Payouts",
-        "viewDashboard": "View Stripe Dashboard"
+        "title": "पेआउट सेटिंग्स",
+        "desc": "अपने पेआउट प्राप्त करने के लिए Stripe Connect सेटअप करें",
+        "enabled": "पेआउट सक्षम",
+        "setupRequired": "पेआउट प्राप्त करने के लिए अपना बैंक खाता कनेक्ट करें",
+        "setupButton": "पेआउट सेटअप करें",
+        "viewDashboard": "Stripe डैशबोर्ड देखें"
       },
       "tabs": {
-        "referrals": "Referrals",
-        "commissions": "Commissions",
-        "payouts": "Payouts"
+        "referrals": "रेफरल्स",
+        "commissions": "कमीशन",
+        "payouts": "पेआउट"
       },
       "referrals": {
-        "title": "Recent Referrals",
-        "empty": "No referrals yet. Share your link to get started!",
-        "converted": "Converted",
-        "pending": "Pending"
+        "title": "हाल के रेफरल्स",
+        "empty": "अभी कोई रेफरल नहीं। शुरू करने के लिए अपना लिंक शेयर करें!",
+        "converted": "कन्वर्टेड",
+        "pending": "पेंडिंग"
       },
       "commissions": {
-        "title": "Recent Commissions",
-        "empty": "No commissions yet. Commissions appear when referrals make payments.",
-        "subscription": "Subscription",
-        "creditPack": "Credit Pack"
+        "title": "हाल के कमीशन",
+        "empty": "अभी कोई कमीशन नहीं। जब रेफरल्स भुगतान करते हैं तब कमीशन दिखाई देते हैं।",
+        "subscription": "सब्सक्रिप्शन",
+        "creditPack": "क्रेडिट पैक"
       },
       "payouts": {
-        "title": "Payout History",
-        "empty": "No payouts yet. Payouts are processed monthly.",
-        "commissions": "commissions"
+        "title": "पेआउट इतिहास",
+        "empty": "अभी कोई पेआउट नहीं। पेआउट मासिक प्रोसेस होते हैं।",
+        "commissions": "कमीशन"
       }
     }
   },
   "luna": {
-    "title": "Luna",
-    "subtitle": "Your AI Sales Assistant",
+    "title": "लूना",
+    "subtitle": "आपका AI सेल्स असिस्टेंट",
     "greeting": {
-      "morning": "Good morning! Here's what needs your attention today.",
-      "afternoon": "Good afternoon! Let's keep things moving.",
-      "evening": "Good evening! A few things to review before you wrap up.",
-      "allDone": "You're all caught up! Great work."
+      "morning": "सुप्रभात! आज इन पर ध्यान देने की जरूरत है।",
+      "afternoon": "नमस्ते! चलिए आगे बढ़ते हैं।",
+      "evening": "शुभ संध्या! समाप्त करने से पहले कुछ चीजें देखें।",
+      "allDone": "आप अप टू डेट हैं! बढ़िया काम।"
     },
-    "noMessages": "No messages",
-    "allCaughtUp": "You're all caught up!",
-    "pending": "pending",
-    "urgent": "Urgent",
-    "executing": "Processing...",
-    "later": "Later",
-    "ctaLabel": "Do it",
-    "snoozeLaterToday": "+4 hours",
-    "snoozeTomorrow": "Tomorrow 9 AM",
-    "snoozeNextWorkDay": "Next working day",
-    "snoozeAfterMeeting": "After meeting",
-    "viewActions": "View all actions",
-    "viewAllActions": "View all {count} actions",
-    "openLunaHome": "Open Luna Home",
+    "noMessages": "कोई लंबित कार्रवाई नहीं। जब कुछ ध्यान देने की जरूरत होगी तो लूना आपको सूचित करेगी।",
+    "allCaughtUp": "आप अप टू डेट हैं!",
+    "pending": "लंबित",
+    "urgent": "अत्यावश्यक",
+    "executing": "प्रोसेसिंग...",
+    "later": "बाद में",
+    "ctaLabel": "करें",
+    "snoozeLaterToday": "+4 घंटे",
+    "snoozeTomorrow": "कल सुबह 9 बजे",
+    "snoozeNextWorkDay": "अगला कार्य दिवस",
+    "snoozeAfterMeeting": "मीटिंग के बाद",
+    "viewActions": "सभी कार्रवाइयां देखें",
+    "viewAllActions": "सभी {count} कार्रवाइयां देखें",
+    "openLunaHome": "Luna होम खोलें",
     "home": {
-      "title": "Luna Home",
-      "todayProgress": "Today's Progress",
-      "upcomingMeetings": "Upcoming Meetings",
-      "noMeetings": "No meetings scheduled for today",
-      "tipOfDay": "Tip of the Day",
-      "actions": "Actions",
-      "actionsEmpty": "No actions right now. Luna will create suggestions when there's something to do."
+      "title": "Luna होम",
+      "todayProgress": "आज की प्रगति",
+      "upcomingMeetings": "आगामी मीटिंग्स",
+      "noMeetings": "आज के लिए कोई मीटिंग शेड्यूल्ड नहीं",
+      "tipOfDay": "आज की टिप",
+      "actions": "कार्रवाइयां",
+      "actionsEmpty": "अभी कोई कार्रवाई नहीं। जब कुछ करने को होगा तब Luna सुझाव बनाएगी।"
     },
     "stats": {
-      "research": "Research",
-      "preps": "Preparations",
-      "followups": "Follow-ups",
-      "outreach": "Outreach"
+      "research": "शोध",
+      "preps": "तैयारियां",
+      "followups": "फॉलो-अप्स",
+      "outreach": "आउटरीच"
     },
     "settings": {
-      "title": "Luna Settings",
-      "enabled": "Enable Luna",
-      "enabledDesc": "Luna will proactively suggest actions",
-      "showWidget": "Show Widget",
-      "showWidgetDesc": "Display floating Luna widget",
-      "showTips": "Show Contextual Tips",
-      "showTipsDesc": "Display helpful tips throughout the app",
-      "prepReminder": "Prep Reminder Hours",
-      "prepReminderDesc": "Hours before meeting to remind for prep",
-      "outreachCooldown": "Outreach Cooldown Days",
-      "outreachCooldownDesc": "Days between outreach to same contact",
-      "excludedKeywords": "Excluded Meeting Keywords",
-      "excludedKeywordsDesc": "Meetings with these words won't trigger prep suggestions"
+      "title": "Luna सेटिंग्स",
+      "enabled": "Luna सक्षम करें",
+      "enabledDesc": "Luna सक्रिय रूप से कार्रवाइयां सुझाएगी",
+      "showWidget": "विजेट दिखाएं",
+      "showWidgetDesc": "फ्लोटिंग Luna विजेट दिखाएं",
+      "showTips": "सांदर्भिक टिप्स दिखाएं",
+      "showTipsDesc": "पूरे एप में सहायक टिप्स दिखाएं",
+      "prepReminder": "तैयारी रिमाइंडर घंटे",
+      "prepReminderDesc": "तैयारी के लिए मीटिंग से पहले घंटे",
+      "outreachCooldown": "आउटरीच कूलडाउन दिन",
+      "outreachCooldownDesc": "एक ही संपर्क को आउटरीच के बीच दिन",
+      "excludedKeywords": "बाहर रखे गए मीटिंग कीवर्ड्स",
+      "excludedKeywordsDesc": "इन शब्दों वाली मीटिंग्स तैयारी सुझाव ट्रिगर नहीं करेंगी"
     },
     "widget": {
       "title": "Luna"
     },
     "messages": {
-      "startResearch": "Start Research",
-      "reviewResearch": "Review Research",
-      "prepareOutreach": "Prepare Outreach",
-      "firstTouchSent": "First Touch Sent",
-      "suggestMeeting": "Schedule Meeting",
-      "createPrep": "Create Preparation",
-      "prepReady": "Prep Ready",
-      "reviewSummary": "Review Summary",
-      "reviewReport": "Review Report",
-      "sendEmail": "Send Follow-up Email",
-      "createActions": "Create Action Items",
-      "updateCrm": "Update CRM Notes"
+      "startResearch": "शोध शुरू करें",
+      "reviewResearch": "शोध समीक्षा करें",
+      "prepareOutreach": "आउटरीच तैयार करें",
+      "firstTouchSent": "पहला संपर्क भेजा गया",
+      "suggestMeeting": "मीटिंग शेड्यूल करें",
+      "createPrep": "तैयारी बनाएं",
+      "prepReady": "तैयारी तैयार",
+      "reviewSummary": "सारांश समीक्षा करें",
+      "reviewReport": "रिपोर्ट समीक्षा करें",
+      "sendEmail": "फॉलो-अप ईमेल भेजें",
+      "createActions": "कार्रवाई आइटम्स बनाएं",
+      "updateCrm": "CRM नोट्स अपडेट करें"
     },
-    "copied": "Copied!",
-    "outreachTitle": "Create Outreach",
-    "outreachDescription": "Choose a channel and create a personalized outreach message",
-    "selectChannel": "Select Channel",
-    "messageContent": "Message Content",
-    "generate": "Generate",
-    "generateSuccess": "Message generated",
-    "generateFailed": "Failed to generate message",
-    "subject": "Subject",
-    "subjectPlaceholder": "Enter email subject...",
-    "message": "Message",
-    "messagePlaceholder": "Write your message here...",
-    "copy": "Copy",
-    "saveDraft": "Save Draft",
-    "markAsSent": "Mark as Sent",
-    "skip": "Skip",
-    "saveDraftSuccess": "Draft saved",
-    "saveDraftFailed": "Failed to save draft",
-    "markSentSuccess": "Marked as sent",
-    "markSentFailed": "Failed to mark as sent",
-    "missingContactInfo": "Missing Contact Information",
-    "addEmailInfo": "Add an email address to send an email",
-    "addLinkedInInfo": "Add a LinkedIn URL to send a LinkedIn message",
-    "addPhoneInfo": "Add a phone number to send a WhatsApp message",
+    "copied": "कॉपी हो गई!",
+    "outreachTitle": "आउटरीच बनाएं",
+    "outreachDescription": "चैनल चुनें और व्यक्तिगत आउटरीच संदेश बनाएं",
+    "selectChannel": "चैनल चुनें",
+    "messageContent": "संदेश सामग्री",
+    "generate": "जेनरेट करें",
+    "generateSuccess": "संदेश जेनरेट हुआ",
+    "generateFailed": "संदेश जेनरेट करने में विफल",
+    "subject": "विषय",
+    "subjectPlaceholder": "ईमेल विषय दर्ज करें...",
+    "message": "संदेश",
+    "messagePlaceholder": "अपना संदेश यहां लिखें...",
+    "copy": "कॉपी करें",
+    "saveDraft": "ड्राफ्ट सेव करें",
+    "markAsSent": "भेजा गया चिह्नित करें",
+    "skip": "छोड़ें",
+    "saveDraftSuccess": "ड्राफ्ट सेव हुआ",
+    "saveDraftFailed": "ड्राफ्ट सेव करने में विफल",
+    "markSentSuccess": "भेजा गया चिह्नित",
+    "markSentFailed": "भेजा गया चिह्नित करने में विफल",
+    "missingContactInfo": "संपर्क जानकारी गायब",
+    "addEmailInfo": "ईमेल भेजने के लिए ईमेल पता जोड़ें",
+    "addLinkedInInfo": "LinkedIn संदेश भेजने के लिए LinkedIn URL जोड़ें",
+    "addPhoneInfo": "WhatsApp संदेश भेजने के लिए फोन नंबर जोड़ें",
     "emailPlaceholder": "email@example.com",
     "linkedInPlaceholder": "https://linkedin.com/in/...",
     "phonePlaceholder": "+1 555 1234567",
-    "saveContactInfo": "Save",
-    "saveContactInfoSuccess": "Contact info saved",
-    "saveContactInfoFailed": "Failed to save contact info",
-    "customInstructions": "Custom Instructions (Optional)",
-    "customInstructionsPlaceholder": "E.g., \"Focus on their data migration project\" or \"Mention our Databricks expertise\"...",
-    "customInstructionsHint": "Add specific instructions to customize the generated message",
-    "draftLoaded": "Draft loaded",
-    "draftLoadedDesc": "Previous draft has been loaded",
-    "dontKnow": "I don't know"
+    "saveContactInfo": "सेव करें",
+    "saveContactInfoSuccess": "संपर्क जानकारी सेव हुई",
+    "saveContactInfoFailed": "संपर्क जानकारी सेव करने में विफल",
+    "customInstructions": "कस्टम निर्देश (वैकल्पिक)",
+    "customInstructionsPlaceholder": "जैसे, \"उनके डेटा माइग्रेशन प्रोजेक्ट पर फोकस करें\" या \"हमारी Databricks विशेषज्ञता का उल्लेख करें\"...",
+    "customInstructionsHint": "जेनरेट संदेश को कस्टमाइज़ करने के लिए विशेष निर्देश जोड़ें",
+    "draftLoaded": "ड्राफ्ट लोड हुआ",
+    "draftLoadedDesc": "पिछला ड्राफ्ट लोड हो गया है",
+    "dontKnow": "मुझे नहीं पता"
   },
   "lunaHome": {
-    "inbox": "Actions",
-    "pending": "pending",
-    "quickStart": "Quick Start",
-    "todaysMeetings": "Today's Meetings",
-    "noMeetingsToday": "No meetings scheduled for today",
-    "connectYourAgenda": "Connect your calendar to see your meetings here",
-    "connectAgenda": "Connect Calendar",
-    "last7Days": "Last 7 Days",
-    "today": "Today",
-    "completed": "completed",
-    "tipOfDay": "Tip of the Day",
-    "settings": "Luna Settings",
-    "settingsTitle": "Luna Settings",
-    "settingsDescription": "Configure how Luna helps you with your sales workflow.",
+    "inbox": "कार्रवाइयां",
+    "pending": "पेंडिंग",
+    "quickStart": "क्विक स्टार्ट",
+    "todaysMeetings": "आज की मीटिंग्स",
+    "noMeetingsToday": "आज के लिए कोई मीटिंग शेड्यूल्ड नहीं",
+    "connectYourAgenda": "अपनी मीटिंग्स यहां देखने के लिए अपना कैलेंडर कनेक्ट करें",
+    "connectAgenda": "कैलेंडर कनेक्ट करें",
+    "last7Days": "पिछले 7 दिन",
+    "today": "आज",
+    "completed": "पूर्ण",
+    "tipOfDay": "आज की टिप",
+    "settings": "Luna सेटिंग्स",
+    "settingsTitle": "Luna सेटिंग्स",
+    "settingsDescription": "कॉन्फ़िगर करें कि Luna आपके सेल्स वर्कफ्लो में कैसे मदद करे।",
     "tabs": {
-      "active": "Active",
-      "new": "New",
-      "inProgress": "In Progress",
-      "history": "History"
+      "active": "सक्रिय",
+      "new": "नया",
+      "inProgress": "प्रगति में",
+      "history": "इतिहास"
     },
     "quickActions": {
-      "research": "Research",
-      "prep": "Prep",
-      "record": "Record"
+      "research": "शोध",
+      "prep": "तैयारी",
+      "record": "रिकॉर्ड"
     },
     "stats": {
-      "research": "Research",
-      "preps": "Preps",
-      "followups": "Follow-ups",
-      "outreach": "Outreach"
+      "research": "शोध",
+      "preps": "तैयारियां",
+      "followups": "फॉलो-अप्स",
+      "outreach": "आउटरीच"
     },
-    "noActiveActions": "No active actions. You're all caught up!",
-    "noNewActions": "No new actions right now.",
-    "noInProgressActions": "No actions in progress.",
-    "noHistoryActions": "No completed actions yet."
+    "noActiveActions": "कोई सक्रिय कार्रवाई नहीं। आप अप टू डेट हैं!",
+    "noNewActions": "अभी कोई नई कार्रवाई नहीं।",
+    "noInProgressActions": "कोई कार्रवाई प्रगति में नहीं।",
+    "noHistoryActions": "अभी कोई पूर्ण कार्रवाई नहीं।"
   }
 }
