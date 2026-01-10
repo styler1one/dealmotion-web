@@ -142,9 +142,14 @@ export default function PricingPage() {
   }
 
   const handleSelectPlan = async (planId: string) => {
-    // If not logged in, redirect to signup
-    if (!isLoggedIn) {
-      router.push(`/signup?plan=${planId}`)
+    // If not logged in or still checking, redirect to signup
+    if (isLoggedIn === false || isLoggedIn === null) {
+      // For free plan, just go to signup. For paid plans, include plan in URL
+      if (planId === 'free') {
+        router.push('/signup')
+      } else {
+        router.push(`/signup?plan=${planId}`)
+      }
       return
     }
 
@@ -331,9 +336,9 @@ export default function PricingPage() {
                 variant="outline" 
                 className="w-full border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-emerald-700"
                 disabled={isCurrentPlan('free')}
-                onClick={() => !isLoggedIn && router.push('/signup')}
+                onClick={() => handleSelectPlan('free')}
               >
-                {!isLoggedIn 
+                {isLoggedIn === false || isLoggedIn === null
                   ? t('pricing.getStarted')
                   : isCurrentPlan('free') 
                     ? t('pricing.currentPlan') 
