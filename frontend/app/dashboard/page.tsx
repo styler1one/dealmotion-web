@@ -8,15 +8,17 @@
  * Falls back to Autopilot if Luna is not enabled.
  * 
  * NEW: Redirects new users to onboarding if they haven't completed it yet.
+ * NEW: Links affiliate after OAuth signup (affiliate data stored in localStorage/cookie).
  */
 
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { DashboardLayout } from '@/components/layout'
 import { AutopilotHome } from '@/components/autopilot'
 import { LunaHome, useLunaOptional } from '@/components/luna'
 import { Icons } from '@/components/icons'
+import { linkAffiliateAfterOAuth, getStoredAffiliateData } from '@/lib/affiliate'
 import type { User } from '@supabase/supabase-js'
 
 function HomeContent() {
@@ -37,6 +39,7 @@ export default function HomePage() {
   const supabase = createClientComponentClient()
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const affiliateLinkAttempted = useRef(false)
 
   useEffect(() => {
     const loadUser = async () => {
@@ -48,6 +51,22 @@ export default function HomePage() {
         return
       }
       
+      const { data: session } = await supabase.auth.getSession()
+      const accessToken = session?.session?.access_token
+      
+      // Try to link affiliate after OAuth (only once per session)
+      // This handles the case where user signed up via OAuth and had an affiliate code stored
+      if (accessToken && !affiliateLinkAttempted.current) {
+        affiliateLinkAttempted.current = true
+        const affiliateData = getStoredAffiliateData()
+        if (affiliateData) {
+          // Fire and forget - don't block the dashboard loading
+          linkAffiliateAfterOAuth(accessToken).catch(err => {
+            console.error('[Dashboard] Error linking affiliate:', err)
+          })
+        }
+      }
+      
       // Skip onboarding check if just completed onboarding
       const onboardingComplete = searchParams.get('onboarding') === 'complete'
       if (onboardingComplete) {
@@ -57,14 +76,13 @@ export default function HomePage() {
       
       // Check if user needs onboarding (no sales profile)
       try {
-        const { data: session } = await supabase.auth.getSession()
-        if (session?.session?.access_token) {
+        if (accessToken) {
           const response = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/api/v1/profile/sales/check`,
             {
               method: 'GET',
               headers: {
-                'Authorization': `Bearer ${session.session.access_token}`,
+                'Authorization': `Bearer ${accessToken}`,
               },
             }
           )

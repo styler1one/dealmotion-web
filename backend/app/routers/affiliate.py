@@ -252,6 +252,136 @@ async def validate_affiliate_code(code: str):
 # AUTHENTICATED ENDPOINTS
 # =============================================================================
 
+class LinkAfterOAuthRequest(BaseModel):
+    """Request to link affiliate after OAuth signup."""
+    affiliate_code: str = Field(..., description="Affiliate code from localStorage/cookie")
+    click_id: Optional[str] = Field(None, description="Click ID if available")
+
+
+class LinkAfterOAuthResponse(BaseModel):
+    """Response for affiliate linking after OAuth."""
+    success: bool
+    error: Optional[str] = None
+
+
+@router.post("/link-after-oauth", response_model=LinkAfterOAuthResponse)
+async def link_affiliate_after_oauth(
+    request: LinkAfterOAuthRequest,
+    user_org: tuple = Depends(get_user_org)
+):
+    """
+    Link affiliate referral after OAuth signup.
+    
+    Called by frontend after successful OAuth login to ensure
+    affiliate tracking works even though OAuth can't pass custom metadata.
+    
+    This endpoint:
+    1. Checks if user was already referred (prevents double attribution)
+    2. Creates affiliate_referrals record if valid
+    3. Updates affiliate stats
+    """
+    user_id, organization_id = user_org
+    affiliate_service = get_affiliate_service()
+    
+    try:
+        # Check if already referred
+        from app.database import get_supabase_service
+        supabase = get_supabase_service()
+        
+        existing = supabase.table("affiliate_referrals").select("id").eq(
+            "referred_user_id", user_id
+        ).maybe_single().execute()
+        
+        if existing.data:
+            return LinkAfterOAuthResponse(
+                success=False,
+                error="already_referred"
+            )
+        
+        # Validate affiliate code
+        is_valid, affiliate_name = await affiliate_service.validate_affiliate_code(
+            request.affiliate_code
+        )
+        
+        if not is_valid:
+            return LinkAfterOAuthResponse(
+                success=False,
+                error="invalid_affiliate_code"
+            )
+        
+        # Get affiliate by code
+        affiliate = supabase.table("affiliates").select("id, user_id").eq(
+            "affiliate_code", request.affiliate_code.upper()
+        ).eq("status", "active").maybe_single().execute()
+        
+        if not affiliate.data:
+            return LinkAfterOAuthResponse(
+                success=False,
+                error="affiliate_not_found"
+            )
+        
+        # Prevent self-referral
+        if affiliate.data["user_id"] == user_id:
+            return LinkAfterOAuthResponse(
+                success=False,
+                error="self_referral"
+            )
+        
+        # Get user email for the referral record
+        user = supabase.table("users").select("email").eq(
+            "id", user_id
+        ).maybe_single().execute()
+        
+        user_email = user.data.get("email") if user.data else None
+        
+        # Create referral record
+        referral_data = {
+            "affiliate_id": affiliate.data["id"],
+            "referred_user_id": user_id,
+            "referred_organization_id": organization_id,
+            "referred_email": user_email,
+            "signup_at": datetime.utcnow().isoformat(),
+            "status": "pending",
+        }
+        
+        # Add click_id if provided
+        if request.click_id:
+            # Try to find and link the click
+            click = supabase.table("affiliate_clicks").select("id").eq(
+                "click_id", request.click_id
+            ).eq("affiliate_id", affiliate.data["id"]).maybe_single().execute()
+            
+            if click.data:
+                referral_data["click_id"] = click.data["id"]
+                # Mark click as converted
+                supabase.table("affiliate_clicks").update({
+                    "converted_to_signup": True,
+                    "signup_user_id": user_id,
+                    "converted_at": datetime.utcnow().isoformat()
+                }).eq("id", click.data["id"]).execute()
+        
+        # Insert referral
+        supabase.table("affiliate_referrals").insert(referral_data).execute()
+        
+        # Update affiliate stats
+        supabase.table("affiliates").update({
+            "total_signups": supabase.table("affiliates").select("total_signups").eq(
+                "id", affiliate.data["id"]
+            ).single().execute().data.get("total_signups", 0) + 1
+        }).eq("id", affiliate.data["id"]).execute()
+        
+        logger.info(f"Linked affiliate {request.affiliate_code} to user {user_id} via OAuth")
+        
+        return LinkAfterOAuthResponse(success=True)
+        
+    except Exception as e:
+        logger.error(f"Error linking affiliate after OAuth: {e}")
+        return LinkAfterOAuthResponse(
+            success=False,
+            error="internal_error"
+        )
+
+
 @router.get("/status", response_model=AffiliateStatusResponse)
 async def get_affiliate_status(
     user_org: tuple = Depends(get_user_org)

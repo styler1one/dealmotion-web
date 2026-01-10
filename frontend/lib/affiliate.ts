@@ -14,6 +14,7 @@
  */
 
 const AFFILIATE_STORAGE_KEY = 'dm_affiliate'
+const AFFILIATE_COOKIE_NAME = 'dm_affiliate_ref'
 const AFFILIATE_EXPIRY_DAYS = 30
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -80,7 +81,53 @@ export function checkAndStoreAffiliateCode(
     console.error('Failed to store affiliate data:', e)
   }
   
+  // Also store in cookie (for server-side access during OAuth callback)
+  setAffiliateCookie(affiliateData.code, affiliateData.clickId)
+  
   return affiliateData
+}
+
+/**
+ * Set affiliate data in a cookie (accessible server-side).
+ * Cookie expires in 30 days.
+ */
+export function setAffiliateCookie(code: string, clickId: string): void {
+  if (typeof document === 'undefined') return
+  
+  const data = JSON.stringify({ code, clickId })
+  const expiryDate = new Date()
+  expiryDate.setDate(expiryDate.getDate() + AFFILIATE_EXPIRY_DAYS)
+  
+  // Set cookie with path=/ so it's available on all pages
+  document.cookie = `${AFFILIATE_COOKIE_NAME}=${encodeURIComponent(data)}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Lax`
+}
+
+/**
+ * Get affiliate data from cookie.
+ */
+export function getAffiliateCookie(): { code: string; clickId: string } | null {
+  if (typeof document === 'undefined') return null
+  
+  const cookies = document.cookie.split(';')
+  for (const cookie of cookies) {
+    const [name, value] = cookie.trim().split('=')
+    if (name === AFFILIATE_COOKIE_NAME && value) {
+      try {
+        return JSON.parse(decodeURIComponent(value))
+      } catch {
+        return null
+      }
+    }
+  }
+  return null
+}
+
+/**
+ * Clear affiliate cookie.
+ */
+export function clearAffiliateCookie(): void {
+  if (typeof document === 'undefined') return
+  document.cookie = `${AFFILIATE_COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
 }
 
 /**
@@ -123,7 +170,7 @@ export function getAffiliateClickId(): string | null {
 }
 
 /**
- * Clear stored affiliate data.
+ * Clear stored affiliate data (localStorage + cookie).
  */
 export function clearAffiliateData(): void {
   try {
@@ -131,6 +178,7 @@ export function clearAffiliateData(): void {
   } catch (e) {
     console.error('Failed to clear affiliate data:', e)
   }
+  clearAffiliateCookie()
 }
 
 /**
@@ -250,6 +298,56 @@ export function getAffiliateDisplayInfo(): {
     hasAffiliate: true,
     affiliateName: data.affiliateName || null,
     code: data.code,
+  }
+}
+
+/**
+ * Link affiliate to current user after OAuth signup.
+ * Call this after a successful OAuth login to ensure affiliate tracking works.
+ * 
+ * @param accessToken - The user's access token from Supabase session
+ * @returns Promise<boolean> - Whether the linking was successful
+ */
+export async function linkAffiliateAfterOAuth(accessToken: string): Promise<boolean> {
+  // Try localStorage first, then cookie
+  const localData = getStoredAffiliateData()
+  const cookieData = getAffiliateCookie()
+  
+  const affiliateCode = localData?.code || cookieData?.code
+  const clickId = localData?.clickId || cookieData?.clickId
+  
+  if (!affiliateCode) {
+    // No affiliate data, nothing to link
+    return false
+  }
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/affiliate/link-after-oauth`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        affiliate_code: affiliateCode,
+        click_id: clickId,
+      }),
+    })
+    
+    const result = await response.json()
+    
+    if (result.success) {
+      // Clear affiliate data after successful linking
+      clearAffiliateData()
+      console.log('[Affiliate] Successfully linked affiliate after OAuth:', affiliateCode)
+      return true
+    } else {
+      console.warn('[Affiliate] Failed to link affiliate:', result.error)
+      return false
+    }
+  } catch (e) {
+    console.error('[Affiliate] Error linking affiliate after OAuth:', e)
+    return false
   }
 }
 
