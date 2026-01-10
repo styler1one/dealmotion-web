@@ -6,10 +6,12 @@
  * 
  * The main home page with Luna's unified assistant.
  * Falls back to Autopilot if Luna is not enabled.
+ * 
+ * NEW: Redirects new users to onboarding if they haven't completed it yet.
  */
 
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { DashboardLayout } from '@/components/layout'
 import { AutopilotHome } from '@/components/autopilot'
@@ -31,6 +33,7 @@ function HomeContent() {
 
 export default function HomePage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createClientComponentClient()
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
@@ -45,10 +48,45 @@ export default function HomePage() {
         return
       }
       
+      // Skip onboarding check if just completed onboarding
+      const onboardingComplete = searchParams.get('onboarding') === 'complete'
+      if (onboardingComplete) {
+        setLoading(false)
+        return
+      }
+      
+      // Check if user needs onboarding (no sales profile)
+      try {
+        const { data: session } = await supabase.auth.getSession()
+        if (session?.session?.access_token) {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/v1/profile/sales/check`,
+            {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${session.session.access_token}`,
+              },
+            }
+          )
+          
+          if (response.ok) {
+            const data = await response.json()
+            // Redirect to onboarding if no profile exists
+            if (!data.exists) {
+              router.push('/onboarding')
+              return
+            }
+          }
+        }
+      } catch (err) {
+        // If check fails, continue to dashboard (don't block user)
+        console.error('[Dashboard] Error checking profile:', err)
+      }
+      
       setLoading(false)
     }
     loadUser()
-  }, [supabase, router])
+  }, [supabase, router, searchParams])
 
   if (loading) {
     return (
