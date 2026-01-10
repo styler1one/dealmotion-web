@@ -56,11 +56,13 @@ export default function HomePage() {
       
       // Try to link affiliate after OAuth (only once per session)
       // This handles the case where user signed up via OAuth and had an affiliate code stored
+      // Safe: linkAffiliateAfterOAuth returns early if no affiliate data exists
       if (accessToken && !affiliateLinkAttempted.current) {
         affiliateLinkAttempted.current = true
         const affiliateData = getStoredAffiliateData()
-        if (affiliateData) {
+        if (affiliateData?.code) {
           // Fire and forget - don't block the dashboard loading
+          // Only call API if there's actually an affiliate code
           linkAffiliateAfterOAuth(accessToken).catch(err => {
             console.error('[Dashboard] Error linking affiliate:', err)
           })
